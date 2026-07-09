@@ -3,7 +3,8 @@
 The browser face of the Quran Knowledge Graph: **the Quran as a connected web
 of meaning**, not another mushaf app. Everything runs in the browser — the
 entire knowledge graph loads as one monlite (SQLite WASM) file; there is no
-server.
+server. The interface is **Arabic-first (RTL)** with a one-tap English toggle;
+ayah references show **Arabic surah names** («البقرة ٢٥٥», not "2:255").
 
 ## The core loop
 
@@ -12,12 +13,13 @@ collect the ayahs that share it.**
 
 | View | What it does |
 |---|---|
-| **Reader** | The full mushaf in Amiri Quran type, word-by-word interactive: tap any word and the inspector shows its prefix/stem/suffix segments with root, lemma, POS (Arabic + English), verb form, aspect, mood, voice, case, person/gender/number. English translation under every ayah. |
-| **Roots** | Every root as a first-class page: all derived lemmas with counts, every occurrence in the Quran grouped by ayah, related roots ranked by shared ayahs — and one button to **collect all its ayahs**. |
-| **Network** | The root's semantic neighborhood as an interactive force-directed graph (canvas, no libraries): node size and edge width follow co-occurrence strength; click any node to re-center. |
-| **Search** | Instant full-text search (FTS5) with phrase/prefix/OR syntax, URL-addressable queries, root suggestions — and one button to collect all results. |
-| **Collections** | The research workbench: named collections of ayahs gathered by root, search, or hand-picking, with recorded criteria ("why these belong together"), a clean reading mode, print, JSON export/import. Stored locally, private by default. |
-| **Dashboard** | The Quran in numbers: Meccan/Medinan balance, longest/shortest surahs, top roots, letter frequencies, and the 114 surahs as a revelation-order timeline. |
+| **المصحف / Reader** | Two modes: **صفحات** — continuous mushaf flow grouped by Madani page (default) — and **آيات** — ayah list with tools. Word-by-word interactive in both: tap any word for its prefix/stem/suffix segments with root, lemma, POS, verb form, case… Per-ayah recitation (al-Ḥuṣarī) and translation in en/fr/tr with a persistent language switcher. |
+| **الجذور / Roots** | Every root as a first-class page: derived lemmas with counts, every occurrence grouped by ayah, related roots ranked by shared ayahs — and one button to **collect all its ayahs**. |
+| **الشبكة / Network** | The root's semantic neighborhood as an interactive force-directed graph (canvas, no libraries): node size and edge width follow co-occurrence strength; click any node to re-center. |
+| **البحث / Search** | Instant full-text search (FTS5) with phrase/prefix/OR syntax, URL-addressable queries, root suggestions — collect all results in one tap; every result opens at its place in the mushaf. |
+| **بحث بالمعنى / Meaning** | Search by meaning in any language (Gemini vectors, local ranking): "patience in hardship" finds the right ayahs regardless of wording. |
+| **المجموعات / Collections** | The research workbench: named collections of ayahs gathered by root, meaning, search, or hand-picking, with recorded criteria, a clean reading mode, print, JSON export/import. Stored locally, private by default. |
+| **إحصاءات / Dashboard** | The Quran in numbers: Meccan/Medinan balance, longest/shortest surahs, top roots, letter frequencies, revelation-order timeline. |
 
 ## Run
 

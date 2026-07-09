@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter, NavLink, Navigate, Route, Routes } from "react-router-dom";
-import { initDb } from "./db";
+import { initDb, listSurahs } from "./db";
+import { applyUILang, setUILang, t, useUILang } from "./i18n";
 import "./theme.css";
 import Reader from "./views/Reader";
 import Roots from "./views/Roots";
@@ -11,13 +12,17 @@ import Meaning from "./views/Meaning";
 import Collections from "./views/Collections";
 import Dashboard from "./views/Dashboard";
 
+applyUILang();
+
 function Boot({ children }: { children: React.ReactNode }) {
+  useUILang();
   const [progress, setProgress] = useState<{ loaded: number; total: number } | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     initDb((loaded, total) => setProgress({ loaded, total }))
+      .then(() => listSurahs()) // prime surah names for AyahRef
       .then(() => setReady(true))
       .catch((e) => setError(e.message));
   }, []);
@@ -27,9 +32,9 @@ function Boot({ children }: { children: React.ReactNode }) {
       <div className="boot">
         <div>
           <div className="title">القرآن الكريم</div>
-          <p style={{ color: "var(--danger)" }}>Failed to load the knowledge graph: {error}</p>
+          <p style={{ color: "var(--danger)" }}>{error}</p>
           <p className="muted">
-            Run <code>node ../../scripts/convert-to-app-db.mjs</code> then restart.
+            <code>node ../../scripts/convert-to-app-db.mjs</code>
           </p>
         </div>
       </div>
@@ -44,17 +49,15 @@ function Boot({ children }: { children: React.ReactNode }) {
       <div className="boot">
         <div>
           <div className="title">القرآن الكريم</div>
-          <div style={{ marginTop: 8, fontWeight: 600 }}>Quran Knowledge Graph Studio</div>
+          <div style={{ marginTop: 8, fontWeight: 600 }}>{t("brand")}</div>
           <div className="bar">
             <div style={{ width: pct != null ? `${pct}%` : "30%" }} />
           </div>
           <div className="muted">
-            {pct != null
-              ? `loading the knowledge graph… ${pct}% (${Math.round((progress!.loaded / 1e6) * 10) / 10} MB)`
-              : "loading the knowledge graph…"}
+            {t("boot.loading")} {pct != null ? `${pct}%` : ""}
           </div>
           <div className="muted" style={{ marginTop: 4 }}>
-            114 surahs · 6,236 ayahs · 77,429 words · full morphology — all in your browser
+            {t("boot.tagline")}
           </div>
         </div>
       </div>
@@ -71,13 +74,26 @@ function ThemeToggle() {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
   }, [dark]);
   return (
-    <button onClick={() => setDark(!dark)} title="Toggle theme">
+    <button onClick={() => setDark(!dark)} title="Light/Dark">
       {dark ? "☀" : "☾"}
     </button>
   );
 }
 
+function LangToggle() {
+  const lang = useUILang();
+  return (
+    <button
+      onClick={() => setUILang(lang === "ar" ? "en" : "ar")}
+      title={lang === "ar" ? "Switch interface to English" : "التبديل إلى العربية"}
+    >
+      {lang === "ar" ? "EN" : "ع"}
+    </button>
+  );
+}
+
 function Footer() {
+  useUILang();
   const src = (href: string, text: string) => (
     <a href={href} target="_blank" rel="noreferrer">
       {text}
@@ -86,19 +102,38 @@ function Footer() {
   return (
     <footer className="footer">
       <span>
-        Sources: {src("https://corpus.quran.com", "Quranic Arabic Corpus")} (morphology, K.
-        Dukes, Univ. of Leeds, GPL) · {src("https://tanzil.net", "Tanzil")} (Uthmani text,
-        structure &amp; translations, CC BY 3.0: Saheeh International · Muhammad Hamidullah ·
-        Diyanet İşleri) ·{" "}
-        {src("https://github.com/mustafa0x/quran-morphology", "quran-morphology")} (Arabic-script
-        edition) · recitation: Shaykh Maḥmūd Khalīl al-Ḥuṣarī via{" "}
-        {src("https://alquran.cloud", "Islamic Network CDN")} · semantic vectors: Gemini · built
-        on {src("https://github.com/qataruts/monlite", "monlite")}
-      </span>
-      <span className="muted">
-        Every data layer is recorded in the database's provenance table · audited end-to-end
+        {t("footer.sources")}: {src("https://corpus.quran.com", "Quranic Arabic Corpus")} ·{" "}
+        {src("https://tanzil.net", "Tanzil")} ·{" "}
+        {src("https://alquran.cloud", "al-Ḥuṣarī / Islamic Network")} · Gemini ·{" "}
+        {src("https://github.com/qataruts/monlite", "monlite")}
+        <span className="muted"> — {t("footer.provenance")}</span>
       </span>
     </footer>
+  );
+}
+
+function Nav() {
+  useUILang();
+  return (
+    <nav>
+      <NavLink to="/read">{t("nav.reader")}</NavLink>
+      <NavLink to="/roots">{t("nav.roots")}</NavLink>
+      <NavLink to="/network">{t("nav.network")}</NavLink>
+      <NavLink to="/search">{t("nav.search")}</NavLink>
+      <NavLink to="/meaning">{t("nav.meaning")}</NavLink>
+      <NavLink to="/collections">{t("nav.collections")}</NavLink>
+      <NavLink to="/dashboard">{t("nav.dashboard")}</NavLink>
+    </nav>
+  );
+}
+
+function Brand() {
+  useUILang();
+  return (
+    <span className="brand">
+      {t("brand")}
+      <span className="ar">{t("brand.sub")}</span>
+    </span>
   );
 }
 
@@ -107,19 +142,10 @@ function App() {
     <HashRouter>
       <div className="app-shell">
         <header className="topbar">
-          <span className="brand">
-            Quran Studio<span className="ar">مصحف المعرفة</span>
-          </span>
-          <nav>
-            <NavLink to="/read">Reader</NavLink>
-            <NavLink to="/roots">Roots</NavLink>
-            <NavLink to="/network">Network</NavLink>
-            <NavLink to="/search">Search</NavLink>
-            <NavLink to="/meaning">Meaning</NavLink>
-            <NavLink to="/collections">Collections</NavLink>
-            <NavLink to="/dashboard">Dashboard</NavLink>
-          </nav>
+          <Brand />
+          <Nav />
           <span className="spacer" />
+          <LangToggle />
           <ThemeToggle />
         </header>
         <Routes>

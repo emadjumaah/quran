@@ -7,19 +7,24 @@
  */
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import CollectButton from "../components/CollectButton";
 import Translations from "../components/Translations";
-import { listSurahs, searchAyahs, searchRoots } from "../db";
-import type { AyahDoc, RootDoc, SurahDoc } from "../types";
+import AyahRef from "../components/AyahRef";
+import { searchAyahs, searchRoots } from "../db";
+import { num, t, useUILang } from "../i18n";
+import type { AyahDoc, RootDoc } from "../types";
+import { readPathOf } from "../types";
 
 const DISPLAY_CAP = 200;
-const EXAMPLES: string[] = ["الرحمن", '"يا أيها الذين آمنوا"', "صبر"];
+const EXAMPLES: string[] = ["الرحمن", '"يا أيها الذين آمنوا"', "صبر*"];
 
 /** Arabic letters only (a plausible root / bare-word token). */
 const ARABIC_TOKEN = /^[ء-ي]+$/;
 
 export default function Search() {
+  useUILang();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") ?? "";
 
@@ -28,27 +33,11 @@ export default function Search() {
   const [rootHits, setRootHits] = useState<RootDoc[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [surahs, setSurahs] = useState<Map<number, SurahDoc>>(new Map());
 
   /** Guards against stale async responses (incl. StrictMode double-runs). */
   const seq = useRef(0);
   /** The last query this component itself wrote to the URL. */
   const lastPushed = useRef(q);
-
-  // Surah names for result headers (cached in db.ts, cheap).
-  useEffect(() => {
-    let mounted = true;
-    listSurahs()
-      .then((list: SurahDoc[]) => {
-        if (mounted) setSurahs(new Map(list.map((s: SurahDoc) => [s.surahNo, s])));
-      })
-      .catch(() => {
-        /* names are decorative; results still render */
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   // URL → input (back/forward navigation, reload, external links).
   useEffect(() => {
@@ -60,13 +49,13 @@ export default function Search() {
 
   // Input → URL, debounced 300ms.
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       const next = input.trim();
       if (next === q) return;
       lastPushed.current = next;
       setSearchParams(next ? { q: next } : {}, { replace: true });
     }, 300);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [input, q, setSearchParams]);
 
   // URL query → search results (+ parallel root suggestion).
@@ -92,9 +81,7 @@ export default function Search() {
         if (seq.current !== id) return;
         setResults([]);
         setLoading(false);
-        setError(
-          'Could not parse that query — check quotes and operators (bare terms, "quoted phrase", OR, prefix*).',
-        );
+        setError(t("search.hint"));
       });
 
     const token = q.endsWith("*") ? q.slice(0, -1) : q;
@@ -117,38 +104,37 @@ export default function Search() {
   return (
     <div className="page">
       <div className="page-narrow">
-        <h2 style={{ marginTop: 0 }}>Search</h2>
+        <h2 style={{ marginTop: 0 }}>{t("search.title")}</h2>
 
         <input
           autoFocus
           dir="auto"
           value={input}
           onChange={(e: ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-          placeholder="search the Quran text… e.g. الرحمن"
+          placeholder={t("search.placeholder")}
           style={{ width: "100%", fontSize: 17, padding: "12px 14px" }}
-          aria-label="Full-text search query"
+          aria-label={t("search.title")}
         />
         <div className="muted" style={{ marginTop: 6 }}>
-          bare terms are AND-ed · "quoted phrase" · term OR term · prefix* for prefix match
+          {t("search.hint")}
         </div>
 
         {rootHits.length > 0 && (
           <div
             style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 12 }}
           >
-            <span className="muted">Did you mean the root</span>
+            <span className="muted">{t("search.rootHint")}</span>
             {rootHits.map((r: RootDoc) => (
               <Link key={r.root} to={`/roots/${encodeURIComponent(r.root)}`} className="chip link">
-                <b>{r.root}</b> ×{r.occurrences.toLocaleString()}
+                <b>{r.root}</b> ×{num(r.occurrences)}
               </Link>
             ))}
-            <span className="muted">?</span>
+            <span className="muted">؟</span>
           </div>
         )}
 
         {!q && (
           <div className="card" style={{ marginTop: 18 }}>
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>Try one of these</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {EXAMPLES.map((ex: string) => (
                 <button key={ex} className="chip link" onClick={() => setInput(ex)}>
@@ -156,15 +142,12 @@ export default function Search() {
                 </button>
               ))}
             </div>
-            <div className="muted" style={{ marginTop: 10 }}>
-              Search runs over the clean (undiacritized) ayah text, entirely in your browser.
-            </div>
           </div>
         )}
 
         {loading && (
           <div className="muted" style={{ marginTop: 18 }}>
-            searching…
+            {t("loading")}
           </div>
         )}
 
@@ -176,10 +159,7 @@ export default function Search() {
 
         {q && !loading && !error && results && results.length === 0 && (
           <div className="card" style={{ marginTop: 18 }}>
-            No ayahs match <span className="quran" style={{ fontSize: 18 }}>{q}</span>.
-            <div className="muted" style={{ marginTop: 6 }}>
-              Try fewer terms, a prefix (e.g. رحم*), or OR between alternatives.
-            </div>
+            {t("notFound")} — <span className="quran" style={{ fontSize: 18 }}>{q}</span>
           </div>
         )}
 
@@ -195,60 +175,61 @@ export default function Search() {
               }}
             >
               <strong>
-                {results.length.toLocaleString()} {results.length === 1 ? "ayah matches" : "ayahs match"}
+                {num(results.length)} {t("search.results")}
               </strong>
               {results.length > DISPLAY_CAP && (
-                <span className="muted">showing the first {DISPLAY_CAP}</span>
+                <span className="muted">
+                  {t("showing")} {num(DISPLAY_CAP)}
+                </span>
               )}
               <span style={{ flex: 1 }} />
               <CollectButton
                 locations={allLocations}
                 criterion={{ kind: "search", value: q }}
+                label={`${t("search.collectAll")} (${num(results.length)})`}
               />
             </div>
 
             <div className="card" style={{ paddingTop: 4, paddingBottom: 4 }}>
-              {shown.map((a: AyahDoc, i: number) => {
-                const s = surahs.get(a.surahNo);
-                return (
-                  <div
-                    key={a.location}
-                    style={{
-                      padding: "12px 0",
-                      borderBottom: i < shown.length - 1 ? "1px solid var(--line)" : "none",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <Link to={`/read/${a.surahNo}/${a.ayahNo}`} style={{ fontWeight: 600 }}>
-                        {s ? `${s.nameTranslit} ` : ""}
-                        {a.location}
-                      </Link>
-                      <span className="chip">
-                        juz <b>{a.juz}</b>
-                      </span>
-                      <span className="chip">
-                        page <b>{a.page}</b>
-                      </span>
-                      <span style={{ flex: 1 }} />
-                      <CollectButton
-                        locations={[a.location]}
-                        criterion={{ kind: "search", value: q }}
-                        label="⊕"
-                      />
-                    </div>
-                    <div className="quran" style={{ fontSize: 20, lineHeight: 2 }}>
-                      {a.textUthmani}
-                    </div>
-                    <Translations ayah={a} />
+              {shown.map((a: AyahDoc, i: number) => (
+                <div
+                  key={a.location}
+                  style={{
+                    padding: "12px 0",
+                    borderBottom: i < shown.length - 1 ? "1px solid var(--line)" : "none",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <AyahRef location={a.location} />
+                    <span className="chip">
+                      {t("reader.juz")} <b>{num(a.juz)}</b>
+                    </span>
+                    <span className="chip">
+                      {t("reader.page")} <b>{num(a.page)}</b>
+                    </span>
+                    <span style={{ flex: 1 }} />
+                    <CollectButton
+                      locations={[a.location]}
+                      criterion={{ kind: "search", value: q }}
+                      label="⊕"
+                    />
                   </div>
-                );
-              })}
+                  <div
+                    className="quran"
+                    style={{ fontSize: 20, lineHeight: 2, cursor: "pointer" }}
+                    title={t("nav.reader")}
+                    onClick={() => navigate(readPathOf(a.location))}
+                  >
+                    {a.textUthmani}
+                  </div>
+                  <Translations ayah={a} />
+                </div>
+              ))}
             </div>
 
             {results.length > DISPLAY_CAP && (
               <div className="muted" style={{ marginTop: 10 }}>
-                {(results.length - DISPLAY_CAP).toLocaleString()} more matches not shown — refine the
-                query, or collect all {results.length.toLocaleString()} above.
+                {num(results.length - DISPLAY_CAP)} …
               </div>
             )}
           </>

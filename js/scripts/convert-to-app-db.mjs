@@ -192,6 +192,28 @@ for (const r of src
   locsByRoot.set(r.root_id, list);
 }
 const roots = db.collection("roots", { schema: SCHEMAS.roots });
+// Classical lexicon meanings (add_meanings.py): ship the two most useful in
+// the app — Mufradat (Quran-specific gloss) and Maqayis (semantic essence).
+const MEANING_TITLES = {
+  mufradat: "المفردات في غريب القرآن — الراغب الأصفهاني",
+  maqayis: "مقاييس اللغة — ابن فارس",
+};
+const hasMeanings = src
+  .prepare("SELECT COUNT(*) n FROM sqlite_master WHERE name='root_meaning'")
+  .get().n;
+const meaningsByRoot = new Map();
+if (hasMeanings) {
+  for (const m of src
+    .prepare(
+      "SELECT root_id, source_key, text FROM root_meaning WHERE source_key IN ('mufradat','maqayis') ORDER BY CASE source_key WHEN 'mufradat' THEN 0 ELSE 1 END",
+    )
+    .iterate()) {
+    const list = meaningsByRoot.get(m.root_id) ?? [];
+    list.push({ key: m.source_key, title: MEANING_TITLES[m.source_key], text: m.text });
+    meaningsByRoot.set(m.root_id, list);
+  }
+  log(`root meanings loaded for ${meaningsByRoot.size} roots`);
+}
 const rootRows = src.prepare("SELECT * FROM root ORDER BY root_id").all();
 for (let i = 0; i < rootRows.length; i += BATCH) {
   await roots.createMany({
@@ -201,6 +223,7 @@ for (let i = 0; i < rootRows.length; i += BATCH) {
       occurrences: r.occurrences,
       lemmas: lemmasByRoot.get(r.root_id) ?? [],
       locations: locsByRoot.get(r.root_id) ?? [],
+      ...(meaningsByRoot.has(r.root_id) ? { meanings: meaningsByRoot.get(r.root_id) } : {}),
     })),
   });
 }

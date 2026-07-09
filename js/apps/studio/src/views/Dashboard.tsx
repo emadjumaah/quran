@@ -8,22 +8,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getStats, listSurahs, topRoots } from "../db";
+import { num, t, useUILang } from "../i18n";
 import type { RootDoc, SurahDoc } from "../types";
 
 const MECCAN_COLOR = "var(--accent)";
 const MEDINAN_COLOR = "var(--gold)";
 
 /** Fallback totals shown when the stats doc is missing from this db build. */
-const STATIC_COUNTS: { key: string; label: string; value: number }[] = [
-  { key: "surahs", label: "Surahs", value: 114 },
-  { key: "ayahs", label: "Ayahs", value: 6236 },
-  { key: "words", label: "Words", value: 77429 },
-  { key: "segments", label: "Segments", value: 130030 },
-  { key: "roots", label: "Roots", value: 1651 },
-  { key: "lemmas", label: "Lemmas", value: 4776 },
+const STATIC_COUNTS: { key: string; labelKey: string; value: number }[] = [
+  { key: "surahs", labelKey: "dashboard.surahs", value: 114 },
+  { key: "ayahs", labelKey: "dashboard.ayahsT", value: 6236 },
+  { key: "words", labelKey: "dashboard.words", value: 77429 },
+  { key: "segments", labelKey: "dashboard.segments", value: 130030 },
+  { key: "roots", labelKey: "dashboard.roots", value: 1651 },
+  { key: "lemmas", labelKey: "dashboard.lemmasT", value: 4776 },
 ];
 
-const fmt = (n: number): string => n.toLocaleString("en-US");
+const fmt = (n: number): string => num(n);
 
 // --- defensive readers for the untyped stats doc ---------------------------
 
@@ -138,17 +139,17 @@ function SplitBar({ title, meccan, medinan }: { title: string; meccan: number; m
       >
         <span style={{ fontWeight: 600, fontSize: 13 }}>{title}</span>
         <span className="muted">
-          Meccan {fmt(meccan)} ({Math.round(pct)}%) · Medinan {fmt(medinan)} (
-          {Math.round(100 - pct)}%)
+          {t("reader.meccan")} {fmt(meccan)} ({fmt(Math.round(pct))}٪) · {t("reader.medinan")}{" "}
+          {fmt(medinan)} ({fmt(Math.round(100 - pct))}٪)
         </span>
       </div>
-      <div style={{ display: "flex", gap: 2, height: 14 }} role="img" aria-label={`${title}: ${fmt(meccan)} Meccan, ${fmt(medinan)} Medinan`}>
+      <div style={{ display: "flex", gap: 2, height: 14 }} role="img" aria-label={title}>
         <div
-          title={`Meccan — ${fmt(meccan)}`}
+          title={`${t("reader.meccan")} — ${fmt(meccan)}`}
           style={{ width: `${pct}%`, background: MECCAN_COLOR, borderRadius: "4px 0 0 4px" }}
         />
         <div
-          title={`Medinan — ${fmt(medinan)}`}
+          title={`${t("reader.medinan")} — ${fmt(medinan)}`}
           style={{ flex: 1, background: MEDINAN_COLOR, borderRadius: "0 4px 4px 0" }}
         />
       </div>
@@ -172,7 +173,7 @@ function BarList({
       {items.map((i: NamedCount) => (
         <div
           key={i.name}
-          title={`${i.name} — ${fmt(i.count)} occurrences`}
+          title={`${i.name} — ${fmt(i.count)}`}
           style={{
             display: "grid",
             gridTemplateColumns: `${labelWidth}px 1fr 64px`,
@@ -213,6 +214,7 @@ function BarList({
 }
 
 function SurahTable({ title, rows }: { title: string; rows: SurahDoc[] }) {
+  useUILang();
   return (
     <div className="card">
       <div style={{ fontWeight: 600, marginBottom: 8 }}>{title}</div>
@@ -220,22 +222,22 @@ function SurahTable({ title, rows }: { title: string; rows: SurahDoc[] }) {
         <thead>
           <tr>
             <th>#</th>
-            <th>Surah</th>
-            <th style={{ textAlign: "end" }}>Ayahs</th>
-            <th style={{ textAlign: "end" }}>Words</th>
+            <th>{t("dashboard.surahs")}</th>
+            <th style={{ textAlign: "end" }}>{t("dashboard.ayahsT")}</th>
+            <th style={{ textAlign: "end" }}>{t("dashboard.words")}</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((s: SurahDoc) => (
             <tr key={s.surahNo}>
               <td className="muted" style={{ fontVariantNumeric: "tabular-nums" }}>
-                {s.surahNo}
+                {fmt(s.surahNo)}
               </td>
               <td>
-                <Link to={`/read/${s.surahNo}`}>{s.nameTranslit}</Link>{" "}
-                <span className="quran" style={{ fontSize: 16, lineHeight: 1.2, display: "inline" }}>
+                <Link to={`/read/${s.surahNo}`} className="quran" style={{ fontSize: 17, lineHeight: 1.2 }}>
                   {s.nameAr}
-                </span>
+                </Link>{" "}
+                <span className="muted" style={{ fontSize: 11 }}>{s.nameTranslit}</span>
               </td>
               <td style={{ textAlign: "end", fontVariantNumeric: "tabular-nums" }}>
                 {fmt(s.ayahCount)}
@@ -254,6 +256,7 @@ function SurahTable({ title, rows }: { title: string; rows: SurahDoc[] }) {
 // --- the view ----------------------------------------------------------------
 
 export default function Dashboard() {
+  useUILang();
   const [surahs, setSurahs] = useState<SurahDoc[]>([]);
   const [stats, setStats] = useState<StatsDoc | null>(null);
   const [rootStats, setRootStats] = useState<NamedCount[]>([]);
@@ -325,7 +328,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="page">
-        <p className="muted">Loading statistics…</p>
+        <p className="muted">{t("loading")}</p>
       </div>
     );
   }
@@ -334,7 +337,7 @@ export default function Dashboard() {
     return (
       <div className="page">
         <div className="card page-narrow">
-          <p>No surah data found in the current database build.</p>
+          <p>{t("notFound")}</p>
         </div>
       </div>
     );
@@ -344,19 +347,15 @@ export default function Dashboard() {
     <div className="page">
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <header style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 20, fontWeight: 700 }}>Dashboard</div>
-          <div className="muted">
-            Corpus statistics from the Quran knowledge graph
-            {stats == null && " — live stats document not in this build; totals shown are static"}
-          </div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{t("dashboard.title")}</div>
         </header>
 
         {/* stat tiles */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
-          {STATIC_COUNTS.map((t: { key: string; label: string; value: number }) => {
-            const live = liveCount(stats, t.key);
+          {STATIC_COUNTS.map((c: { key: string; labelKey: string; value: number }) => {
+            const live = liveCount(stats, c.key);
             return (
-              <StatTile key={t.key} label={t.label} value={live ?? t.value} live={live != null} />
+              <StatTile key={c.key} label={t(c.labelKey)} value={live ?? c.value} live={live != null} />
             );
           })}
         </div>
@@ -373,35 +372,35 @@ export default function Dashboard() {
               marginBottom: 12,
             }}
           >
-            <div style={{ fontWeight: 600 }}>Meccan &amp; Medinan</div>
+            <div style={{ fontWeight: 600 }}>{t("dashboard.meccanMedinan")}</div>
             <div style={{ display: "flex", gap: 14 }}>
-              <LegendSwatch color={MECCAN_COLOR} text="Meccan" />
-              <LegendSwatch color={MEDINAN_COLOR} text="Medinan" />
+              <LegendSwatch color={MECCAN_COLOR} text={t("reader.meccan")} />
+              <LegendSwatch color={MEDINAN_COLOR} text={t("reader.medinan")} />
             </div>
           </div>
           <SplitBar
-            title="Surahs"
+            title={t("dashboard.surahs")}
             meccan={revelation.meccanSurahs}
             medinan={revelation.medinanSurahs}
           />
           <SplitBar
-            title="Words"
+            title={t("dashboard.words")}
             meccan={revelation.meccanWords}
             medinan={revelation.medinanWords}
           />
 
           <div style={{ borderTop: "1px solid var(--line)", margin: "14px 0", paddingTop: 12 }}>
-            <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>Revelation order</div>
+            <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>{t("dashboard.revOrder")}</div>
             <div className="muted" style={{ marginBottom: 8 }}>
-              All 114 surahs in traditional chronological order — click a square to read.
+              {t("dashboard.revOrderHint")}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
               {chrono.map((s: SurahDoc) => (
                 <Link
                   key={s.surahNo}
                   to={`/read/${s.surahNo}`}
-                  title={`${s.chronoOrder}. ${s.nameTranslit} — ${s.revelation}, surah ${s.surahNo}`}
-                  aria-label={`${s.chronoOrder}. ${s.nameTranslit}, ${s.revelation}, surah ${s.surahNo}`}
+                  title={`${s.chronoOrder}. ${s.nameAr}`}
+                  aria-label={`${s.chronoOrder}. ${s.nameAr}`}
                   style={{
                     width: 13,
                     height: 13,
@@ -417,26 +416,23 @@ export default function Dashboard() {
 
         {/* longest / shortest surahs */}
         <div className="grid-2" style={{ marginBottom: 16 }}>
-          <SurahTable title="Longest surahs by words" rows={longest} />
-          <SurahTable title="Shortest surahs by words" rows={shortest} />
+          <SurahTable title={t("dashboard.longest")} rows={longest} />
+          <SurahTable title={t("dashboard.shortest")} rows={shortest} />
         </div>
 
         {/* top roots + letter frequency (need the stats doc) */}
         {stats == null ? (
           <div className="card">
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>Top roots &amp; letter frequency</div>
             <p className="muted" style={{ margin: 0 }}>
-              Not available in this build — the precomputed stats document is missing. Re-run the
-              converter to enable these charts. Browse roots on the{" "}
-              <Link to="/roots">Roots</Link> page instead.
+              {t("notFound")} — <Link to="/roots">{t("roots.title")}</Link>
             </p>
           </div>
         ) : (
           <div className="grid-2">
             <div className="card">
-              <div style={{ fontWeight: 600, marginBottom: 2 }}>Top 20 roots</div>
+              <div style={{ fontWeight: 600, marginBottom: 2 }}>{t("dashboard.topRoots")}</div>
               <div className="muted" style={{ marginBottom: 10 }}>
-                By word occurrences — click a root to explore it.
+                {t("dashboard.topRootsHint")}
               </div>
               {rootStats.length > 0 ? (
                 <BarList
@@ -445,22 +441,18 @@ export default function Dashboard() {
                   linkTo={(name: string) => `/roots/${encodeURIComponent(name)}`}
                 />
               ) : (
-                <p className="muted" style={{ margin: 0 }}>
-                  Root statistics are not available in this build.
-                </p>
+                <p className="muted" style={{ margin: 0 }}>{t("notFound")}</p>
               )}
             </div>
             <div className="card">
-              <div style={{ fontWeight: 600, marginBottom: 2 }}>Letter frequency</div>
+              <div style={{ fontWeight: 600, marginBottom: 2 }}>{t("dashboard.letterFreq")}</div>
               <div className="muted" style={{ marginBottom: 10 }}>
-                The 15 most frequent letters across the whole text.
+                {t("dashboard.letterFreqHint")}
               </div>
               {letters.length > 0 ? (
                 <BarList items={letters} labelWidth={32} />
               ) : (
-                <p className="muted" style={{ margin: 0 }}>
-                  Letter statistics are not available in this build.
-                </p>
+                <p className="muted" style={{ margin: 0 }}>{t("notFound")}</p>
               )}
             </div>
           </div>

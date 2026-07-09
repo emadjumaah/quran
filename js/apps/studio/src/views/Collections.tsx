@@ -7,9 +7,11 @@
 import { useEffect, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getAyahByLocation, listSurahs } from "../db";
-import type { AyahCollection, AyahDoc, SurahDoc } from "../types";
+import { getAyahByLocation } from "../db";
+import { num, t, useUILang } from "../i18n";
+import type { AyahCollection, AyahDoc } from "../types";
 import { readPathOf } from "../types";
+import AyahRef from "../components/AyahRef";
 import Translations from "../components/Translations";
 import {
   createCollection,
@@ -23,18 +25,26 @@ import {
 
 /* ------------------------------------------------------------------ helpers */
 
+const KIND_KEY: Record<string, string> = {
+  root: "morph.root",
+  lemma: "morph.lemma",
+  search: "criteria.search",
+  manual: "criteria.manual",
+};
+
 function CriteriaChips({ criteria }: { criteria: AyahCollection["criteria"] }) {
+  useUILang();
   if (!criteria || criteria.length === 0) return null;
   return (
     <>
       {criteria.map((c, i) =>
         c.kind === "root" ? (
           <Link key={`${c.kind}-${c.value}-${i}`} to={`/roots/${encodeURIComponent(c.value)}`} className="chip link">
-            root <b className="quran" style={{ fontSize: 15, lineHeight: 1 }}>{c.value}</b>
+            {t("morph.root")} <b className="quran" style={{ fontSize: 15, lineHeight: 1 }}>{c.value}</b>
           </Link>
         ) : (
           <span key={`${c.kind}-${c.value}-${i}`} className="chip">
-            {c.kind} <b>{c.value}</b>
+            {t(KIND_KEY[c.kind] ?? c.kind)} <b>{c.value}</b>
           </span>
         ),
       )}
@@ -45,11 +55,12 @@ function CriteriaChips({ criteria }: { criteria: AyahCollection["criteria"] }) {
 /* -------------------------------------------------------------- index mode */
 
 function CollectionsIndex() {
+  useUILang();
   const collections = useCollections();
   const navigate = useNavigate();
 
   const create = () => {
-    const name = window.prompt("New collection name:", "My collection");
+    const name = window.prompt(t("collect.namePrompt"), t("collect.myCollection"));
     if (name && name.trim()) {
       const c = createCollection(name.trim());
       navigate(`/collections/${c.id}`);
@@ -57,7 +68,7 @@ function CollectionsIndex() {
   };
 
   const doImport = () => {
-    const json = window.prompt("Paste collection JSON (from an Export):");
+    const json = window.prompt(t("collections.import") + " (JSON):");
     if (!json) return;
     try {
       const parsed: unknown = JSON.parse(json);
@@ -67,15 +78,13 @@ function CollectionsIndex() {
         Array.isArray(p.ayahs) &&
         p.ayahs.every((x: unknown) => typeof x === "string");
       if (!valid) {
-        window.alert(
-          "Could not import: the JSON must have a \"name\" string and an \"ayahs\" array of ayah locations.",
-        );
+        window.alert(t("notFound") + ' — {"name", "ayahs": ["s:a", …]}');
         return;
       }
       const c = importCollection(json);
       navigate(`/collections/${c.id}`);
     } catch {
-      window.alert("Could not import: that is not valid collection JSON.");
+      window.alert(t("notFound") + " — JSON");
     }
   };
 
@@ -83,29 +92,23 @@ function CollectionsIndex() {
     <div className="page">
       <div className="page-narrow">
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
-          <h2 style={{ margin: 0 }}>Collections</h2>
-          <span className="muted">gather ayahs related by root, lemma, or search</span>
+          <h2 style={{ margin: 0 }}>{t("collections.title")}</h2>
+          <span className="muted">{t("collections.sub")}</span>
           <span style={{ flex: 1 }} />
-          <button onClick={doImport}>Import JSON</button>
+          <button onClick={doImport}>{t("collections.import")}</button>
         </div>
 
         {collections.length === 0 ? (
           <div className="card" style={{ padding: "26px 28px" }}>
-            <h3 style={{ marginTop: 0 }}>No collections yet</h3>
+            <h3 style={{ marginTop: 0 }}>{t("collections.none")}</h3>
             <p style={{ color: "var(--ink-2)", maxWidth: 560 }}>
-              Collections let you gather ayahs that belong together — every ayah sharing a
-              root, the results of a search, or verses you pick by hand — then study,
-              export, or print them as one continuous text.
-            </p>
-            <p style={{ color: "var(--ink-2)", maxWidth: 560 }}>
-              Start from the <Link to="/roots">Roots explorer</Link> and collect every
-              occurrence of a root, or run a <Link to="/search">Search</Link> and collect
-              the matching ayahs. You can also create an empty collection here and add
-              ayahs as you read.
+              {t("collections.empty")} — <Link to="/roots">{t("roots.title")}</Link> ·{" "}
+              <Link to="/search">{t("nav.search")}</Link> ·{" "}
+              <Link to="/meaning">{t("nav.meaning")}</Link>
             </p>
             <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-              <button className="primary" onClick={create}>+ New collection</button>
-              <button onClick={doImport}>Import JSON</button>
+              <button className="primary" onClick={create}>{t("collect.new")}</button>
+              <button onClick={doImport}>{t("collections.import")}</button>
             </div>
           </div>
         ) : (
@@ -125,7 +128,7 @@ function CollectionsIndex() {
               >
                 <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>{c.name}</div>
                 <div className="muted" style={{ marginBottom: 8 }}>
-                  {c.ayahs.length} {c.ayahs.length === 1 ? "ayah" : "ayahs"} · updated{" "}
+                  {num(c.ayahs.length)} {t("roots.inAyahs")} · {t("collections.updated")}{" "}
                   {new Date(c.updatedAt).toLocaleDateString()}
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -152,7 +155,7 @@ function CollectionsIndex() {
                 fontWeight: 600,
               }}
             >
-              + New collection
+              {t("collect.new")}
             </div>
           </div>
         )}
@@ -164,28 +167,15 @@ function CollectionsIndex() {
 /* ------------------------------------------------------------- detail mode */
 
 function CollectionDetail({ id }: { id: string }) {
+  useUILang();
   const collections = useCollections();
   const navigate = useNavigate();
   const collection = collections.find((c: AyahCollection) => c.id === id);
 
   const [ayahMap, setAyahMap] = useState<Map<string, AyahDoc | null>>(() => new Map());
-  const [surahMap, setSurahMap] = useState<Map<number, SurahDoc> | null>(null);
   const [reading, setReading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
-
-  // Surah names (cached in db.ts) for scholarly references like "Al-Baqarah 2:255".
-  useEffect(() => {
-    let mounted = true;
-    listSurahs()
-      .then((ss: SurahDoc[]) => {
-        if (mounted) setSurahMap(new Map(ss.map((s: SurahDoc) => [s.surahNo, s])));
-      })
-      .catch(() => {});
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   // Batch-fetch any ayah texts we don't have yet.
   const locKey = collection ? collection.ayahs.join("|") : "";
@@ -222,23 +212,13 @@ function CollectionDetail({ id }: { id: string }) {
       <div className="page">
         <div className="page-narrow">
           <div className="card" style={{ padding: "26px 28px" }}>
-            <h3 style={{ marginTop: 0 }}>Collection not found</h3>
-            <p className="muted">
-              It may have been deleted, or it was created in a different browser
-              (collections are stored locally).
-            </p>
-            <Link to="/collections">← Back to collections</Link>
+            <h3 style={{ marginTop: 0 }}>{t("notFound")}</h3>
+            <Link to="/collections">← {t("collections.title")}</Link>
           </div>
         </div>
       </div>
     );
   }
-
-  const refLabel = (loc: string): string => {
-    const [s] = loc.split(":");
-    const su = surahMap?.get(Number(s));
-    return su ? `${su.nameTranslit} ${loc}` : loc;
-  };
 
   const startRename = () => {
     setNameDraft(collection.name);
@@ -256,16 +236,16 @@ function CollectionDetail({ id }: { id: string }) {
     const json = exportCollection(collection.id);
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(json).then(
-        () => window.alert("Collection JSON copied to clipboard — paste it into Import on another device."),
-        () => window.prompt("Clipboard unavailable — copy the JSON below:", json),
+        () => window.alert("✓ JSON"),
+        () => window.prompt("JSON:", json),
       );
     } else {
-      window.prompt("Copy the JSON below:", json);
+      window.prompt("JSON:", json);
     }
   };
 
   const doDelete = () => {
-    if (window.confirm(`Delete collection “${collection.name}”? This cannot be undone.`)) {
+    if (window.confirm(`${t("collections.delete")} “${collection.name}”?`)) {
       deleteCollection(collection.id);
       navigate("/collections");
     }
@@ -278,15 +258,15 @@ function CollectionDetail({ id }: { id: string }) {
         <style>{`@media print { .topbar, .no-print { display: none !important; } .page { overflow: visible; } }`}</style>
         <div className="page-narrow">
           <div className="no-print" style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginBottom: 8 }}>
-            <button onClick={() => window.print()}>Print</button>
-            <button onClick={() => setReading(false)}>Exit reading view</button>
+            <button onClick={() => window.print()}>{t("collections.print")}</button>
+            <button onClick={() => setReading(false)}>{t("collections.exit")}</button>
           </div>
           <h2 style={{ textAlign: "center", margin: "8px 0 2px" }}>{collection.name}</h2>
           {collection.description && (
             <p className="muted" style={{ textAlign: "center", marginTop: 4 }}>{collection.description}</p>
           )}
           <p className="muted" style={{ textAlign: "center", marginTop: 4 }}>
-            {collection.ayahs.length} {collection.ayahs.length === 1 ? "ayah" : "ayahs"}
+            {num(collection.ayahs.length)} {t("roots.inAyahs")}
           </p>
           <div style={{ marginTop: 26 }}>
             {collection.ayahs.map((loc: string) => {
@@ -294,15 +274,15 @@ function CollectionDetail({ id }: { id: string }) {
               return (
                 <div key={loc} style={{ marginBottom: 30 }}>
                   {ayah === undefined ? (
-                    <div className="muted">loading {loc}…</div>
+                    <div className="muted">{t("loading")}</div>
                   ) : ayah === null ? (
-                    <div className="muted">ayah {loc} is not available in this build</div>
+                    <div className="muted">{t("notFound")} — {loc}</div>
                   ) : (
                     <>
                       <div className="quran">
-                        {ayah.textUthmani} <span className="ayah-marker">﴿{ayah.ayahNo}﴾</span>
+                        {ayah.textUthmani} <span className="ayah-marker">﴿{num(ayah.ayahNo)}﴾</span>
                       </div>
-                      <div className="muted" style={{ marginTop: 2 }}>{refLabel(loc)}</div>
+                      <div className="muted" style={{ marginTop: 2 }}><AyahRef location={loc} className="" /></div>
                       <Translations ayah={ayah} />
                     </>
                   )}
@@ -320,7 +300,7 @@ function CollectionDetail({ id }: { id: string }) {
     <div className="page">
       <div className="page-narrow">
         <div className="muted" style={{ marginBottom: 10 }}>
-          <Link to="/collections">← Collections</Link>
+          <Link to="/collections">← {t("collections.title")}</Link>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
@@ -337,16 +317,16 @@ function CollectionDetail({ id }: { id: string }) {
               style={{ fontSize: 20, fontWeight: 600, minWidth: 240 }}
             />
           ) : (
-            <h2 style={{ margin: 0, cursor: "text" }} title="Click to rename" onClick={startRename}>
+            <h2 style={{ margin: 0, cursor: "text" }} title={t("collections.rename")} onClick={startRename}>
               {collection.name}
             </h2>
           )}
-          {!editing && <button onClick={startRename}>Rename</button>}
+          {!editing && <button onClick={startRename}>{t("collections.rename")}</button>}
           <span style={{ flex: 1 }} />
-          <button onClick={() => setReading(true)}>Reading view</button>
-          <button onClick={doExport}>Export</button>
+          <button onClick={() => setReading(true)}>{t("collections.reading")}</button>
+          <button onClick={doExport}>{t("collections.export")}</button>
           <button onClick={doDelete} style={{ color: "var(--danger)", borderColor: "var(--danger)" }}>
-            Delete
+            {t("collections.delete")}
           </button>
         </div>
 
@@ -356,18 +336,19 @@ function CollectionDetail({ id }: { id: string }) {
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginBottom: 18 }}>
           <span className="chip">
-            <b>{collection.ayahs.length}</b> {collection.ayahs.length === 1 ? "ayah" : "ayahs"}
+            <b>{num(collection.ayahs.length)}</b> {t("roots.inAyahs")}
           </span>
           <CriteriaChips criteria={collection.criteria} />
-          <span className="muted">updated {new Date(collection.updatedAt).toLocaleDateString()}</span>
+          <span className="muted">
+            {t("collections.updated")} {new Date(collection.updatedAt).toLocaleDateString()}
+          </span>
         </div>
 
         {collection.ayahs.length === 0 ? (
           <div className="card" style={{ padding: "24px 26px" }}>
             <p style={{ margin: 0, color: "var(--ink-2)" }}>
-              This collection is empty. Collect ayahs from the{" "}
-              <Link to="/roots">Roots explorer</Link> or a <Link to="/search">Search</Link> —
-              they will appear here in the order you add them.
+              {t("collections.empty")} — <Link to="/roots">{t("roots.title")}</Link> ·{" "}
+              <Link to="/search">{t("nav.search")}</Link>
             </p>
           </div>
         ) : (
@@ -376,11 +357,11 @@ function CollectionDetail({ id }: { id: string }) {
             return (
               <div key={loc} className="card" style={{ marginBottom: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Link to={readPathOf(loc)} className="chip link">{refLabel(loc)}</Link>
+                  <AyahRef location={loc} />
                   <span style={{ flex: 1 }} />
                   <button
-                    title="Remove from collection"
-                    aria-label={`Remove ayah ${loc}`}
+                    title={t("collections.remove")}
+                    aria-label={t("collections.remove")}
                     onClick={() => removeAyah(collection.id, loc)}
                     style={{ padding: "2px 9px", lineHeight: 1.4 }}
                   >
@@ -388,15 +369,18 @@ function CollectionDetail({ id }: { id: string }) {
                   </button>
                 </div>
                 {ayah === undefined ? (
-                  <div className="muted" style={{ marginTop: 8 }}>loading…</div>
+                  <div className="muted" style={{ marginTop: 8 }}>{t("loading")}</div>
                 ) : ayah === null ? (
-                  <div className="muted" style={{ marginTop: 8 }}>
-                    ayah {loc} is not available in this build
-                  </div>
+                  <div className="muted" style={{ marginTop: 8 }}>{t("notFound")} — {loc}</div>
                 ) : (
                   <div style={{ marginTop: 4 }}>
-                    <div className="quran">
-                      {ayah.textUthmani} <span className="ayah-marker">﴿{ayah.ayahNo}﴾</span>
+                    <div
+                      className="quran"
+                      style={{ cursor: "pointer" }}
+                      title={t("nav.reader")}
+                      onClick={() => navigate(readPathOf(loc))}
+                    >
+                      {ayah.textUthmani} <span className="ayah-marker">﴿{num(ayah.ayahNo)}﴾</span>
                     </div>
                     <Translations ayah={ayah} />
                   </div>

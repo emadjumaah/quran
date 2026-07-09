@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { addAyahs, createCollection, useCollections } from "../store/collections";
+import { num, t, useUILang } from "../i18n";
 
 /**
  * "Collect" button: adds ayah locations ("s:a") to a chosen (or new)
@@ -14,6 +15,7 @@ export default function CollectButton({
   criterion?: { kind: "root" | "lemma" | "search" | "manual"; value: string };
   label?: string;
 }) {
+  useUILang();
   const collections = useCollections();
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState<string | null>(null);
@@ -28,7 +30,9 @@ export default function CollectButton({
   return (
     <span style={{ position: "relative", display: "inline-block" }}>
       <button className="primary" onClick={() => setOpen(!open)} disabled={locations.length === 0}>
-        {done ? "✓ collected" : (btnLabel ?? `Collect ${locations.length} ayahs`)}
+        {done
+          ? t("collect.done")
+          : (btnLabel ?? `${t("collect.ayahs")} (${num(locations.length)})`)}
       </button>
       {open && (
         <div
@@ -48,20 +52,20 @@ export default function CollectButton({
               style={{ display: "block", width: "100%", marginBottom: 6, textAlign: "start" }}
               onClick={() => collect(c.id)}
             >
-              {c.name} <span className="muted">({c.ayahs.length})</span>
+              {c.name} <span className="muted">({num(c.ayahs.length)})</span>
             </button>
           ))}
           <button
             style={{ display: "block", width: "100%" }}
             onClick={() => {
               const name = prompt(
-                "New collection name:",
-                criterion ? `${criterion.kind}: ${criterion.value}` : "My collection",
+                t("collect.namePrompt"),
+                criterion ? `${criterion.value}` : t("collect.myCollection"),
               );
               if (name) collect(createCollection(name).id);
             }}
           >
-            + New collection…
+            {t("collect.new")}
           </button>
         </div>
       )}

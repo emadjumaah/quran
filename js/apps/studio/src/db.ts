@@ -68,13 +68,18 @@ async function fetchWithProgress(
 // ---------------------------------------------------------------------------
 
 let surahCache: SurahDoc[] | null = null;
+const surahNames = new Map<number, string>();
 
 export async function listSurahs(): Promise<SurahDoc[]> {
   if (!surahCache) {
     surahCache = (await coll("surahs").findMany({ orderBy: { surahNo: "asc" } })) as SurahDoc[];
+    for (const s of surahCache) surahNames.set(s.surahNo, s.nameAr);
   }
   return surahCache;
 }
+
+/** Synchronous Arabic surah name (primed by the boot sequence). */
+export const surahNameAr = (no: number): string => surahNames.get(no) ?? String(no);
 
 export async function getSurah(surahNo: number): Promise<SurahDoc | undefined> {
   return (await listSurahs()).find((s) => s.surahNo === surahNo);

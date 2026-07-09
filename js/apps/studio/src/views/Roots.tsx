@@ -3,13 +3,15 @@
  *
  * /roots        → index: prefix search + top-100 roots table.
  * /roots/:root  → detail: header + collect, derived lemmas (filterable),
- *                 related roots (co-occurrence edges), grouped occurrences.
+ *                 related roots, occurrences as FULL ayahs with the matched
+ *                 word(s) highlighted.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ayahLocationsOfRoot,
+  getAyahByLocation,
   getRoot,
   neighborsOfRoot,
   searchRoots,
@@ -18,11 +20,18 @@ import {
   wordsByRoot,
 } from "../db";
 import type { NeighborRoot } from "../db";
-import type { RootDoc, SegmentDoc, WordDoc } from "../types";
+import { num, t, useUILang } from "../i18n";
+import type { AyahDoc, RootDoc, SegmentDoc, WordDoc } from "../types";
 import { VERB_FORM_ROMAN, label, readPathOf } from "../types";
+import AyahRef from "../components/AyahRef";
 import CollectButton from "../components/CollectButton";
+import Translations from "../components/Translations";
+import AudioButton, { ayahIdOf } from "../components/AudioButton";
 
 const AYAH_CAP = 150;
+
+/** Does this whitespace token carry an Arabic letter (vs a lone waqf mark)? */
+const HAS_LETTER = /[ء-يٱ-ۓە]/;
 
 function sortMushaf(ws: WordDoc[]): WordDoc[] {
   return [...ws].sort(
@@ -36,10 +45,9 @@ function WordChips({ w, root }: { w: WordDoc; root: string }) {
   const seg: SegmentDoc | undefined =
     w.segments.find((s: SegmentDoc) => s.root === root) ??
     w.segments.find((s: SegmentDoc) => s.role === "stem");
-  const pos = seg?.posEn ?? w.stemPos;
   return (
     <>
-      {pos && <span className="chip">{pos}</span>}
+      {seg?.posAr && <span className="chip">{seg.posAr}</span>}
       {seg?.derivation && (
         <span className="chip">
           <b>{label(seg.derivation)}</b>
@@ -47,10 +55,84 @@ function WordChips({ w, root }: { w: WordDoc; root: string }) {
       )}
       {seg?.verbForm != null && (
         <span className="chip">
-          form <b>{VERB_FORM_ROMAN[seg.verbForm - 1] ?? seg.verbForm}</b>
+          {t("morph.form")} <b>{VERB_FORM_ROMAN[seg.verbForm - 1] ?? seg.verbForm}</b>
         </span>
       )}
     </>
+  );
+}
+
+/** Full ayah text with the matched word positions highlighted. */
+function HighlightedAyah({
+  ayah,
+  matchedWordNos,
+  onOpen,
+}: {
+  ayah: AyahDoc;
+  matchedWordNos: Set<number>;
+  onOpen: () => void;
+}) {
+  const tokens = ayah.textUthmani.split(/\s+/);
+  let wordIdx = 0;
+  return (
+    <div
+      className="quran"
+      style={{ fontSize: 23, lineHeight: 2.1, cursor: "pointer" }}
+      title={t("nav.reader")}
+      onClick={onOpen}
+    >
+      {tokens.map((tok, i) => {
+        const isWord = HAS_LETTER.test(tok);
+        if (isWord) wordIdx += 1;
+        const hit = isWord && matchedWordNos.has(wordIdx);
+        return (
+          <span key={i}>
+            <span className={hit ? "w sel" : undefined}>{tok}</span>{" "}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+/** One lexicon entry, collapsed to a few lines with a توسيع toggle. */
+function MeaningEntry({ title, text }: { title: string; text: string }) {
+  const [open, setOpen] = useState(false);
+  const isLong = text.length > 420;
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div className="chip gold" style={{ marginBottom: 6 }}>
+        {title}
+      </div>
+      <div
+        dir="rtl"
+        style={{
+          fontSize: 15.5,
+          lineHeight: 2,
+          color: "var(--ink)",
+          whiteSpace: "pre-wrap",
+          ...(isLong && !open
+            ? {
+                display: "-webkit-box",
+                WebkitLineClamp: 4,
+                WebkitBoxOrient: "vertical" as const,
+                overflow: "hidden",
+              }
+            : {}),
+        }}
+      >
+        {text}
+      </div>
+      {isLong && (
+        <button
+          className="chip link"
+          style={{ border: "none", marginTop: 4 }}
+          onClick={() => setOpen(!open)}
+        >
+          {open ? "اطوِ ▴" : "أكمل القراءة ▾"}
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -59,6 +141,7 @@ function WordChips({ w, root }: { w: WordDoc; root: string }) {
 /* ------------------------------------------------------------------------ */
 
 function RootIndex() {
+  useUILang();
   const [query, setQuery] = useState("");
   const [roots, setRoots] = useState<RootDoc[] | null>(null);
 
@@ -80,39 +163,36 @@ function RootIndex() {
   return (
     <div className="page">
       <div className="page-narrow">
-        <h2 style={{ marginTop: 0 }}>Roots</h2>
+        <h2 style={{ marginTop: 0 }}>{t("roots.title")}</h2>
         <p className="muted" style={{ fontSize: 13.5, maxWidth: 640 }}>
-          Every Arabic word grows from a root (جذر) — usually three consonants that carry a
-          core meaning shared by all the words derived from it.
+          {t("roots.what")}
         </p>
         <input
           type="text"
           dir="rtl"
           value={query}
           onChange={(e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
-          placeholder="ابحث عن جذر… (search roots by Arabic prefix)"
+          placeholder={t("roots.search")}
           style={{ width: "100%", marginBottom: 16, fontFamily: "var(--font-quran)" }}
         />
         <div className="card">
           {roots == null ? (
-            <p className="muted">loading roots…</p>
+            <p className="muted">{t("loading")}</p>
           ) : roots.length === 0 ? (
             <p className="muted">
-              No roots start with <span className="quran" style={{ fontSize: 18 }}>{query.trim()}</span>.
+              {t("notFound")} — <span className="quran" style={{ fontSize: 18 }}>{query.trim()}</span>
             </p>
           ) : (
             <>
               <div className="muted" style={{ marginBottom: 8 }}>
-                {query.trim()
-                  ? `${roots.length} matching roots`
-                  : `top ${roots.length} roots by occurrences`}
+                {t("roots.top")} ({num(roots.length)})
               </div>
               <table className="data">
                 <thead>
                   <tr>
-                    <th>Root</th>
-                    <th>Occurrences</th>
-                    <th>Lemmas</th>
+                    <th>{t("morph.root")}</th>
+                    <th>{t("roots.occurrences")}</th>
+                    <th>{t("roots.lemmas")}</th>
                     <th />
                   </tr>
                 </thead>
@@ -128,10 +208,10 @@ function RootIndex() {
                           {r.root}
                         </Link>
                       </td>
-                      <td>{r.occurrences.toLocaleString()}</td>
-                      <td>{r.lemmas.length}</td>
+                      <td>{num(r.occurrences)}</td>
+                      <td>{num(r.lemmas.length)}</td>
                       <td>
-                        <Link to={`/roots/${encodeURIComponent(r.root)}`}>explore →</Link>
+                        <Link to={`/roots/${encodeURIComponent(r.root)}`}>{t("roots.explore")}</Link>
                       </td>
                     </tr>
                   ))}
@@ -150,11 +230,14 @@ function RootIndex() {
 /* ------------------------------------------------------------------------ */
 
 function RootDetail({ root }: { root: string }) {
+  useUILang();
+  const navigate = useNavigate();
   const [rootDoc, setRootDoc] = useState<RootDoc | null | undefined>(undefined);
   const [words, setWords] = useState<WordDoc[] | null>(null);
   const [related, setRelated] = useState<NeighborRoot[] | null>(null);
   const [selectedLemma, setSelectedLemma] = useState<string | null>(null);
   const [lemmaWords, setLemmaWords] = useState<Record<string, WordDoc[]>>({});
+  const [ayahMap, setAyahMap] = useState<Map<string, AyahDoc | null>>(new Map());
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -227,11 +310,34 @@ function RootDetail({ root }: { root: string }) {
     return [...map.entries()];
   }, [displayWords]);
 
+  const shown = useMemo(() => (groups ? groups.slice(0, AYAH_CAP) : []), [groups]);
+
+  // Fetch the full ayah docs for the shown occurrences (batched, cached).
+  const shownKey = shown.map(([loc]) => loc).join("|");
+  useEffect(() => {
+    if (!shownKey) return;
+    const missing = shownKey.split("|").filter((loc) => !ayahMap.has(loc));
+    if (missing.length === 0) return;
+    let alive = true;
+    Promise.all(missing.map((loc) => getAyahByLocation(loc).catch(() => null))).then((docs) => {
+      if (!alive || !mounted.current) return;
+      setAyahMap((prev) => {
+        const next = new Map(prev);
+        missing.forEach((loc, i) => next.set(loc, docs[i]));
+        return next;
+      });
+    });
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shownKey]);
+
   if (rootDoc === undefined) {
     return (
       <div className="page">
         <div className="page-narrow">
-          <p className="muted">loading root…</p>
+          <p className="muted">{t("loading")}</p>
         </div>
       </div>
     );
@@ -243,23 +349,20 @@ function RootDetail({ root }: { root: string }) {
         <div className="page-narrow">
           <div className="card">
             <p>
-              No root <span className="quran" style={{ fontSize: 22 }}>{root}</span> was found in
-              the knowledge graph.
+              {t("notFound")} — <span className="quran" style={{ fontSize: 22 }}>{root}</span>
             </p>
-            <Link to="/roots">← back to all roots</Link>
+            <Link to="/roots">← {t("roots.title")}</Link>
           </div>
         </div>
       </div>
     );
   }
 
-  const shown = groups ? groups.slice(0, AYAH_CAP) : [];
-
   return (
     <div className="page">
       <div className="page-narrow">
         <div className="muted" style={{ marginBottom: 10 }}>
-          <Link to="/roots">Roots</Link> / detail
+          <Link to="/roots">{t("roots.title")}</Link> / {t("roots.detail")}
         </div>
 
         {/* Header */}
@@ -270,26 +373,37 @@ function RootDetail({ root }: { root: string }) {
           <div className="quran" style={{ fontSize: 46, lineHeight: 1.3 }}>{rootDoc.root}</div>
           <div>
             <div style={{ fontWeight: 600 }}>
-              {rootDoc.occurrences.toLocaleString()} occurrences
+              {num(rootDoc.occurrences)} {t("roots.times")}
             </div>
             <div className="muted">
-              {rootDoc.lemmas.length} derived {rootDoc.lemmas.length === 1 ? "lemma" : "lemmas"} ·{" "}
-              {ayahLocs.length} ayahs
+              {num(rootDoc.lemmas.length)} {t("roots.lemmas")} · {num(ayahLocs.length)}{" "}
+              {t("roots.inAyahs")}
             </div>
           </div>
           <span style={{ marginInlineStart: "auto" }}>
             <CollectButton
               locations={ayahLocs}
               criterion={{ kind: "root", value: rootDoc.root }}
+              label={`${t("roots.collectAll")} (${num(ayahLocs.length)})`}
             />
           </span>
         </div>
 
+        {/* Classical lexicon meanings */}
+        {rootDoc.meanings && rootDoc.meanings.length > 0 && (
+          <div className="card" style={{ marginTop: 16 }}>
+            <h3 style={{ marginTop: 0, marginBottom: 8 }}>{t("roots.meanings")}</h3>
+            {rootDoc.meanings.map((m) => (
+              <MeaningEntry key={m.key} title={m.title} text={m.text} />
+            ))}
+          </div>
+        )}
+
         {/* Derived lemmas */}
         <div className="card" style={{ marginTop: 16 }}>
-          <h3 style={{ marginTop: 0, marginBottom: 4 }}>Derived lemmas</h3>
+          <h3 style={{ marginTop: 0, marginBottom: 4 }}>{t("roots.lemmas")}</h3>
           <p className="muted" style={{ marginTop: 0 }}>
-            Click a lemma to filter the occurrences below to that word form.
+            {t("roots.clickLemma")}
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {rootDoc.lemmas.map((l: { lemma: string; occurrences: number }) => (
@@ -304,7 +418,7 @@ function RootDetail({ root }: { root: string }) {
                 }
               >
                 <span className="quran" style={{ fontSize: 17, lineHeight: 1.3 }}>{l.lemma}</span>
-                <span>({l.occurrences})</span>
+                <span>({num(l.occurrences)})</span>
               </button>
             ))}
           </div>
@@ -312,18 +426,15 @@ function RootDetail({ root }: { root: string }) {
 
         {/* Related roots */}
         <div className="card" style={{ marginTop: 16 }}>
-          <h3 style={{ marginTop: 0, marginBottom: 4 }}>Related roots</h3>
+          <h3 style={{ marginTop: 0, marginBottom: 4 }}>{t("roots.related")}</h3>
           {related == null ? (
-            <p className="muted">loading co-occurrence edges…</p>
+            <p className="muted">{t("loading")}</p>
           ) : related.length === 0 ? (
-            <p className="muted">
-              No co-occurrence edges for this root — the root network is not available in this
-              build.
-            </p>
+            <p className="muted">{t("notFound")}</p>
           ) : (
             <>
               <p className="muted" style={{ marginTop: 0 }}>
-                Roots that most often share an ayah with this one.
+                {t("roots.relatedHint")}
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {related.map((e: NeighborRoot) => (
@@ -335,77 +446,86 @@ function RootDetail({ root }: { root: string }) {
                     <span className="quran" style={{ fontSize: 17, lineHeight: 1.3 }}>
                       {e.root}
                     </span>
-                    <span>({e.w} shared ayahs)</span>
+                    <span>
+                      ({num(e.w)} {t("roots.sharedAyahs")})
+                    </span>
                   </Link>
                 ))}
               </div>
               <div style={{ marginTop: 10 }}>
-                <Link to={`/network/${encodeURIComponent(rootDoc.root)}`}>view as network →</Link>
+                <Link to={`/network/${encodeURIComponent(rootDoc.root)}`}>
+                  {t("roots.viewNetwork")}
+                </Link>
               </div>
             </>
           )}
         </div>
 
-        {/* Occurrences */}
+        {/* Occurrences — full ayahs with matched words highlighted */}
         <div className="card" style={{ marginTop: 16 }}>
           <h3 style={{ marginTop: 0, marginBottom: 4 }}>
-            Occurrences
+            {t("roots.occurrences")}
             {selectedLemma && (
               <span className="muted" style={{ fontWeight: 400 }}>
-                {" "}— filtered to lemma{" "}
-                <span className="quran" style={{ fontSize: 17 }}>{selectedLemma}</span>
+                {" "}
+                — <span className="quran" style={{ fontSize: 17 }}>{selectedLemma}</span>
               </span>
             )}
           </h3>
           {groups == null ? (
-            <p className="muted">loading occurrences…</p>
+            <p className="muted">{t("loading")}</p>
           ) : groups.length === 0 ? (
-            <p className="muted">No occurrences to show.</p>
+            <p className="muted">{t("notFound")}</p>
           ) : (
             <>
               <p className="muted" style={{ marginTop: 0 }}>
                 {groups.length > AYAH_CAP
-                  ? `showing first ${AYAH_CAP} of ${groups.length} ayahs`
-                  : `${groups.length} ${groups.length === 1 ? "ayah" : "ayahs"}`}
+                  ? `${t("showing")} ${num(AYAH_CAP)} ${t("of")} ${num(groups.length)}`
+                  : `${num(groups.length)} ${t("roots.inAyahs")}`}
               </p>
               <div>
                 {shown.map(([loc, ws]: [string, WordDoc[]]) => {
+                  const ayah = ayahMap.get(loc);
+                  const matched = new Set(ws.map((w: WordDoc) => w.wordNo));
                   return (
                     <div
                       key={loc}
-                      style={{
-                        display: "flex",
-                        gap: 14,
-                        alignItems: "flex-start",
-                        padding: "10px 0",
-                        borderBottom: "1px solid var(--line)",
-                      }}
+                      style={{ padding: "12px 0", borderBottom: "1px solid var(--line)" }}
                     >
-                      <Link
-                        to={readPathOf(loc)}
-                        className="chip link"
-                        style={{ flexShrink: 0, marginTop: 6 }}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          flexWrap: "wrap",
+                          marginBottom: 2,
+                        }}
                       >
-                        {loc}
-                      </Link>
-                      <div style={{ flex: 1 }}>
+                        <AyahRef location={loc} />
                         {ws.map((w: WordDoc) => (
-                          <div
-                            key={w.location}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              flexWrap: "wrap",
-                            }}
-                          >
-                            <span className="quran" style={{ fontSize: 25, lineHeight: 1.7 }}>
-                              <span className="w sel">{w.textUthmani}</span>
-                            </span>
-                            <WordChips w={w} root={rootDoc.root} />
-                          </div>
+                          <WordChips key={w.location} w={w} root={rootDoc.root} />
                         ))}
+                        <span style={{ flex: 1 }} />
+                        {ayah && <AudioButton ayahId={ayahIdOf(ayah)} />}
                       </div>
+                      {ayah ? (
+                        <>
+                          <HighlightedAyah
+                            ayah={ayah}
+                            matchedWordNos={matched}
+                            onOpen={() => navigate(readPathOf(loc))}
+                          />
+                          <Translations ayah={ayah} />
+                        </>
+                      ) : (
+                        <div className="quran" style={{ fontSize: 23 }}>
+                          {ws.map((w: WordDoc) => (
+                            <span key={w.location} className="w sel">
+                              {w.textUthmani}{" "}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

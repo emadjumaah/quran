@@ -5,10 +5,12 @@
  * via /api/embed (Vercel) or the user's own Gemini key.
  */
 import { useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getAyahByLocation } from "../db";
+import { num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import { readPathOf } from "../types";
+import AyahRef from "../components/AyahRef";
 import {
   getEndpoint,
   getUserKey,
@@ -36,6 +38,8 @@ interface Row {
 }
 
 export default function Meaning() {
+  useUILang();
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState(params.get("q") ?? "");
   const [rows, setRows] = useState<Row[] | null>(null);
@@ -92,10 +96,9 @@ export default function Meaning() {
 
   return (
     <div className="page page-narrow">
-      <h2>Search by meaning</h2>
+      <h2>{t("meaning.title")}</h2>
       <p className="muted" style={{ marginTop: -6 }}>
-        Describe what you are looking for — in English, العربية, français, Türkçe, any wording.
-        Results are ranked by semantic closeness (Gemini vectors), not keywords.
+        {t("meaning.sub")}
       </p>
       <form
         onSubmit={(e) => {
@@ -106,18 +109,21 @@ export default function Meaning() {
       >
         <input
           autoFocus
+          dir="auto"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g. patience in hardship and loss"
+          placeholder={t("meaning.placeholder")}
           style={{ flex: 1 }}
         />
         <button className="primary" disabled={busy}>
-          {busy ? "searching…" : "Search"}
+          {busy ? t("meaning.searching") : t("meaning.search")}
         </button>
       </form>
 
       {vectorPct != null && (
-        <div className="muted">loading meaning vectors… {vectorPct}% (one time, ~5 MB)</div>
+        <div className="muted">
+          {t("meaning.loadingVectors")} {num(vectorPct)}%
+        </div>
       )}
       {error && <div style={{ color: "var(--danger)" }}>{error}</div>}
       {needsSetup && <SetupCard onDone={() => void run(query)} />}
@@ -143,21 +149,25 @@ export default function Meaning() {
       {rows && (
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "10px 0" }}>
-            <span className="muted">{rows.length} closest ayahs</span>
+            <span className="muted">
+              {num(rows.length)} {t("meaning.results")}
+            </span>
             <CollectButton
               locations={rows.map((r) => r.ayah.location)}
               criterion={{ kind: "search", value: `meaning: ${query.trim()}` }}
-              label={`Collect all ${rows.length}`}
+              label={`${t("search.collectAll")} (${num(rows.length)})`}
             />
           </div>
           {rows.map(({ ayah, score }) => (
             <div key={ayah.location} className="card" style={{ marginBottom: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                <Link className="chip link" to={readPathOf(ayah.location)}>
-                  {ayah.location}
-                </Link>
-                <span className="chip">closeness {(score * 100).toFixed(1)}%</span>
-                <span className="chip">juz {ayah.juz}</span>
+                <AyahRef location={ayah.location} />
+                <span className="chip">
+                  {t("meaning.closeness")} {num((score * 100).toFixed(1))}٪
+                </span>
+                <span className="chip">
+                  {t("reader.juz")} {num(ayah.juz)}
+                </span>
                 <AudioButton ayahId={ayahIdOf(ayah)} />
                 <CollectButton
                   locations={[ayah.location]}
@@ -165,7 +175,12 @@ export default function Meaning() {
                   label="⊕"
                 />
               </div>
-              <div className="quran" style={{ fontSize: 22, lineHeight: 2 }}>
+              <div
+                className="quran"
+                style={{ fontSize: 22, lineHeight: 2, cursor: "pointer" }}
+                title={t("nav.reader")}
+                onClick={() => navigate(readPathOf(ayah.location))}
+              >
                 {ayah.textUthmani}
               </div>
               <Translations ayah={ayah} />
@@ -199,33 +214,33 @@ async function getAyahById(ayahId: number): Promise<AyahDoc | null> {
 let cache: Map<number, AyahDoc> | null = null;
 
 function SetupCard({ onDone }: { onDone: () => void }) {
+  useUILang();
   const [endpoint, setEp] = useState(getEndpoint());
   const [key, setKey] = useState(getUserKey() ?? "");
   return (
     <div className="card" style={{ margin: "10px 0" }}>
-      <b>One-time setup needed</b>
-      <p className="muted" style={{ lineHeight: 1.6 }}>
-        Ranking runs in your browser, but turning your query into a meaning-vector needs the
-        Gemini API once per search. On the deployed site this happens automatically via{" "}
-        <code>/api/embed</code>. Running locally, either point to a deployed endpoint or paste
-        your own free Gemini key (
+      <b>{t("meaning.setup.title")}</b>
+      <p className="muted" style={{ lineHeight: 1.7 }}>
+        {t("meaning.setup.body")}{" "}
         <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">
-          get one here
+          {t("meaning.setup.getKey")}
         </a>
-        ) — it is stored only in this browser.
+        )
       </p>
       <div style={{ display: "grid", gap: 8 }}>
         <label className="muted">
-          Embed endpoint URL
+          {t("meaning.setup.endpoint")}
           <input
+            dir="ltr"
             style={{ width: "100%" }}
             value={endpoint}
             onChange={(e) => setEp(e.target.value)}
           />
         </label>
         <label className="muted">
-          — or your Gemini API key
+          {t("meaning.setup.orKey")}
           <input
+            dir="ltr"
             style={{ width: "100%" }}
             type="password"
             value={key}
@@ -242,7 +257,7 @@ function SetupCard({ onDone }: { onDone: () => void }) {
               onDone();
             }}
           >
-            Save & search
+            {t("meaning.setup.save")}
           </button>
         </div>
       </div>

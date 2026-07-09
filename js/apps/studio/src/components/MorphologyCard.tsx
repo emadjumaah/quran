@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { t, useUILang } from "../i18n";
 import type { SegmentDoc, WordDoc } from "../types";
 import { VERB_FORM_ROMAN, label } from "../types";
 
@@ -13,6 +14,7 @@ function Chip({ k, v }: { k?: string; v: string | number | null | undefined }) {
 }
 
 function SegmentCard({ g }: { g: SegmentDoc }) {
+  useUILang();
   return (
     <div className="card" style={{ padding: "10px 14px", marginBottom: 10 }}>
       <div className="muted" style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}>
@@ -24,21 +26,21 @@ function SegmentCard({ g }: { g: SegmentDoc }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
         {g.root && (
           <Link to={`/roots/${encodeURIComponent(g.root)}`} className="chip link">
-            root <b>{g.root}</b>
+            {t("morph.root")} <b>{g.root}</b>
           </Link>
         )}
-        {g.lemma && <Chip k="lemma" v={g.lemma} />}
-        {g.verbForm && <Chip k="form" v={VERB_FORM_ROMAN[g.verbForm - 1]} />}
+        {g.lemma && <Chip k={t("morph.lemma")} v={g.lemma} />}
+        {g.verbForm && <Chip k={t("morph.form")} v={VERB_FORM_ROMAN[g.verbForm - 1]} />}
         <Chip v={g.aspect} />
         <Chip v={g.mood} />
         <Chip v={g.voice} />
-        <Chip k="case" v={g.caseMark} />
+        <Chip k={t("morph.case")} v={g.caseMark} />
         <Chip v={g.state} />
         <Chip v={g.derivation} />
-        <Chip k="person" v={g.person} />
+        <Chip k={t("morph.person")} v={g.person} />
         <Chip v={g.gender} />
         <Chip v={g.number} />
-        {g.family && <Chip k="family" v={g.family} />}
+        {g.family && <Chip k={t("morph.family")} v={g.family} />}
       </div>
     </div>
   );

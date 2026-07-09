@@ -77,6 +77,8 @@ export interface RootDoc {
   lemmas: { lemma: string; occurrences: number }[];
   /** every word location "s:a:w" where the root appears */
   locations: string[];
+  /** classical lexicon meanings (Mufradat, Maqayis) — present when built */
+  meanings?: { key: string; title: string; text: string }[];
 }
 
 /** Root co-occurrence edge (precomputed at convert time). */

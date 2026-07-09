@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { t, useUILang } from "../i18n";
 
 /**
  * Per-ayah recitation playback — Shaykh Mahmoud Khalil al-Husary (murattal),
@@ -37,6 +38,7 @@ function toggle(globalAyahNo: number) {
 
 /** `ayahId` is the global ayah number 1..6236 (from AyahDoc._id "a<n>"). */
 export default function AudioButton({ ayahId }: { ayahId: number }) {
+  useUILang();
   const [, force] = useState(0);
   useEffect(() => {
     const cb = () => force((n) => n + 1);
@@ -51,9 +53,9 @@ export default function AudioButton({ ayahId }: { ayahId: number }) {
       className="chip"
       onClick={() => toggle(ayahId)}
       style={{ border: "none", cursor: "pointer" }}
-      title={playing ? "Stop recitation" : "Play recitation (al-Husary)"}
+      title="الحصري — al-Ḥuṣarī"
     >
-      {playing ? "◼ stop" : "▶ listen"}
+      {playing ? `◼ ${t("stop")}` : `▶ ${t("listen")}`}
     </button>
   );
 }

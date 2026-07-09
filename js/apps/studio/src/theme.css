@@ -135,6 +135,30 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   font-size: 0.7em; color: var(--gold); margin: 0 6px; user-select: none;
 }
 
+/* mushaf page — proportions and frame resembling a printed mushaf */
+.mushaf-page {
+  max-width: 560px;
+  margin: 0 auto 26px;
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 5px var(--panel), inset 0 0 0 6px var(--gold), var(--shadow);
+  padding: 34px 36px 20px;
+}
+.mushaf-page .quran {
+  text-align: justify;
+  text-align-last: center;
+  font-size: 24.5px;
+  line-height: 2.15;
+}
+.mushaf-page .page-no {
+  text-align: center;
+  color: var(--gold);
+  font-size: 13px;
+  margin-top: 14px;
+  font-family: var(--font-quran);
+}
+
 .muted { color: var(--muted); font-size: 12.5px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
