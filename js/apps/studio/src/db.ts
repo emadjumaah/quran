@@ -205,6 +205,17 @@ export async function neighborsOfRoot(root: string, limit = 25): Promise<Neighbo
     .slice(0, limit);
 }
 
+/** First ayah location ("s:a") of a juz or Madani page. */
+export async function firstAyahOf(kind: "juz" | "page", n: number): Promise<string | null> {
+  const docs = (await coll("ayahs").findMany({ where: { [kind]: n } })) as AyahDoc[];
+  if (docs.length === 0) return null;
+  let best = docs[0];
+  for (const d of docs) {
+    if (Number(d._id.slice(1)) < Number(best._id.slice(1))) best = d;
+  }
+  return best.location;
+}
+
 /** Resolve an ayah by its global number (1..6236) via the surah list. */
 const globalAyahCache = new Map<number, AyahDoc | null>();
 export async function getAyahByGlobalNo(no: number): Promise<AyahDoc | null> {

@@ -11,6 +11,8 @@ import Search from "./views/Search";
 import Collections from "./views/Collections";
 import Dashboard from "./views/Dashboard";
 import { NowPlayingBar } from "./components/AudioButton";
+import Omnibox from "./components/Omnibox";
+import Goto from "./views/Goto";
 
 applyUILang();
 
@@ -160,6 +162,7 @@ function App() {
           <Brand />
           <Nav />
           <span className="spacer" />
+          <Omnibox />
           <LangToggle />
           <ThemeToggle />
         </header>
@@ -178,6 +181,7 @@ function App() {
           <Route path="/collections" element={<Collections />} />
           <Route path="/collections/:id" element={<Collections />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/goto/:kind/:n" element={<Goto />} />
         </Routes>
         <Footer />
         <NowPlayingBar />
