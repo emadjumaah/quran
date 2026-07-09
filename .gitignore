@@ -10,7 +10,9 @@ graph/
 # node
 node_modules/
 dist/
-js/apps/studio/public/
+# generated at build time by copy-assets.mjs (icon.svg etc. stay tracked)
+js/apps/studio/public/quran-app.db
+js/apps/studio/public/quran-embeddings.bin
 
 # originals kept out of version control (large PDFs etc.)
 archive/research/

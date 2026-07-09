@@ -95,15 +95,12 @@ function HighlightedAyah({
   );
 }
 
-/** One lexicon entry, collapsed to a few lines with a توسيع toggle. */
+/** The word's meaning from one classical source — two lines, expandable. */
 function MeaningEntry({ title, text }: { title: string; text: string }) {
   const [open, setOpen] = useState(false);
-  const isLong = text.length > 420;
+  const isLong = text.length > 220;
   return (
-    <div style={{ marginBottom: 14 }}>
-      <div className="chip gold" style={{ marginBottom: 6 }}>
-        {title}
-      </div>
+    <div>
       <div
         dir="rtl"
         style={{
@@ -114,7 +111,7 @@ function MeaningEntry({ title, text }: { title: string; text: string }) {
           ...(isLong && !open
             ? {
                 display: "-webkit-box",
-                WebkitLineClamp: 4,
+                WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical" as const,
                 overflow: "hidden",
               }
@@ -123,15 +120,18 @@ function MeaningEntry({ title, text }: { title: string; text: string }) {
       >
         {text}
       </div>
-      {isLong && (
-        <button
-          className="chip link"
-          style={{ border: "none", marginTop: 4 }}
-          onClick={() => setOpen(!open)}
-        >
-          {open ? "اطوِ ▴" : "أكمل القراءة ▾"}
-        </button>
-      )}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+        <span className="muted" style={{ fontSize: 11 }}>{title}</span>
+        {isLong && (
+          <button
+            className="chip link"
+            style={{ border: "none", fontSize: 11, padding: "1px 8px" }}
+            onClick={() => setOpen(!open)}
+          >
+            {open ? "اطوِ ▴" : "المزيد ▾"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -389,13 +389,14 @@ function RootDetail({ root }: { root: string }) {
           </span>
         </div>
 
-        {/* Classical lexicon meanings */}
+        {/* Word meaning — one classical source, kept short */}
         {rootDoc.meanings && rootDoc.meanings.length > 0 && (
           <div className="card" style={{ marginTop: 16 }}>
             <h3 style={{ marginTop: 0, marginBottom: 8 }}>{t("roots.meanings")}</h3>
-            {rootDoc.meanings.map((m) => (
-              <MeaningEntry key={m.key} title={m.title} text={m.text} />
-            ))}
+            <MeaningEntry
+              title={rootDoc.meanings[0].title}
+              text={rootDoc.meanings[0].text}
+            />
           </div>
         )}
 

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e8368"/>
+      <stop offset="1" stop-color="#0a5744"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"/>
+  <!-- knowledge rising from the mushaf: three linked nodes -->
+  <g stroke="#e7c26f" stroke-width="1.5" fill="none" stroke-linecap="round">
+    <path d="M32 25v-5"/>
+    <path d="M32 20l-7.5-4.2"/>
+    <path d="M32 20l7.5-4.2"/>
+  </g>
+  <circle cx="32" cy="20" r="2.7" fill="#e7c26f"/>
+  <circle cx="24.5" cy="15.8" r="2.1" fill="#e7c26f"/>
+  <circle cx="39.5" cy="15.8" r="2.1" fill="#e7c26f"/>
+  <!-- open mushaf -->
+  <path d="M32 48c-3.9-2.9-9.3-4.4-14.5-4.4V27.2c5.2 0 10.6 1.5 14.5 4.4 3.9-2.9 9.3-4.4 14.5-4.4v16.4c-5.2 0-10.6 1.5-14.5 4.4z" fill="#f7f4ee"/>
+  <path d="M32 31.6V48" stroke="#cfc7b4" stroke-width="1.4"/>
+  <g stroke="#b9b19c" stroke-width="1.1" stroke-linecap="round">
+    <path d="M21.5 32.8c2.6.3 5.2 1 7.5 2.1"/>
+    <path d="M21.5 36.6c2.6.3 5.2 1 7.5 2.1"/>
+    <path d="M21.5 40.4c2.6.3 5.2 1 7.5 2.1"/>
+    <path d="M42.5 32.8c-2.6.3-5.2 1-7.5 2.1"/>
+    <path d="M42.5 36.6c-2.6.3-5.2 1-7.5 2.1"/>
+    <path d="M42.5 40.4c-2.6.3-5.2 1-7.5 2.1"/>
+  </g>
+</svg>

@@ -1,44 +1,87 @@
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
+import { getUILang, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 
 const LANG_NAMES: Record<string, string> = { en: "English", fr: "Français", tr: "Türkçe" };
-const KEY = "quran-studio:lang";
+const LANG_KEY = "quran-studio:lang"; // preferred translation language
+const SHOW_KEY = "quran-studio:translations"; // "on" | "off" | absent = auto by UI lang
 
-let currentLang = localStorage.getItem(KEY) ?? "en";
+/* preferred translation language ------------------------------------------- */
+let currentLang = localStorage.getItem(LANG_KEY) ?? "en";
+/* visibility preference ------------------------------------------------------ */
+let showPref: string | null = localStorage.getItem(SHOW_KEY);
+
 const listeners = new Set<() => void>();
+const notify = () => listeners.forEach((l) => l());
+const subscribe = (cb: () => void) => {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+};
 
 export function setPreferredLang(lang: string) {
   currentLang = lang;
-  localStorage.setItem(KEY, lang);
-  listeners.forEach((l) => l());
+  localStorage.setItem(LANG_KEY, lang);
+  notify();
 }
 
-export function usePreferredLang(): string {
-  return useSyncExternalStore(
-    (cb) => {
-      listeners.add(cb);
-      return () => listeners.delete(cb);
-    },
-    () => currentLang,
-  );
+/** null = automatic (shown in English UI, hidden in Arabic UI). */
+export function setTranslationsPref(v: "on" | "off" | null) {
+  showPref = v;
+  if (v == null) localStorage.removeItem(SHOW_KEY);
+  else localStorage.setItem(SHOW_KEY, v);
+  notify();
+}
+
+function useTransState(): { lang: string; visible: boolean } {
+  useUILang();
+  useSyncExternalStore(subscribe, () => `${currentLang}|${showPref}`);
+  const visible = showPref === "on" || (showPref == null && getUILang() !== "ar");
+  return { lang: currentLang, visible };
 }
 
 /**
- * Translation line for an ayah in the user's preferred language, with small
- * chips to switch language (preference persists across the whole app).
+ * Translation line for an ayah.
+ *
+ * Arabic UI (default): nothing is shown except a faint «ت» icon at the ayah's
+ * edge — tap to reveal the translation for that ayah, with a pin to keep
+ * translations always on. English UI: shown by default, with a subtle hide-all.
  */
 export default function Translations({ ayah }: { ayah: AyahDoc }) {
-  const lang = usePreferredLang();
-  const t = ayah.translations ?? {};
-  const langs = Object.keys(t);
+  const { lang, visible } = useTransState();
+  const [openHere, setOpenHere] = useState(false);
+  const trans = ayah.translations ?? {};
+  const langs = Object.keys(trans);
   if (langs.length === 0) return null;
-  const active = t[lang] != null ? lang : langs[0];
+  const active = trans[lang] != null ? lang : langs[0];
+
+  if (!visible && !openHere) {
+    return (
+      <button
+        onClick={() => setOpenHere(true)}
+        title="الترجمة · translation"
+        style={{
+          border: "none",
+          background: "none",
+          padding: "0 2px",
+          fontSize: 12,
+          color: "var(--muted)",
+          opacity: 0.4,
+          cursor: "pointer",
+        }}
+      >
+        ت
+      </button>
+    );
+  }
+
   return (
     <div style={{ marginTop: 6 }}>
-      <div style={{ color: "var(--ink-2)", fontSize: 14, lineHeight: 1.65 }}>{t[active]}</div>
-      {langs.length > 1 && (
-        <div style={{ display: "flex", gap: 4, marginTop: 4 }}>
-          {langs.map((l) => (
+      <div style={{ color: "var(--ink-2)", fontSize: 14, lineHeight: 1.65 }}>{trans[active]}</div>
+      <div style={{ display: "flex", gap: 4, marginTop: 4, alignItems: "center" }}>
+        {langs.length > 1 &&
+          langs.map((l) => (
             <button
               key={l}
               className="chip"
@@ -48,15 +91,52 @@ export default function Translations({ ayah }: { ayah: AyahDoc }) {
                 cursor: "pointer",
                 fontSize: 10.5,
                 padding: "1px 8px",
-                ...(l === active ? { background: "var(--accent-soft)", color: "var(--accent)" } : {}),
+                ...(l === active
+                  ? { background: "var(--accent-soft)", color: "var(--accent)" }
+                  : {}),
               }}
-              title={`Show ${LANG_NAMES[l] ?? l} translation everywhere`}
             >
               {LANG_NAMES[l] ?? l}
             </button>
           ))}
-        </div>
-      )}
+        {!visible ? (
+          <>
+            <button
+              className="chip"
+              style={{ border: "none", cursor: "pointer", fontSize: 10.5, padding: "1px 8px" }}
+              title="إظهار الترجمة تحت كل آية"
+              onClick={() => setTranslationsPref("on")}
+            >
+              📌 دائمًا
+            </button>
+            <button
+              className="chip"
+              style={{ border: "none", cursor: "pointer", fontSize: 10.5, padding: "1px 8px" }}
+              onClick={() => setOpenHere(false)}
+            >
+              ✕
+            </button>
+          </>
+        ) : (
+          <button
+            className="chip"
+            style={{
+              border: "none",
+              cursor: "pointer",
+              fontSize: 10.5,
+              padding: "1px 8px",
+              opacity: 0.6,
+            }}
+            title="إخفاء الترجمات · hide translations"
+            onClick={() => {
+              setTranslationsPref("off");
+              setOpenHere(false);
+            }}
+          >
+            ✕
+          </button>
+        )}
+      </div>
     </div>
   );
 }

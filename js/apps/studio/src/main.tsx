@@ -31,7 +31,7 @@ function Boot({ children }: { children: React.ReactNode }) {
     return (
       <div className="boot">
         <div>
-          <div className="title">القرآن الكريم</div>
+          <div className="title">مصحف المعرفة</div>
           <p style={{ color: "var(--danger)" }}>{error}</p>
           <p className="muted">
             <code>node ../../scripts/convert-to-app-db.mjs</code>
@@ -48,8 +48,7 @@ function Boot({ children }: { children: React.ReactNode }) {
     return (
       <div className="boot">
         <div>
-          <div className="title">القرآن الكريم</div>
-          <div style={{ marginTop: 8, fontWeight: 600 }}>{t("brand")}</div>
+          <div className="title">مصحف المعرفة</div>
           <div className="bar">
             <div style={{ width: pct != null ? `${pct}%` : "30%" }} />
           </div>
@@ -128,12 +127,17 @@ function Nav() {
 }
 
 function Brand() {
-  useUILang();
   return (
-    <span className="brand">
-      {t("brand")}
-      <span className="ar">{t("brand.sub")}</span>
-    </span>
+    <NavLink
+      to="/"
+      className="brand"
+      style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}
+    >
+      <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={30} height={30} />
+      <span className="ar" style={{ fontSize: 21, marginInlineStart: 0 }}>
+        مصحف المعرفة
+      </span>
+    </NavLink>
   );
 }
 
