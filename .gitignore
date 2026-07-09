@@ -1,0 +1,26 @@
+# generated databases (rebuild with build_qkg.py / convert-to-app-db.mjs)
+quran-kg.db
+quran-app.db
+*.db-wal
+*.db-shm
+
+# generated graph exports
+graph/
+
+# node
+node_modules/
+dist/
+
+# originals kept out of version control (large PDFs etc.)
+archive/research/
+archive/
+
+# secrets — never commit
+.env
+.env.*
+
+# personal editor config
+*.code-workspace
+
+# os
+.DS_Store

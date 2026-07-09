@@ -1,0 +1,33 @@
+{
+  "name": "quran-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Quran Knowledge Graph Studio — React app: reader, morphology, roots, relations network, search, and ayah collections. Runs entirely in the browser (monlite WASM).",
+  "type": "module",
+  "scripts": {
+    "predev": "node copy-assets.mjs",
+    "prebuild": "node copy-assets.mjs",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/amiri-quran": "^5.2.0",
+    "@monlite/core": "^2.11.0",
+    "@monlite/fts": "^0.7.1",
+    "@monlite/wasm": "^0.2.2",
+    "fts5-sql-bundle": "^1.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "buffer": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0"
+  }
+}

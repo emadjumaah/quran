@@ -1,0 +1,17 @@
+{
+  "name": "quran-kg-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TypeScript workspace for the Quran Knowledge Graph — API package, converters, and demo",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "convert": "node scripts/convert-to-app-db.mjs"
+  },
+  "packageManager": "pnpm@10.30.3",
+  "dependencies": {
+    "@monlite/core": "^2.11.0",
+    "@monlite/fts": "^0.7.1"
+  }
+}
