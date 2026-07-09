@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { t, useUILang } from "../i18n";
+import { getUILang, t, useUILang } from "../i18n";
 
 /**
  * Per-ayah recitation playback — Shaykh Mahmoud Khalil al-Husary (murattal),
@@ -53,7 +53,7 @@ export default function AudioButton({ ayahId }: { ayahId: number }) {
       className="chip"
       onClick={() => toggle(ayahId)}
       style={{ border: "none", cursor: "pointer" }}
-      title="الحصري — al-Ḥuṣarī"
+      title={getUILang() === "ar" ? "تلاوة الشيخ محمود خليل الحصري" : "Recitation: Shaykh al-Ḥuṣarī"}
     >
       {playing ? `◼ ${t("stop")}` : `▶ ${t("listen")}`}
     </button>

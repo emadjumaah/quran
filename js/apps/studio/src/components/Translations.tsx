@@ -3,6 +3,9 @@ import { getUILang, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 
 const LANG_NAMES: Record<string, string> = { en: "English", fr: "Français", tr: "Türkçe" };
+const LANG_NAMES_AR: Record<string, string> = { en: "الإنجليزية", fr: "الفرنسية", tr: "التركية" };
+const langName = (l: string) =>
+  getUILang() === "ar" ? (LANG_NAMES_AR[l] ?? l) : (LANG_NAMES[l] ?? l);
 const LANG_KEY = "quran-studio:lang"; // preferred translation language
 const SHOW_KEY = "quran-studio:translations"; // "on" | "off" | absent = auto by UI lang
 
@@ -96,7 +99,7 @@ export default function Translations({ ayah }: { ayah: AyahDoc }) {
                   : {}),
               }}
             >
-              {LANG_NAMES[l] ?? l}
+              {langName(l)}
             </button>
           ))}
         {!visible ? (

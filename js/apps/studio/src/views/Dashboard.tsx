@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getStats, listSurahs, topRoots } from "../db";
-import { num, t, useUILang } from "../i18n";
+import { getUILang, num, t, useUILang } from "../i18n";
 import type { RootDoc, SurahDoc } from "../types";
 
 const MECCAN_COLOR = "var(--accent)";
@@ -98,7 +98,6 @@ function StatTile({ label, value, live }: { label: string; value: number; live: 
     <div
       className="card"
       style={{ flex: "1 1 130px", minWidth: 120, padding: "12px 16px" }}
-      title={live ? undefined : "Static value — the live stats document is not in this db build"}
     >
       <div
         className="muted"
@@ -237,7 +236,9 @@ function SurahTable({ title, rows }: { title: string; rows: SurahDoc[] }) {
                 <Link to={`/read/${s.surahNo}`} className="quran" style={{ fontSize: 17, lineHeight: 1.2 }}>
                   {s.nameAr}
                 </Link>{" "}
-                <span className="muted" style={{ fontSize: 11 }}>{s.nameTranslit}</span>
+                {getUILang() !== "ar" && (
+                  <span className="muted" style={{ fontSize: 11 }}>{s.nameTranslit}</span>
+                )}
               </td>
               <td style={{ textAlign: "end", fontVariantNumeric: "tabular-nums" }}>
                 {fmt(s.ayahCount)}

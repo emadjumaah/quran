@@ -12,7 +12,7 @@ import CollectButton from "../components/CollectButton";
 import Translations from "../components/Translations";
 import AyahRef from "../components/AyahRef";
 import { searchAyahs, searchRoots } from "../db";
-import { num, t, useUILang } from "../i18n";
+import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc, RootDoc } from "../types";
 import { readPathOf } from "../types";
 
@@ -108,7 +108,7 @@ export default function Search() {
 
         <input
           autoFocus
-          dir="auto"
+          dir={getUILang() === "ar" ? undefined : "auto"}
           value={input}
           onChange={(e: ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
           placeholder={t("search.placeholder")}

@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getAyahByLocation } from "../db";
-import { num, t, useUILang } from "../i18n";
+import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahCollection, AyahDoc } from "../types";
 import { readPathOf } from "../types";
 import AyahRef from "../components/AyahRef";
@@ -129,7 +129,7 @@ function CollectionsIndex() {
                 <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>{c.name}</div>
                 <div className="muted" style={{ marginBottom: 8 }}>
                   {num(c.ayahs.length)} {t("roots.inAyahs")} · {t("collections.updated")}{" "}
-                  {new Date(c.updatedAt).toLocaleDateString()}
+                  {new Date(c.updatedAt).toLocaleDateString(getUILang() === "ar" ? "ar" : undefined)}
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   <CriteriaChips criteria={c.criteria} />
@@ -340,7 +340,7 @@ function CollectionDetail({ id }: { id: string }) {
           </span>
           <CriteriaChips criteria={collection.criteria} />
           <span className="muted">
-            {t("collections.updated")} {new Date(collection.updatedAt).toLocaleDateString()}
+            {t("collections.updated")} {new Date(collection.updatedAt).toLocaleDateString(getUILang() === "ar" ? "ar" : undefined)}
           </span>
         </div>
 

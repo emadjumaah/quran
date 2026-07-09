@@ -101,7 +101,19 @@ export interface AyahCollection {
   updatedAt: number;
 }
 
+import { getUILang } from "./i18n";
+
 export const VERB_FORM_ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+export const VERB_FORM_AR = [
+  "فَعَلَ", "فَعَّلَ", "فَاعَلَ", "أَفْعَلَ", "تَفَعَّلَ", "تَفَاعَلَ",
+  "اِنْفَعَلَ", "اِفْتَعَلَ", "اِفْعَلَّ", "اِسْتَفْعَلَ", "اِفْعَالَّ", "اِفْعَوْعَلَ",
+];
+
+/** Verb form label: the Arabic وزن in Arabic UI, "Form X" in English. */
+export const labelVerbForm = (n: number): string =>
+  getUILang() === "ar"
+    ? (VERB_FORM_AR[n - 1] ?? String(n))
+    : `Form ${VERB_FORM_ROMAN[n - 1] ?? n}`;
 
 /** Human labels (Arabic + English) for morphology feature values. */
 export const FEATURE_LABELS: Record<string, string> = {
@@ -133,8 +145,14 @@ export const FEATURE_LABELS: Record<string, string> = {
   suffix: "لاحقة · suffix",
 };
 
-export const label = (v: string | number | null | undefined): string =>
-  v == null ? "" : (FEATURE_LABELS[String(v)] ?? String(v));
+/** Feature label in the UI language only (values are "العربية · english"). */
+export const label = (v: string | number | null | undefined): string => {
+  if (v == null) return "";
+  const s = FEATURE_LABELS[String(v)] ?? String(v);
+  const parts = s.split(" · ");
+  if (parts.length < 2) return s;
+  return getUILang() === "ar" ? parts[0] : parts[1];
+};
 
 /** Route to the Reader for an ayah ("s:a") or word ("s:a:w") location. */
 export const readPathOf = (location: string): string => {

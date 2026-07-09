@@ -66,7 +66,7 @@ const AR: Record<string, string> = {
   "reader.ayahs": "آية",
   "reader.words": "كلمة",
   "search.title": "البحث النصي",
-  "search.hint": "كلمات تُجمع بـ AND · \"عبارة كاملة\" · كلمة OR كلمة · بادئة*",
+  "search.hint": "عدة كلمات: تُشترط جميعًا · \"عبارة كاملة\" بين علامتي اقتباس · نجمة بعد البادئة مثل: رحم*",
   "search.placeholder": "ابحث في نص القرآن…",
   "search.results": "آية مطابقة",
   "search.collectAll": "اجمع الكل",

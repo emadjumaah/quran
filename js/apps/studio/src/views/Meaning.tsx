@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getAyahByLocation } from "../db";
-import { num, t, useUILang } from "../i18n";
+import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import { readPathOf } from "../types";
 import AyahRef from "../components/AyahRef";
@@ -24,10 +24,16 @@ import CollectButton from "../components/CollectButton";
 import Translations from "../components/Translations";
 import AudioButton, { ayahIdOf } from "../components/AudioButton";
 
-const EXAMPLES = [
+const EXAMPLES_AR = [
+  "الصبر عند الشدة والفقد",
+  "العفو عند الغضب",
+  "رحمة الله بعباده",
+  "الغاية من الخلق",
+  "الصدق في البيع والتجارة",
+];
+const EXAMPLES_EN = [
   "patience in hardship and loss",
   "forgiving people when angry",
-  "رحمة الله بعباده",
   "the purpose of creation",
   "honesty in trade",
 ];
@@ -109,7 +115,7 @@ export default function Meaning() {
       >
         <input
           autoFocus
-          dir="auto"
+          dir={getUILang() === "ar" ? undefined : "auto"}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("meaning.placeholder")}
@@ -130,7 +136,7 @@ export default function Meaning() {
 
       {!rows && !busy && !needsSetup && (
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
-          {EXAMPLES.map((ex) => (
+          {(getUILang() === "ar" ? EXAMPLES_AR : EXAMPLES_EN).map((ex) => (
             <button
               key={ex}
               className="chip"

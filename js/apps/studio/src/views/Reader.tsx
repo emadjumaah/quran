@@ -13,7 +13,7 @@ import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { listAyahs, listSurahs, listWords } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
-import { num, t, useUILang } from "../i18n";
+import { getUILang, num, t, useUILang } from "../i18n";
 import AyahText from "../components/AyahText";
 import AyahRef from "../components/AyahRef";
 import MorphologyCard from "../components/MorphologyCard";
@@ -105,9 +105,11 @@ function SurahSidebar({
               <span className="quran" style={{ fontSize: 19, lineHeight: 1.4 }}>
                 {s.nameAr}
               </span>
-              <span className="muted" style={{ marginInlineStart: "auto", fontSize: 11 }}>
-                {s.nameTranslit}
-              </span>
+              {getUILang() !== "ar" && (
+                <span className="muted" style={{ marginInlineStart: "auto", fontSize: 11 }}>
+                  {s.nameTranslit}
+                </span>
+              )}
             </div>
           );
         })}
@@ -324,7 +326,7 @@ export default function Reader() {
           >
             {surahs.map((s) => (
               <option key={s.surahNo} value={s.surahNo}>
-                {s.surahNo}. {s.nameAr} — {s.nameTranslit}
+                {s.surahNo}. {s.nameAr}{getUILang() !== "ar" ? ` — ${s.nameTranslit}` : ""}
               </option>
             ))}
           </select>
@@ -335,9 +337,11 @@ export default function Reader() {
             <div className="quran" style={{ fontSize: 42, lineHeight: 1.6 }}>
               {surah.nameAr}
             </div>
-            <div style={{ fontWeight: 600 }}>
-              {surah.nameTranslit} <span className="muted">· {surah.nameEn}</span>
-            </div>
+            {getUILang() !== "ar" && (
+              <div style={{ fontWeight: 600 }}>
+                {surah.nameTranslit} <span className="muted">· {surah.nameEn}</span>
+              </div>
+            )}
             <div
               style={{
                 display: "flex",

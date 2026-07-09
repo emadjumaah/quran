@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter, NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { initDb, listSurahs } from "./db";
-import { applyUILang, setUILang, t, useUILang } from "./i18n";
+import { applyUILang, getUILang, setUILang, t, useUILang } from "./i18n";
 import "./theme.css";
 import Reader from "./views/Reader";
 import Roots from "./views/Roots";
@@ -73,7 +73,7 @@ function ThemeToggle() {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
   }, [dark]);
   return (
-    <button onClick={() => setDark(!dark)} title="Light/Dark">
+    <button onClick={() => setDark(!dark)} title={getUILang() === "ar" ? "المظهر" : "Light/Dark"}>
       {dark ? "☀" : "☾"}
     </button>
   );
@@ -101,11 +101,23 @@ function Footer() {
   return (
     <footer className="footer">
       <span>
-        {t("footer.sources")}: {src("https://corpus.quran.com", "Quranic Arabic Corpus")} ·{" "}
-        {src("https://tanzil.net", "Tanzil")} ·{" "}
-        {src("https://alquran.cloud", "al-Ḥuṣarī / Islamic Network")} · Gemini ·{" "}
-        {src("https://github.com/qataruts/monlite", "monlite")}
-        <span className="muted"> — {t("footer.provenance")}</span>
+        {getUILang() === "ar" ? (
+          <>
+            {t("footer.sources")}: {src("https://corpus.quran.com", "المدونة القرآنية (جامعة ليدز)")} ·{" "}
+            {src("https://tanzil.net", "مشروع تنزيل")} ·{" "}
+            {src("https://alquran.cloud", "تلاوة الشيخ الحصري")} ·{" "}
+            {src("https://github.com/qataruts/monlite", "monlite")}
+            <span className="muted"> — {t("footer.provenance")}</span>
+          </>
+        ) : (
+          <>
+            {t("footer.sources")}: {src("https://corpus.quran.com", "Quranic Arabic Corpus")} ·{" "}
+            {src("https://tanzil.net", "Tanzil")} ·{" "}
+            {src("https://alquran.cloud", "al-Ḥuṣarī / Islamic Network")} · Gemini ·{" "}
+            {src("https://github.com/qataruts/monlite", "monlite")}
+            <span className="muted"> — {t("footer.provenance")}</span>
+          </>
+        )}
       </span>
     </footer>
   );
