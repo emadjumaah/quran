@@ -131,6 +131,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .quran .w { cursor: pointer; border-radius: 8px; padding: 0 3px; transition: background 0.12s; }
 .quran .w:hover { background: var(--accent-soft); }
 .quran .w.sel { background: var(--accent-soft); color: var(--accent); }
+.quran .w.selB { background: var(--gold-soft); color: var(--gold); }
 .ayah-marker {
   font-size: 0.7em; color: var(--gold); margin: 0 6px; user-select: none;
 }
@@ -160,6 +161,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 }
 
 .muted { color: var(--muted); font-size: 12.5px; }
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
 

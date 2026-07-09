@@ -1,3 +1,4 @@
+import { num } from "../i18n";
 import type { WordDoc } from "../types";
 
 /** One ayah rendered word-by-word; clicking a word selects it. */
@@ -24,7 +25,7 @@ export default function AyahText({
           </span>{" "}
         </span>
       ))}
-      {ayahNo != null && <span className="ayah-marker">﴿{ayahNo}﴾</span>}
+      {ayahNo != null && <span className="ayah-marker">﴿{num(ayahNo)}﴾</span>}
     </div>
   );
 }

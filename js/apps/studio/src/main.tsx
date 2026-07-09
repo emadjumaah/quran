@@ -8,9 +8,9 @@ import Reader from "./views/Reader";
 import Roots from "./views/Roots";
 import Network from "./views/Network";
 import Search from "./views/Search";
-import Meaning from "./views/Meaning";
 import Collections from "./views/Collections";
 import Dashboard from "./views/Dashboard";
+import { NowPlayingBar } from "./components/AudioButton";
 
 applyUILang();
 
@@ -131,7 +131,6 @@ function Nav() {
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/network">{t("nav.network")}</NavLink>
       <NavLink to="/search">{t("nav.search")}</NavLink>
-      <NavLink to="/meaning">{t("nav.meaning")}</NavLink>
       <NavLink to="/collections">{t("nav.collections")}</NavLink>
       <NavLink to="/dashboard">{t("nav.dashboard")}</NavLink>
     </nav>
@@ -173,13 +172,15 @@ function App() {
           <Route path="/roots/:root" element={<Roots />} />
           <Route path="/network" element={<Network />} />
           <Route path="/network/:root" element={<Network />} />
+          <Route path="/network/:root/:other" element={<Network />} />
           <Route path="/search" element={<Search />} />
-          <Route path="/meaning" element={<Meaning />} />
+          <Route path="/meaning" element={<Navigate to="/search?m=1" replace />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/collections/:id" element={<Collections />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
         <Footer />
+        <NowPlayingBar />
       </div>
     </HashRouter>
   );

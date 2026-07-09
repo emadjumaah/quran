@@ -17,6 +17,7 @@ import type { AyahDoc, RootDoc, RootEdgeDoc, SurahDoc, WordDoc } from "./types";
 type Monlite = any;
 
 let db: Monlite = null;
+let initPromise: Promise<void> | null = null;
 
 function coll(name: string) {
   const schema = (SCHEMAS as Record<string, unknown>)[name];
@@ -24,8 +25,16 @@ function coll(name: string) {
 }
 
 /** Fetch the database with byte-level progress, then boot monlite over it. */
-export async function initDb(onProgress: (loaded: number, total: number) => void): Promise<void> {
-  if (db) return;
+export function initDb(onProgress: (loaded: number, total: number) => void): Promise<void> {
+  if (db) return Promise.resolve();
+  initPromise ??= doInit(onProgress).catch((e) => {
+    initPromise = null;
+    throw e;
+  });
+  return initPromise;
+}
+
+async function doInit(onProgress: (loaded: number, total: number) => void): Promise<void> {
   const [SQL, bytes] = await Promise.all([
     initSqlJs({ locateFile: () => sqlWasmUrl }),
     fetchWithProgress(`${import.meta.env.BASE_URL}quran-app.db`, onProgress),

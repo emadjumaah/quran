@@ -73,7 +73,10 @@ export function loadVectors(onProgress?: (pct: number) => void): Promise<void> {
       scales: new Float32Array(buf.slice(scalesOff, scalesOff + count * 4)),
       data: new Int8Array(buf, scalesOff + count * 4, count * dim),
     };
-  })();
+  })().catch((e) => {
+    loading = null; // one transient failure must not poison every retry
+    throw e;
+  });
   return loading;
 }
 

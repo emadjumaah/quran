@@ -145,11 +145,11 @@ function SplitBar({ title, meccan, medinan }: { title: string; meccan: number; m
       <div style={{ display: "flex", gap: 2, height: 14 }} role="img" aria-label={title}>
         <div
           title={`${t("reader.meccan")} — ${fmt(meccan)}`}
-          style={{ width: `${pct}%`, background: MECCAN_COLOR, borderRadius: "4px 0 0 4px" }}
+          style={{ width: `${pct}%`, background: MECCAN_COLOR, borderRadius: 3 }}
         />
         <div
           title={`${t("reader.medinan")} — ${fmt(medinan)}`}
-          style={{ flex: 1, background: MEDINAN_COLOR, borderRadius: "0 4px 4px 0" }}
+          style={{ flex: 1, background: MEDINAN_COLOR, borderRadius: 3 }}
         />
       </div>
     </div>
@@ -196,7 +196,7 @@ function BarList({
                 width: `${(i.count / max) * 100}%`,
                 height: "100%",
                 background: "var(--accent)",
-                borderRadius: "0 4px 4px 0",
+                borderRadius: 3,
               }}
             />
           </div>
