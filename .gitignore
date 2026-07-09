@@ -10,6 +10,7 @@ graph/
 # node
 node_modules/
 dist/
+js/apps/studio/public/
 
 # originals kept out of version control (large PDFs etc.)
 archive/research/

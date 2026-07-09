@@ -7,6 +7,7 @@ import Reader from "./views/Reader";
 import Roots from "./views/Roots";
 import Network from "./views/Network";
 import Search from "./views/Search";
+import Meaning from "./views/Meaning";
 import Collections from "./views/Collections";
 import Dashboard from "./views/Dashboard";
 
@@ -114,6 +115,7 @@ function App() {
             <NavLink to="/roots">Roots</NavLink>
             <NavLink to="/network">Network</NavLink>
             <NavLink to="/search">Search</NavLink>
+            <NavLink to="/meaning">Meaning</NavLink>
             <NavLink to="/collections">Collections</NavLink>
             <NavLink to="/dashboard">Dashboard</NavLink>
           </nav>
@@ -130,6 +132,7 @@ function App() {
           <Route path="/network" element={<Network />} />
           <Route path="/network/:root" element={<Network />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/meaning" element={<Meaning />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/collections/:id" element={<Collections />} />
           <Route path="/dashboard" element={<Dashboard />} />
