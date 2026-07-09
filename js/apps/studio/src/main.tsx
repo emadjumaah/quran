@@ -13,6 +13,7 @@ import Dashboard from "./views/Dashboard";
 import { NowPlayingBar } from "./components/AudioButton";
 import Omnibox from "./components/Omnibox";
 import Goto from "./views/Goto";
+import Today from "./views/Today";
 
 applyUILang();
 
@@ -129,6 +130,7 @@ function Nav() {
   useUILang();
   return (
     <nav>
+      <NavLink to="/" end>{t("nav.today")}</NavLink>
       <NavLink to="/read">{t("nav.reader")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/network">{t("nav.network")}</NavLink>
@@ -167,7 +169,7 @@ function App() {
           <ThemeToggle />
         </header>
         <Routes>
-          <Route path="/" element={<Navigate to="/read/1" replace />} />
+          <Route path="/" element={<Today />} />
           <Route path="/read" element={<Navigate to="/read/1" replace />} />
           <Route path="/read/:surahNo" element={<Reader />} />
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />

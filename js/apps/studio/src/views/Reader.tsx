@@ -280,6 +280,13 @@ export default function Reader() {
     };
   }, [surahNo]);
 
+  // remember the last reading position for the Today page
+  useEffect(() => {
+    if (Number.isInteger(surahNo) && surahNo >= 1 && surahNo <= 114) {
+      localStorage.setItem("quran-studio:last-read", `${surahNo}:${targetAyahNo ?? 1}`);
+    }
+  }, [surahNo, targetAyahNo]);
+
   // Scroll the :ayahNo target into view once the surah has rendered.
   useEffect(() => {
     if (loading || targetAyahNo == null) return;

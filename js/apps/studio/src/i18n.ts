@@ -39,6 +39,7 @@ export const num = (n: number | string): string =>
   lang === "ar" ? String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)]) : String(n);
 
 const AR: Record<string, string> = {
+  "nav.today": "اليوم",
   "nav.reader": "المصحف",
   "nav.roots": "الجذور",
   "nav.network": "رفقاء الكلمة",
@@ -142,6 +143,9 @@ const AR: Record<string, string> = {
   "dashboard.letterFreq": "تكرار الحروف",
   "dashboard.letterFreqHint": "الحروف الأكثر ورودًا في النص كاملًا",
   "dashboard.meccanMedinan": "المكي والمدني",
+  "today.ayah": "آية اليوم",
+  "today.continue": "واصل القراءة",
+  "today.roots": "جذور هذه الآية ومعانيها",
   "omni.placeholder": "اذهب إلى أي مكان: البقرة ٢٥٥ · جزء ١٥ · صفحة ٣٠٢ · آية الكرسي · كلمة أو معنى…",
   "omni.hint": "⌘K أو / للفتح · ↑↓ للتنقل · Enter للذهاب",
   "omni.ayah": "آية",
@@ -179,6 +183,7 @@ const AR: Record<string, string> = {
 };
 
 const EN: Record<string, string> = {
+  "nav.today": "Today",
   "nav.reader": "Reader",
   "nav.roots": "Roots",
   "nav.network": "Companions",
@@ -282,6 +287,9 @@ const EN: Record<string, string> = {
   "dashboard.letterFreq": "Letter frequency",
   "dashboard.letterFreqHint": "The most frequent letters across the whole text",
   "dashboard.meccanMedinan": "Meccan & Medinan",
+  "today.ayah": "Ayah of the day",
+  "today.continue": "Continue reading",
+  "today.roots": "Roots of this ayah and their meanings",
   "omni.placeholder": "Go anywhere: baqarah 255 · 2:255 · juz 15 · page 302 · a word or a meaning…",
   "omni.hint": "⌘K or / to open · ↑↓ navigate · Enter to go",
   "omni.ayah": "ayah",
