@@ -8,10 +8,10 @@
  * Three columns: surah sidebar (250px) · text · word inspector (360px).
  * Under 900px the sidebars collapse and a surah <select> takes over.
  */
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getWord, listAyahs, listSurahs, listWords } from "../db";
+import { getWord, listAyahs, listSurahs, listWords, surahNameAr } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { setSelectedAyah, useReading } from "../reading";
@@ -160,7 +160,12 @@ function Inspector({ word }: { word: WordDoc | null }) {
   );
 }
 
-/** Continuous mushaf flow for one Madani page of the current surah. */
+const BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+
+/** Continuous mushaf flow for one Madani page of the current surah — laid out
+ *  like the printed Madina mushaf: header margin (juz · surah · hizb), surah
+ *  name band + basmala where the surah begins, ۞ hizb/rub and ۩ sajda marks,
+ *  and the page number at the foot. */
 function MushafPage({
   page,
   ayahs,
@@ -169,6 +174,7 @@ function MushafPage({
   onSelect,
   onAyahMarker,
   targetAyahNo,
+  rubMarks,
 }: {
   page: number;
   ayahs: AyahDoc[];
@@ -177,50 +183,67 @@ function MushafPage({
   onSelect: (w: WordDoc) => void;
   onAyahMarker: (a: AyahDoc) => void;
   targetAyahNo: number | null;
+  rubMarks: Map<number, string>;
 }) {
   const { script, tajwid } = useSettings();
+  const ar = getUILang() === "ar";
+  const first = ayahs[0];
+  const surahNo = first?.surahNo ?? 0;
+  const surahStartsHere = ayahs.some((a) => a.ayahNo === 1);
   return (
     <section className="mushaf-page">
+      <div className="mp-margin">
+        <span>{ar ? "الجزء" : "Juz"} {num(first?.juz ?? 0)}</span>
+        <span>{surahNameAr(surahNo)} · {ar ? "الحزب" : "Hizb"} {num(first?.hizb ?? 0)}</span>
+      </div>
+      {surahStartsHere && (
+        <div className="mp-surah-band">
+          <span className="mp-surah-name quran">سورة {surahNameAr(surahNo)}</span>
+          {surahNo !== 1 && surahNo !== 9 && <div className="mp-basmala quran">{BASMALA}</div>}
+        </div>
+      )}
       <div className="quran">
-        {ayahs.map((ayah) => (
-          <span
-            key={ayah.location}
-            id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
-            style={
-              targetAyahNo === ayah.ayahNo
-                ? { background: "var(--accent-soft)", borderRadius: 8 }
-                : undefined
-            }
-          >
-            {tajwid
-              ? tajwidSpans((wordsByAyah.get(ayah.ayahNo) ?? []).map((w) => w.textUthmani).join(" ")).map((s, i) =>
-                  s.rule ? (
-                    <span key={i} className={TAJWID[s.rule].cls} title={TAJWID[s.rule].ar}>{s.text}</span>
-                  ) : (
-                    <span key={i}>{s.text}</span>
-                  ),
-                )
-              : (wordsByAyah.get(ayah.ayahNo) ?? []).map((w) => (
-              <span key={w.location}>
+        {ayahs.map((ayah) => {
+          const rub = rubMarks.get(ayah.ayahNo);
+          return (
+            <Fragment key={ayah.location}>
+              {rub && <div className="mp-mark mp-rub"><span>۞ {num(rub)}</span></div>}
+              {ayah.sajdaType && <div className="mp-mark mp-sajda"><span>۩ موضع سجدة</span></div>}
+              <span
+                id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
+                className={targetAyahNo === ayah.ayahNo ? "mp-ayah target" : "mp-ayah"}
+              >
+                {tajwid
+                  ? tajwidSpans((wordsByAyah.get(ayah.ayahNo) ?? []).map((w) => w.textUthmani).join(" ")).map((s, i) =>
+                      s.rule ? (
+                        <span key={i} className={TAJWID[s.rule].cls} title={TAJWID[s.rule].ar}>{s.text}</span>
+                      ) : (
+                        <span key={i}>{s.text}</span>
+                      ),
+                    )
+                  : (wordsByAyah.get(ayah.ayahNo) ?? []).map((w) => (
+                      <span key={w.location}>
+                        <span
+                          className={`w${selected === w.location ? " sel" : ""}`}
+                          onClick={() => onSelect(w)}
+                        >
+                          {script === "imlaai" ? w.textClean : w.textUthmani}
+                        </span>{" "}
+                      </span>
+                    ))}{" "}
                 <span
-                  className={`w${selected === w.location ? " sel" : ""}`}
-                  onClick={() => onSelect(w)}
+                  className="ayah-marker"
+                  role="button"
+                  title={`${t("reader.ayat")} ${num(ayah.ayahNo)}${ayah.sajdaType ? " ۩" : ""}`}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => onAyahMarker(ayah)}
                 >
-                  {script === "imlaai" ? w.textClean : w.textUthmani}
+                  ﴿{num(ayah.ayahNo)}﴾
                 </span>{" "}
               </span>
-            ))}{" "}
-            <span
-              className="ayah-marker"
-              role="button"
-              title={`${t("reader.ayat")} ${num(ayah.ayahNo)}${ayah.sajdaType ? " ۩" : ""}`}
-              style={{ cursor: "pointer" }}
-              onClick={() => onAyahMarker(ayah)}
-            >
-              ﴿{num(ayah.ayahNo)}﴾
-            </span>{" "}
-          </span>
-        ))}
+            </Fragment>
+          );
+        })}
       </div>
       <div className="page-no">﴾ {num(page)} ﴿</div>
     </section>
@@ -360,6 +383,22 @@ export default function Reader() {
       else byPage.set(a.page, [a]);
     }
     return [...byPage.entries()].sort((x, y) => x[0] - y[0]);
+  }, [ayahs]);
+
+  // ۞ hizb/rub-quarter marks: ayahNo → «الحزب N» / «الربع» / «النصف» / «الثلاثة أرباع»
+  const QUARTER = ["", "الربع", "النصف", "الثلاثة أرباع"];
+  const rubMarks = useMemo(() => {
+    const m = new Map<number, string>();
+    let prev: number | null = ayahs[0]?.rub ?? null;
+    for (const a of ayahs) {
+      if (prev !== null && a.rub !== prev) {
+        const q = (a.rub - 1) % 4;
+        m.set(a.ayahNo, q === 0 ? `الحزب ${Math.ceil(a.rub / 4)}` : QUARTER[q]);
+      }
+      prev = a.rub;
+    }
+    return m;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ayahs]);
 
   const goTo = (n: number) => navigate(`/read/${n}`);
@@ -517,6 +556,7 @@ export default function Reader() {
                 navigate(`/read/${a.surahNo}/${a.ayahNo}`);
               }}
               targetAyahNo={playingAyahNo ?? targetAyahNo}
+              rubMarks={rubMarks}
             />
           ))
         ) : (

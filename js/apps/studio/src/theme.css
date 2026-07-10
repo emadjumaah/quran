@@ -206,6 +206,29 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   font-family: var(--font-quran);
 }
 
+/* Madina-mushaf furniture for the صفحات page */
+.mp-margin {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: var(--muted); padding: 0 2px 10px;
+  margin-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.mp-surah-band { text-align: center; margin: 6px auto 10px; }
+.mp-surah-name {
+  display: inline-block; font-size: 22px; color: var(--gold);
+  padding: 4px 30px; border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold);
+  background: var(--gold-soft); border-radius: 4px; line-height: 1.7;
+}
+.mp-basmala { text-align: center; font-size: 21px; color: var(--ink-2); margin: 12px 0 4px; }
+.mp-mark { text-align: center; margin: 8px auto 4px; user-select: none; }
+.mp-mark span {
+  display: inline-block; font-family: var(--font-quran); font-size: 14px;
+  padding: 1px 16px; border-radius: 999px;
+}
+.mp-rub span { color: var(--gold); background: var(--gold-soft); }
+.mp-sajda span { color: var(--accent); background: var(--accent-soft); letter-spacing: 0.02em; }
+.mp-ayah { border-radius: 8px; }
+.mp-ayah.target { background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
+
 /* QCF photoreal page — real Madina layout, interactive glyphs */
 .mushaf-page.qcf {
   direction: rtl;
