@@ -30,9 +30,9 @@ db.exec(`
   );
 `);
 const idOf = new Map(db.prepare("SELECT ayah_id, location FROM ayah").all().map((r) => [r.location, r.ayah_id]));
+db.exec("CREATE TABLE IF NOT EXISTS ayah_tafsil_hubs_seen (hub_ayah_id INTEGER PRIMARY KEY)");
 const insert = db.prepare("INSERT OR REPLACE INTO ayah_tafsil (hub_ayah_id, tafsil_ayah_id, rel) VALUES (?,?,?)");
 const seenHub = db.prepare("INSERT OR IGNORE INTO ayah_tafsil_hubs_seen (hub_ayah_id) VALUES (?)");
-db.exec("CREATE TABLE IF NOT EXISTS ayah_tafsil_hubs_seen (hub_ayah_id INTEGER PRIMARY KEY)");
 
 let links = 0, hubsSeen = 0;
 for (const line of fs.readFileSync(journalPath, "utf-8").split("\n")) {
