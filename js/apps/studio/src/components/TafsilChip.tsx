@@ -17,6 +17,7 @@ import {
 import { ayahByLocationMap, surahNameAr } from "../db";
 import type { AyahDoc } from "../types";
 import { getUILang, num } from "../i18n";
+import { useSettings } from "../settings";
 
 const REL_ORDER: Rel[] = ["بيان", "مثال", "جزاء", "توكيد"];
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -32,6 +33,7 @@ function VerseLine({ loc, texts, rel }: { loc: string; texts: Map<string, AyahDo
 }
 
 export default function TafsilChip({ location }: { location: string }) {
+  const { layers } = useSettings();
   const jw = useJawami();
   const [open, setOpen] = useState(false);
   const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
@@ -40,7 +42,7 @@ export default function TafsilChip({ location }: { location: string }) {
     if (open && texts.size === 0) ayahByLocationMap().then(setTexts);
   }, [open, texts.size]);
 
-  if (!jw) return null;
+  if (!layers.jawami || !jw) return null;
   const p = principleOf(location);
   const fwd = tafsilOf(location);
   const back = elaborates(location);

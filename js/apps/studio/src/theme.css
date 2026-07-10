@@ -37,6 +37,31 @@
   --line: #322d25;
   --shadow: 0 1px 3px rgb(0 0 0 / 0.4);
 }
+/* sepia — a warm mushaf-cream reading theme */
+[data-theme="sepia"] {
+  --bg: #efe6d2;
+  --panel: #f7efdd;
+  --panel-2: #e8dcc2;
+  --ink: #43371f;
+  --ink-2: #6a5a3b;
+  --muted: #9b8a67;
+  --accent: #0b6e56;
+  --accent-2: #0d8467;
+  --accent-soft: #dcebd7;
+  --gold: #9a6f24;
+  --gold-soft: #ecdcbb;
+  --line: #ddceb0;
+  --shadow: 0 1px 3px rgb(67 55 31 / 0.08), 0 4px 16px rgb(67 55 31 / 0.06);
+}
+
+/* Quran font size multiplier from reader settings (default 1) */
+:root { --quran-scale: 1; }
+
+/* focus mode — hide the app chrome, keep only the reading surface */
+body.focus-mode .topbar,
+body.focus-mode .footer,
+body.focus-mode .mushaf-nav { display: none; }
+body.focus-mode .app-shell { grid-template-rows: 1fr; }
 
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; }
@@ -137,7 +162,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   font-family: var(--font-quran);
   direction: rtl;
   text-align: right;
-  font-size: 28px;
+  font-size: calc(28px * var(--quran-scale, 1));
   line-height: 2.3;
 }
 .quran .w { cursor: pointer; border-radius: 8px; padding: 0 3px; transition: background 0.12s; }
@@ -161,7 +186,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .mushaf-page .quran {
   text-align: justify;
   text-align-last: center;
-  font-size: 24.5px;
+  font-size: calc(24.5px * var(--quran-scale, 1));
   line-height: 2.15;
 }
 .mushaf-page .page-no {
@@ -198,7 +223,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   display: flex;
   direction: rtl;
   align-items: baseline;
-  font-size: clamp(19px, 4.3vw, 28px);
+  font-size: clamp(calc(19px * var(--quran-scale, 1)), calc(4.3vw * var(--quran-scale, 1)), calc(28px * var(--quran-scale, 1)));
   line-height: 2.35;
   color: var(--ink);
   white-space: nowrap;
@@ -294,6 +319,32 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   .jw-verse { flex-direction: column; gap: 2px; }
   .jw-cardtext { font-size: 20px; }
 }
+
+/* settings ⚙ popover */
+.set-wrap { position: relative; }
+.set-panel {
+  position: absolute; inset-inline-end: 0; top: calc(100% + 8px); z-index: 40;
+  width: 300px; max-width: 92vw; padding: 12px 14px 14px;
+  max-height: 78vh; overflow-y: auto;
+}
+.set-head { font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.set-group {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
+  margin: 12px 0 4px; font-weight: 600;
+}
+.set-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 0; }
+.set-label { color: var(--ink-2); font-size: 13.5px; }
+.set-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.set-seg button {
+  border: none; border-radius: 0; background: var(--panel); color: var(--muted);
+  padding: 3px 10px; font-size: 12.5px;
+}
+.set-seg button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.set-stepper { display: inline-flex; align-items: center; gap: 6px; }
+.set-stepper input[type="range"] { width: 96px; accent-color: var(--accent); }
+.set-stepper button { width: 26px; height: 26px; padding: 0; border-radius: 6px; }
+.set-switch { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.set-row input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
 
 .muted { color: var(--muted); font-size: 12.5px; }
 @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }

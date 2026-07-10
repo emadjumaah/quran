@@ -15,6 +15,7 @@ import { getWord, listAyahs, listSurahs, listWords, pageJuzMap } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { setSelectedAyah, useReading } from "../reading";
+import { useSettings } from "../settings";
 import ReadingBar from "../components/ReadingBar";
 import MushafRealPage from "../components/MushafRealPage";
 import AyahText from "../components/AyahText";
@@ -130,6 +131,7 @@ function SurahSidebar({
 
 function Inspector({ word }: { word: WordDoc | null }) {
   useUILang();
+  const { layers } = useSettings();
   if (!word) {
     return (
       <div className="muted" style={{ padding: 8, lineHeight: 1.8 }}>
@@ -149,7 +151,7 @@ function Inspector({ word }: { word: WordDoc | null }) {
           criterion={{ kind: "manual", value: word.location }}
           label={`⊕ ${t("collect")}`}
         />
-        {word.root && (
+        {word.root && layers.roots && (
           <Link to={`/roots/${encodeURIComponent(word.root)}`} className="chip link">
             {t("reader.seeRoot")}{" "}
             <b className="quran" style={{ fontSize: 16, lineHeight: 1 }}>
@@ -180,6 +182,7 @@ function MushafPage({
   onAyahMarker: (a: AyahDoc) => void;
   targetAyahNo: number | null;
 }) {
+  const { script } = useSettings();
   return (
     <section className="mushaf-page">
       <div className="quran">
@@ -199,7 +202,7 @@ function MushafPage({
                   className={`w${selected === w.location ? " sel" : ""}`}
                   onClick={() => onSelect(w)}
                 >
-                  {w.textUthmani}
+                  {script === "imlaai" ? w.textClean : w.textUthmani}
                 </span>{" "}
               </span>
             ))}

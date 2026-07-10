@@ -1,7 +1,9 @@
 import { num } from "../i18n";
+import { useSettings } from "../settings";
 import type { WordDoc } from "../types";
 
-/** One ayah rendered word-by-word; clicking a word selects it. */
+/** One ayah rendered word-by-word; clicking a word selects it. Honours the
+ *  script setting (Uthmani ⇄ simple/imlaa'i). */
 export default function AyahText({
   words,
   ayahNo,
@@ -13,6 +15,7 @@ export default function AyahText({
   selected?: string | null;
   onSelect?: (w: WordDoc) => void;
 }) {
+  const { script } = useSettings();
   return (
     <div className="quran">
       {words.map((w) => (
@@ -21,7 +24,7 @@ export default function AyahText({
             className={`w${selected === w.location ? " sel" : ""}`}
             onClick={() => onSelect?.(w)}
           >
-            {w.textUthmani}
+            {script === "imlaai" ? w.textClean : w.textUthmani}
           </span>{" "}
         </span>
       ))}

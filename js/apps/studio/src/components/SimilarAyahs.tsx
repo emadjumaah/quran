@@ -5,6 +5,7 @@ import { num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import { readPathOf } from "../types";
 import { similarOf } from "../similar";
+import { useSettings } from "../settings";
 import AyahRef from "./AyahRef";
 import CollectButton from "./CollectButton";
 
@@ -20,9 +21,12 @@ interface Row {
  */
 export default function SimilarAyahs({ ayahId, location }: { ayahId: number; location: string }) {
   useUILang();
+  const { layers } = useSettings();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<Row[] | null>(null);
+
+  if (!layers.similar) return null;
 
   const toggle = async () => {
     setOpen(!open);

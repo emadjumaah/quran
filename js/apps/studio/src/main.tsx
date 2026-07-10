@@ -15,8 +15,11 @@ import Omnibox from "./components/Omnibox";
 import Goto from "./views/Goto";
 import Today from "./views/Today";
 import Jawami from "./views/Jawami";
+import SettingsPanel from "./components/SettingsPanel";
+import { applySettings, setSettings, useSettings } from "./settings";
 
 applyUILang();
+applySettings();
 
 function Boot({ children }: { children: React.ReactNode }) {
   useUILang();
@@ -70,15 +73,18 @@ function Boot({ children }: { children: React.ReactNode }) {
 }
 
 function ThemeToggle() {
-  const [dark, setDark] = useState(
-    () => window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false,
-  );
-  useEffect(() => {
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-  }, [dark]);
+  const s = useSettings();
+  const resolved =
+    s.theme === "auto"
+      ? (window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : s.theme;
+  const isDark = resolved === "dark";
   return (
-    <button onClick={() => setDark(!dark)} title={getUILang() === "ar" ? "المظهر" : "Light/Dark"}>
-      {dark ? "☀" : "☾"}
+    <button
+      onClick={() => setSettings({ theme: isDark ? "light" : "dark" })}
+      title={getUILang() === "ar" ? "فاتح/داكن" : "Light/Dark"}
+    >
+      {isDark ? "☀" : "☾"}
     </button>
   );
 }
@@ -177,6 +183,7 @@ function App() {
           <Omnibox />
           <LangToggle />
           <ThemeToggle />
+          <SettingsPanel />
         </header>
         <Routes>
           <Route path="/" element={<Home />} />

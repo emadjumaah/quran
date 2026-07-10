@@ -34,9 +34,18 @@ export function useUILang(): UILang {
 
 export const getUILang = (): UILang => lang;
 
-/** Localized digits: Arabic-Indic in Arabic UI. */
-export const num = (n: number | string): string =>
-  lang === "ar" ? String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)]) : String(n);
+/** Numerals override from reader settings: "auto" follows the UI language. */
+let numerals: "auto" | "ar" | "west" = "auto";
+export const setNumeralsMode = (m: "auto" | "ar" | "west"): void => {
+  numerals = m;
+};
+
+/** Localized digits: Arabic-Indic when the UI is Arabic (or forced via
+ *  settings); Western when the UI is English (or forced). */
+export const num = (n: number | string): string => {
+  const ar = numerals === "auto" ? lang === "ar" : numerals === "ar";
+  return ar ? String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)]) : String(n);
+};
 
 const AR: Record<string, string> = {
   "nav.today": "اليوم",
