@@ -12,8 +12,26 @@ import { getSettings } from "../settings";
  *                 with Media Session lock-screen controls.
  * The global NowPlayingBar always offers stop/next wherever the user goes.
  */
-const CDN = "https://cdn.islamic.network/quran/audio/64/ar.husary";
+const CDN_ROOT = "https://cdn.islamic.network/quran/audio";
 const LAST_AYAH = 6236;
+
+/** Reciters on the Islamic Network CDN — each pinned to a bitrate verified to
+ *  return 200 (they differ per edition). The SW audio cache rule matches any
+ *  edition/bitrate under this host, so all reciters cache offline. */
+export const RECITERS: Record<string, { ed: string; br: number; ar: string; en: string }> = {
+  husary: { ed: "ar.husary", br: 64, ar: "محمود خليل الحصري", en: "al-Ḥuṣarī" },
+  alafasy: { ed: "ar.alafasy", br: 128, ar: "مشاري العفاسي", en: "Mishary Alafasy" },
+  abdulbasit: { ed: "ar.abdulbasitmurattal", br: 64, ar: "عبد الباسط عبد الصمد", en: "ʿAbd al-Bāsiṭ" },
+  minshawi: { ed: "ar.minshawi", br: 128, ar: "محمد صديق المنشاوي", en: "al-Minshāwī" },
+  sudais: { ed: "ar.abdurrahmaansudais", br: 192, ar: "عبد الرحمن السديس", en: "as-Sudais" },
+  muaiqly: { ed: "ar.mahermuaiqly", br: 128, ar: "ماهر المعيقلي", en: "al-Muʿayqilī" },
+};
+
+const reciterOf = () => RECITERS[getSettings().reciter] ?? RECITERS.husary;
+const audioBase = () => {
+  const r = reciterOf();
+  return `${CDN_ROOT}/${r.br}/${r.ed}`;
+};
 
 let player: HTMLAudioElement | null = null;
 let currentId = 0;
@@ -58,6 +76,12 @@ export function setLivePlaybackRate(rate: number) {
   }
 }
 
+/** Reciter changed in settings — restart the current ayah in the new voice so
+ *  the change is heard at once (keeps continuous/repeat/range state). */
+export function reloadForReciter() {
+  if (currentId && player && !player.paused) start(currentId);
+}
+
 async function updateMediaSession(id: number) {
   currentLocation = null;
   try {
@@ -69,7 +93,7 @@ async function updateMediaSession(id: number) {
       if ("mediaSession" in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: `${surahNameAr(ayah.surahNo)} — ${ayah.ayahNo}`,
-          artist: "الشيخ محمود خليل الحصري",
+          artist: reciterOf().ar,
           album: "مصحف المعرفة",
         });
       }
@@ -114,7 +138,7 @@ function start(id: number) {
   player.onerror = () => {
     if (currentId === id) stopAudio();
   };
-  player.src = `${CDN}/${id}.mp3`;
+  player.src = `${audioBase()}/${id}.mp3`;
   // loading a new src resets the rate to defaultPlaybackRate — set both
   player.defaultPlaybackRate = getSettings().speed;
   player.playbackRate = getSettings().speed;

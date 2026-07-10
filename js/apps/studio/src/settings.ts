@@ -17,6 +17,7 @@ export interface Settings {
   theme: Theme;
   focus: boolean; // distraction-free: hide chrome, just the text
   speed: number; // recitation playback rate (0.75 – 1.25)
+  reciter: string; // key into RECITERS (AudioButton); default al-Ḥuṣarī
   layers: {
     jawami: boolean; // محكم→تفصيل chip in the reader
     roots: boolean; // root chip in the word inspector
@@ -32,6 +33,7 @@ const DEFAULTS: Settings = {
   theme: "auto",
   focus: false,
   speed: 1,
+  reciter: "husary",
   layers: { jawami: true, roots: true, similar: true },
 };
 

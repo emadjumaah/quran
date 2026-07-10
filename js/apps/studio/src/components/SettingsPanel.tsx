@@ -5,7 +5,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { setSettings, useSettings, type Numerals, type Script, type Theme } from "../settings";
-import { setLivePlaybackRate } from "./AudioButton";
+import { RECITERS, reloadForReciter, setLivePlaybackRate } from "./AudioButton";
 import { getUILang, num, useUILang } from "../i18n";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -139,6 +139,22 @@ export default function SettingsPanel() {
           </Row>
 
           <div className="set-group">{ar ? "التلاوة" : "Recitation"}</div>
+          <Row label={ar ? "القارئ" : "Reciter"}>
+            <select
+              value={s.reciter}
+              onChange={(e) => {
+                setSettings({ reciter: e.target.value });
+                reloadForReciter();
+              }}
+              style={{ padding: "4px 8px", maxWidth: 168 }}
+            >
+              {Object.entries(RECITERS).map(([key, r]) => (
+                <option key={key} value={key}>
+                  {ar ? r.ar : r.en}
+                </option>
+              ))}
+            </select>
+          </Row>
           <Row label={ar ? "السرعة" : "Speed"}>
             <Seg<string>
               value={String(s.speed)}
