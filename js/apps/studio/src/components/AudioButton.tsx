@@ -18,6 +18,9 @@ let player: HTMLAudioElement | null = null;
 let currentId = 0;
 let continuous = false;
 let currentLocation: string | null = null;
+let repeatTotal = 0; // 0 = no repeat; N = repeat current ayah N times
+let repeatLeft = 0;
+let stopAtId = 0; // 0 = no bound; else stop after this global ayah (range end)
 
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
@@ -34,11 +37,17 @@ export const playingLocation = () => currentLocation;
 
 export function stopAudio() {
   continuous = false;
+  repeatTotal = 0;
+  repeatLeft = 0;
+  stopAtId = 0;
   if (player && !player.paused) player.pause();
   currentId = 0;
   currentLocation = null;
   notify();
 }
+
+/** Global playback id (0 when stopped) — for the reader to reflect state. */
+export const currentPlayingId = () => currentId;
 
 async function updateMediaSession(id: number) {
   currentLocation = null;
@@ -79,8 +88,19 @@ function start(id: number) {
   }
   player.onended = () => {
     if (currentId !== id) return;
-    if (continuous && id < LAST_AYAH) start(id + 1);
-    else stopAudio();
+    if (repeatLeft > 0) {
+      repeatLeft -= 1;
+      start(id); // replay same ayah
+      return;
+    }
+    if (stopAtId && id >= stopAtId) {
+      stopAudio();
+      return;
+    }
+    if (continuous && id < LAST_AYAH) {
+      if (repeatTotal > 0) repeatLeft = repeatTotal; // repeat each ayah in a continuous range
+      start(id + 1);
+    } else stopAudio();
   };
   player.onerror = () => {
     if (currentId === id) stopAudio();
@@ -108,6 +128,26 @@ function toggle(globalAyahNo: number) {
 /** «استمع للسورة» — continuous recitation from this ayah onward. */
 export function playContinuous(fromGlobalAyahNo: number) {
   continuous = true;
+  repeatTotal = 0;
+  repeatLeft = 0;
+  stopAtId = 0;
+  start(fromGlobalAyahNo);
+}
+
+/**
+ * Reading controller — play from an ayah with options.
+ *   repeat: repeat EACH ayah this many extra times (0 = once)
+ *   continueAfter: keep going to following ayahs (else stop at `from`, honouring repeat)
+ *   until: optional global ayah id to stop after (range end)
+ */
+export function playFrom(
+  fromGlobalAyahNo: number,
+  opts: { repeat?: number; continueAfter?: boolean; until?: number } = {},
+) {
+  repeatTotal = Math.max(0, opts.repeat ?? 0);
+  repeatLeft = repeatTotal;
+  continuous = opts.continueAfter ?? false;
+  stopAtId = opts.until ?? 0;
   start(fromGlobalAyahNo);
 }
 

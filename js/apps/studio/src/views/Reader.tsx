@@ -14,6 +14,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { listAyahs, listSurahs, listWords } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
+import { setSelectedAyah, useReading } from "../reading";
+import ReadingBar from "../components/ReadingBar";
 import AyahText from "../components/AyahText";
 import AyahRef from "../components/AyahRef";
 import MorphologyCard from "../components/MorphologyCard";
@@ -350,6 +352,43 @@ export default function Reader() {
 
   const goTo = (n: number) => navigate(`/read/${n}`);
 
+  // Ayah selection + navigation (reading controller). Selecting an ayah opens
+  // the ReadingBar; ← → move ayah (crossing surah at the ends); Esc clears.
+  const { selected: selectedLoc } = useReading();
+  const selectAyah = (loc: string) => {
+    setSelectedAyah(loc);
+    document.getElementById(`ayah-${loc.split(":")[0]}-${loc.split(":")[1]}`)?.scrollIntoView({ block: "center" });
+  };
+  const navigateAyah = (dir: -1 | 1) => {
+    if (!selectedLoc) return;
+    const [ss, aa] = selectedLoc.split(":").map(Number);
+    if (ss !== surahNo) {
+      navigate(`/read/${ss}/${aa + dir}`);
+      return;
+    }
+    const nextNo = aa + dir;
+    if (nextNo >= 1 && nextNo <= ayahs.length) {
+      selectAyah(`${surahNo}:${nextNo}`);
+    } else if (nextNo < 1 && surahNo > 1) {
+      navigate(`/read/${surahNo - 1}`); // previous surah
+    } else if (nextNo > ayahs.length && surahNo < 114) {
+      navigate(`/read/${surahNo + 1}/1`);
+      setSelectedAyah(`${surahNo + 1}:1`);
+    }
+  };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      if (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA") return;
+      if (!selectedLoc) return;
+      if (e.key === "ArrowRight") { e.preventDefault(); navigateAyah(getUILang() === "ar" ? -1 : 1); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); navigateAyah(getUILang() === "ar" ? 1 : -1); }
+      else if (e.key === "Escape") setSelectedAyah(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   if (!Number.isInteger(surahNo) || surahNo < 1 || surahNo > 114) {
     return (
       <div className="page">
@@ -487,6 +526,13 @@ export default function Reader() {
                   }}
                 >
                   <AyahRef location={ayah.location} />
+                  <button
+                    className="chip"
+                    onClick={() => setSelectedAyah(ayah.location)}
+                    title={t("read.playHere")}
+                    style={{ border: "none", cursor: "pointer",
+                      ...(selectedLoc === ayah.location ? { background: "var(--accent-soft)", color: "var(--accent)" } : {}) }}
+                  >▶</button>
                   <span className="chip">
                     {t("reader.juz")} {num(ayah.juz)}
                   </span>
@@ -534,6 +580,8 @@ export default function Reader() {
           <Inspector word={selected} />
         </aside>
       )}
+
+      <ReadingBar surahBase={surahBase} onNavigate={navigateAyah} />
 
       {narrow && selected && (
         <div
