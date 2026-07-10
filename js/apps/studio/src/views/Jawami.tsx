@@ -8,10 +8,15 @@ import { Link } from "react-router-dom";
 import {
   GRADE_INFO,
   REL_INFO,
+  convergenceRanked,
   elaborates,
+  indegreeOf,
+  mirrorPairs,
+  relationHubs,
   tafsilOf,
   useJawami,
   type Grade,
+  type Link as JLink,
   type Rel,
 } from "../jawami";
 import type { Principle } from "../jawami";
@@ -115,9 +120,174 @@ function Card({
   );
 }
 
+/** A reusable expandable row: a verse header (ref + count) → its links below. */
+function HubRow({
+  hub,
+  count,
+  links,
+  texts,
+  badge,
+}: {
+  hub: string;
+  count: number;
+  links: JLink[];
+  texts: Map<string, AyahDoc>;
+  badge?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const d = texts.get(hub);
+  return (
+    <div className={`jw-card${open ? " open" : ""}`}>
+      <button className="jw-cardhead" onClick={() => setOpen(!open)}>
+        <span className="jw-ref">{arName(hub)}</span>
+        {badge && <span className="chip gold">{badge}</span>}
+        <span className="spacer" />
+        <span className="jw-deg">{num(count)}</span>
+        <span className="jw-caret">{open ? "▾" : "◂"}</span>
+      </button>
+      <div className="jw-cardtext quran" style={{ fontSize: 19 }}>{d?.textClean ?? hub}</div>
+      {open && (
+        <div className="jw-panel">
+          {links.map((l) => (
+            <VerseRow key={l.loc} loc={l.loc} texts={texts} rel={l.rel} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MoreButton({ shown, total, onMore }: { shown: number; total: number; onMore: () => void }) {
+  const ar = getUILang() === "ar";
+  if (shown >= total) return null;
+  return (
+    <div style={{ textAlign: "center", margin: "16px 0" }}>
+      <button onClick={onMore}>{ar ? `عرض المزيد (${num(total - shown)})` : `show more (${total - shown})`}</button>
+    </div>
+  );
+}
+
+/** عدسات العلاقة — the network sliced by relation type (توكيد/بيان/جزاء/مثال). */
+function RelationLens({ texts }: { texts: Map<string, AyahDoc> }) {
+  useUILang();
+  const ar = getUILang() === "ar";
+  const [rel, setRel] = useState<Rel>("توكيد");
+  const [limit, setLimit] = useState(50);
+  const hubs = useMemo(() => relationHubs(rel), [rel]);
+  useEffect(() => setLimit(50), [rel]);
+  return (
+    <div>
+      <p className="jw-lead">
+        {ar
+          ? "الشبكة مقسّمةً حسب نوع العلاقة: توكيدٌ (تقرير القاعدة بصياغة أخرى) · بيانٌ · جزاءٌ · مثال. لكل نوعٍ الجوامعُ الأكثر ارتباطًا به."
+          : "The network sliced by relation: restatement (توكيد), clarification, requital, instance. For each, the most-connected principles."}
+      </p>
+      <div className="jw-chipset" style={{ justifyContent: "center", marginBottom: 10 }}>
+        {REL_ORDER.map((r) => (
+          <button
+            key={r}
+            className={rel === r ? "on" : ""}
+            onClick={() => setRel(r)}
+            style={rel === r ? { borderColor: REL_INFO[r].color, color: REL_INFO[r].color, background: "var(--panel-2)" } : undefined}
+          >
+            {r} <span className="muted">· {REL_INFO[r].note}</span>
+          </button>
+        ))}
+      </div>
+      <div className="muted jw-resultcount">
+        {num(hubs.reduce((s, h) => s + h.count, 0))} {ar ? "رابط" : "links"} · {num(hubs.length)} {ar ? "جامعة" : "principles"}
+      </div>
+      <div className="jw-list">
+        {hubs.slice(0, limit).map((h) => (
+          <HubRow key={h.hub} hub={h.hub} count={h.count} links={h.links} texts={texts} badge={rel} />
+        ))}
+      </div>
+      <MoreButton shown={Math.min(limit, hubs.length)} total={hubs.length} onMore={() => setLimit(limit + 60)} />
+    </div>
+  );
+}
+
+/** نقاط الالتقاء — verses that the most جوامع elaborate into (convergence). */
+function Convergence({ texts }: { texts: Map<string, AyahDoc> }) {
+  useUILang();
+  const ar = getUILang() === "ar";
+  const [limit, setLimit] = useState(50);
+  const items = useMemo(() => convergenceRanked(2), []);
+  return (
+    <div>
+      <p className="jw-lead">
+        {ar
+          ? "آياتٌ تلتقي عندها عدةُ قواعدَ جامعة — كلّما كثُر عددُ الجوامع التي تُفصِّلها الآية، كانت أشدَّ مركزيةً في نظم القرآن."
+          : "Verses where several principles converge — the more جوامع elaborate a verse, the more central it is to the Quran's weave."}
+      </p>
+      <div className="muted jw-resultcount">
+        {num(items.length)} {ar ? "نقطة التقاء (تُفصِّلها جامعتان فأكثر)" : "convergence points (≥2 principles)"}
+      </div>
+      <div className="jw-list">
+        {items.slice(0, limit).map((it) => (
+          <HubRow
+            key={it.loc}
+            hub={it.loc}
+            count={it.count}
+            links={it.hubs}
+            texts={texts}
+            badge={`${ar ? "تُفصِّلها" : "elaborated by"} ${num(it.count)}`}
+          />
+        ))}
+      </div>
+      <MoreButton shown={Math.min(limit, items.length)} total={items.length} onMore={() => setLimit(limit + 60)} />
+    </div>
+  );
+}
+
+/** المثاني — verse pairs that elaborate each other back (mirror pillars). */
+function Mathani({ texts }: { texts: Map<string, AyahDoc> }) {
+  useUILang();
+  const ar = getUILang() === "ar";
+  const [onlyAsym, setOnlyAsym] = useState(false);
+  const [limit, setLimit] = useState(50);
+  const all = useMemo(() => mirrorPairs(), []);
+  const pairs = onlyAsym ? all.filter((p) => p.relAB !== p.relBA) : all;
+  useEffect(() => setLimit(50), [onlyAsym]);
+  return (
+    <div>
+      <p className="jw-lead">
+        {ar
+          ? "﴿كِتَابًا مُتَشَابِهًا مَثَانِيَ﴾ — آيتان يُفصِّل كلٌّ منهما الأخرى تبادليًّا. تقابُلٌ في نظم القرآن يكشف عن وحدة معناه."
+          : "Mathānī — verse pairs that each elaborate the other. A reciprocal weave revealing the unity of the Quran's meaning."}
+      </p>
+      <div className="jw-chipset" style={{ justifyContent: "center", marginBottom: 10 }}>
+        <button className={!onlyAsym ? "on" : ""} onClick={() => setOnlyAsym(false)}>
+          {ar ? `الكل (${num(all.length)})` : `all (${all.length})`}
+        </button>
+        <button className={onlyAsym ? "on" : ""} onClick={() => setOnlyAsym(true)}>
+          {ar ? "المتقابلة المختلفة" : "asymmetric only"}
+        </button>
+      </div>
+      <div className="jw-list">
+        {pairs.slice(0, limit).map((p) => (
+          <div key={`${p.a}|${p.b}`} className="jw-card" style={{ padding: "6px 4px" }}>
+            <VerseRow loc={p.a} texts={texts} rel={p.relAB} />
+            <div className="mathani-mid">
+              <span className="jw-reldot" style={{ background: REL_INFO[p.relAB].color }} />
+              {p.relAB === p.relBA ? p.relAB : `${p.relAB} ⇄ ${p.relBA}`}
+              <span className="jw-reldot" style={{ background: REL_INFO[p.relBA].color }} />
+            </div>
+            <VerseRow loc={p.b} texts={texts} rel={p.relBA} />
+          </div>
+        ))}
+      </div>
+      <MoreButton shown={Math.min(limit, pairs.length)} total={pairs.length} onMore={() => setLimit(limit + 60)} />
+    </div>
+  );
+}
+
+type Tab = "list" | "relations" | "convergence" | "mathani";
+
 export default function Jawami() {
   useUILang();
   const jw = useJawami();
+  const [tab, setTab] = useState<Tab>("list");
   const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
   const [kind, setKind] = useState<string>("");
   const [grade, setGrade] = useState<string>("");
@@ -175,6 +345,21 @@ export default function Jawami() {
           </div>
         </header>
 
+        <div className="jw-tabs">
+          {([
+            ["list", ar ? "الجوامع" : "Principles"],
+            ["relations", ar ? "العلاقات" : "Relations"],
+            ["convergence", ar ? "نقاط الالتقاء" : "Convergence"],
+            ["mathani", ar ? "المثاني" : "Mathānī"],
+          ] as [Tab, string][]).map(([key, lbl]) => (
+            <button key={key} className={tab === key ? "on" : ""} onClick={() => setTab(key)}>
+              {lbl}
+            </button>
+          ))}
+        </div>
+
+        {tab === "list" && (
+        <>
         <div className="jw-filters">
           <input
             placeholder={ar ? "ابحث في الجوامع…" : "Search principles…"}
@@ -226,6 +411,12 @@ export default function Jawami() {
             </button>
           </div>
         )}
+        </>
+        )}
+
+        {tab === "relations" && <RelationLens texts={texts} />}
+        {tab === "convergence" && <Convergence texts={texts} />}
+        {tab === "mathani" && <Mathani texts={texts} />}
       </div>
     </div>
   );

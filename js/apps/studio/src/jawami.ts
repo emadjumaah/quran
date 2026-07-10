@@ -99,6 +99,46 @@ export function gapsOf(loc: string): string[] {
   return data?.gaps[loc] ?? [];
 }
 
+/** How many جوامع cite this verse as their تفصيل (convergence indegree). */
+export const indegreeOf = (loc: string): number => reverse?.get(loc)?.length ?? 0;
+
+/** نقاط الالتقاء — verses ranked by how many distinct جوامع elaborate into them. */
+export function convergenceRanked(min = 2): { loc: string; count: number; hubs: Link[] }[] {
+  if (!reverse) return [];
+  const out: { loc: string; count: number; hubs: Link[] }[] = [];
+  for (const [loc, hubs] of reverse) if (hubs.length >= min) out.push({ loc, count: hubs.length, hubs });
+  return out.sort((a, b) => b.count - a.count);
+}
+
+/** عدسة العلاقة — hubs ranked by how many links of one relation they carry. */
+export function relationHubs(rel: Rel): { hub: string; count: number; links: Link[] }[] {
+  if (!data) return [];
+  const out: { hub: string; count: number; links: Link[] }[] = [];
+  for (const [hub, links] of Object.entries(data.tafsil)) {
+    const ls = links.filter(([, r]) => r === rel).map(([l, r]) => ({ loc: l, rel: r }));
+    if (ls.length) out.push({ hub, count: ls.length, links: ls });
+  }
+  return out.sort((a, b) => b.count - a.count);
+}
+
+/** الركائز المتقابلة — verse pairs that cite each other back (mirror pillars). */
+export function mirrorPairs(): { a: string; b: string; relAB: Rel; relBA: Rel }[] {
+  if (!data) return [];
+  const seen = new Set<string>();
+  const out: { a: string; b: string; relAB: Rel; relBA: Rel }[] = [];
+  for (const [hub, links] of Object.entries(data.tafsil)) {
+    for (const [t, rel] of links) {
+      const back = data.tafsil[t]?.find(([bt]) => bt === hub);
+      if (!back) continue;
+      const key = [hub, t].sort().join("|");
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ a: hub, b: t, relAB: rel, relBA: back[1] });
+    }
+  }
+  return out;
+}
+
 export const REL_INFO: Record<Rel, { en: string; note: string; color: string }> = {
   بيان: { en: "clarifies", note: "يفصّل الحكم وشروطه", color: "var(--accent)" },
   مثال: { en: "instance", note: "واقعة محكومة بالقاعدة", color: "var(--gold)" },

@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import {
   REL_INFO,
   elaborates,
+  indegreeOf,
   principleOf,
   tafsilOf,
   useJawami,
@@ -60,6 +61,11 @@ export default function TafsilAside({ location }: { location: string | null }) {
           <span className="chip gold">◆ {ar ? "جامعة" : "principle"}</span>
         ) : (
           <span className="chip">↗ {ar ? "تفصيل" : "elaboration"}</span>
+        )}
+        {indegreeOf(location) >= 3 && (
+          <span className="chip" title={ar ? "تلتقي عندها عدة جوامع" : "several principles converge here"}>
+            ◈ {ar ? "نقطة التقاء" : "convergence"} {num(indegreeOf(location))}
+          </span>
         )}
       </div>
       {p?.kind && (
