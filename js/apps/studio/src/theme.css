@@ -172,6 +172,22 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
   font-family: var(--font-quran);
 }
 
+/* QCF photoreal page — real Madina layout, interactive glyphs */
+.mushaf-page.qcf { direction: rtl; padding: 30px 30px 16px; }
+.qcf-line {
+  display: flex;
+  direction: rtl;
+  align-items: baseline;
+  font-size: clamp(20px, 4.4vw, 30px);
+  line-height: 2.3;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.qcf-w { cursor: pointer; border-radius: 6px; padding: 0 1px; transition: background 0.12s, color 0.12s; }
+.qcf-w:hover { color: var(--accent); }
+.qcf-w.sel { background: var(--accent-soft); color: var(--accent); }
+.qcf-w.play { background: var(--gold-soft); color: var(--gold); }
+
 .muted { color: var(--muted); font-size: 12.5px; }
 @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }

@@ -11,11 +11,12 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { listAyahs, listSurahs, listWords } from "../db";
+import { getWord, listAyahs, listSurahs, listWords } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { setSelectedAyah, useReading } from "../reading";
 import ReadingBar from "../components/ReadingBar";
+import MushafRealPage from "../components/MushafRealPage";
 import AyahText from "../components/AyahText";
 import AyahRef from "../components/AyahRef";
 import MorphologyCard from "../components/MorphologyCard";
@@ -25,7 +26,7 @@ import SimilarAyahs from "../components/SimilarAyahs";
 import Translations from "../components/Translations";
 
 const MODE_KEY = "quran-studio:reader-mode";
-type Mode = "pages" | "ayat";
+type Mode = "mushaf" | "pages" | "ayat";
 
 /** Tracks whether the viewport is narrower than 900px. */
 function useNarrow(): boolean {
@@ -461,7 +462,7 @@ export default function Reader() {
                 className="chip"
                 style={{ background: "var(--panel)", border: "1px solid var(--line)", gap: 0, padding: 2 }}
               >
-                {(["pages", "ayat"] as Mode[]).map((m) => (
+                {(["mushaf", "pages", "ayat"] as Mode[]).map((m) => (
                   <button
                     key={m}
                     onClick={() => switchMode(m)}
@@ -474,7 +475,7 @@ export default function Reader() {
                       fontWeight: mode === m ? 600 : 400,
                     }}
                   >
-                    {m === "pages" ? t("reader.pages") : t("reader.ayat")}
+                    {m === "mushaf" ? t("reader.mushaf") : m === "pages" ? t("reader.pages") : t("reader.ayat")}
                   </button>
                 ))}
               </span>
@@ -486,6 +487,17 @@ export default function Reader() {
           <p className="muted">{t("loading")}</p>
         ) : ayahs.length === 0 ? (
           <p className="muted">{t("notFound")}</p>
+        ) : mode === "mushaf" ? (
+          pages.map(([page]) => (
+            <MushafRealPage
+              key={page}
+              page={page}
+              selectedWord={selected?.location ?? null}
+              playingAyah={playingAyahNo != null ? `${surahNo}:${playingAyahNo}` : null}
+              onWord={(key) => { void getWord(key).then((w) => w && setSelected(w)); }}
+              onAyah={(loc) => setSelectedAyah(loc)}
+            />
+          ))
         ) : mode === "pages" ? (
           pages.map(([page, pageAyahs]) => (
             <MushafPage

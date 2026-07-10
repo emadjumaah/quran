@@ -110,7 +110,7 @@ export default defineConfig({
       workbox: {
         // the app shell precaches; the big data files cache on first use
         globPatterns: ["**/*.{js,css,html,svg,png,woff,woff2,wasm}"],
-        globIgnores: ["**/quran-app.db", "**/*.bin"],
+        globIgnores: ["**/quran-app.db", "**/*.bin", "**/mushaf/fonts/**", "**/mushaf/layout.json"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
@@ -120,6 +120,16 @@ export default defineConfig({
             options: {
               cacheName: "qkg-data",
               expiration: { maxEntries: 6 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // QCF mushaf fonts + layout — cache pages as they are viewed
+            urlPattern: /\/mushaf\/(fonts\/.*\.woff2|layout\.json)(\?.*)?$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "qkg-mushaf",
+              expiration: { maxEntries: 650, maxAgeSeconds: 60 * 60 * 24 * 180 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
