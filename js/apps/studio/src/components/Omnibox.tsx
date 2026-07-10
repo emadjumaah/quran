@@ -8,11 +8,12 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAyahByLocation, listSurahs, searchAyahs, searchRoots } from "../db";
+import { getAyahByLocation, getRoot, listSurahs, searchAyahs, searchRoots } from "../db";
 import { num, t, useUILang } from "../i18n";
 import type { SurahDoc } from "../types";
 import { readPathOf } from "../types";
 import { surahNameAr } from "../db";
+import { resolveRootReady } from "../searchForms";
 
 /** well-known ayah names */
 const ALIASES: Record<string, string> = {
@@ -160,11 +161,30 @@ export default function Omnibox() {
         }
       }
 
-      // Arabic token → roots
+      // Arabic token → root: resolve the typed WORD to its root first (شقي →
+      // شقو, الزنى → زني) so laypeople needn't know the bare root, then prefix.
       if (/^[ء-ي]{2,}$/.test(raw)) {
+        const seenRoots = new Set<string>();
+        try {
+          const resolved = await resolveRootReady(raw);
+          if (resolved) {
+            const rd = await getRoot(resolved).catch(() => null);
+            if (rd) {
+              seenRoots.add(resolved);
+              out.push({
+                key: `rr${resolved}`,
+                kind: "root",
+                label: resolved,
+                sub: `${t("morph.root")} · ${num(rd.occurrences)}`,
+                to: `/roots/${encodeURIComponent(resolved)}`,
+              });
+            }
+          }
+        } catch { /* resolver is optional */ }
         try {
           const roots = await searchRoots(raw, 3);
-          for (const r of roots)
+          for (const r of roots) {
+            if (seenRoots.has(r.root)) continue;
             out.push({
               key: `r${r.root}`,
               kind: "root",
@@ -172,6 +192,7 @@ export default function Omnibox() {
               sub: `${t("morph.root")} · ${num(r.occurrences)}`,
               to: `/roots/${encodeURIComponent(r.root)}`,
             });
+          }
         } catch { /* roots are optional */ }
       }
 
@@ -219,19 +240,24 @@ export default function Omnibox() {
     navigate(item.to);
   };
 
-  if (!open) {
-    return (
-      <button onClick={() => setOpen(true)} title="⌘K">
-        ⌕
-      </button>
-    );
-  }
+  const trigger = (
+    <button
+      className="omni-trigger"
+      onClick={() => setOpen((o) => !o)}
+      title={`${t("omni.trigger")} · ⌘K`}
+      aria-label={t("omni.trigger")}
+    >
+      <span aria-hidden>⌕</span>
+      <span className="omni-trigger-label">{t("omni.trigger")}</span>
+      <span className="omni-trigger-kbd" aria-hidden>⌘K</span>
+    </button>
+  );
+
+  if (!open) return trigger;
 
   return (
     <>
-      <button onClick={() => setOpen(false)} title="⌘K">
-        ⌕
-      </button>
+      {trigger}
       <div
         onClick={() => setOpen(false)}
         style={{

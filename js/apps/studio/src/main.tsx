@@ -122,7 +122,6 @@ function Nav() {
       <NavLink to="/jawami" title={getUILang() === "ar" ? "الآيات الجوامع وتفصيلها" : "principle verses & their tafsil"}>{t("nav.jawami")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/network">{t("nav.network")}</NavLink>
-      <NavLink to="/search">{t("nav.search")}</NavLink>
       <NavLink to="/collections">{t("nav.collections")}</NavLink>
       <NavLink to="/dashboard">{t("nav.dashboard")}</NavLink>
     </nav>
