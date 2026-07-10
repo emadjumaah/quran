@@ -45,3 +45,14 @@ export function resolveRoot(query: string): string | null {
   if (!q) return null;
   return forms[norm(q)] ?? forms[norm(stripAl(q))] ?? null;
 }
+
+/** Like resolveRoot but guarantees the index is loaded first — so a search can
+ *  never miss because the fetch hadn't finished when the query fired. */
+export async function resolveRootReady(query: string): Promise<string | null> {
+  try {
+    await loadForms();
+  } catch {
+    return null;
+  }
+  return resolveRoot(query);
+}

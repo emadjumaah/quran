@@ -21,7 +21,7 @@ import {
 } from "../jawami";
 import type { Principle } from "../jawami";
 import { ayahByLocationMap, ayahLocationsOfRoot, getRoot, surahNameAr } from "../db";
-import { resolveRoot, useSearchForms } from "../searchForms";
+import { resolveRoot, resolveRootReady, useSearchForms } from "../searchForms";
 import type { AyahDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
@@ -305,11 +305,15 @@ export default function Jawami() {
 
   useEffect(() => {
     let live = true;
-    const root = q.trim() ? resolveRoot(q.trim()) : null;
-    if (!root) { setRootAyahs(new Set()); return; }
-    getRoot(root).then((rd) => {
-      if (live && rd) setRootAyahs(new Set(ayahLocationsOfRoot(rd)));
-    });
+    if (!q.trim()) { setRootAyahs(new Set()); return; }
+    // await the index so a query that fires before load still resolves
+    resolveRootReady(q.trim())
+      .then((root) => (root ? getRoot(root) : null))
+      .then((rd) => {
+        if (!live) return;
+        setRootAyahs(rd ? new Set(ayahLocationsOfRoot(rd)) : new Set());
+      })
+      .catch(() => live && setRootAyahs(new Set()));
     return () => { live = false; };
   }, [q, formsReady]);
 

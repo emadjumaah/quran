@@ -24,7 +24,7 @@ import AyahRef from "../components/AyahRef";
 import MorphologyCard from "../components/MorphologyCard";
 import RootMeaning from "../components/RootMeaning";
 import CollectButton from "../components/CollectButton";
-import AudioButton, { ayahIdOf, playContinuous, usePlayingId } from "../components/AudioButton";
+import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs from "../components/SimilarAyahs";
 import TafsilChip from "../components/TafsilChip";
 import TafsilAside from "../components/TafsilAside";
@@ -261,6 +261,8 @@ export default function Reader() {
   const surahNo = Number(params.surahNo);
   const targetAyahNo = params.ayahNo != null ? Number(params.ayahNo) : null;
   const narrow = useNarrow();
+  // صفحات is the default (easiest for most readers); آيات is opt-in for its
+  // tools/translation/«مثلها». A returning reader's explicit choice is remembered.
   const [mode, setMode] = useState<Mode>(
     () => (localStorage.getItem(MODE_KEY) === "ayat" ? "ayat" : "pages"),
   );
@@ -362,6 +364,7 @@ export default function Reader() {
   }, [playingId, surahBase, surahNo, surah, surahs.length]);
 
   useEffect(() => {
+    if (isPreviewPlaying()) return; // a «مثلها» sample must not move the reader
     if (playingAyahNo != null) {
       document
         .getElementById(`ayah-${surahNo}-${playingAyahNo}`)
@@ -423,9 +426,9 @@ export default function Reader() {
     }
   }, [pages, targetAyahNo]);
 
-  // keep the shown page in step with continuous recitation
+  // keep the shown page in step with continuous recitation (but not previews)
   useEffect(() => {
-    if (mode !== "pages" || playingAyahNo == null || pages.length === 0) return;
+    if (mode !== "pages" || playingAyahNo == null || pages.length === 0 || isPreviewPlaying()) return;
     const i = pages.findIndex(([, pa]) => pa.some((a) => a.ayahNo === playingAyahNo));
     if (i >= 0) setPageIdx(i);
   }, [playingAyahNo, mode, pages]);

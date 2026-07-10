@@ -40,6 +40,7 @@ let currentLocation: string | null = null;
 let repeatTotal = 0; // 0 = no repeat; N = repeat current ayah N times
 let repeatLeft = 0;
 let stopAtId = 0; // 0 = no bound; else stop after this global ayah (range end)
+let preview = false; // true = a «مثلها» sample; the reader must NOT follow it
 
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
@@ -59,6 +60,7 @@ export function stopAudio() {
   repeatTotal = 0;
   repeatLeft = 0;
   stopAtId = 0;
+  preview = false;
   if (player && !player.paused) player.pause();
   currentId = 0;
   currentLocation = null;
@@ -67,6 +69,11 @@ export function stopAudio() {
 
 /** Global playback id (0 when stopped) — for the reader to reflect state. */
 export const currentPlayingId = () => currentId;
+
+/** True while the current playback is a «مثلها» preview sample. The reader's
+ *  follow-along / page-sync effects check this so a sample never moves the
+ *  reader off the ayah/page they are on. */
+export const isPreviewPlaying = () => preview;
 
 /** Apply a new playback rate to the live player (settings change mid-recitation). */
 export function setLivePlaybackRate(rate: number) {
@@ -157,12 +164,29 @@ function toggle(globalAyahNo: number) {
     stopAudio();
     return;
   }
+  preview = false;
   continuous = false;
+  start(globalAyahNo);
+}
+
+/** Sample one ayah's recitation WITHOUT moving the reader — used by the «مثلها»
+ *  neighbour rows. Reader effects ignore playback while isPreviewPlaying(). */
+export function playPreview(globalAyahNo: number) {
+  if (currentId === globalAyahNo && player && !player.paused && preview) {
+    stopAudio();
+    return;
+  }
+  continuous = false;
+  repeatTotal = 0;
+  repeatLeft = 0;
+  stopAtId = 0;
+  preview = true;
   start(globalAyahNo);
 }
 
 /** «استمع للسورة» — continuous recitation from this ayah onward. */
 export function playContinuous(fromGlobalAyahNo: number) {
+  preview = false;
   continuous = true;
   repeatTotal = 0;
   repeatLeft = 0;
@@ -180,6 +204,7 @@ export function playFrom(
   fromGlobalAyahNo: number,
   opts: { repeat?: number; continueAfter?: boolean; until?: number } = {},
 ) {
+  preview = false;
   repeatTotal = Math.max(0, opts.repeat ?? 0);
   repeatLeft = repeatTotal;
   continuous = opts.continueAfter ?? false;
@@ -191,14 +216,16 @@ export function next() {
   if (currentId > 0 && currentId < LAST_AYAH) start(currentId + 1);
 }
 
-/** `ayahId` is the global ayah number 1..6236 (from AyahDoc._id "a<n>"). */
-export default function AudioButton({ ayahId }: { ayahId: number }) {
+/** `ayahId` is the global ayah number 1..6236 (from AyahDoc._id "a<n>").
+ *  `preview` routes clicks through playPreview so sampling a «مثلها» neighbour
+ *  never drags the reader to that ayah's surah/page. */
+export default function AudioButton({ ayahId, preview: isPreview = false }: { ayahId: number; preview?: boolean }) {
   useUILang();
   const playing = usePlayingId() === ayahId;
   return (
     <button
       className="chip"
-      onClick={() => toggle(ayahId)}
+      onClick={() => (isPreview ? playPreview(ayahId) : toggle(ayahId))}
       style={{ border: "none", cursor: "pointer" }}
       title={getUILang() === "ar" ? "تلاوة الشيخ محمود خليل الحصري" : "Recitation: Shaykh al-Ḥuṣarī"}
     >

@@ -20,7 +20,7 @@ import {
   wordsByRoot,
 } from "../db";
 import type { NeighborRoot } from "../db";
-import { resolveRoot, useSearchForms } from "../searchForms";
+import { resolveRoot, resolveRootReady, useSearchForms } from "../searchForms";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc, RootDoc, SegmentDoc, WordDoc } from "../types";
 import { VERB_FORM_ROMAN, label, readPathOf } from "../types";
@@ -156,8 +156,15 @@ function RootIndex() {
     }
     // resolve the typed WORD to its root first (e.g. شقي → شقو, الزنى → زني),
     // then add the prefix matches — so laypeople needn't know the bare root.
-    const resolved = resolveRoot(q);
-    Promise.all([searchRoots(q, 50), resolved ? getRoot(resolved) : Promise.resolve(null)])
+    // Await the index so timing can't miss; catch each query independently so a
+    // failing prefix search never hides the resolved-root hit (and vice-versa).
+    resolveRootReady(q)
+      .then((resolved) =>
+        Promise.all([
+          searchRoots(q, 50).catch(() => [] as RootDoc[]),
+          resolved ? getRoot(resolved).catch(() => null) : Promise.resolve(null),
+        ]),
+      )
       .then(([byPrefix, byWord]) => {
         if (!alive) return;
         const seen = new Set<string>();

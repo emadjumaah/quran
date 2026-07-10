@@ -3,9 +3,13 @@
  * Navigate ayah-by-ayah, recite from the selected ayah with repeat, and
  * continue or stop. Keyboard: ← → move ayah · space play/pause · Esc clear.
  */
+import { useEffect, useRef, useState } from "react";
 import { surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { setContinueAfter, setRepeat, setSelectedAyah, useReading } from "../reading";
+import { useSettings } from "../settings";
+import { similarOf } from "../similar";
+import { SimilarAyahsPanel } from "./SimilarAyahs";
 import {
   currentPlayingId,
   playFrom,
@@ -31,8 +35,55 @@ export default function ReadingBar({
   onOpenAyat?: () => void;
 }) {
   useUILang();
+  const { layers } = useSettings();
   const { selected, repeat, continueAfter } = useReading();
   const playingId = usePlayingId();
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [simCount, setSimCount] = useState<number | null>(null);
+  const simBtnRef = useRef<HTMLButtonElement | null>(null);
+  const simPopRef = useRef<HTMLDivElement | null>(null);
+
+  // cheap neighbour count for the selected ayah → drives the «مثلها» entry;
+  // a new ayah closes any open popup.
+  useEffect(() => {
+    let live = true;
+    setPopupOpen(false);
+    if (!selected) {
+      setSimCount(null);
+      return;
+    }
+    similarOf(globalIdOf(selected, surahBase)).then((ns) => live && setSimCount(ns.length));
+    return () => {
+      live = false;
+    };
+  }, [selected, surahBase]);
+
+  // dismiss the popup on outside-click / Escape (mirrors CollectButton)
+  useEffect(() => {
+    if (!popupOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (
+        simPopRef.current &&
+        !simPopRef.current.contains(e.target as Node) &&
+        !simBtnRef.current?.contains(e.target as Node)
+      ) {
+        setPopupOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        setPopupOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [popupOpen]);
+
   if (!selected) return null;
 
   const [s, a] = selected.split(":").map(Number);
@@ -60,12 +111,34 @@ export default function ReadingBar({
   const nextArrow = rtl ? "←" : "→";
 
   return (
-    <div
-      className="card"
-      style={{
-        position: "fixed",
-        bottom: 44,
-        insetInline: 12,
+    <>
+      {popupOpen && layers.similar && (
+        <div ref={simPopRef} className="card similar-popup">
+          <div className="similar-popup-head">
+            ✦ {t("similar.title")} — <span className="quran">{surahNameAr(s)} {num(a)}</span>
+          </div>
+          <SimilarAyahsPanel ayahId={gid} location={selected} onNavigate={() => setPopupOpen(false)} />
+          {onOpenAyat && (
+            <button
+              className="chip"
+              onClick={() => {
+                onOpenAyat();
+                setPopupOpen(false);
+              }}
+              style={{ border: "none", cursor: "pointer", marginTop: 6 }}
+              title={rtl ? "افتح في عرض الآيات مع كل الأدوات والترجمة" : "open in the ayah view"}
+            >
+              {t("similar.openInAyat")} ↩
+            </button>
+          )}
+        </div>
+      )}
+      <div
+        className="card"
+        style={{
+          position: "fixed",
+          bottom: 44,
+          insetInline: 12,
         maxWidth: 640,
         margin: "0 auto",
         zIndex: 45,
@@ -85,6 +158,18 @@ export default function ReadingBar({
           onOpenAyat,
           rtl ? "افتح هذه الآية في عرض الآيات: الأدوات والترجمة والتفصيل" : "open in the ayah view (tools + translation)",
         )}
+      {layers.similar && simCount != null && simCount > 0 && (
+        <button
+          ref={simBtnRef}
+          className={`chip similar${popupOpen ? " open" : ""}`}
+          onClick={() => setPopupOpen((v) => !v)}
+          title={t("similar.title")}
+          style={{ cursor: "pointer", fontSize: 15 }}
+        >
+          ✦ {t("similar.chip")}
+          <span className="count-badge">{num(simCount)}</span>
+        </button>
+      )}
       <span style={{ flex: 1 }} />
       {btn(prevArrow, () => onNavigate(-1), t("read.prevAyah"))}
       {btn(isPlaying ? `◼ ${t("stop")}` : `▶ ${t("read.playHere")}`, playHere, t("read.playHere"), true)}
@@ -129,7 +214,8 @@ export default function ReadingBar({
       >
         ✕
       </button>
-    </div>
+      </div>
+    </>
   );
 }
 
