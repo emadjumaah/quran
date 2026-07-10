@@ -78,3 +78,43 @@ Build the Mutashabihat first. It is the only candidate of the five whose core co
 3. PUBLIC NAME
 ====================================================================
 Name it «فُروقُ التنزيل» (Furūq al-Tanzīl). The word فُروق invokes the classical genre of كتب الفروق — books that name the precise difference between things that seem alike — which is exactly the deliverable: every difference named, not merely every similarity highlighted; and التنزيل deliberately echoes al-Iskafi's درة التنزيل, planting the product in a thousand-year lineage while the plural فروق signals completeness (all twins, every difference) that no classical author reached. It is short, sonorous, instantly parseable by any Arabic reader, and honest: it promises named differences (فروق), not rhetorical adjudication (توجيه), which keeps the tool inside its epistemic warrant — the machine states what differs; the reader, with درة التنزيل beside them, ponders why. As an umbrella for the eventual suite, the sibling features can inherit the pattern later (وجوه التنزيل، نظم التنزيل), giving مصحف المعرفة a coherent family name for its computed-ulum layer.
+
+====================================================================
+ADDENDUM (same day) — Owner's two candidates, checked before building
+====================================================================
+
+A. «الآيات الجوامع» (hub ayahs + their تفصيل sets — owner's المحكمات idea)
+   Prior art: PARTIALLY EXISTS. Building blocks are public (QurSim's 7,679
+   related-verse pairs; a per-surah "central verse" paper, ICCKE 2018; one
+   hobbyist in-degree blog), but a Quran-wide computed hub→elaboration
+   structure has never shipped. Feasibility PROVEN on our data: neighbor-graph
+   in-degree already surfaces genuine جوامع (67:6, 3:189, 7:178, 18:30…).
+   ⚠ Naming constraint (verifier's strong warning): do NOT ship under
+   «المحكمات/المتشابهات» — that classification is doctrinally reserved
+   (Āl ʿImrān 7) and contested; the Shahrour framing is polarizing; and
+   «متشابهات» collides with memorization terminology. Ship as
+   «الآيات الجوامع» with computed "elaboration" framing (تصريف الآيات).
+
+B. «التفصيل الموضوعي محسوبًا» (computed thematic mushaf — owner's request,
+   inspired by the printed مصحف التفصيل الموضوعي)
+   Prior art: PARTIALLY EXISTS — the two halves exist separately, never
+   combined. Manual: dar-alfajr's mushaf (digitized on tafsir.app), Ghar
+   Hira's 7-color mushaf, saintcoran.com (interactive but manual, fixed 7
+   themes), and the classical ruku divisions. Computed: research PDFs only —
+   surah-level topic models, scattered-verse clustering; no contiguous
+   full-mushaf segmentation, no auto-labels, no mushaf UI anywhere.
+   Defensible delta: computed contiguous boundaries + data-driven section
+   labels (distinctive roots) + tunable granularity + validation against
+   ruku and the manual schemes (a publishable evaluation nobody has done).
+   Feasibility note (tested locally on al-Baqarah 20-36): raw consecutive
+   cosine is FLAT and misses the printed breaks — the composite model is
+   required (vectors + rare shared roots + opening-particle discourse
+   markers + pronoun continuity), i.e. the SAME engine as نظم الدرر (#3).
+
+REVISED BUILD ORDER (approved candidates integrated):
+  1. فروق التنزيل (in progress — pair catalog computing)
+  2. نظم الدرر + التفصيل الموضوعي as ONE build (shared linkage engine →
+     margin ribbon + computed sections + root labels + ruku validation)
+  3. الآيات الجوامع (ships on existing neighbors data; careful naming)
+  4. الوجوه والنظائر محسوبة (prestige release)
+  5. خرائط النظم → ميزان المقاييس (gated)
