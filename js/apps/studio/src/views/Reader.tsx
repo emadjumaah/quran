@@ -485,6 +485,11 @@ export default function Reader() {
                   <button
                     key={m}
                     onClick={() => switchMode(m)}
+                    title={
+                      getUILang() === "ar"
+                        ? m === "mushaf" ? "صفحة المدينة بخطّ المصحف (QCF)" : m === "pages" ? "تدفّق مستمرّ مجمّعًا بصفحات المصحف" : "آيةً آية مع الأدوات والترجمة"
+                        : m === "mushaf" ? "Madina QCF page" : m === "pages" ? "continuous, grouped by mushaf page" : "ayah by ayah with tools"
+                    }
                     style={{
                       border: "none",
                       borderRadius: 999,

@@ -15,6 +15,7 @@ import Omnibox from "./components/Omnibox";
 import Goto from "./views/Goto";
 import Today from "./views/Today";
 import Jawami from "./views/Jawami";
+import Mawdui from "./views/Mawdui";
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
 import SourcesPanel from "./components/SourcesPanel";
@@ -108,8 +109,9 @@ function Nav() {
   useUILang();
   return (
     <nav>
-      <NavLink to="/read">{t("nav.reader")}</NavLink>
-      <NavLink to="/jawami">{t("nav.jawami")}</NavLink>
+      <NavLink to="/read" title={getUILang() === "ar" ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
+      <NavLink to="/mawdui" title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع" : "browse by theme"}>{t("nav.mawdui")}</NavLink>
+      <NavLink to="/jawami" title={getUILang() === "ar" ? "الآيات الجوامع وتفصيلها" : "principle verses & their tafsil"}>{t("nav.jawami")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/network">{t("nav.network")}</NavLink>
       <NavLink to="/search">{t("nav.search")}</NavLink>
@@ -164,6 +166,9 @@ function App() {
           <Route path="/read/:surahNo" element={<Reader />} />
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />
           <Route path="/jawami" element={<Jawami />} />
+          <Route path="/mawdui" element={<Mawdui />} />
+          <Route path="/mawdui/:s" element={<Mawdui />} />
+          <Route path="/mawdui/:s/:t" element={<Mawdui />} />
           <Route path="/roots" element={<Roots />} />
           <Route path="/roots/:root" element={<Roots />} />
           <Route path="/network" element={<Network />} />

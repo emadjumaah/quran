@@ -347,12 +347,12 @@ export default function Jawami() {
 
         <div className="jw-tabs">
           {([
-            ["list", ar ? "الجوامع" : "Principles"],
-            ["relations", ar ? "العلاقات" : "Relations"],
-            ["convergence", ar ? "نقاط الالتقاء" : "Convergence"],
-            ["mathani", ar ? "المثاني" : "Mathānī"],
-          ] as [Tab, string][]).map(([key, lbl]) => (
-            <button key={key} className={tab === key ? "on" : ""} onClick={() => setTab(key)}>
+            ["list", ar ? "الجوامع" : "Principles", ar ? "كل الآيات الجوامع، الأوسع تفصيلًا أولًا" : "all principle verses"],
+            ["relations", ar ? "العلاقات" : "Relations", ar ? "الشبكة مقسّمةً حسب نوع العلاقة: توكيد/بيان/جزاء/مثال" : "network by relation type"],
+            ["convergence", ar ? "نقاط الالتقاء" : "Convergence", ar ? "آياتٌ تلتقي عندها عدةُ جوامع تُفصِّلها" : "verses many principles elaborate"],
+            ["mathani", ar ? "المثاني" : "Mathānī", ar ? "آيتان يُفصِّل كلٌّ منهما الأخرى" : "verse pairs that elaborate each other"],
+          ] as [Tab, string, string][]).map(([key, lbl, tip]) => (
+            <button key={key} className={tab === key ? "on" : ""} onClick={() => setTab(key)} title={tip}>
               {lbl}
             </button>
           ))}
@@ -365,23 +365,26 @@ export default function Jawami() {
             placeholder={ar ? "ابحث في الجوامع…" : "Search principles…"}
             value={q}
             onChange={(e) => setQ(e.target.value)}
+            title={ar ? "ابحث بالنصّ أو باسم السورة" : "search by text or surah name"}
           />
           <div className="jw-chipset">
-            <button className={kind === "" ? "on" : ""} onClick={() => setKind("")}>
+            <button className={kind === "" ? "on" : ""} onClick={() => setKind("")} title={ar ? "أظهر كل الأنواع" : "show all kinds"}>
               {ar ? "كل الأنواع" : "all kinds"}
             </button>
             {KINDS.map((k) => (
-              <button key={k} className={kind === k ? "on" : ""} onClick={() => setKind(kind === k ? "" : k)}>
+              <button key={k} className={kind === k ? "on" : ""} onClick={() => setKind(kind === k ? "" : k)}
+                title={ar ? `اقصر على نوع «${k}»` : `filter to «${k}»`}>
                 {k}
               </button>
             ))}
           </div>
           <div className="jw-chipset">
-            <button className={grade === "" ? "on" : ""} onClick={() => setGrade("")}>
+            <button className={grade === "" ? "on" : ""} onClick={() => setGrade("")} title={ar ? "أظهر كل الدرجات" : "show all grades"}>
               {ar ? "كل الدرجات" : "all grades"}
             </button>
             {GRADES.map((g) => (
-              <button key={g} className={grade === g ? "on gold" : "gold"} onClick={() => setGrade(grade === g ? "" : g)}>
+              <button key={g} className={grade === g ? "on gold" : "gold"} onClick={() => setGrade(grade === g ? "" : g)}
+                title={ar ? `اقصر على درجة «${g}»` : `filter to grade «${g}»`}>
                 {g}
               </button>
             ))}

@@ -439,6 +439,55 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .set-switch { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .set-row input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
 
+/* المواضيع — thematic browse (progressive disclosure, calm & clear) */
+.mw-wrap { max-width: 940px; margin: 0 auto; }
+.mw-head { text-align: center; margin: 6px 0 26px; }
+.mw-title { font-family: var(--font-quran); color: var(--accent); font-size: clamp(26px, 5vw, 36px); margin: 4px 0 10px; }
+.mw-lead { color: var(--ink-2); max-width: 640px; margin: 0 auto 8px; line-height: 1.8; font-size: 15px; }
+
+.mw-crumb { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; margin-bottom: 14px; color: var(--muted); }
+.mw-crumb a { color: var(--accent); font-weight: 600; }
+.mw-crumb .mw-sep { color: var(--line); }
+.mw-crumb .mw-here { color: var(--ink-2); font-weight: 600; }
+
+/* level 0: section cards */
+.mw-sections { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.mw-sec-card {
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 18px 18px 16px; text-decoration: none; color: var(--ink);
+  transition: transform 0.14s, border-color 0.14s, box-shadow 0.14s; min-height: 118px;
+}
+.mw-sec-card:hover { transform: translateY(-2px); border-color: var(--accent); text-decoration: none; box-shadow: 0 4px 20px rgb(11 110 86 / 0.12); }
+.mw-sec-name { font-family: var(--font-quran); font-size: 21px; font-weight: 700; color: var(--accent); line-height: 1.4; }
+.mw-sec-meta { font-size: 12px; color: var(--muted); font-weight: 600; }
+.mw-sec-preview { font-size: 12.5px; color: var(--ink-2); line-height: 1.7; margin-top: 2px;
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* level 1: topic cards */
+.mw-topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.mw-topic-card {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 15px; text-decoration: none; color: var(--ink); transition: background 0.12s, border-color 0.12s;
+}
+.mw-topic-card:hover { background: var(--accent-soft); border-color: var(--accent); text-decoration: none; }
+.mw-topic-name { font-weight: 600; color: var(--ink); font-size: 14.5px; line-height: 1.55; }
+.mw-topic-card:hover .mw-topic-name { color: var(--accent); }
+.mw-topic-count { font-size: 12px; color: var(--muted); white-space: nowrap; font-weight: 600; }
+
+/* level 2: verse rows */
+.mw-verses { display: flex; flex-direction: column; gap: 2px; }
+.mw-verse {
+  display: flex; align-items: baseline; gap: 12px; padding: 9px 12px; border-radius: 10px;
+  text-decoration: none; color: var(--ink); border: 1px solid transparent;
+}
+.mw-verse:hover { background: var(--panel-2); text-decoration: none; }
+.mw-verse.rep { background: var(--gold-soft); }
+.mw-verse-ref { color: var(--accent); font-weight: 600; font-size: 13px; white-space: nowrap; min-width: 84px; }
+.mw-verse-text { font-family: var(--font-quran); direction: rtl; text-align: right; font-size: calc(21px * var(--quran-scale, 1)); line-height: 2; color: var(--ink); }
+@media (max-width: 620px) { .mw-verse { flex-direction: column; gap: 2px; } }
+
 .muted { color: var(--muted); font-size: 12.5px; }
 @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
