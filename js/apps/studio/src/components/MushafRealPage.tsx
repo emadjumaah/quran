@@ -40,6 +40,7 @@ export default function MushafRealPage({
   marks,
   selectedWord,
   playingAyah,
+  targetAyah,
   onWord,
   onAyah,
 }: {
@@ -48,6 +49,8 @@ export default function MushafRealPage({
   marks?: Map<string, MushafMark>;
   selectedWord?: string | null;
   playingAyah?: string | null;
+  /** the ayah ("s:a") navigated to — highlighted and scrolled into view */
+  targetAyah?: string | null;
   onWord?: (key: string) => void;
   onAyah?: (loc: string) => void;
 }) {
@@ -55,6 +58,16 @@ export default function MushafRealPage({
   const [ready, setReady] = useState(false);
   const [ayahText, setAyahText] = useState<Map<string, AyahDoc>>(new Map());
   const mounted = useRef(true);
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+
+  // scroll the navigated-to ayah into view once the page has rendered
+  useEffect(() => {
+    if (ready && targetAyah) {
+      const id = requestAnimationFrame(() =>
+        bodyRef.current?.querySelector(".target")?.scrollIntoView({ block: "center", behavior: "smooth" }));
+      return () => cancelAnimationFrame(id);
+    }
+  }, [ready, targetAyah, page, tajwid]);
 
   useEffect(() => {
     mounted.current = true;
@@ -94,7 +107,7 @@ export default function MushafRealPage({
         {juz != null && <span>الجزء {num(juz)}</span>}
       </div>
 
-      <div className={`qcf-body${tajwid ? " qcf-tajwid" : ""}`}>
+      <div ref={bodyRef} className={`qcf-body${tajwid ? " qcf-tajwid" : ""}`}>
         {tajwid ? (
           !tajwidReady ? (
             <div className="muted" style={{ textAlign: "center", padding: 40 }}>…</div>
@@ -115,7 +128,7 @@ export default function MushafRealPage({
                       <div className="qcf-markband qcf-sajda"><span>۩ موضع سجدة</span></div>
                     )}
                     <span
-                      className={`qcf-tajwid-ayah${playingAyah === loc ? " play" : ""}`}
+                      className={`qcf-tajwid-ayah${playingAyah === loc ? " play" : ""}${targetAyah === loc ? " target" : ""}`}
                       role="button"
                       onClick={() => onAyah?.(loc)}
                     >
@@ -171,7 +184,7 @@ export default function MushafRealPage({
                     return (
                       <span
                         key={w.key}
-                        className={`qcf-w${sel ? " sel" : ""}${playing ? " play" : ""}`}
+                        className={`qcf-w${sel ? " sel" : ""}${playing ? " play" : ""}${targetAyah === w.ayah ? " target" : ""}`}
                         style={{ fontFamily: `"${fam}"` }}
                         role="button"
                         title={w.ayah}

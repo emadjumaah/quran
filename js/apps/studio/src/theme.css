@@ -234,6 +234,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .qcf-w:hover { color: var(--accent); }
 .qcf-w.sel { background: var(--accent-soft); color: var(--accent); }
 .qcf-w.play { background: var(--gold-soft); color: var(--gold); }
+.qcf-w.target { background: var(--accent-soft); border-radius: 6px; box-shadow: 0 0 0 2px var(--accent-soft); }
 .mushaf-page.qcf .page-no {
   text-align: center; color: var(--gold); font-size: 12px;
   padding: 4px 0 10px; font-family: var(--font-quran); margin: 0;
@@ -257,6 +258,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .qcf-tajwid-ayah { cursor: pointer; border-radius: 6px; padding: 0 1px; transition: background 0.12s; }
 .qcf-tajwid-ayah:hover { background: var(--accent-soft); }
 .qcf-tajwid-ayah.play { background: var(--gold-soft); }
+.qcf-tajwid-ayah.target { background: var(--accent-soft); }
 
 /* surah header band + basmala */
 .qcf-surah-band { text-align: center; margin: 14px auto 6px; }
@@ -445,6 +447,12 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .mw-title { font-family: var(--font-quran); color: var(--accent); font-size: clamp(26px, 5vw, 36px); margin: 4px 0 10px; }
 .mw-lead { color: var(--ink-2); max-width: 640px; margin: 0 auto 8px; line-height: 1.8; font-size: 15px; }
 
+.mw-back {
+  display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600;
+  color: var(--ink-2); background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 999px; padding: 6px 16px; margin-bottom: 14px; text-decoration: none;
+}
+.mw-back:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; background: var(--accent-soft); }
 .mw-crumb { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13.5px; margin-bottom: 14px; color: var(--muted); }
 .mw-crumb a { color: var(--accent); font-weight: 600; }
 .mw-crumb .mw-sep { color: var(--line); }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { HashRouter, NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { HashRouter, Link, NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { initDb, listSurahs } from "./db";
 import { applyUILang, getUILang, setUILang, t, useUILang } from "./i18n";
 import "./theme.css";
@@ -107,10 +107,14 @@ function LangToggle() {
 
 function Nav() {
   useUILang();
+  const loc = useLocation();
+  // «المواضيع» resumes where you left off; other tabs are plain
+  const inMawdui = loc.pathname.startsWith("/mawdui");
+  const mawduiTo = inMawdui ? loc.pathname : localStorage.getItem("quran-studio:mawdui-last") || "/mawdui";
   return (
     <nav>
       <NavLink to="/read" title={getUILang() === "ar" ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
-      <NavLink to="/mawdui" title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع" : "browse by theme"}>{t("nav.mawdui")}</NavLink>
+      <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/jawami" title={getUILang() === "ar" ? "الآيات الجوامع وتفصيلها" : "principle verses & their tafsil"}>{t("nav.jawami")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/network">{t("nav.network")}</NavLink>

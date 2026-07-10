@@ -237,7 +237,7 @@ export default function Reader() {
   const targetAyahNo = params.ayahNo != null ? Number(params.ayahNo) : null;
   const narrow = useNarrow();
   const [mode, setMode] = useState<Mode>(
-    () => (localStorage.getItem(MODE_KEY) as Mode) || "mushaf",
+    () => (localStorage.getItem(MODE_KEY) as Mode) || "pages",
   );
   const [mushafPage, setMushafPage] = useState<number>(1);
   const [pageJuz, setPageJuz] = useState<Map<number, number>>(new Map());
@@ -326,6 +326,13 @@ export default function Reader() {
     const el = document.getElementById(`ayah-${surahNo}-${targetAyahNo}`);
     el?.scrollIntoView({ block: "center" });
   }, [loading, surahNo, targetAyahNo, mode]);
+
+  // keep the QCF page on the navigated-to ayah (also when only the ayah changes)
+  useEffect(() => {
+    if (loading || targetAyahNo == null) return;
+    const tgt = ayahs.find((x) => x.ayahNo === targetAyahNo);
+    if (tgt) setMushafPage(tgt.page);
+  }, [targetAyahNo, loading, ayahs]);
 
   const surah = useMemo(() => surahs.find((s) => s.surahNo === surahNo), [surahs, surahNo]);
 
@@ -481,7 +488,7 @@ export default function Reader() {
                 className="chip"
                 style={{ background: "var(--panel)", border: "1px solid var(--line)", gap: 0, padding: 2 }}
               >
-                {(["mushaf", "pages", "ayat"] as Mode[]).map((m) => (
+                {(["pages", "ayat", "mushaf"] as Mode[]).map((m) => (
                   <button
                     key={m}
                     onClick={() => switchMode(m)}
@@ -519,6 +526,7 @@ export default function Reader() {
               marks={marks}
               selectedWord={selected?.location ?? null}
               playingAyah={playingAyahNo != null ? `${surahNo}:${playingAyahNo}` : null}
+              targetAyah={targetAyahNo != null ? `${surahNo}:${targetAyahNo}` : null}
               onWord={(key) => { void getWord(key).then((w) => w && setSelected(w)); }}
               onAyah={(loc) => setSelectedAyah(loc)}
             />

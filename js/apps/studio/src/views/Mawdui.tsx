@@ -132,21 +132,36 @@ function Topic({ section, idx, topicIdx }: { section: MSection; idx: number; top
   );
 }
 
+const MAWDUI_LAST = "quran-studio:mawdui-last";
+
 export default function Mawdui() {
   useUILang();
   const jw = useMawdui();
   const params = useParams<{ s?: string; t?: string }>();
   const s = params.s != null ? Number(params.s) : null;
   const tIdx = params.t != null ? Number(params.t) : null;
+  const ar = getUILang() === "ar";
 
   const section = useMemo(() => (jw && s != null ? jw.sections[s] : null), [jw, s]);
+
+  // remember the last المواضيع position so the nav resumes here
+  useEffect(() => {
+    const p = `/mawdui${s != null ? `/${s}` : ""}${tIdx != null ? `/${tIdx}` : ""}`;
+    localStorage.setItem(MAWDUI_LAST, p);
+  }, [s, tIdx]);
 
   if (!jw) {
     return <div className="page page-narrow"><div className="muted" style={{ padding: 40, textAlign: "center" }}>{t("loading")}</div></div>;
   }
+  const backTo = tIdx != null ? `/mawdui/${s}` : s != null ? "/mawdui" : null;
   return (
     <div className="page">
       <div className="mw-wrap">
+        {backTo && (
+          <Link to={backTo} className="mw-back" title={ar ? "الرجوع للمستوى الأعلى" : "back one level"}>
+            <span aria-hidden="true">{ar ? "→" : "←"}</span> {ar ? "رجوع" : "Back"}
+          </Link>
+        )}
         {s == null ? (
           <Sections sections={jw.sections} />
         ) : !section ? (

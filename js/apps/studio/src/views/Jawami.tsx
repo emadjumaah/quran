@@ -368,23 +368,23 @@ export default function Jawami() {
             title={ar ? "ابحث بالنصّ أو باسم السورة" : "search by text or surah name"}
           />
           <div className="jw-chipset">
-            <button className={kind === "" ? "on" : ""} onClick={() => setKind("")} title={ar ? "أظهر كل الأنواع" : "show all kinds"}>
+            <button className={kind === "" ? "on" : ""} onClick={() => setKind("")} title={ar ? "فلتر النوع: أظهر كل الأنواع" : "filter: show all kinds"}>
               {ar ? "كل الأنواع" : "all kinds"}
             </button>
             {KINDS.map((k) => (
               <button key={k} className={kind === k ? "on" : ""} onClick={() => setKind(kind === k ? "" : k)}
-                title={ar ? `اقصر على نوع «${k}»` : `filter to «${k}»`}>
+                title={ar ? `فلتر النوع: أظهر جوامع «${k}» فقط` : `filter: show only «${k}» principles`}>
                 {k}
               </button>
             ))}
           </div>
           <div className="jw-chipset">
-            <button className={grade === "" ? "on" : ""} onClick={() => setGrade("")} title={ar ? "أظهر كل الدرجات" : "show all grades"}>
+            <button className={grade === "" ? "on" : ""} onClick={() => setGrade("")} title={ar ? "فلتر الدرجة: أظهر كل الدرجات" : "filter: show all grades"}>
               {ar ? "كل الدرجات" : "all grades"}
             </button>
             {GRADES.map((g) => (
               <button key={g} className={grade === g ? "on gold" : "gold"} onClick={() => setGrade(grade === g ? "" : g)}
-                title={ar ? `اقصر على درجة «${g}»` : `filter to grade «${g}»`}>
+                title={ar ? `فلتر الدرجة: أظهر «${g}» فقط` : `filter: show only grade «${g}»`}>
                 {g}
               </button>
             ))}
