@@ -57,6 +57,18 @@ SVG signpost whose edges open the pair pages — never the interface itself.
 - **Computed Tajwīd coloring + waqf marks** — rule-based on text + Arabic phonetics
   (compute, not import). Pure Arabic-language.
 - **More translation languages** (Tanzil ~100+) — reach, not novelty.
+- **QurAna pronoun-reference corpus** (Leeds/Atwell, ~24.5k) — resolves every
+  pronoun's referent. Quran-internal; could add a real reference layer
+  (محكم→تفصيل direction, coherence, reader hover). Verify license/download.
+- **Second morphology provider** (QuranMorph 2025 / CAMeL Tools over the text)
+  — our schema supports multi-provenance; flag disagreements, mark high-confidence
+  core. Raises scholarly rigor.
+- **More معاجم from the wizsk SQLite we already have** — al-Ayn (العين, first
+  Arabic dictionary), Taj al-Arus (تاج العروس, largest). Zero new dependency.
+- **QurSim (validation only)** — 7,679 scholar-derived related-verse pairs; NOT
+  imported (from tafsir), used to benchmark our محكم→تفصيل / similar-ayah precision.
+- (Checked & rejected: KSU electronic moshaf = Tanzil text + tafsir; nothing we
+  lack. KSUCCA = external corpus, outside the rule.)
 EXCLUDED by rule: tafsir, asbāb al-nuzūl, hadith, إعراب/معاني books (treebank covers).
 
 ## Standing reminders (owner, 2026-07-10)
