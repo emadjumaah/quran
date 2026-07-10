@@ -18,6 +18,7 @@ import { getUILang, num, t, useUILang } from "../i18n";
 import { setSelectedAyah, useReading } from "../reading";
 import { useSettings } from "../settings";
 import { recordProgress, toggleBookmark, useBookmarks } from "../bookmarks";
+import { TAJWID, tajwidSpans } from "../tajwid";
 import ReadingBar from "../components/ReadingBar";
 import MushafRealPage from "../components/MushafRealPage";
 import AyahText from "../components/AyahText";
@@ -179,7 +180,7 @@ function MushafPage({
   onAyahMarker: (a: AyahDoc) => void;
   targetAyahNo: number | null;
 }) {
-  const { script } = useSettings();
+  const { script, tajwid } = useSettings();
   return (
     <section className="mushaf-page">
       <div className="quran">
@@ -193,7 +194,15 @@ function MushafPage({
                 : undefined
             }
           >
-            {(wordsByAyah.get(ayah.ayahNo) ?? []).map((w) => (
+            {tajwid
+              ? tajwidSpans((wordsByAyah.get(ayah.ayahNo) ?? []).map((w) => w.textUthmani).join(" ")).map((s, i) =>
+                  s.rule ? (
+                    <span key={i} className={TAJWID[s.rule].cls} title={TAJWID[s.rule].ar}>{s.text}</span>
+                  ) : (
+                    <span key={i}>{s.text}</span>
+                  ),
+                )
+              : (wordsByAyah.get(ayah.ayahNo) ?? []).map((w) => (
               <span key={w.location}>
                 <span
                   className={`w${selected === w.location ? " sel" : ""}`}
@@ -202,7 +211,7 @@ function MushafPage({
                   {script === "imlaai" ? w.textClean : w.textUthmani}
                 </span>{" "}
               </span>
-            ))}
+            ))}{" "}
             <span
               className="ayah-marker"
               role="button"

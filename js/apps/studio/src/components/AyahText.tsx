@@ -1,9 +1,11 @@
 import { num } from "../i18n";
 import { useSettings } from "../settings";
 import type { WordDoc } from "../types";
+import TajwidText from "./TajwidText";
 
 /** One ayah rendered word-by-word; clicking a word selects it. Honours the
- *  script setting (Uthmani ⇄ simple/imlaa'i). */
+ *  script setting (Uthmani ⇄ simple/imlaa'i). With tajwīd on, renders the
+ *  colour-coded ayah (word-click off — recitation aid). */
 export default function AyahText({
   words,
   ayahNo,
@@ -15,7 +17,10 @@ export default function AyahText({
   selected?: string | null;
   onSelect?: (w: WordDoc) => void;
 }) {
-  const { script } = useSettings();
+  const { script, tajwid } = useSettings();
+  if (tajwid) {
+    return <TajwidText text={words.map((w) => w.textUthmani).join(" ")} ayahNo={ayahNo} />;
+  }
   return (
     <div className="quran">
       {words.map((w) => (

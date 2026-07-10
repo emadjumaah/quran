@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import { setSettings, useSettings, type Numerals, type Script, type Theme } from "../settings";
 import { RECITERS, reloadForReciter, setLivePlaybackRate } from "./AudioButton";
+import { TAJWID_LEGEND } from "../tajwid";
 import { getUILang, num, useUILang } from "../i18n";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -169,6 +170,31 @@ export default function SettingsPanel() {
               ]}
             />
           </Row>
+
+          <div className="set-group">{ar ? "التجويد" : "Tajwīd"}</div>
+          <Row label={ar ? "تلوين التجويد" : "Colour-coded tajwīd"}>
+            <label className="set-switch">
+              <input
+                type="checkbox"
+                checked={s.tajwid}
+                onChange={(e) => setSettings({ tajwid: e.target.checked })}
+              />
+              <span className="muted">{ar ? "في وضعَي النص" : "text modes"}</span>
+            </label>
+          </Row>
+          {s.tajwid && (
+            <div className="tj-legend">
+              {TAJWID_LEGEND.map((l) => (
+                <div key={l.cls} className="tj-legend-row">
+                  <span className={`tj-swatch ${l.cls}`} />
+                  <span>{ar ? l.ar : l.en}</span>
+                </div>
+              ))}
+              <div className="muted" style={{ fontSize: 10.5, marginTop: 2 }}>
+                {ar ? "محسوبة من النص العثماني — عونٌ على التلاوة" : "computed from the text — a recitation aid"}
+              </div>
+            </div>
+          )}
 
           <div className="set-group">{ar ? "طبقات المعرفة" : "Knowledge layers"}</div>
           <Row label={ar ? "المحكم والتفصيل" : "Principle → tafsil"}>
