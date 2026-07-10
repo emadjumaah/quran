@@ -103,34 +103,67 @@ function LangToggle() {
   );
 }
 
+/** Every external place whose data we actually use — one credit each. */
+const SOURCES: { url: string; ar: string; en: string }[] = [
+  {
+    url: "https://tanzil.net",
+    ar: "نص القرآن العثماني وبياناته (الجزء/الحزب/الصفحة/السجدات) — مشروع تنزيل",
+    en: "Uthmani text + metadata (juz/hizb/page/sajda) — Tanzil",
+  },
+  {
+    url: "https://corpus.quran.com",
+    ar: "الصرف والجذور والمداخل والإعراب — المدونة القرآنية (جامعة ليدز)",
+    en: "Morphology, roots, lemmas, grammar — Quranic Arabic Corpus (Leeds)",
+  },
+  {
+    url: "https://github.com/wizsk/arabic_lexicons",
+    ar: "المعاجم: المفردات (الراغب) · مقاييس اللغة (ابن فارس) · الصحاح · لسان العرب",
+    en: "Lexicons: Mufradāt · Maqāyīs · Ṣiḥāḥ · Lisān al-ʿArab",
+  },
+  {
+    url: "https://tanzil.net/trans/",
+    ar: "الترجمات: صحيح إنترناشونال (EN) · حميد الله (FR) · ديانت (TR) — تنزيل",
+    en: "Translations: Saheeh Intl (EN) · Hamidullah (FR) · Diyanet (TR) — Tanzil",
+  },
+  {
+    url: "https://alquran.cloud/cdn",
+    ar: "التلاوة: الحصري · العفاسي · عبد الباسط · المنشاوي · السديس · المعيقلي (Islamic Network)",
+    en: "Recitations: Ḥuṣarī · Alafasy · ʿAbd al-Bāsiṭ · Minshāwī · Sudais · Muʿayqilī (Islamic Network)",
+  },
+  {
+    url: "https://qul.tarteel.ai",
+    ar: "مصحف المدينة وخطوط KFGQPC/QCF — مجمع الملك فهد، عبر Quran.com وQUL",
+    en: "Madina muṣḥaf + KFGQPC/QCF fonts — King Fahd Complex, via Quran.com & QUL",
+  },
+  {
+    url: "https://ai.google.dev",
+    ar: "المتجهات الدلالية للبحث بالمعنى — Gemini embeddings",
+    en: "Semantic vectors for meaning-search — Gemini embeddings",
+  },
+  {
+    url: "https://github.com/qataruts/monlite",
+    ar: "محرك قاعدة البيانات في المتصفح — monlite",
+    en: "In-browser database engine — monlite",
+  },
+];
+
 function Footer() {
   useUILang();
-  const src = (href: string, text: string) => (
-    <a href={href} target="_blank" rel="noreferrer">
-      {text}
-    </a>
-  );
+  const ar = getUILang() === "ar";
   return (
     <footer className="footer">
       <span>
-        {getUILang() === "ar" ? (
-          <>
-            {t("footer.sources")}: {src("https://corpus.quran.com", "المدونة القرآنية (جامعة ليدز)")} ·{" "}
-            {src("https://tanzil.net", "مشروع تنزيل")} ·{" "}
-            {src("https://alquran.cloud", "تلاوة الشيخ الحصري")} ·{" "}
-            {src("https://github.com/qataruts/monlite", "monlite")}
-            <span className="muted"> — {t("footer.provenance")}</span>
-          </>
-        ) : (
-          <>
-            {t("footer.sources")}: {src("https://corpus.quran.com", "Quranic Arabic Corpus")} ·{" "}
-            {src("https://tanzil.net", "Tanzil")} ·{" "}
-            {src("https://alquran.cloud", "al-Ḥuṣarī / Islamic Network")} · Gemini ·{" "}
-            {src("https://github.com/qataruts/monlite", "monlite")}
-            <span className="muted"> — {t("footer.provenance")}</span>
-          </>
-        )}
+        <b>{t("footer.sources")}:</b>{" "}
+        {SOURCES.map((s, i) => (
+          <span key={s.url}>
+            {i > 0 && <span className="muted"> · </span>}
+            <a href={s.url} target="_blank" rel="noreferrer">
+              {ar ? s.ar : s.en}
+            </a>
+          </span>
+        ))}
       </span>
+      <span className="muted">{t("footer.provenance")}</span>
     </footer>
   );
 }
