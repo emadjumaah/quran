@@ -54,3 +54,17 @@ All within method (Quran text + our data + Arabic; nothing external).
 One settings store (localStorage, like collections/lang), a ⚙ panel in the
 top bar, every option reactive via a useSettings() hook. Ship the ✓ items
 first (a strong settings panel in ~1 day), then ○, then ◆ as their data lands.
+
+
+## ★ Mushaf photoreal page mode (the serious page overhaul) — planned
+Reference CONFIRMED: **QUL (qul.tarteel.ai) — QCF/KFGQPC Madina Mushaf**.
+Per-page fonts map the real Uthmani text to glyph codes + layout data (word→
+line→page) → each page renders PIXEL-IDENTICAL to the printed Madina mushaf
+(exact 15-line breaks, authentic ligatures) while every word stays REAL
+selectable text (photoreal AND interactive: tap word→صرف, select ayah,
+recitation highlight). Fits method (Quran's own KFGQPC typography), GPL/open.
+Build: (1) bundle QCF fonts, (2) fetch QUL mushaf-layout (word/line/page),
+(3) new MushafPage renderer (15 lines/page, page font), (4) page ◀▶ nav + swipe.
+Verified: qul.tarteel.ai/resources/mushaf-layout exists; pin exact font URL at
+build (mustafa0x/qpc-fonts path 404'd — use QUL's current download). ~1-2 days.
+Pairs with the shipped ayah-selection + reading controller (repeat/continue).
