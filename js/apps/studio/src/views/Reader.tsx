@@ -23,6 +23,7 @@ import MushafRealPage from "../components/MushafRealPage";
 import AyahText from "../components/AyahText";
 import AyahRef from "../components/AyahRef";
 import MorphologyCard from "../components/MorphologyCard";
+import RootMeaning from "../components/RootMeaning";
 import CollectButton from "../components/CollectButton";
 import AudioButton, { ayahIdOf, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs from "../components/SimilarAyahs";
@@ -146,6 +147,7 @@ function Inspector({ word }: { word: WordDoc | null }) {
   return (
     <div>
       <MorphologyCard word={word} />
+      {word.root && layers.roots && <RootMeaning root={word.root} />}
       <div
         style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 12 }}
       >
@@ -154,14 +156,6 @@ function Inspector({ word }: { word: WordDoc | null }) {
           criterion={{ kind: "manual", value: word.location }}
           label={`⊕ ${t("collect")}`}
         />
-        {word.root && layers.roots && (
-          <Link to={`/roots/${encodeURIComponent(word.root)}`} className="chip link">
-            {t("reader.seeRoot")}{" "}
-            <b className="quran" style={{ fontSize: 16, lineHeight: 1 }}>
-              {word.root}
-            </b>
-          </Link>
-        )}
       </div>
     </div>
   );

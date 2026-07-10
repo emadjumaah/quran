@@ -59,7 +59,6 @@
 
 /* focus mode — hide the app chrome, keep only the reading surface */
 body.focus-mode .topbar,
-body.focus-mode .footer,
 body.focus-mode .mushaf-nav { display: none; }
 body.focus-mode .app-shell { grid-template-rows: 1fr; }
 
@@ -119,14 +118,7 @@ input, select {
 input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
 
 /* layout */
-.app-shell { display: grid; grid-template-rows: auto 1fr auto; height: 100vh; }
-.footer {
-  display: flex; flex-direction: column; gap: 2px;
-  padding: 8px 20px; border-top: 1px solid var(--line); background: var(--panel);
-  font-size: 11.5px; color: var(--muted); line-height: 1.5;
-}
-.footer a { color: var(--ink-2); }
-.footer a:hover { color: var(--accent); }
+.app-shell { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
 .topbar {
   display: flex; align-items: center; gap: 18px;
   padding: 10px 20px;
@@ -347,6 +339,12 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .tafsil-aside-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
 .tafsil-aside .jw-verse-text { -webkit-line-clamp: 3; line-clamp: 3; }
 
+/* root meaning card in the word sheet */
+.rootmeaning { padding: 12px 14px; margin-top: 12px; background: var(--panel-2); }
+.rootmeaning-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.rootmeaning-text { font-size: 15px; line-height: 1.95; color: var(--ink); white-space: pre-wrap; }
+.rootmeaning-meta { font-size: 12px; margin-top: 8px; }
+
 /* bookmarks ★ popover — progress bar + jump list */
 .bm-progress { margin: 4px 0 2px; }
 .bm-bar { height: 8px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
@@ -355,6 +353,14 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .bm-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; border-radius: 8px; }
 .bm-item:hover { background: var(--panel-2); }
 .bm-item a { color: var(--accent); font-weight: 600; }
+
+/* sources ⓘ popover — one credit per line */
+.src-list { display: flex; flex-direction: column; gap: 2px; }
+.src-item {
+  display: block; padding: 6px 8px; border-radius: 8px;
+  font-size: 12.5px; line-height: 1.5; color: var(--ink-2);
+}
+.src-item:hover { background: var(--panel-2); color: var(--accent); text-decoration: none; }
 
 /* settings ⚙ popover */
 .set-wrap { position: relative; }
