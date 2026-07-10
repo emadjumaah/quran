@@ -149,3 +149,9 @@ vectors + معاجم + Arabic language):
       usage, aligned to classical معاجم (also WORLD-FIRSTS #2).
 
 Priority hints (owner): N2 + N4 flagged most-novel-and-most-ours. All wanted.
+
+NAMING PRINCIPLE (owner, 2026-07-10): not bound to classical terminology —
+use whichever term communicates best, classical (جوامع/وجوه/فروق) OR a good
+modern Arabic coinage (جينوم/شبكة/خريطة), decided per-feature at ship time and
+run past the owner. The project name stays «مصحف المعرفة» (Quran Studio);
+"grammar genome" etc. are feature names only, not the project.
