@@ -20,6 +20,7 @@ import {
   wordsByRoot,
 } from "../db";
 import type { NeighborRoot } from "../db";
+import { resolveRoot, useSearchForms } from "../searchForms";
 import { num, t, useUILang } from "../i18n";
 import type { AyahDoc, RootDoc, SegmentDoc, WordDoc } from "../types";
 import { VERB_FORM_ROMAN, label, readPathOf } from "../types";
@@ -144,21 +145,30 @@ function RootIndex() {
   useUILang();
   const [query, setQuery] = useState("");
   const [roots, setRoots] = useState<RootDoc[] | null>(null);
+  const formsReady = useSearchForms();
 
   useEffect(() => {
     let alive = true;
     const q = query.trim();
-    (q ? searchRoots(q, 50) : topRoots(100))
-      .then((rs: RootDoc[]) => {
-        if (alive) setRoots(rs);
+    if (!q) {
+      topRoots(100).then((rs) => alive && setRoots(rs)).catch(() => alive && setRoots([]));
+      return () => { alive = false; };
+    }
+    // resolve the typed WORD to its root first (e.g. شقي → شقو, الزنى → زني),
+    // then add the prefix matches — so laypeople needn't know the bare root.
+    const resolved = resolveRoot(q);
+    Promise.all([searchRoots(q, 50), resolved ? getRoot(resolved) : Promise.resolve(null)])
+      .then(([byPrefix, byWord]) => {
+        if (!alive) return;
+        const seen = new Set<string>();
+        const out: RootDoc[] = [];
+        if (byWord) { out.push(byWord); seen.add(byWord.root); }
+        for (const r of byPrefix) if (!seen.has(r.root)) { seen.add(r.root); out.push(r); }
+        setRoots(out);
       })
-      .catch(() => {
-        if (alive) setRoots([]);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [query]);
+      .catch(() => alive && setRoots([]));
+    return () => { alive = false; };
+  }, [query, formsReady]);
 
   return (
     <div className="page">

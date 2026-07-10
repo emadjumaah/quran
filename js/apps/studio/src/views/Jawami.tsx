@@ -20,7 +20,8 @@ import {
   type Rel,
 } from "../jawami";
 import type { Principle } from "../jawami";
-import { ayahByLocationMap, surahNameAr } from "../db";
+import { ayahByLocationMap, ayahLocationsOfRoot, getRoot, surahNameAr } from "../db";
+import { resolveRoot, useSearchForms } from "../searchForms";
 import type { AyahDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
@@ -294,10 +295,23 @@ export default function Jawami() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [limit, setLimit] = useState(60);
+  const formsReady = useSearchForms();
+  // ayahs sharing the root of the typed word (so «الزنى» matches آيات زاني/زانية)
+  const [rootAyahs, setRootAyahs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     ayahByLocationMap().then(setTexts);
   }, []);
+
+  useEffect(() => {
+    let live = true;
+    const root = q.trim() ? resolveRoot(q.trim()) : null;
+    if (!root) { setRootAyahs(new Set()); return; }
+    getRoot(root).then((rd) => {
+      if (live && rd) setRootAyahs(new Set(ayahLocationsOfRoot(rd)));
+    });
+    return () => { live = false; };
+  }, [q, formsReady]);
 
   const rows = useMemo(() => {
     if (!jw) return [];
@@ -308,14 +322,15 @@ export default function Jawami() {
       if (q) {
         const d = texts.get(loc);
         const hay = `${arName(loc)} ${d?.textClean ?? ""}`;
-        if (!hay.includes(q)) return false;
+        // match by text OR by the typed word's root (زنى → آيات الزاني/الزانية)
+        if (!hay.includes(q) && !rootAyahs.has(loc)) return false;
       }
       return true;
     });
     // widest-branching first — the أصول جوامع surface at the top
     filtered.sort((a, b) => tafsilOf(b[0]).length - tafsilOf(a[0]).length);
     return filtered;
-  }, [jw, kind, grade, q, texts]);
+  }, [jw, kind, grade, q, texts, rootAyahs]);
 
   useEffect(() => setLimit(60), [kind, grade, q]);
 
@@ -362,10 +377,10 @@ export default function Jawami() {
         <>
         <div className="jw-filters">
           <input
-            placeholder={ar ? "ابحث في الجوامع…" : "Search principles…"}
+            placeholder={ar ? "ابحث بكلمة أو معنى (مثل: الزنى)…" : "Search by any word…"}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            title={ar ? "ابحث بالنصّ أو باسم السورة" : "search by text or surah name"}
+            title={ar ? "ابحث بالنصّ أو باسم السورة أو بأيّ كلمة (تُطابَق بجذرها)" : "text, surah, or any word (matched by root)"}
           />
           <div className="jw-chipset">
             <button className={kind === "" ? "on" : ""} onClick={() => setKind("")} title={ar ? "فلتر النوع: أظهر كل الأنواع" : "filter: show all kinds"}>
