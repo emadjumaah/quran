@@ -5,6 +5,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { setSettings, useSettings, type Numerals, type Script, type Theme } from "../settings";
+import { setLivePlaybackRate } from "./AudioButton";
 import { getUILang, num, useUILang } from "../i18n";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -135,6 +136,22 @@ export default function SettingsPanel() {
               />
               <span className="muted">{ar ? "إخفاء الأدوات" : "hide chrome"}</span>
             </label>
+          </Row>
+
+          <div className="set-group">{ar ? "التلاوة" : "Recitation"}</div>
+          <Row label={ar ? "السرعة" : "Speed"}>
+            <Seg<string>
+              value={String(s.speed)}
+              onChange={(v) => {
+                setSettings({ speed: Number(v) });
+                setLivePlaybackRate(Number(v));
+              }}
+              options={[
+                { v: "0.75", label: ar ? "٠٫٧٥×" : "0.75×" },
+                { v: "1", label: ar ? "١×" : "1×" },
+                { v: "1.25", label: ar ? "١٫٢٥×" : "1.25×" },
+              ]}
+            />
           </Row>
 
           <div className="set-group">{ar ? "طبقات المعرفة" : "Knowledge layers"}</div>

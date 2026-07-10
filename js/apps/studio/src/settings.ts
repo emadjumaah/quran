@@ -16,6 +16,7 @@ export interface Settings {
   quranScale: number; // 0.8 – 1.6, multiplies the Quran font size
   theme: Theme;
   focus: boolean; // distraction-free: hide chrome, just the text
+  speed: number; // recitation playback rate (0.75 – 1.25)
   layers: {
     jawami: boolean; // محكم→تفصيل chip in the reader
     roots: boolean; // root chip in the word inspector
@@ -30,6 +31,7 @@ const DEFAULTS: Settings = {
   quranScale: 1,
   theme: "auto",
   focus: false,
+  speed: 1,
   layers: { jawami: true, roots: true, similar: true },
 };
 

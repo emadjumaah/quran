@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { getUILang, num, t, useUILang } from "../i18n";
+import { getSettings } from "../settings";
 
 /**
  * Recitation playback — Shaykh Mahmoud Khalil al-Husary (murattal), 64 kbps,
@@ -48,6 +49,14 @@ export function stopAudio() {
 
 /** Global playback id (0 when stopped) — for the reader to reflect state. */
 export const currentPlayingId = () => currentId;
+
+/** Apply a new playback rate to the live player (settings change mid-recitation). */
+export function setLivePlaybackRate(rate: number) {
+  if (player) {
+    player.defaultPlaybackRate = rate;
+    player.playbackRate = rate;
+  }
+}
 
 async function updateMediaSession(id: number) {
   currentLocation = null;
@@ -106,6 +115,9 @@ function start(id: number) {
     if (currentId === id) stopAudio();
   };
   player.src = `${CDN}/${id}.mp3`;
+  // loading a new src resets the rate to defaultPlaybackRate — set both
+  player.defaultPlaybackRate = getSettings().speed;
+  player.playbackRate = getSettings().speed;
   currentId = id;
   void player.play().catch(() => {
     // a rapid second play() aborts this one — only clear if still current
