@@ -80,7 +80,10 @@ console.log(`PASS-A md: ${(mdA.length / 1024).toFixed(0)} KB`);
 /* ---------------- Pass B ---------------- */
 let hasB = db.prepare("SELECT COUNT(*) n FROM sqlite_master WHERE name='ayah_tafsil'").get().n;
 if (hasB) {
-  const links = db.prepare("SELECT hub_ayah_id h, tafsil_ayah_id t, rel FROM ayah_tafsil ORDER BY hub_ayah_id, rel").all();
+  const hasReview = db.prepare("SELECT COUNT(*) n FROM pragma_table_info('ayah_tafsil') WHERE name='review'").get().n;
+  const links = hasReview
+    ? db.prepare("SELECT hub_ayah_id h, tafsil_ayah_id t, COALESCE(review_rel, rel) rel FROM ayah_tafsil WHERE review IS NULL OR review != 'reject' ORDER BY hub_ayah_id, rel").all()
+    : db.prepare("SELECT hub_ayah_id h, tafsil_ayah_id t, rel FROM ayah_tafsil ORDER BY hub_ayah_id, rel").all();
   const byHub = new Map();
   for (const l of links) (byHub.get(l.h) ?? byHub.set(l.h, []).get(l.h)).push(l);
   const relCount = {};

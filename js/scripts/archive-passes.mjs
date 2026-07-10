@@ -48,5 +48,37 @@ if (db.prepare("SELECT COUNT(*) n FROM sqlite_master WHERE name='ayah_tafsil_hub
   }
   fs.writeFileSync(path.join(DIR, "pass-b-full.jsonl"), out.join("\n") + "\n");
 }
+
+// Pass C — the adversarial review verdicts (every link's verdict + reweight,
+// weak-hub flags, gap suggestions). Complete record; nothing discarded.
+let pcCount = 0;
+const hasReview = db.prepare("SELECT COUNT(*) n FROM pragma_table_info('ayah_tafsil') WHERE name='review'").get().n;
+if (hasReview && db.prepare("SELECT COUNT(*) n FROM sqlite_master WHERE name='ayah_tafsil_reviewed_hubs'").get().n) {
+  const reviewed = db.prepare("SELECT hub_ayah_id FROM ayah_tafsil_reviewed_hubs ORDER BY hub_ayah_id").all();
+  const links = db.prepare("SELECT tafsil_ayah_id t, rel, review, review_rel FROM ayah_tafsil WHERE hub_ayah_id=? ORDER BY rel");
+  const hubOk = db.prepare("SELECT hub_ok FROM ayah_principle_review WHERE ayah_id=?");
+  const gaps = db.prepare("SELECT tafsil_ayah_id t FROM ayah_tafsil_gap WHERE hub_ayah_id=?");
+  const out = [];
+  for (const { hub_ayah_id: h } of reviewed) {
+    const verdicts = links.all(h).map((l) => ({
+      loc: loc.get(l.t), rel: l.rel, verdict: l.review ?? "confirm",
+      ...(l.review === "reweight" ? { rel_fixed: l.review_rel } : {}),
+    }));
+    const missed = gaps.all(h).map((g) => loc.get(g.t));
+    out.push(JSON.stringify({
+      hub: loc.get(h), hub_ok: (hubOk.get(h)?.hub_ok ?? 1) === 1,
+      links: verdicts, ...(missed.length ? { missed } : {}),
+    }));
+    pcCount++;
+  }
+  fs.writeFileSync(path.join(DIR, "pass-c-full.jsonl"), out.join("\n") + "\n");
+}
 db.close();
-console.log(`pass-a-full: ${pa.length} ayahs · pass-b-full: ${pbCount} hubs`);
+
+// copy the Pass C review journal into the archive (idempotent)
+const PASS_C_JOURNAL =
+  "/Users/emad/.claude/projects/-Volumes-data-new-projects-quran/762c865b-b6d5-4d4f-8fad-46cbaa8a28f2/subagents/workflows/wf_0215faa2-2b8/journal.jsonl";
+if (fs.existsSync(PASS_C_JOURNAL)) {
+  fs.copyFileSync(PASS_C_JOURNAL, path.join(DIR, "journals", "passC-review.jsonl"));
+}
+console.log(`pass-a-full: ${pa.length} ayahs · pass-b-full: ${pbCount} hubs · pass-c-full: ${pcCount} reviewed hubs`);
