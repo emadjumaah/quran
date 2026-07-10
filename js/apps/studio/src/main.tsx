@@ -178,7 +178,7 @@ function App() {
         </header>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/read" element={<Navigate to="/read/1" replace />} />
+          <Route path="/read" element={<Home />} />
           <Route path="/read/:surahNo" element={<Reader />} />
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />
           <Route path="/roots" element={<Roots />} />
