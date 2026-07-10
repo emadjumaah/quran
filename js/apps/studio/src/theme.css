@@ -248,6 +248,16 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .qcf-rub span { color: var(--gold); background: var(--gold-soft); }
 .qcf-sajda span { color: var(--accent); background: var(--accent-soft); letter-spacing: 0.02em; }
 
+/* tajwīd real-text rendering inside the mushaf frame (QCF glyphs can't colour) */
+.qcf-body.qcf-tajwid { padding: 10px 22px 4px; }
+.qcf-body.qcf-tajwid .quran {
+  font-size: clamp(calc(19px * var(--quran-scale, 1)), calc(4.2vw * var(--quran-scale, 1)), calc(27px * var(--quran-scale, 1)));
+  line-height: 2.3;
+}
+.qcf-tajwid-ayah { cursor: pointer; border-radius: 6px; padding: 0 1px; transition: background 0.12s; }
+.qcf-tajwid-ayah:hover { background: var(--accent-soft); }
+.qcf-tajwid-ayah.play { background: var(--gold-soft); }
+
 /* surah header band + basmala */
 .qcf-surah-band { text-align: center; margin: 14px auto 6px; }
 .qcf-surah-name {

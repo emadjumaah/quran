@@ -8,9 +8,12 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { loadLayout, loadPageFont, pageFont, pageLines } from "../mushaf";
 import type { MushafLine } from "../mushaf";
-import { surahNameAr } from "../db";
+import { ayahByLocationMap, surahNameAr } from "../db";
 import type { MushafMark } from "../db";
+import type { AyahDoc } from "../types";
 import { num } from "../i18n";
+import { useSettings } from "../settings";
+import { TAJWID, tajwidSpans } from "../tajwid";
 
 const BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
 
@@ -48,7 +51,9 @@ export default function MushafRealPage({
   onWord?: (key: string) => void;
   onAyah?: (loc: string) => void;
 }) {
+  const { tajwid } = useSettings();
   const [ready, setReady] = useState(false);
+  const [ayahText, setAyahText] = useState<Map<string, AyahDoc>>(new Map());
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -64,9 +69,23 @@ export default function MushafRealPage({
     };
   }, [page]);
 
+  // tajwīd can't colour the QCF ligature glyphs — so in tajwīd mode we render the
+  // same page's real Uthmani text (coloured) in the mushaf frame instead.
+  useEffect(() => {
+    if (tajwid) void ayahByLocationMap().then((m) => mounted.current && setAyahText(m));
+  }, [tajwid]);
+
   const lines: MushafLine[] = ready ? pageLines(page) : [];
   const fam = pageFont(page);
   const opening = page <= 2; // the decorated Fātiḥa / Baqara opening pages
+
+  // ordered distinct ayahs on this page (for the tajwīd real-text rendering)
+  const pageAyahs: string[] = [];
+  if (tajwid) {
+    const seen = new Set<string>();
+    for (const ln of lines) for (const w of ln.words) if (!seen.has(w.ayah)) { seen.add(w.ayah); pageAyahs.push(w.ayah); }
+  }
+  const tajwidReady = tajwid && ready && ayahText.size > 0;
 
   return (
     <section className={`mushaf-page qcf${opening ? " opening" : ""}`}>
@@ -75,8 +94,46 @@ export default function MushafRealPage({
         {juz != null && <span>الجزء {num(juz)}</span>}
       </div>
 
-      <div className="qcf-body">
-        {!ready ? (
+      <div className={`qcf-body${tajwid ? " qcf-tajwid" : ""}`}>
+        {tajwid ? (
+          !tajwidReady ? (
+            <div className="muted" style={{ textAlign: "center", padding: 40 }}>…</div>
+          ) : (
+            <div className="quran" style={{ textAlign: "justify", textAlignLast: "center" }}>
+              {pageAyahs.map((loc) => {
+                const [s, a] = loc.split(":");
+                const startSurah = a === "1" ? Number(s) : null;
+                const mk = marks?.get(loc);
+                const d = ayahText.get(loc);
+                return (
+                  <Fragment key={loc}>
+                    {startSurah != null && <SurahBand surah={startSurah} />}
+                    {mk?.quarter && (
+                      <div className="qcf-markband qcf-rub"><span>۞ {num(mk.quarter)}</span></div>
+                    )}
+                    {mk?.sajda && (
+                      <div className="qcf-markband qcf-sajda"><span>۩ موضع سجدة</span></div>
+                    )}
+                    <span
+                      className={`qcf-tajwid-ayah${playingAyah === loc ? " play" : ""}`}
+                      role="button"
+                      onClick={() => onAyah?.(loc)}
+                    >
+                      {tajwidSpans(d?.textUthmani ?? "").map((sp, i) =>
+                        sp.rule ? (
+                          <span key={i} className={TAJWID[sp.rule].cls} title={TAJWID[sp.rule].ar}>{sp.text}</span>
+                        ) : (
+                          <span key={i}>{sp.text}</span>
+                        ),
+                      )}
+                      <span className="ayah-marker"> ﴿{num(a)}﴾</span>
+                    </span>{" "}
+                  </Fragment>
+                );
+              })}
+            </div>
+          )
+        ) : !ready ? (
           <div className="muted" style={{ textAlign: "center", padding: 40 }}>…</div>
         ) : (
           lines.map((ln) => {
