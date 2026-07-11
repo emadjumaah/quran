@@ -95,13 +95,18 @@ export function elaborates(loc: string): Link[] {
 }
 
 /**
- * A **جامعة (أصل)** in the strict, clear sense: a principle-verse that has its
- * own تفصيل but is NOT itself a تفصيل of any other principle — a genuine root.
- * If a verse elaborates another, it is تفصيل, not a جامعة. This is the honest
- * criterion behind the الجوامع page (≈108 roots, not the 1032 network nodes).
+ * A **جامعة (أصل)** in the strict, clear sense: a principle-verse that (a) has
+ * its own تفصيل, and (b) is NOT itself a تفصيل of any other principle. Both
+ * conditions matter — a verse that gathers nothing isn't a جامعة, and one that
+ * elaborates another is تفصيل, not a root. This is the honest criterion behind
+ * the الجوامع page (≈88 genuine roots).
  */
 export function isRootPrinciple(loc: string): boolean {
-  return !!data?.principles[loc] && (reverse?.get(loc)?.length ?? 0) === 0;
+  return (
+    !!data?.principles[loc] &&
+    (reverse?.get(loc)?.length ?? 0) === 0 &&
+    (data?.tafsil[loc]?.length ?? 0) > 0
+  );
 }
 
 /** Reviewer-suggested missing تفصيل for a hub (may be empty). */

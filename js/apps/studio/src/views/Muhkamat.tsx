@@ -134,7 +134,7 @@ function RootAyah({ loc, kubraTitle, texts }: { loc: string; kubraTitle: string 
   );
 }
 
-/* --------- the one unified home: عناوين (40 sections) OR آيات (108 roots) ------ */
+/* --------- the one unified home: عناوين (40 sections) OR آيات (88 roots) ------- */
 function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkamat>>; texts: Map<string, AyahDoc> }) {
   const ar = getUILang() === "ar";
   const jw = useJawami();
@@ -155,7 +155,7 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
     return map;
   }, [data]);
 
-  // the 108 آيات محكمة (roots); default order = المصحف (surah:ayah), optional = الأوسع تفصيلًا
+  // the 88 آيات محكمة (roots WITH تفصيل); default order = المصحف, optional = الأوسع تفصيلًا
   const roots = useMemo(() => {
     if (!jw) return [];
     const gpos = (loc: string) => {
@@ -167,12 +167,19 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
     return rs;
   }, [jw, sort]);
   const totalTafsil = useMemo(() => roots.reduce((s, l) => s + tafsilOf(l).length, 0), [roots]);
-  // the whole تفصيل network reachable across all levels (honest total — a root's
-  // تفصيل can itself have تفصيل; 108 roots sit atop a much larger fabric)
+  // The connected تفصيل fabric: only verses actually joined by a تفصيل edge — a
+  // hub that HAS تفصيل, plus the verses it points to. Isolated principle-verses
+  // (no تفصيل, and not a تفصيل of any) are NOT part of the fabric and must not be
+  // counted. (This is a research project — the numbers have to be honest.)
   const networkSize = useMemo(() => {
     if (!jw) return 0;
-    const s = new Set<string>(Object.keys(jw.principles));
-    for (const loc of Object.keys(jw.principles)) for (const l of tafsilOf(loc)) s.add(l.loc);
+    const s = new Set<string>();
+    for (const loc of Object.keys(jw.principles)) {
+      const fwd = tafsilOf(loc);
+      if (fwd.length === 0) continue;
+      s.add(loc);
+      for (const l of fwd) s.add(l.loc);
+    }
     return s.size;
   }, [jw]);
 
