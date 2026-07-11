@@ -134,6 +134,7 @@ function Nav() {
       <NavLink to="/read" title={getUILang() === "ar" ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
       <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/jawami" title={getUILang() === "ar" ? "الآيات الجوامع وتفصيلها" : "principle verses & their tafsil"}>{t("nav.jawami")}</NavLink>
+      <NavLink to="/muhkamat" title={getUILang() === "ar" ? "المحكمات الجامعة: الأصول الكبرى التي تتفرّع منها الجوامع" : "the governing principles above the جوامع"}>{t("nav.muhkamat")}</NavLink>
       <NavLink to="/furuq" title={getUILang() === "ar" ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/search">{t("nav.search")}</NavLink>

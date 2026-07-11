@@ -110,8 +110,8 @@ function Index({ data }: { data: NonNullable<ReturnType<typeof useMuhkamat>> }) 
         <h1 className="jw-title">{ar ? "المحكمات الجامعة" : "The Governing Principles"}</h1>
         <p className="jw-lead">
           {ar
-            ? "الطبقة الثالثة فوق الجوامع: عنقدنا الآياتِ الجامعة في أصولٍ كبرى، ثم دقّقنا كلَّ عنقودٍ عدائيًّا حتى لا يجمعه إلا معنًى واحد. اصعد من الأصل الكبير إلى المحكمة إلى جوامعها إلى تفصيلها."
-            : "The third layer above the principle-verses: the جوامع clustered into major roots, each cluster then adversarially split until one meaning binds it. Climb from the great root to the muhkama to its verses to their detail."}
+            ? "الطبقة الثالثة فوق الجوامع: عنقدنا الآياتِ الجامعة في أصولٍ كبرى، ثم فحصنا تماسكَ كلِّ عنقودٍ بالتفنيد حتى لا يجمعه إلا معنًى واحد. اصعد من الأصل الكبير إلى المحكمة إلى جوامعها إلى تفصيلها."
+            : "The third layer above the principle-verses: the جوامع clustered into major roots, each cluster then split by refutation until a single meaning binds it. Climb from the great root to the muhkama to its verses to their detail."}
         </p>
         <div className="jw-stats">
           <span className="chip"><b>{num(data.meta.muhkamat)}</b> {ar ? "محكمة" : "muhkamāt"}</span>

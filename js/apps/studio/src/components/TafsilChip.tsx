@@ -22,6 +22,7 @@ import { ayahByLocationMap, surahNameAr } from "../db";
 import type { AyahDoc } from "../types";
 import { getUILang, num } from "../i18n";
 import { useSettings } from "../settings";
+import MushafLink from "./MushafLink";
 
 const REL_ORDER: Rel[] = ["بيان", "مثال", "جزاء", "توكيد"];
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -40,11 +41,12 @@ function useParticipation(location: string) {
 
 function VerseLine({ loc, texts, rel }: { loc: string; texts: Map<string, AyahDoc>; rel?: Rel }) {
   return (
-    <Link to={`/read/${loc.split(":")[0]}/${loc.split(":")[1]}`} className="jw-verse">
+    <div className="jw-verse">
       {rel && <span className="jw-reldot" style={{ background: REL_INFO[rel].color }} />}
       <span className="jw-verse-ref">{arName(loc)}</span>
       <span className="jw-verse-text quran">{texts.get(loc)?.textClean ?? loc}</span>
-    </Link>
+      <MushafLink loc={loc} compact />
+    </div>
   );
 }
 

@@ -28,6 +28,7 @@ import {
 } from "../db";
 import { resolveRootReady } from "../searchForms";
 import PageSearch from "../components/PageSearch";
+import MushafLink from "../components/MushafLink";
 import { fuzzyMatch } from "../lib/fuzzy";
 import type { AyahDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
@@ -52,7 +53,7 @@ function VerseRow({
 }) {
   const d = texts.get(loc);
   return (
-    <Link to={readPathOf(loc)} className="jw-verse">
+    <div className="jw-verse">
       {rel && (
         <span
           className="jw-reldot"
@@ -61,7 +62,8 @@ function VerseRow({
       )}
       <span className="jw-verse-ref">{arName(loc)}</span>
       <span className="jw-verse-text quran">{d?.textClean ?? loc}</span>
-    </Link>
+      <MushafLink loc={loc} compact />
+    </div>
   );
 }
 
@@ -129,27 +131,38 @@ function Card({
   const deg = tafsilOf(hub).length;
   return (
     <div className={`jw-card${open ? " open" : ""}`}>
-      <button className="jw-cardhead" onClick={onToggle}>
-        <span className="jw-ref">{arName(hub)}</span>
-        {p.kind && <span className="chip">{p.kind}</span>}
-        {p.grade && (
-          <span className="chip gold" title={GRADE_INFO[p.grade]?.note}>
-            {p.grade}
-          </span>
-        )}
-        {p.tahrim ? <span className="chip">تحريم</span> : null}
-        <span className="spacer" />
-        {deg > 0 && (
-          <span className="jw-deg">
-            {num(deg)} {getUILang() === "ar" ? "تفصيل" : "tafsil"}
-          </span>
-        )}
-        <span className="jw-caret">{open ? "▾" : "◂"}</span>
-      </button>
-      <Link to={readPathOf(hub)} className="jw-cardtext quran">
+      <div className="jw-cardhead-row">
+        <button className="jw-cardhead" onClick={onToggle} aria-expanded={open}>
+          <span className="jw-ref">{arName(hub)}</span>
+          {p.kind && <span className="chip">{p.kind}</span>}
+          {p.grade && (
+            <span className="chip gold" title={GRADE_INFO[p.grade]?.note}>
+              {p.grade}
+            </span>
+          )}
+          {p.tahrim ? <span className="chip">تحريم</span> : null}
+          <span className="spacer" />
+          {deg > 0 && (
+            <span className="jw-deg">
+              {num(deg)} {getUILang() === "ar" ? "تفصيل" : "tafsil"}
+            </span>
+          )}
+          <span className="jw-caret">{open ? "▾" : "◂"}</span>
+        </button>
+        <MushafLink loc={hub} compact />
+      </div>
+      {/* tapping the verse opens/closes its تفصيل — never jumps to the mushaf */}
+      <div
+        className="jw-cardtext quran"
+        onClick={onToggle}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onToggle())}
+        style={{ cursor: deg > 0 ? "pointer" : "default" }}
+      >
         {d?.textUthmani ?? hub}
         <span className="ayah-marker"> ﴿{num(hub.split(":")[1])}﴾</span>
-      </Link>
+      </div>
       {open && <TafsilPanel hub={hub} texts={texts} />}
     </div>
   );
@@ -171,16 +184,27 @@ function HubRow({
 }) {
   const [open, setOpen] = useState(false);
   const d = texts.get(hub);
+  const toggle = () => setOpen((v) => !v);
   return (
     <div className={`jw-card${open ? " open" : ""}`}>
-      <button className="jw-cardhead" onClick={() => setOpen(!open)}>
-        <span className="jw-ref">{arName(hub)}</span>
-        {badge && <span className="chip gold">{badge}</span>}
-        <span className="spacer" />
-        <span className="jw-deg">{num(count)}</span>
-        <span className="jw-caret">{open ? "▾" : "◂"}</span>
-      </button>
-      <div className="jw-cardtext quran" style={{ fontSize: 19 }}>
+      <div className="jw-cardhead-row">
+        <button className="jw-cardhead" onClick={toggle} aria-expanded={open}>
+          <span className="jw-ref">{arName(hub)}</span>
+          {badge && <span className="chip gold">{badge}</span>}
+          <span className="spacer" />
+          <span className="jw-deg">{num(count)}</span>
+          <span className="jw-caret">{open ? "▾" : "◂"}</span>
+        </button>
+        <MushafLink loc={hub} compact />
+      </div>
+      <div
+        className="jw-cardtext quran"
+        style={{ fontSize: 19, cursor: "pointer" }}
+        onClick={toggle}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), toggle())}
+      >
         {d?.textClean ?? hub}
       </div>
       {open && (

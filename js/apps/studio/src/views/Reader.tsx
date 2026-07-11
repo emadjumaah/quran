@@ -27,6 +27,8 @@ import CollectButton from "../components/CollectButton";
 import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs from "../components/SimilarAyahs";
 import TafsilChip, { TafsilPanel } from "../components/TafsilChip";
+import InlineOmni from "../components/InlineOmni";
+import ScrollTopFab from "../components/ScrollTopFab";
 import TafsilAside from "../components/TafsilAside";
 import VerseContext from "../components/VerseContext";
 import { useVerseIndex, verseInfo } from "../mawdui";
@@ -284,6 +286,7 @@ export default function Reader() {
   // which ayah's محكم→تفصيل panel is open (آيات mode); one at a time keeps the
   // page short and the panel renders beneath the verse, not above it.
   const [openTafsil, setOpenTafsil] = useState<string | null>(null);
+  const mainRef = useRef<HTMLElement>(null); // the scroll container (for page-turn scroll-to-top + the FAB)
   // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
   const [pageIdx, setPageIdx] = useState(0);
   const wantLastPage = useRef<number | null>(null); // surah we back-flipped INTO → show its last page
@@ -358,6 +361,13 @@ export default function Reader() {
     const el = document.getElementById(`ayah-${surahNo}-${targetAyahNo}`);
     el?.scrollIntoView({ block: "center" });
   }, [loading, surahNo, targetAyahNo, mode]);
+
+  // Landing on a new surah (no specific ayah) starts at the top so reading
+  // continues naturally — especially on mobile where the page is one column.
+  useEffect(() => {
+    if (loading || targetAyahNo != null) return;
+    mainRef.current?.scrollTo({ top: 0 });
+  }, [loading, surahNo, pageIdx, targetAyahNo]);
 
   const surah = useMemo(() => surahs.find((s) => s.surahNo === surahNo), [surahs, surahNo]);
 
@@ -449,6 +459,7 @@ export default function Reader() {
     const next = pageIdx + dir;
     if (next >= 0 && next < pages.length) {
       setPageIdx(next);
+      mainRef.current?.scrollTo({ top: 0 }); // continue reading from the top of the new page
     } else if (dir === 1 && surahNo < 114) {
       navigate(`/read/${surahNo + 1}`);
     } else if (dir === -1 && surahNo > 1) {
@@ -521,27 +532,65 @@ export default function Reader() {
   // which ayah to visually mark as "playing/target" — a «مثلها» preview must
   // NOT move the highlight (same rule the scroll/page-sync effects follow).
   const displayTargetAyahNo = isPreviewPlaying() ? targetAyahNo : (playingAyahNo ?? targetAyahNo);
+
+  const listenSurah = () => playContinuous((surahBase.get(surahNo) ?? 0) + 1);
+  const modesEl = (
+    <span className="reader-modes">
+      {(["pages", "ayat"] as Mode[]).map((m) => (
+        <button
+          key={m}
+          onClick={() => switchMode(m)}
+          className={mode === m ? "on" : ""}
+          title={
+            getUILang() === "ar"
+              ? m === "pages" ? "عرض الصفحة: تدفّق مستمرّ مجمّعًا بصفحات المصحف" : "عرض الآيات: آيةً آية مع الأدوات والترجمة"
+              : m === "pages" ? "page view: continuous flow by mushaf page" : "ayah view: one by one with tools"
+          }
+        >
+          {m === "pages" ? t("reader.pages") : t("reader.ayat")}
+        </button>
+      ))}
+    </span>
+  );
   return (
     <div style={{ display: "flex", height: "100%", minHeight: 0, overflow: "hidden" }}>
       {!narrow && <SurahSidebar surahs={surahs} activeNo={surahNo} onPick={goTo} />}
 
-      <main className="page" style={{ flex: 1, minWidth: 0 }}>
-        {narrow && (
-          <select
-            value={surahNo}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) => goTo(Number(e.target.value))}
-            style={{ width: "100%", marginBottom: 16 }}
-            aria-label={t("reader.filter")}
-          >
-            {surahs.map((s) => (
-              <option key={s.surahNo} value={s.surahNo}>
-                {s.surahNo}. {s.nameAr}{getUILang() !== "ar" ? ` — ${s.nameTranslit}` : ""}
-              </option>
-            ))}
-          </select>
+      <main ref={mainRef} className="page" style={{ flex: 1, minWidth: 0 }}>
+        {/* Mobile: ONE sticky header — surah picker (carries the name), the
+            on-page search, a compact ▶, and the mode toggle. Stays under the
+            app header so you switch surah / jump / change view without scrolling
+            up; no second bar. */}
+        {surah && narrow && (
+          <div className="reader-sticky">
+            <select
+              className="reader-surah-pick"
+              value={surahNo}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => goTo(Number(e.target.value))}
+              aria-label={t("reader.filter")}
+            >
+              {surahs.map((s) => (
+                <option key={s.surahNo} value={s.surahNo}>
+                  {s.surahNo}. {s.nameAr}{getUILang() !== "ar" ? ` — ${s.nameTranslit}` : ""}
+                </option>
+              ))}
+            </select>
+            <div className="reader-sticky-search"><InlineOmni /></div>
+            <button
+              className="reader-play-icon"
+              onClick={listenSurah}
+              title={getUILang() === "ar" ? "استمع للسورة كاملة" : "listen to the whole surah"}
+              aria-label={getUILang() === "ar" ? "استمع للسورة" : "listen"}
+            >
+              ▶
+            </button>
+            {modesEl}
+          </div>
         )}
 
-        {surah && (
+        {/* Desktop: name · meta · listen · modes. No search here — the ⌘K
+            omnibox in the top bar already covers it on desktop. */}
+        {surah && !narrow && (
           <header className="reader-bar">
             <span className="reader-bar-name quran">{surah.nameAr}</span>
             <span className="muted reader-bar-meta">
@@ -553,27 +602,12 @@ export default function Reader() {
             <button
               className="chip link"
               style={{ border: "none" }}
-              onClick={() => playContinuous((surahBase.get(surahNo) ?? 0) + 1)}
+              onClick={listenSurah}
               title={getUILang() === "ar" ? "استمع للسورة كاملة" : "listen to the whole surah"}
             >
               ▶ {t("reader.listenSurah")}
             </button>
-            <span className="reader-modes">
-              {(["pages", "ayat"] as Mode[]).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => switchMode(m)}
-                  className={mode === m ? "on" : ""}
-                  title={
-                    getUILang() === "ar"
-                      ? m === "pages" ? "عرض الصفحة: تدفّق مستمرّ مجمّعًا بصفحات المصحف" : "عرض الآيات: آيةً آية مع الأدوات والترجمة"
-                      : m === "pages" ? "page view: continuous flow by mushaf page" : "ayah view: one by one with tools"
-                  }
-                >
-                  {m === "pages" ? t("reader.pages") : t("reader.ayat")}
-                </button>
-              ))}
-            </span>
+            {modesEl}
           </header>
         )}
 
@@ -709,6 +743,8 @@ export default function Reader() {
           })
         )}
       </main>
+
+      {narrow && <ScrollTopFab scrollerRef={mainRef} />}
 
       {!narrow && (
         <aside

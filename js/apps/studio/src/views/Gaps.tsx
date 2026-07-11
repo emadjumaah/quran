@@ -97,8 +97,8 @@ export default function Gaps() {
           <h1 className="jw-title">{ar ? "قد يُكمله" : "Possibly completes it"}</h1>
           <p className="jw-lead">
             {ar
-              ? "أثناء المراجعة العدائية للجوامع، طُلب من السرب — بعد نقض الروابط الضعيفة — أن يقترح تفصيلًا مفقودًا: آياتٍ قد تُكمِّل جامعةً لكنها لم تُؤكَّد. نعرضها بصراحةٍ كطبقةٍ مفتوحة، والقارئ يحكم."
-              : "During the adversarial review, after refuting weak links the swarm was asked to suggest missing tafsil — verses that might complete a principle but were never confirmed. Shown openly, unverified; the reader judges."}
+              ? "في أثناء المراجعة التفنيديّة للجوامع، وبعد نقض الروابط الضعيفة، رُصد تفصيلٌ محتملٌ لم يُؤكَّد: آياتٌ قد تُكمِّل جامعةً دون أن يثبت ذلك. نعرضها بصراحةٍ كطبقةٍ مفتوحة، والقارئ يحكم."
+              : "During the refutational review, after refuting weak links, potential-but-unconfirmed tafsil was flagged — verses that might complete a principle without that being established. Shown openly, unverified; the reader judges."}
           </p>
           <div className="jw-stats">
             <span className="chip"><b>{num(rows.length)}</b> {ar ? "جامعة" : "principles"}</span>
