@@ -1,15 +1,14 @@
 /**
- * المحكمات الجامعة — browse the pyramid's apex. Level 1: the 40 كبرى (major
- * principles). Level 2: one كبرى → its verified محكمات, each shown with its
- * «أمّ» (mother principle-verse) illuminated and its جوامع beneath. From
- * muhkamat.json; the reader climbs from the great root down to the detail.
+ * المحكمات — the 88 آياتٌ محكمة (roots that gather تفصيل, and are not themselves
+ * تفصيل of any other). Browse them grouped by their own kind (عناوين) or one
+ * verse at a time; each verse opens its تفصيل, drillable across levels. From the
+ * Qur'anic text and its morphology alone — نُفصِّل القرآنَ بالقرآن.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
-import { jawamiCount, useMuhkamat, type Kubra, type Muhkama } from "../muhkamat";
 import PageSearch from "../components/PageSearch";
 import MushafLink from "../components/MushafLink";
 import { TafsilPanel } from "../components/TafsilChip";
@@ -18,89 +17,9 @@ import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
-/** the جوامع under a محكمة — collapsed to a count, expands to clickable refs. */
-function Members({ m, texts }: { m: Muhkama; texts: Map<string, AyahDoc> }) {
-  const [open, setOpen] = useState(false);
-  const ar = getUILang() === "ar";
-  const others = m.members.filter((loc) => loc !== m.umm);
-  if (others.length === 0) return null;
-  return (
-    <div className="mk-members">
-      <button className="mk-members-btn" onClick={() => setOpen(!open)}>
-        {open ? "▾" : "◂"} {ar ? "الجوامع المندرجة" : "principle-verses under it"}{" "}
-        <span className="muted">· {num(others.length)}</span>
-      </button>
-      {open && (
-        <div className="mk-members-list">
-          {others.map((loc) => (
-            <div key={loc} className="mk-verse">
-              <span className="mk-verse-ref">{arName(loc)}</span>
-              <span className="mk-verse-text quran">{texts.get(loc)?.textClean ?? loc}</span>
-              <MushafLink loc={loc} compact />
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** one محكمة: title · theme · the illuminated أمّ verse · its جوامع. */
-function MuhkamaCard({ m, texts }: { m: Muhkama; texts: Map<string, AyahDoc> }) {
-  const ar = getUILang() === "ar";
-  const umm = texts.get(m.umm);
-  return (
-    <div className="mk-card">
-      <h3 className="mk-title">{m.title}</h3>
-      {m.theme && <p className="mk-theme">{m.theme}</p>}
-      <div className="mk-umm">
-        <div className="mk-umm-head">
-          <span className="mk-umm-lbl">{ar ? "الأمّ" : "root verse"} · {arName(m.umm)}</span>
-          <MushafLink loc={m.umm} compact />
-        </div>
-        <span className="mk-umm-text quran">{umm?.textUthmani ?? m.umm}</span>
-      </div>
-      <Members m={m} texts={texts} />
-    </div>
-  );
-}
-
-/* --------------------------------- level 2 --------------------------------- */
-function KubraView({ kb, texts }: { kb: Kubra; texts: Map<string, AyahDoc> }) {
-  useUILang();
-  const ar = getUILang() === "ar";
-  return (
-    <>
-      <nav className="mw-crumb" aria-label={ar ? "مسار" : "path"}>
-        <Link to="/muhkamat">{ar ? "المحكمات" : "Muhkamat"}</Link>
-        <span className="mw-sep">›</span>
-        <span className="mw-here">{kb.title}</span>
-      </nav>
-      <header className="jw-header">
-        <h1 className="jw-title">{kb.title}</h1>
-        <p className="jw-lead">
-          {ar
-            ? `أصلٌ كبرى يضمّ ${num(kb.muhkamat.length)} محكمةً متجانسة، و${num(jawamiCount(kb))} آيةً جامعة.`
-            : `A major principle holding ${num(kb.muhkamat.length)} coherent muhkamāt and ${num(jawamiCount(kb))} principle-verses.`}
-        </p>
-      </header>
-      <div className="mk-cards">
-        {kb.muhkamat.map((m, i) => (
-          <MuhkamaCard key={i} m={m} texts={texts} />
-        ))}
-      </div>
-      <div style={{ textAlign: "center", margin: "20px 0" }}>
-        <Link to="/muhkamat" className="chip link" style={{ textDecoration: "none" }}>
-          ← {ar ? "كل الأصول" : "all principles"}
-        </Link>
-      </div>
-    </>
-  );
-}
-
-/** one آية محكمة (root) in the flat «آيات» view: its عنوان tag · the verse ·
+/** one آية محكمة (root) in the flat «آيات» view: its kind tag · the verse ·
  *  its تفصيل on tap. Tapping the verse opens تفصيل; ↗ opens the mushaf. */
-function RootAyah({ loc, kubraTitle, texts }: { loc: string; kubraTitle: string | null; texts: Map<string, AyahDoc> }) {
+function RootAyah({ loc, kindLabel, texts }: { loc: string; kindLabel: string | null; texts: Map<string, AyahDoc> }) {
   const [open, setOpen] = useState(false);
   const ar = getUILang() === "ar";
   const deg = tafsilOf(loc).length;
@@ -108,7 +27,7 @@ function RootAyah({ loc, kubraTitle, texts }: { loc: string; kubraTitle: string 
   const toggle = () => deg > 0 && setOpen((v) => !v);
   return (
     <div className={`jw-card${open ? " open" : ""}`}>
-      {kubraTitle && <div className="mk-ayah-tag" title={ar ? "العنوان (القسم) التابع له" : "its section"}>{kubraTitle}</div>}
+      {kindLabel && <div className="mk-ayah-tag" title={ar ? "نوع المحكمة" : "kind"}>{kindLabel}</div>}
       <div className="jw-cardhead-row">
         <button className="jw-cardhead" onClick={toggle} aria-expanded={open}>
           <span className="jw-ref">{arName(loc)}</span>
@@ -134,43 +53,55 @@ function RootAyah({ loc, kubraTitle, texts }: { loc: string; kubraTitle: string 
   );
 }
 
-/* --------- the one unified home: عناوين (40 sections) OR آيات (88 roots) ------- */
-function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkamat>>; texts: Map<string, AyahDoc> }) {
+// the محكمات's own kinds — a data-derived grouping of the roots (each root
+// carries its kind), far cleaner than the retired 40-كبرى clustering.
+const KIND_NOTE: Record<string, string> = {
+  "عقيدة": "التوحيد وأسماء الله وصفاته واليوم الآخر",
+  "أخلاق": "أخلاق المؤمن وآدابه ومعاملاته",
+  "سنة": "سنن الله في الخلق والأمم",
+  "حكم": "الأحكام العمليّة",
+  "وعد": "الوعد والوعيد والجزاء",
+};
+const gpos = (loc: string) => {
+  const [s, a] = loc.split(":").map(Number);
+  return s * 1000 + a;
+};
+
+/* --------- the one unified home: عناوين (kinds) OR آيات (88 roots) ------------ */
+function Index({ texts }: { texts: Map<string, AyahDoc> }) {
   const ar = getUILang() === "ar";
   const jw = useJawami();
   const [q, setQ] = useState("");
   const [view, setView] = useState<"titles" | "ayat">("ayat");
   const [sort, setSort] = useState<"quran" | "tafsil">("quran"); // mushaf order by default
+  const [kind, setKind] = useState<string>(""); // filter the آيات by kind (عنوان)
   const [limit, setLimit] = useState(60);
-  useEffect(() => setLimit(60), [q, view, sort]);
+  useEffect(() => setLimit(60), [q, view, sort, kind]);
 
-  // loc → its عنوان (كبرى) title, so each آية shows the section it belongs to
-  const locToKubra = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const kb of data.kubra)
-      for (const m of kb.muhkamat) {
-        map.set(m.umm, kb.title);
-        for (const loc of m.members) if (!map.has(loc)) map.set(loc, kb.title);
-      }
-    return map;
-  }, [data]);
+  const kindOf = (loc: string) => jw?.principles[loc]?.kind ?? "";
 
   // the 88 آيات محكمة (roots WITH تفصيل); default order = المصحف, optional = الأوسع تفصيلًا
   const roots = useMemo(() => {
     if (!jw) return [];
-    const gpos = (loc: string) => {
-      const [s, a] = loc.split(":").map(Number);
-      return s * 1000 + a;
-    };
     const rs = Object.keys(jw.principles).filter((l) => isRootPrinciple(l));
     rs.sort(sort === "quran" ? (a, b) => gpos(a) - gpos(b) : (a, b) => tafsilOf(b).length - tafsilOf(a).length);
     return rs;
   }, [jw, sort]);
-  const totalTafsil = useMemo(() => roots.reduce((s, l) => s + tafsilOf(l).length, 0), [roots]);
-  // The connected تفصيل fabric: only verses actually joined by a تفصيل edge — a
-  // hub that HAS تفصيل, plus the verses it points to. Isolated principle-verses
-  // (no تفصيل, and not a تفصيل of any) are NOT part of the fabric and must not be
-  // counted. (This is a research project — the numbers have to be honest.)
+
+  // the عناوين: the roots grouped by their own kind (5 clean sections)
+  const kinds = useMemo(() => {
+    const m = new Map<string, string[]>();
+    for (const loc of roots) {
+      const k = kindOf(loc) || (ar ? "أخرى" : "other");
+      (m.get(k) ?? m.set(k, []).get(k)!).push(loc);
+    }
+    return [...m.entries()]
+      .map(([name, locs]) => ({ name, locs, tafsil: locs.reduce((s, l) => s + tafsilOf(l).length, 0) }))
+      .sort((a, b) => b.locs.length - a.locs.length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roots, jw]);
+
+  // connected تفصيل fabric — only verses joined by a تفصيل edge (research-honest)
   const networkSize = useMemo(() => {
     if (!jw) return 0;
     const s = new Set<string>();
@@ -184,16 +115,20 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
   }, [jw]);
 
   const filteredRoots = useMemo(
-    () => roots.filter((loc) => fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean, locToKubra.get(loc))),
-    [roots, q, texts, locToKubra],
+    () =>
+      roots.filter(
+        (loc) =>
+          (!kind || kindOf(loc) === kind) &&
+          fuzzyMatch(q, arName(loc), texts.get(loc)?.textClean, kindOf(loc)),
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [roots, q, texts, kind, jw],
   );
-  const kubra = data.kubra
-    .map((kb, i) => [kb, i] as const)
-    .filter(
-      ([kb]) =>
-        kb.muhkamat.length > 0 &&
-        fuzzyMatch(q, kb.title, ...kb.muhkamat.map((m) => m.title), ...kb.muhkamat.map((m) => m.theme ?? "")),
-    );
+
+  const pickKind = (name: string) => {
+    setKind(name);
+    setView("ayat");
+  };
 
   return (
     <>
@@ -201,18 +136,13 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
         <h1 className="jw-title">{ar ? "المحكمات" : "Muḥkamāt"}</h1>
         <p className="jw-lead">
           {ar
-            ? "الآياتُ المحكمة: أصولٌ تجمع معاني القرآن، وتحتها تفصيلُها من نصّ القرآن وصرفه وحدهما. تصفّحها مُجمَّعةً في عناوين، أو آيةً آية مع تفصيل كلٍّ منها."
-            : "The muḥkam verses: roots that gather the Qur'an's meanings, each with its تفصيل — from the Qur'anic text alone. Browse them grouped into sections, or one verse at a time with its تفصيل."}
+            ? "الآياتُ المحكمة: أصولٌ تجمع معاني القرآن، وتحتها تفصيلُها من نصّ القرآن وصرفه وحدهما. تصفّحها مُجمَّعةً في عناوين حسب نوعها، أو آيةً آية مع تفصيل كلٍّ منها."
+            : "The muḥkam verses: roots that gather the Qur'an's meanings, each with its تفصيل — from the Qur'anic text alone. Browse them grouped by kind, or one verse at a time."}
         </p>
         <div className="jw-stats">
-          <span className="chip"><b>{num(data.meta.kubra)}</b> {ar ? "عنوان" : "sections"}</span>
+          <span className="chip"><b>{num(kinds.length)}</b> {ar ? "عنوان" : "kinds"}</span>
           <span className="chip"><b>{num(roots.length)}</b> {ar ? "آية محكمة" : "muḥkam verses"}</span>
-          <span
-            className="chip"
-            title={ar ? `تفصيلٌ مباشر ${num(totalTafsil)}، ويتفرّع عبر مستوياتٍ إلى شبكةٍ أوسع` : "108 roots atop a multi-level تفصيل fabric"}
-          >
-            <b>{num(networkSize)}</b> {ar ? "في شبكة تفصيلها" : "in its tafsīl network"}
-          </span>
+          <span className="chip"><b>{num(networkSize)}</b> {ar ? "في شبكة تفصيلها" : "in its tafsīl network"}</span>
           <Link to="/jawami/lenses" className="chip link" style={{ textDecoration: "none" }} title={ar ? "تحليلاتٌ متقدّمة لبنية الشبكة (للباحثين)" : "advanced network analytics"}>
             {ar ? "تحليلات الشبكة ←" : "network analytics →"}
           </Link>
@@ -221,51 +151,52 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
 
       <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في المحكمات وتفصيلها…" : "search…"} />
 
-      {/* the one toggle — mushaf-style: عناوين (كروت) أو آيات */}
+      {/* one consolidated controls row (view · sort · active kind) */}
       <div className="jw-filters">
         <div className="jw-chipset" style={{ justifyContent: "center" }}>
-          <span className="jw-filter-lbl">{ar ? "العرض" : "view"}</span>
           <button className={view === "ayat" ? "on" : ""} onClick={() => setView("ayat")}>
             {ar ? `آيات (${num(roots.length)})` : `verses (${num(roots.length)})`}
           </button>
           <button className={view === "titles" ? "on" : ""} onClick={() => setView("titles")}>
-            {ar ? `عناوين (${num(data.meta.kubra)})` : `sections (${num(data.meta.kubra)})`}
+            {ar ? `عناوين (${num(kinds.length)})` : `kinds (${num(kinds.length)})`}
           </button>
+          {view === "ayat" && (
+            <>
+              <span className="jw-filter-lbl" style={{ marginInlineStart: 10 }}>{ar ? "الترتيب" : "sort"}</span>
+              <button className={sort === "quran" ? "on" : ""} onClick={() => setSort("quran")}>
+                {ar ? "المصحف" : "mushaf"}
+              </button>
+              <button className={sort === "tafsil" ? "on" : ""} onClick={() => setSort("tafsil")}>
+                {ar ? "الأوسع تفصيلًا" : "most tafsīl"}
+              </button>
+              {kind && (
+                <button className="on gold" onClick={() => setKind("")} title={ar ? "أزل تصفية العنوان" : "clear kind filter"}>
+                  {kind} ✕
+                </button>
+              )}
+            </>
+          )}
         </div>
-        {view === "ayat" && (
-          <div className="jw-chipset" style={{ justifyContent: "center" }}>
-            <span className="jw-filter-lbl">{ar ? "الترتيب" : "sort"}</span>
-            <button className={sort === "quran" ? "on" : ""} onClick={() => setSort("quran")}>
-              {ar ? "ترتيب المصحف" : "mushaf order"}
-            </button>
-            <button className={sort === "tafsil" ? "on" : ""} onClick={() => setSort("tafsil")}>
-              {ar ? "الأوسع تفصيلًا" : "most tafsīl"}
-            </button>
-          </div>
-        )}
       </div>
 
       {view === "titles" ? (
         <div className="mk-kubra-grid">
-          {kubra.map(([kb, i]) => (
-            <Link key={i} to={`/muhkamat/${i}`} className="mk-kubra-card" title={kb.title}>
-              <span className="mk-kubra-title">{kb.title}</span>
-              <span className="mk-kubra-preview">{kb.muhkamat.map((m) => m.title).slice(0, 3).join(" · ")}</span>
+          {kinds.map((k) => (
+            <button key={k.name} className="mk-kubra-card" onClick={() => pickKind(k.name)} style={{ cursor: "pointer", textAlign: "start" }}>
+              <span className="mk-kubra-title">{k.name}</span>
+              <span className="mk-kubra-preview">{KIND_NOTE[k.name] ?? ""}</span>
               <span className="mk-kubra-meta">
-                {num(kb.muhkamat.length)} {ar ? "محكمة" : "muhkamāt"} · {num(jawamiCount(kb))} {ar ? "آية" : "verses"}
+                {num(k.locs.length)} {ar ? "آية محكمة" : "verses"} · {num(k.tafsil)} {ar ? "تفصيل" : "tafsīl"}
               </span>
-            </Link>
+            </button>
           ))}
-          {kubra.length === 0 && (
-            <div className="muted" style={{ padding: "24px 4px", gridColumn: "1/-1" }}>{ar ? "لا نتائج." : "No matches."}</div>
-          )}
         </div>
       ) : (
         <>
           <div className="muted jw-resultcount">{num(filteredRoots.length)} {ar ? "آية محكمة" : "verses"}</div>
           <div className="jw-list">
             {filteredRoots.slice(0, limit).map((loc) => (
-              <RootAyah key={loc} loc={loc} kubraTitle={locToKubra.get(loc) ?? null} texts={texts} />
+              <RootAyah key={loc} loc={loc} kindLabel={kindOf(loc) || null} texts={texts} />
             ))}
           </div>
           {filteredRoots.length > limit && (
@@ -281,8 +212,6 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
 
 export default function Muhkamat() {
   useUILang();
-  const params = useParams<{ k?: string }>();
-  const data = useMuhkamat();
   const jw = useJawami();
   const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
 
@@ -290,10 +219,7 @@ export default function Muhkamat() {
     ayahByLocationMap().then(setTexts);
   }, []);
 
-  const kIdx = params.k != null ? Number(params.k) : null;
-  const kb = useMemo(() => (data && kIdx != null ? data.kubra[kIdx] : null), [data, kIdx]);
-
-  if (!data || !jw) {
+  if (!jw) {
     return (
       <div className="page page-narrow">
         <div className="muted" style={{ padding: 40, textAlign: "center" }}>{t("loading")}</div>
@@ -304,7 +230,7 @@ export default function Muhkamat() {
   return (
     <div className="page">
       <div className="jw-wrap">
-        {kb ? <KubraView kb={kb} texts={texts} /> : <Index data={data} texts={texts} />}
+        <Index texts={texts} />
       </div>
     </div>
   );

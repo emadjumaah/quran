@@ -9,7 +9,6 @@
  * and the verse would push the verse itself far below its own elaboration.
  */
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import {
   REL_INFO,
   elaborates,
@@ -169,11 +168,6 @@ export function TafsilPanel({ location, open }: { location: string; open: boolea
           ))}
         </div>
       )}
-      <div style={{ marginTop: 10 }}>
-        <Link to="/jawami" className="chip link">
-          {ar ? "استكشف الجوامع ←" : "explore all principles →"}
-        </Link>
-      </div>
     </div>
   );
 }
