@@ -23,6 +23,7 @@ import Furuq from "./views/Furuq";
 import Amthal from "./views/Amthal";
 import Fawasil from "./views/Fawasil";
 import Mawdui from "./views/Mawdui";
+import Graph from "./views/Graph";
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
 import SourcesPanel from "./components/SourcesPanel";
@@ -264,6 +265,8 @@ function App() {
           <Route path="/gaps" element={<Gaps />} />
           <Route path="/muhkamat" element={<Muhkamat />} />
           <Route path="/muhkamat/:k" element={<Muhkamat />} />
+          <Route path="/graph" element={<Graph />} />
+          <Route path="/graph/:s/:a" element={<Graph />} />
           <Route path="/lexicon" element={<Lexicon />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />

@@ -812,6 +812,37 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .mushaf-link:hover { background: var(--accent-soft); border-color: var(--accent); text-decoration: none; }
 .mushaf-link-lbl { font-size: 12px; }
 
+/* النسيج الواحد — the radial network graph */
+.graph-center-bar {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 8px 12px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+}
+.graph-center-ref { font-weight: 700; color: var(--accent); }
+.graph-stage { position: relative; max-width: 560px; margin: 0 auto 10px; }
+.graph-svg {
+  display: block; width: 100%; aspect-ratio: 1 / 1; touch-action: none; user-select: none;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+}
+.graph-content { animation: gfade 0.4s ease; transform-origin: 50px 50px; }
+@keyframes gfade { from { opacity: 0; transform: scale(0.92); } }
+.graph-ctrls { position: absolute; inset-block-end: 10px; inset-inline-end: 10px; display: flex; flex-direction: column; gap: 6px; }
+.graph-ctrls button {
+  width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink); font-size: 17px; cursor: pointer; line-height: 1;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+}
+.graph-ctrls button:hover { background: var(--accent-soft); color: var(--accent); }
+.graph-hub { fill: var(--accent); }
+.graph-hub-label { fill: #fff; font-size: 4px; font-weight: 700; }
+.graph-label { fill: var(--ink-2); font-size: 2.5px; font-family: system-ui, sans-serif; }
+.graph-node:hover circle { stroke: var(--ink); stroke-width: 0.5; }
+.graph-legend {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center;
+  margin: 0 0 14px; font-size: 12.5px; color: var(--ink-2);
+}
+.graph-leg { display: inline-flex; align-items: center; gap: 5px; }
+.graph-leg-dot { width: 9px; height: 9px; border-radius: 999px; display: inline-block; }
+
 /* the عنوان (section) tag above each آية in the محكمات «آيات» view */
 .mk-ayah-tag {
   display: inline-block; margin: 9px 14px 0; padding: 2px 11px;
