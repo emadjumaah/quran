@@ -222,7 +222,7 @@ const DRAWER_LINKS: [string, string, string][] = [
   ["/mawdui", "المواضيع", "Topics"],
   ["/amthal", "أمثال القرآن", "Parables"],
   ["/fawasil", "أطلس الفواصل", "Rhyme"],
-  ["/search", "البحث", "Search"],
+  ["/search", "✦ البحث الدلالي", "✦ Semantic"],
   ["/collections", "المجموعات", "Collections"],
   ["/dashboard", "إحصاءات المصحف", "Stats"],
 ];

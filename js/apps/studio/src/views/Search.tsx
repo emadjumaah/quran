@@ -16,7 +16,7 @@ import AyahRef from "../components/AyahRef";
 import AudioButton, { ayahIdOf } from "../components/AudioButton";
 import { SimilarAyahsPanel } from "../components/SimilarAyahs";
 import { similarOf } from "../similar";
-import { getAyahByGlobalNo, searchAyahs, searchRoots } from "../db";
+import { getAyahByGlobalNo, getAyahByLocation, searchAyahs, searchRoots } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc, RootDoc } from "../types";
 import { readPathOf } from "../types";
@@ -49,7 +49,24 @@ const MEANING_EXAMPLES_EN = [
 /** Arabic letters only (a plausible root / bare-word token). */
 const ARABIC_TOKEN = /^[ء-ي]+$/;
 
-type Mode = "text" | "meaning";
+const LINKS_EXAMPLES = ["٢:٢٥٥", "١١٢:١", "٣٦:١", "٥٥:١٣", "١:١"];
+const MODE_LABELS: Record<Mode, [string, string]> = {
+  meaning: ["بالمعنى", "By meaning"],
+  links: ["ارتباطات آية", "Verse links"],
+  text: ["بالنص", "By text"],
+};
+const toWestern = (s: string) => s.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+/** Parse "s:a" (Arabic or western digits) → a valid location, else null. */
+const parseLoc = (s: string): string | null => {
+  const m = toWestern(s).trim().match(/^(\d{1,3})\s*[:：\-]\s*(\d{1,3})$/);
+  if (!m) return null;
+  const su = Number(m[1]);
+  const ay = Number(m[2]);
+  if (su < 1 || su > 114 || ay < 1) return null;
+  return `${su}:${ay}`;
+};
+
+type Mode = "meaning" | "links" | "text";
 
 interface Hit {
   ayah: AyahDoc;
@@ -145,7 +162,11 @@ export default function Search() {
   useUILang();
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") ?? "";
-  const mode: Mode = searchParams.get("m") === "1" ? "meaning" : "text";
+  // «اسأل القرآن» is the AI hub: meaning is the default; ?m=links shows a verse's
+  // AI-computed semantic neighbours; ?m=text is plain FTS. (old ?m=1 / /meaning
+  // links resolve to meaning too, since "1" is neither "text" nor "links".)
+  const mParam = searchParams.get("m");
+  const mode: Mode = mParam === "text" ? "text" : mParam === "links" ? "links" : "meaning";
 
   const [input, setInput] = useState<string>(q);
   const [hits, setHits] = useState<Hit[] | null>(null);
@@ -154,6 +175,7 @@ export default function Search() {
   const [error, setError] = useState<string | null>(null);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [vectorPct, setVectorPct] = useState<number | null>(null);
+  const [linkVerse, setLinkVerse] = useState<AyahDoc | null>(null); // links mode: the verse whose neighbours we show
 
   const seq = useRef(0);
   const lastPushed = useRef(q);
@@ -164,9 +186,10 @@ export default function Search() {
     setError(null);
     setNeedsSetup(false);
     setLoading(false);
-    setSearchParams(m === "meaning" ? (input ? { q: input, m: "1" } : { m: "1" }) : input ? { q: input } : {}, {
-      replace: true,
-    });
+    const params: Record<string, string> = {};
+    if (input.trim()) params.q = input.trim();
+    if (m !== "meaning") params.m = m; // meaning is the default → no param
+    setSearchParams(params, { replace: true });
   };
 
   // URL → input (back/forward navigation, reload, external links).
@@ -184,7 +207,8 @@ export default function Search() {
       const next = input.trim();
       if (next === q) return;
       lastPushed.current = next;
-      setSearchParams(next ? { q: next } : {}, { replace: true });
+      // keep m=text so the debounced URL write doesn't fall back to meaning
+      setSearchParams(next ? { q: next, m: "text" } : { m: "text" }, { replace: true });
     }, 300);
     return () => clearTimeout(timer);
   }, [input, q, mode, setSearchParams]);
@@ -261,7 +285,42 @@ export default function Search() {
     }
   };
 
-  // Restore a meaning search from the URL once (deep links, reload).
+  // LINKS mode: submitting just writes the URL; the reactive effect below
+  // resolves the verse — so mount, deep links, back/forward and examples all
+  // behave identically (no fragile mount-once path).
+  const runLinks = (text: string) => {
+    const s = text.trim();
+    lastPushed.current = s;
+    setSearchParams(s ? { q: s, m: "links" } : { m: "links" }, { replace: true });
+  };
+
+  // LINKS mode: q → the verse whose AI-computed neighbours we show.
+  useEffect(() => {
+    if (mode !== "links") return;
+    const id = ++seq.current;
+    const arNow = getUILang() === "ar";
+    if (!q) {
+      setLinkVerse(null);
+      setError(null);
+      return;
+    }
+    const loc = parseLoc(q);
+    if (!loc) {
+      setLinkVerse(null);
+      setError(arNow ? "اكتب مرجع الآية هكذا: ٢:٢٥٥ (سورة:آية)" : "enter a verse like 2:255 (surah:ayah)");
+      return;
+    }
+    setError(null);
+    getAyahByLocation(loc)
+      .then((a) => {
+        if (seq.current !== id) return;
+        setLinkVerse(a);
+        if (!a) setError(arNow ? "لا توجد آية بهذا المرجع." : "no verse at that reference.");
+      })
+      .catch(() => {});
+  }, [q, mode]);
+
+  // Restore a MEANING search from the URL once (deep links, reload).
   const restored = useRef(false);
   useEffect(() => {
     if (mode === "meaning" && q && !restored.current) {
@@ -274,40 +333,44 @@ export default function Search() {
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (mode === "meaning") void runMeaning(input);
+    else if (mode === "links") void runLinks(input);
   };
 
-  const criterion = mode === "meaning" ? `معنى: ${q}` : q;
+  const ar = getUILang() === "ar";
+  const criterion = mode === "meaning" ? `معنى: ${q}` : mode === "links" ? `ارتباطات: ${q}` : q;
   const shown = hits ? hits.slice(0, DISPLAY_CAP) : [];
   const examples =
     mode === "meaning"
-      ? getUILang() === "ar"
+      ? ar
         ? MEANING_EXAMPLES_AR
         : MEANING_EXAMPLES_EN
-      : TEXT_EXAMPLES;
+      : mode === "links"
+        ? LINKS_EXAMPLES
+        : TEXT_EXAMPLES;
 
   return (
     <div className="page">
       <div className="page-narrow">
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <h2 style={{ margin: 0 }}>{t("search.title")}</h2>
+          <h2 style={{ margin: 0 }}>{ar ? "البحث الدلالي" : "Semantic search"}</h2>
           <span
             className="chip"
-            style={{ background: "var(--panel)", border: "1px solid var(--line)", gap: 0, padding: 2 }}
+            style={{ background: "var(--panel)", border: "1px solid var(--line)", gap: 0, padding: 2, flexWrap: "wrap" }}
           >
-            {(["text", "meaning"] as Mode[]).map((m) => (
+            {(["meaning", "links", "text"] as Mode[]).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
                 style={{
                   border: "none",
                   borderRadius: 999,
-                  padding: "3px 14px",
+                  padding: "3px 12px",
                   background: mode === m ? "var(--accent-soft)" : "transparent",
                   color: mode === m ? "var(--accent)" : "var(--muted)",
                   fontWeight: mode === m ? 600 : 400,
                 }}
               >
-                {m === "text" ? t("search.mode.text") : t("search.mode.meaning")}
+                {ar ? MODE_LABELS[m][0] : MODE_LABELS[m][1]}
               </button>
             ))}
           </span>
@@ -316,21 +379,35 @@ export default function Search() {
         <form onSubmit={onSubmit} style={{ display: "flex", gap: 8, marginTop: 12 }}>
           <input
             autoFocus
-            dir={getUILang() === "ar" ? undefined : "auto"}
+            dir={mode === "links" ? "ltr" : ar ? undefined : "auto"}
             value={input}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-            placeholder={mode === "meaning" ? t("meaning.placeholder") : t("search.placeholder")}
+            placeholder={
+              mode === "meaning"
+                ? t("meaning.placeholder")
+                : mode === "links"
+                  ? ar ? "مرجع آية، مثل ٢:٢٥٥" : "a verse, e.g. 2:255"
+                  : t("search.placeholder")
+            }
             style={{ flex: 1, fontSize: 17, padding: "12px 14px" }}
-            aria-label={t("search.title")}
+            aria-label={ar ? "البحث الدلالي" : "Semantic search"}
           />
-          {mode === "meaning" && (
+          {(mode === "meaning" || mode === "links") && (
             <button className="primary" disabled={loading}>
-              {loading ? t("meaning.searching") : t("meaning.search")}
+              {mode === "links" ? (ar ? "اعرض" : "Show") : loading ? t("meaning.searching") : t("meaning.search")}
             </button>
           )}
         </form>
-        <div className="muted" style={{ marginTop: 6 }}>
-          {mode === "meaning" ? t("meaning.sub") : t("search.hint")}
+        <div className="muted" style={{ marginTop: 6, lineHeight: 1.7 }}>
+          {mode === "meaning"
+            ? ar
+              ? "اسأل بلغتك، فنعيدُ آياتِ القرآن الأقربَ معنًى — نسترجع، لا نُولّد · بتضمينات Gemini"
+              : "Ask in your words; we return the Qur'an's own verses closest in meaning — retrieval, not generation · Gemini embeddings"
+            : mode === "links"
+              ? ar
+                ? "أدخل مرجع آية لتظهر أقربُ آيات القرآن إليها معنًى — روابطُ محسوبةٌ مسبقًا بالذكاء الاصطناعي (تضمينات Gemini)"
+                : "Enter a verse to see the Qur'an's verses closest to it in meaning — precomputed AI links (Gemini embeddings)"
+              : t("search.hint")}
         </div>
 
         {vectorPct != null && (
@@ -362,12 +439,32 @@ export default function Search() {
                   onClick={() => {
                     setInput(ex);
                     if (mode === "meaning") void runMeaning(ex);
+                    else if (mode === "links") void runLinks(ex);
                   }}
                 >
                   {ex}
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {mode === "links" && linkVerse && (
+          <div className="card" style={{ marginTop: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+              <AyahRef location={linkVerse.location} />
+              <span style={{ flex: 1 }} />
+              <AudioButton ayahId={ayahIdOf(linkVerse)} />
+              <Link to={readPathOf(linkVerse.location)} className="chip link" style={{ textDecoration: "none" }}>
+                ↗ {ar ? "المصحف" : "read"}
+              </Link>
+            </div>
+            <div className="quran" style={{ fontSize: 22, lineHeight: 2 }}>{linkVerse.textUthmani}</div>
+            <Translations ayah={linkVerse} />
+            <div style={{ margin: "12px 0 2px", fontWeight: 600 }}>
+              {ar ? "أقربُ آيات القرآن إليها معنًى:" : "the Qur'an's verses closest to it in meaning:"}
+            </div>
+            <SimilarAyahsPanel ayahId={ayahIdOf(linkVerse)} location={linkVerse.location} />
           </div>
         )}
 
