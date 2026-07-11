@@ -286,6 +286,7 @@ export default function Reader() {
   // which ayah's محكم→تفصيل panel is open (آيات mode); one at a time keeps the
   // page short and the panel renders beneath the verse, not above it.
   const [openTafsil, setOpenTafsil] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false); // mobile: on-page search is a toggle, so the header stays one compact row
   const mainRef = useRef<HTMLElement>(null); // the scroll container (for page-turn scroll-to-top + the FAB)
   // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
   const [pageIdx, setPageIdx] = useState(0);
@@ -562,34 +563,48 @@ export default function Reader() {
             app header so you switch surah / jump / change view without scrolling
             up; no second bar. */}
         {surah && narrow && (
-          <div className="reader-sticky">
-            <select
-              className="reader-surah-pick"
-              value={surahNo}
-              onChange={(e: ChangeEvent<HTMLSelectElement>) => goTo(Number(e.target.value))}
-              aria-label={t("reader.filter")}
-            >
-              {surahs.map((s) => (
-                <option key={s.surahNo} value={s.surahNo}>
-                  {s.surahNo}. {s.nameAr}{getUILang() !== "ar" ? ` — ${s.nameTranslit}` : ""}
-                </option>
-              ))}
-            </select>
-            <div className="reader-sticky-search"><InlineOmni /></div>
-            <button
-              className="reader-play-icon"
-              onClick={listenSurah}
-              title={getUILang() === "ar" ? "استمع للسورة كاملة" : "listen to the whole surah"}
-              aria-label={getUILang() === "ar" ? "استمع للسورة" : "listen"}
-            >
-              ▶
-            </button>
-            {modesEl}
-          </div>
+          <>
+            <div className="reader-sticky">
+              <select
+                className="reader-surah-pick"
+                value={surahNo}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) => goTo(Number(e.target.value))}
+                aria-label={t("reader.filter")}
+              >
+                {surahs.map((s) => (
+                  <option key={s.surahNo} value={s.surahNo}>
+                    {s.surahNo}. {s.nameAr}{getUILang() !== "ar" ? ` — ${s.nameTranslit}` : ""}
+                  </option>
+                ))}
+              </select>
+              <button
+                className={`reader-icon-btn${searchOpen ? " on" : ""}`}
+                onClick={() => setSearchOpen((v) => !v)}
+                title={ar ? "بحث · اذهب إلى سورة أو آية" : "search · go to surah/ayah"}
+                aria-label={ar ? "بحث" : "search"}
+                aria-expanded={searchOpen}
+              >
+                ⌕
+              </button>
+              <button
+                className="reader-play-icon"
+                onClick={listenSurah}
+                title={ar ? "استمع للسورة كاملة" : "listen to the whole surah"}
+                aria-label={ar ? "استمع للسورة" : "listen"}
+              >
+                ▶
+              </button>
+              {modesEl}
+            </div>
+            {searchOpen && (
+              <div className="reader-search-row">
+                <InlineOmni autoFocus onNavigate={() => setSearchOpen(false)} />
+              </div>
+            )}
+          </>
         )}
 
-        {/* Desktop: name · meta · listen · modes. No search here — the ⌘K
-            omnibox in the top bar already covers it on desktop. */}
+        {/* Desktop: name · meta · on-page search · listen · modes. */}
         {surah && !narrow && (
           <header className="reader-bar">
             <span className="reader-bar-name quran">{surah.nameAr}</span>
@@ -598,6 +613,7 @@ export default function Reader() {
               {num(surah.ayahCount)} {t("reader.ayahs")}
               {getUILang() !== "ar" ? ` · ${surah.nameTranslit}` : ""}
             </span>
+            <div className="reader-bar-search"><InlineOmni /></div>
             <span className="reader-bar-spacer" />
             <button
               className="chip link"

@@ -142,6 +142,28 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .topbar nav a.active { background: var(--accent-soft); color: var(--accent); }
 .topbar .spacer { flex: 1; }
 
+/* desktop «المزيد ▾» dropdown */
+.nav-more { position: relative; display: inline-flex; }
+.nav-more-btn {
+  padding: 6px 12px; border-radius: 8px; border: none; background: none; cursor: pointer;
+  color: var(--ink-2); font-weight: 500; font-size: inherit; font-family: inherit; line-height: 1.4;
+}
+.nav-more-btn:hover { background: var(--panel-2); }
+.nav-more-btn.active { background: var(--accent-soft); color: var(--accent); }
+.nav-more-backdrop { position: fixed; inset: 0; z-index: 40; }
+.nav-more-menu {
+  position: absolute; inset-block-start: calc(100% + 6px); inset-inline-end: 0; z-index: 50;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: var(--shadow); padding: 6px; min-width: 190px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.nav-more-menu a {
+  padding: 8px 12px; border-radius: 7px; color: var(--ink-2); font-weight: 500;
+  text-decoration: none; white-space: nowrap;
+}
+.nav-more-menu a:hover { background: var(--panel-2); }
+.nav-more-menu a.active { background: var(--accent-soft); color: var(--accent); }
+
 /* mobile drawer navigation */
 .menu-btn {
   display: inline-flex; align-items: center; justify-content: center;
@@ -249,24 +271,28 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .reader-surah-pick {
   font-family: var(--font-quran); font-size: 16px; font-weight: 700; color: var(--accent);
   border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
-  padding: 4px 6px; max-width: 34vw;
+  padding: 4px 6px; flex: 1 1 auto; min-width: 0;
 }
 
-/* Reader — ONE combined sticky header on mobile (picker · search · ▶ · modes) */
+/* Reader — ONE compact sticky ROW on mobile (picker · ⌕ · ▶ · modes). The
+   on-page search opens as a row beneath on demand, so the header is one line. */
 .reader-sticky {
   position: sticky; top: 0; z-index: 16;
-  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
-  margin: -16px -12px 12px; padding: 9px 12px;
+  display: flex; align-items: center; gap: 7px; flex-wrap: nowrap;
+  margin: -16px -12px 10px; padding: 8px 12px;
   background: var(--bg); border-bottom: 1px solid var(--line);
 }
-.reader-sticky-search { flex: 1 1 130px; min-width: 110px; }
-.reader-sticky .inline-omni { margin-bottom: 0; }
-.reader-play-icon {
+.reader-icon-btn, .reader-play-icon {
   flex: none; width: 34px; height: 34px; border-radius: 999px; padding: 0;
   border: 1px solid var(--line); background: var(--panel); color: var(--accent);
-  font-size: 12px; cursor: pointer; display: grid; place-items: center;
+  cursor: pointer; display: grid; place-items: center;
 }
-.reader-play-icon:hover { background: var(--accent-soft); }
+.reader-icon-btn { font-size: 17px; }
+.reader-play-icon { font-size: 12px; }
+.reader-icon-btn.on { background: var(--accent-soft); border-color: var(--accent); }
+.reader-icon-btn:hover, .reader-play-icon:hover { background: var(--accent-soft); }
+.reader-search-row { margin: 0 -12px 12px; padding: 0 12px; }
+.reader-search-row .inline-omni { margin-bottom: 0; }
 
 /* Desktop — the search box that fills the reader bar's empty middle */
 .reader-bar-search { flex: 0 1 360px; min-width: 200px; }
@@ -890,9 +916,10 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .mj-src-title { font-size: 14.5px; color: var(--accent); margin: 0 0 10px; font-weight: 700; }
 .mj-text { white-space: pre-wrap; line-height: 2.05; font-size: 16px; color: var(--ink); }
 
-/* معالم القرآن — landmarks & statistics */
-.maalim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; align-items: start; }
-.maalim-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }
+/* معالم القرآن — landmarks & statistics. CSS columns = masonry: cards pack
+   tightly instead of leaving ragged gaps under short cards in a grid row. */
+.maalim-grid { columns: 300px 3; column-gap: 14px; }
+.maalim-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); break-inside: avoid; margin: 0 0 14px; }
 .maalim-title { font-family: var(--font-quran); color: var(--accent); font-size: 19px; margin: 0 0 2px; }
 .maalim-note { font-size: 12.5px; margin: 0 0 10px; }
 .maalim-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }

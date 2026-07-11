@@ -11,7 +11,6 @@ import Search from "./views/Search";
 import Collections from "./views/Collections";
 import Dashboard from "./views/Dashboard";
 import { NowPlayingBar } from "./components/AudioButton";
-import Omnibox from "./components/Omnibox";
 import Goto from "./views/Goto";
 import Today from "./views/Today";
 import Jawami from "./views/Jawami";
@@ -127,23 +126,51 @@ function LangToggle() {
   );
 }
 
+// desktop «المزيد ▾» — the pages that don't fit the primary bar but must still
+// be reachable without typing a URL (this was the desktop gap).
+const MORE_LINKS: [string, string, string][] = [
+  ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
+  ["/mujam", "معجم القرآن", "Dictionary"],
+  ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
+  ["/wujuh", "الوجوه والنظائر", "Polysemy"],
+  ["/dashboard", "إحصاءات المصحف", "Corpus stats"],
+];
+
 function Nav() {
   useUILang();
   const loc = useLocation();
+  const ar = getUILang() === "ar";
+  const [more, setMore] = useState(false);
+  useEffect(() => setMore(false), [loc.pathname]); // close on navigate
   // «المواضيع» resumes where you left off; other tabs are plain
   const inMawdui = loc.pathname.startsWith("/mawdui");
   const mawduiTo = inMawdui ? loc.pathname : localStorage.getItem("quran-studio:mawdui-last") || "/mawdui";
+  const moreActive = MORE_LINKS.some(([to]) => loc.pathname.startsWith(to));
   return (
     <nav>
-      <NavLink to="/read" title={getUILang() === "ar" ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
-      <NavLink to="/muhkamat" title={getUILang() === "ar" ? "المحكمات والجوامع: كبرى ← محكمة ← جامعة (أصل) ← تفصيل" : "muḥkamāt & principles: كبرى → محكمة → جامعة → تفصيل"}>{t("nav.muhkamat")}</NavLink>
+      <NavLink to="/read" title={ar ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
+      <NavLink to="/muhkamat" title={ar ? "المحكمات والجوامع: كبرى ← محكمة ← جامعة (أصل) ← تفصيل" : "muḥkamāt & principles: كبرى → محكمة → جامعة → تفصيل"}>{t("nav.muhkamat")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
-      <NavLink to="/furuq" title={getUILang() === "ar" ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
-      <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
-      <NavLink to="/amthal" title={getUILang() === "ar" ? "أمثال القرآن والتشبيهات — من نصّ القرآن وحده" : "the Qur'an's own parables & similitudes"}>{getUILang() === "ar" ? "الأمثال" : "Parables"}</NavLink>
+      <NavLink to="/furuq" title={ar ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
+      <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={ar ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
+      <NavLink to="/amthal" title={ar ? "أمثال القرآن والتشبيهات — من نصّ القرآن وحده" : "the Qur'an's own parables & similitudes"}>{ar ? "الأمثال" : "Parables"}</NavLink>
       <NavLink to="/search">{t("nav.search")}</NavLink>
       <NavLink to="/collections">{t("nav.collections")}</NavLink>
-      <NavLink to="/dashboard">{t("nav.dashboard")}</NavLink>
+      <span className="nav-more">
+        <button className={`nav-more-btn${moreActive ? " active" : ""}`} onClick={() => setMore((v) => !v)} aria-expanded={more}>
+          {ar ? "المزيد" : "More"} <span style={{ fontSize: 10 }}>▾</span>
+        </button>
+        {more && (
+          <>
+            <div className="nav-more-backdrop" onClick={() => setMore(false)} />
+            <div className="nav-more-menu" role="menu">
+              {MORE_LINKS.map(([to, arL, enL]) => (
+                <NavLink key={to} to={to} role="menuitem">{ar ? arL : enL}</NavLink>
+              ))}
+            </div>
+          </>
+        )}
+      </span>
     </nav>
   );
 }
@@ -245,7 +272,6 @@ function App() {
           <Brand />
           {!mobile && <Nav />}
           <span className="spacer" />
-          <Omnibox />
           {mobile ? (
             <SettingsPanel />
           ) : (

@@ -9,7 +9,15 @@ import { useNavigate } from "react-router-dom";
 import { getUILang, t, useUILang } from "../i18n";
 import { useOmniResults } from "../omni";
 
-export default function InlineOmni({ placeholder }: { placeholder?: string }) {
+export default function InlineOmni({
+  placeholder,
+  autoFocus,
+  onNavigate,
+}: {
+  placeholder?: string;
+  autoFocus?: boolean;
+  onNavigate?: () => void;
+}) {
   useUILang();
   const ar = getUILang() === "ar";
   const navigate = useNavigate();
@@ -18,8 +26,12 @@ export default function InlineOmni({ placeholder }: { placeholder?: string }) {
   const [active, setActive] = useState(0);
   const items = useOmniResults(q);
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => setActive(0), [items]);
+  useEffect(() => {
+    if (autoFocus) inputRef.current?.focus();
+  }, [autoFocus]);
 
   // dismiss the dropdown on outside-click
   useEffect(() => {
@@ -35,6 +47,7 @@ export default function InlineOmni({ placeholder }: { placeholder?: string }) {
   const go = (to: string) => {
     setQ("");
     setFocused(false);
+    onNavigate?.();
     navigate(to);
   };
 
@@ -43,6 +56,7 @@ export default function InlineOmni({ placeholder }: { placeholder?: string }) {
       <div className="page-search">
         <span className="page-search-icon" aria-hidden>⌕</span>
         <input
+          ref={inputRef}
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
