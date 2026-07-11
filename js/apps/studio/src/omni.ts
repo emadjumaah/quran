@@ -184,8 +184,8 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
         out.push({
           key: "more-text",
           kind: "text",
-          label: `${t("nav.search")}: ${raw} (${num(hits.length)})`,
-          to: `/search?q=${encodeURIComponent(raw)}`,
+          label: `${raw} (${num(hits.length)})`,
+          to: `/search?m=text&q=${encodeURIComponent(raw)}`,
         });
     } catch {
       /* fts syntax errors are fine here */

@@ -236,7 +236,13 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 
 /* the one on-page search bar (PageSearch) — identical on every page */
 .page-search { position: relative; display: flex; align-items: center; margin-bottom: 10px; }
-.page-search-icon { position: absolute; inset-inline-start: 13px; color: var(--muted); font-size: 17px; pointer-events: none; }
+.page-search-icon {
+  position: absolute; inset-inline-start: 13px; top: 50%; transform: translateY(-50%);
+  width: 19px; height: 19px; font-size: 0; pointer-events: none; /* font-size:0 hides the legacy ⌕ glyph */
+  background-color: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.3' y1='16.3' x2='21' y2='21'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.3' y1='16.3' x2='21' y2='21'/%3E%3C/svg%3E") center / contain no-repeat;
+}
 .page-search input {
   width: 100%; padding: 10px 40px; border: 1px solid var(--line); border-radius: 999px;
   background: var(--panel); color: var(--ink); font-size: 15px; font-family: inherit;
@@ -245,6 +251,12 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .page-search input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
 .page-search-clear { position: absolute; inset-inline-end: 9px; border: none; background: none; color: var(--muted); cursor: pointer; padding: 4px 8px; font-size: 13px; line-height: 1; }
 .page-search-clear:hover { color: var(--ink); }
+
+/* البحث الدلالي — the mode toggle (بالمعنى · ارتباطات آية) */
+.sem-tabs { display: inline-flex; gap: 3px; padding: 3px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; margin-top: 6px; }
+.sem-tab { border: none; background: transparent; color: var(--muted); font: inherit; font-weight: 500; cursor: pointer; border-radius: 999px; padding: 6px 18px; }
+.sem-tab:hover { color: var(--ink); }
+.sem-tab.on { background: var(--accent); color: #fff; font-weight: 600; }
 
 /* InlineOmni — on-page search/jump with a results dropdown (reader header) */
 .inline-omni { position: relative; margin-bottom: 14px; }

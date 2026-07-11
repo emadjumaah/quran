@@ -29,6 +29,7 @@ import {
   setUserKey,
   vectorsReady,
 } from "../semantic";
+import { useOmniResults } from "../omni";
 
 const DISPLAY_CAP = 200;
 const TEXT_EXAMPLES = ["الرحمن", '"يا أيها الذين آمنوا"', "صبر*"];
@@ -49,7 +50,13 @@ const MEANING_EXAMPLES_EN = [
 /** Arabic letters only (a plausible root / bare-word token). */
 const ARABIC_TOKEN = /^[ء-ي]+$/;
 
-const LINKS_EXAMPLES = ["٢:٢٥٥", "١١٢:١", "٣٦:١", "٥٥:١٣", "١:١"];
+const LINKS_EXAMPLES: { label: string; loc: string }[] = [
+  { label: "يوسف ٩", loc: "12:9" },
+  { label: "البقرة ٤٤", loc: "2:44" },
+  { label: "آية الكرسي", loc: "2:255" },
+  { label: "الرحمن ١٣", loc: "55:13" },
+  { label: "الإخلاص ١", loc: "112:1" },
+];
 const MODE_LABELS: Record<Mode, [string, string]> = {
   meaning: ["بالمعنى", "By meaning"],
   links: ["ارتباطات آية", "Verse links"],
@@ -154,6 +161,92 @@ function ResultRow({ hit, criterion }: { hit: Hit; criterion: string }) {
         <SimilarAyahsPanel ayahId={gid} location={ayah.location} />
       )}
       <Translations ayah={ayah} />
+    </div>
+  );
+}
+
+/** ارتباطات آية — step 1: find a verse (by surah, number, or a word) and pick it
+ *  from a dropdown; step 2 (the caller) shows its AI-computed neighbours. RTL for
+ *  Arabic. Reuses the omni resolver so «البقرة ٤٤» / «آية الكرسي» / «الصبر» all work. */
+function VersePicker({ onPick }: { onPick: (loc: string) => void }) {
+  useUILang();
+  const ar = getUILang() === "ar";
+  const [q, setQ] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [active, setActive] = useState(0);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const items = useOmniResults(q).filter((it) => /^\/read\/\d+\/\d+/.test(it.to)); // only verse-resolving hits
+
+  useEffect(() => setActive(0), [items.length]);
+  useEffect(() => {
+    if (!focused) return;
+    const onDown = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setFocused(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [focused]);
+
+  const pick = (to: string) => {
+    const m = to.match(/^\/read\/(\d+)\/(\d+)/);
+    if (!m) return;
+    setQ("");
+    setFocused(false);
+    onPick(`${m[1]}:${m[2]}`);
+  };
+  const show = focused && q.trim() !== "" && items.length > 0;
+
+  return (
+    <div className="inline-omni" ref={wrapRef} dir={ar ? "rtl" : "ltr"}>
+      <div className="page-search">
+        <span className="page-search-icon" aria-hidden>⌕</span>
+        <input
+          autoFocus
+          value={q}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setQ(e.target.value)}
+          onFocus={() => setFocused(true)}
+          placeholder={ar ? "اختر آيةً: سورة، أو رقم، أو كلمة…" : "find a verse: surah, number, or a word…"}
+          aria-label={ar ? "اختيار آية" : "pick a verse"}
+          style={{ fontSize: 17 }}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              setActive((a) => Math.min(a + 1, items.length - 1));
+            } else if (e.key === "ArrowUp") {
+              e.preventDefault();
+              setActive((a) => Math.max(a - 1, 0));
+            } else if (e.key === "Enter" && items[active]) {
+              e.preventDefault();
+              pick(items[active].to);
+            } else if (e.key === "Escape") {
+              setFocused(false);
+            }
+          }}
+        />
+        {q && (
+          <button className="page-search-clear" onClick={() => setQ("")} aria-label={ar ? "مسح" : "clear"}>
+            ✕
+          </button>
+        )}
+      </div>
+      {show && (
+        <div className="inline-omni-results" role="listbox">
+          {items.map((it, i) => (
+            <div
+              key={it.key}
+              role="option"
+              aria-selected={i === active}
+              onClick={() => pick(it.to)}
+              onMouseEnter={() => setActive(i)}
+              className={`inline-omni-row${i === active ? " active" : ""}`}
+            >
+              <span className="chip inline-omni-kind">{it.kind === "text" ? (ar ? "نصّ" : "text") : (ar ? "آية" : "ayah")}</span>
+              <span className={it.kind === "text" ? "quran inline-omni-label" : "inline-omni-label"}>{it.label}</span>
+              {it.sub && <span className="muted inline-omni-sub">{it.sub}</span>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -339,76 +432,68 @@ export default function Search() {
   const ar = getUILang() === "ar";
   const criterion = mode === "meaning" ? `معنى: ${q}` : mode === "links" ? `ارتباطات: ${q}` : q;
   const shown = hits ? hits.slice(0, DISPLAY_CAP) : [];
-  const examples =
-    mode === "meaning"
-      ? ar
-        ? MEANING_EXAMPLES_AR
-        : MEANING_EXAMPLES_EN
-      : mode === "links"
-        ? LINKS_EXAMPLES
-        : TEXT_EXAMPLES;
+  const examples = mode === "meaning" ? (ar ? MEANING_EXAMPLES_AR : MEANING_EXAMPLES_EN) : TEXT_EXAMPLES;
 
   return (
     <div className="page">
       <div className="page-narrow">
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <h2 style={{ margin: 0 }}>{ar ? "البحث الدلالي" : "Semantic search"}</h2>
-          <span
-            className="chip"
-            style={{ background: "var(--panel)", border: "1px solid var(--line)", gap: 0, padding: 2, flexWrap: "wrap" }}
-          >
-            {(["meaning", "links", "text"] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                style={{
-                  border: "none",
-                  borderRadius: 999,
-                  padding: "3px 12px",
-                  background: mode === m ? "var(--accent-soft)" : "transparent",
-                  color: mode === m ? "var(--accent)" : "var(--muted)",
-                  fontWeight: mode === m ? 600 : 400,
-                }}
-              >
+        <header className="jw-header" style={{ marginBottom: 12 }}>
+          <h1 className="jw-title">{ar ? "البحث الدلالي" : "Semantic search"}</h1>
+          <p className="jw-lead">
+            {ar
+              ? "ابحثْ في القرآن بالمعنى لا باللفظ، أو اعرضْ الآياتِ المرتبطةَ دلاليًّا بأيّ آية — بالذكاء الاصطناعيّ نسترجعُ آياتِ القرآن نفسها، ولا نُولّد. (تضمينات Gemini)"
+              : "Search the Qur'an by meaning, or see the verses semantically linked to any verse — AI-assisted retrieval of the Qur'an's own verses, not generation. (Gemini embeddings)"}
+          </p>
+          <div className="sem-tabs">
+            {(["meaning", "links"] as Mode[]).map((m) => (
+              <button key={m} className={`sem-tab${mode === m ? " on" : ""}`} onClick={() => setMode(m)}>
                 {ar ? MODE_LABELS[m][0] : MODE_LABELS[m][1]}
               </button>
             ))}
-          </span>
-        </div>
+          </div>
+        </header>
 
-        <form onSubmit={onSubmit} style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <input
-            autoFocus
-            dir={mode === "links" ? "ltr" : ar ? undefined : "auto"}
-            value={input}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-            placeholder={
-              mode === "meaning"
-                ? t("meaning.placeholder")
-                : mode === "links"
-                  ? ar ? "مرجع آية، مثل ٢:٢٥٥" : "a verse, e.g. 2:255"
-                  : t("search.placeholder")
-            }
-            style={{ flex: 1, fontSize: 17, padding: "12px 14px" }}
-            aria-label={ar ? "البحث الدلالي" : "Semantic search"}
-          />
-          {(mode === "meaning" || mode === "links") && (
-            <button className="primary" disabled={loading}>
-              {mode === "links" ? (ar ? "اعرض" : "Show") : loading ? t("meaning.searching") : t("meaning.search")}
-            </button>
-          )}
-        </form>
-        <div className="muted" style={{ marginTop: 6, lineHeight: 1.7 }}>
-          {mode === "meaning"
-            ? ar
-              ? "اسأل بلغتك، فنعيدُ آياتِ القرآن الأقربَ معنًى — نسترجع، لا نُولّد · بتضمينات Gemini"
-              : "Ask in your words; we return the Qur'an's own verses closest in meaning — retrieval, not generation · Gemini embeddings"
-            : mode === "links"
-              ? ar
-                ? "أدخل مرجع آية لتظهر أقربُ آيات القرآن إليها معنًى — روابطُ محسوبةٌ مسبقًا بالذكاء الاصطناعي (تضمينات Gemini)"
-                : "Enter a verse to see the Qur'an's verses closest to it in meaning — precomputed AI links (Gemini embeddings)"
-              : t("search.hint")}
-        </div>
+        {mode === "links" ? (
+          <div className="inline-omni-wrap">
+            <VersePicker onPick={(loc) => runLinks(loc)} />
+            {!linkVerse && (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 2, alignItems: "center" }}>
+                <span className="muted">{ar ? "جرّب:" : "try:"}</span>
+                {LINKS_EXAMPLES.map((ex) => (
+                  <button key={ex.loc} className="chip link" onClick={() => runLinks(ex.loc)}>
+                    {ex.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="inline-omni">
+            {/* identical structure/box to the verse picker → unified shape + height */}
+            <div className="page-search" dir={ar ? "rtl" : "ltr"}>
+              <span className="page-search-icon" aria-hidden />
+              <input
+                autoFocus
+                value={input}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+                placeholder={mode === "meaning" ? t("meaning.placeholder") : t("search.placeholder")}
+                aria-label={ar ? "البحث الدلالي" : "Semantic search"}
+                style={{ fontSize: 17 }}
+                enterKeyHint="search"
+              />
+              {input && (
+                <button type="button" className="page-search-clear" onClick={() => setInput("")} aria-label={ar ? "مسح" : "clear"}>
+                  ✕
+                </button>
+              )}
+            </div>
+            {mode === "meaning" && (
+              <div className="muted" style={{ fontSize: 12.5, marginTop: 4 }}>
+                {ar ? "اكتب ثم اضغط Enter للبحث" : "type, then press Enter to search"}
+              </div>
+            )}
+          </form>
+        )}
 
         {vectorPct != null && (
           <div className="muted" style={{ marginTop: 8 }}>
@@ -429,7 +514,7 @@ export default function Search() {
           </div>
         )}
 
-        {!q && !loading && !needsSetup && (
+        {!q && !loading && !needsSetup && mode !== "links" && (
           <div className="card" style={{ marginTop: 18 }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {examples.map((ex: string) => (
@@ -439,7 +524,6 @@ export default function Search() {
                   onClick={() => {
                     setInput(ex);
                     if (mode === "meaning") void runMeaning(ex);
-                    else if (mode === "links") void runLinks(ex);
                   }}
                 >
                   {ex}

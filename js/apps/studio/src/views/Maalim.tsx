@@ -136,7 +136,17 @@ export default function Maalim() {
               {m.sajda.map((a) => (
                 <li key={a.surahNo + ":" + a.ayahNo}>
                   <Link to={readPathOf(`${a.surahNo}:${a.ayahNo}`)} className="maalim-ref">{arName(`${a.surahNo}:${a.ayahNo}`)}</Link>
-                  {a.sajdaType && <span className="maalim-val">{a.sajdaType}</span>}
+                  {a.sajdaType && (
+                    <span className="maalim-val">
+                      {ar
+                        ? a.sajdaType === "obligatory"
+                          ? "سجدة عزيمة"
+                          : a.sajdaType === "recommended"
+                            ? "سجدة مستحبّة"
+                            : a.sajdaType
+                        : a.sajdaType}
+                    </span>
+                  )}
                 </li>
               ))}
             </ol>
