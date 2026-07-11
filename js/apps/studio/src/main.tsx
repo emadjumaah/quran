@@ -188,16 +188,16 @@ function useIsMobile(): boolean {
 const DRAWER_LINKS: [string, string, string][] = [
   ["/read", "المصحف", "Reader"],
   ["/muhkamat", "المحكمات", "Muhkamāt"],
+  ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
   ["/roots", "الجذور", "Roots"],
   ["/mujam", "معجم القرآن", "Dictionary"],
   ["/furuq", "الفروق", "Furūq"],
   ["/mawdui", "المواضيع", "Topics"],
   ["/amthal", "أمثال القرآن", "Parables"],
-  ["/maalim", "معالم القرآن", "Landmarks"],
   ["/fawasil", "أطلس الفواصل", "Rhyme"],
   ["/search", "البحث", "Search"],
   ["/collections", "المجموعات", "Collections"],
-  ["/dashboard", "إحصاءات", "Stats"],
+  ["/dashboard", "إحصاءات المصحف", "Stats"],
 ];
 
 function MobileDrawer({ onClose }: { onClose: () => void }) {
