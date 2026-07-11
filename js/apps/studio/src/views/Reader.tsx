@@ -29,6 +29,7 @@ import SimilarAyahs from "../components/SimilarAyahs";
 import TafsilChip from "../components/TafsilChip";
 import TafsilAside from "../components/TafsilAside";
 import VerseContext from "../components/VerseContext";
+import { useVerseIndex, verseInfo } from "../mawdui";
 import Translations from "../components/Translations";
 
 const MODE_KEY = "quran-studio:reader-mode";
@@ -188,7 +189,8 @@ function MushafPage({
   rubMarks: Map<number, string>;
   opening?: boolean;
 }) {
-  const { script, tajwid } = useSettings();
+  const { script, tajwid, layers } = useSettings();
+  const vidxReady = useVerseIndex(); // to mark جوامع on the page
   const ar = getUILang() === "ar";
   const first = ayahs[0];
   const surahNo = first?.surahNo ?? 0;
@@ -210,6 +212,8 @@ function MushafPage({
           const rub = rubMarks.get(ayah.ayahNo);
           const ws = wordsByAyah.get(ayah.ayahNo) ?? [];
           const colored = tajwid ? tajwidWords(ws.map((w) => w.textUthmani)) : null;
+          // mark آيات جامعة (principle verses) with a gold marker
+          const jamia = layers.jawami && vidxReady ? verseInfo(`${ayah.surahNo}:${ayah.ayahNo}`)?.jamiaKind ?? null : null;
           return (
             <Fragment key={ayah.location}>
               {rub && <div className="mp-mark mp-rub"><span>۞ {num(rub)}</span></div>}
@@ -237,9 +241,9 @@ function MushafPage({
                   </span>
                 ))}{" "}
                 <span
-                  className="ayah-marker"
+                  className={`ayah-marker${jamia ? " jamia" : ""}`}
                   role="button"
-                  title={`${t("reader.ayat")} ${num(ayah.ayahNo)}${ayah.sajdaType ? " ۩" : ""}`}
+                  title={`${t("reader.ayat")} ${num(ayah.ayahNo)}${ayah.sajdaType ? " ۩" : ""}${jamia ? ` · ${ar ? "آية جامعة" : "principle"} · ${jamia}` : ""}`}
                   style={{ cursor: "pointer" }}
                   onClick={() => onAyahMarker(ayah)}
                 >
