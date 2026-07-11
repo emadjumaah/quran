@@ -596,12 +596,9 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 }
 /* the words unique to each side */
 .fr-diff { border-radius: 5px; padding: 0 3px; font-weight: 600; }
-.fr-diff-a { background: rgb(200 60 60 / 0.16); color: #b23b3b; }
+/* two calm, theme-aware colours — never red (red reads as «error» on Quran text) */
+.fr-diff-a { background: var(--gold-soft); color: var(--gold); }
 .fr-diff-b { background: var(--accent-soft); color: var(--accent); }
-@media (prefers-color-scheme: dark) {
-  .fr-diff-a { background: rgb(230 120 120 / 0.18); color: #e88; }
-}
-:root[data-theme="dark"] .fr-diff-a { background: rgb(230 120 120 / 0.18); color: #e88; }
 
 /* أمثال القرآن — parable verse cards */
 .am-card { display: block; text-decoration: none; color: var(--ink); transition: border-color .15s; }

@@ -140,8 +140,9 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
   const jw = useJawami();
   const [q, setQ] = useState("");
   const [view, setView] = useState<"titles" | "ayat">("ayat");
+  const [sort, setSort] = useState<"quran" | "tafsil">("quran"); // mushaf order by default
   const [limit, setLimit] = useState(60);
-  useEffect(() => setLimit(60), [q, view]);
+  useEffect(() => setLimit(60), [q, view, sort]);
 
   // loc → its عنوان (كبرى) title, so each آية shows the section it belongs to
   const locToKubra = useMemo(() => {
@@ -154,13 +155,17 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
     return map;
   }, [data]);
 
-  // the 108 آيات محكمة (roots), widest تفصيل first
+  // the 108 آيات محكمة (roots); default order = المصحف (surah:ayah), optional = الأوسع تفصيلًا
   const roots = useMemo(() => {
     if (!jw) return [];
-    return Object.keys(jw.principles)
-      .filter((l) => isRootPrinciple(l))
-      .sort((a, b) => tafsilOf(b).length - tafsilOf(a).length);
-  }, [jw]);
+    const gpos = (loc: string) => {
+      const [s, a] = loc.split(":").map(Number);
+      return s * 1000 + a;
+    };
+    const rs = Object.keys(jw.principles).filter((l) => isRootPrinciple(l));
+    rs.sort(sort === "quran" ? (a, b) => gpos(a) - gpos(b) : (a, b) => tafsilOf(b).length - tafsilOf(a).length);
+    return rs;
+  }, [jw, sort]);
   const totalTafsil = useMemo(() => roots.reduce((s, l) => s + tafsilOf(l).length, 0), [roots]);
   // the whole تفصيل network reachable across all levels (honest total — a root's
   // تفصيل can itself have تفصيل; 108 roots sit atop a much larger fabric)
@@ -220,6 +225,17 @@ function Index({ data, texts }: { data: NonNullable<ReturnType<typeof useMuhkama
             {ar ? `عناوين (${num(data.meta.kubra)})` : `sections (${num(data.meta.kubra)})`}
           </button>
         </div>
+        {view === "ayat" && (
+          <div className="jw-chipset" style={{ justifyContent: "center" }}>
+            <span className="jw-filter-lbl">{ar ? "الترتيب" : "sort"}</span>
+            <button className={sort === "quran" ? "on" : ""} onClick={() => setSort("quran")}>
+              {ar ? "ترتيب المصحف" : "mushaf order"}
+            </button>
+            <button className={sort === "tafsil" ? "on" : ""} onClick={() => setSort("tafsil")}>
+              {ar ? "الأوسع تفصيلًا" : "most tafsīl"}
+            </button>
+          </div>
+        )}
       </div>
 
       {view === "titles" ? (
