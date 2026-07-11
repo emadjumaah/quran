@@ -843,6 +843,27 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .graph-leg { display: inline-flex; align-items: center; gap: 5px; }
 .graph-leg-dot { width: 9px; height: 9px; border-radius: 999px; display: inline-block; }
 
+/* توارد الجذور — النسيج (roots fabric; reuses .graph-* stage + ctrls) */
+.rg-hub-label { fill: #fff; font-family: var(--font-quran); font-weight: 700; font-size: 4.5px; }
+.rg-node-label { fill: var(--ink); font-family: var(--font-quran); font-size: 3.4px; }
+.rg-weight { fill: var(--muted); font-family: system-ui, sans-serif; font-size: 2.2px; }
+.rg-search { max-width: 560px; margin: 0 auto 12px; }
+.rg-hits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.rg-list { display: flex; flex-direction: column; }
+.rg-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 9px 4px; border-bottom: 1px solid var(--line);
+}
+.rg-root {
+  font-family: var(--font-quran); font-size: 21px; line-height: 1.3;
+  min-width: 58px; background: none; border: none; padding: 0;
+  color: var(--accent); cursor: pointer; text-align: start;
+}
+.rg-root:hover { text-decoration: underline; }
+.rg-bar { flex: 1 1 90px; height: 7px; background: var(--panel-2); border-radius: 4px; overflow: hidden; min-width: 70px; }
+.rg-bar > span { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.rg-meet { white-space: nowrap; font-size: 12.5px; color: var(--muted); }
+
 /* معالم القرآن — landmarks & statistics */
 .maalim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; align-items: start; }
 .maalim-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }

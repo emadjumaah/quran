@@ -193,12 +193,12 @@ function RootIndex() {
         </p>
         <p style={{ margin: "-4px 0 14px", fontSize: 13.5, display: "flex", gap: 8, flexWrap: "wrap" }}>
           <Link
-            to="/network"
+            to="/fabric"
             className="chip link"
             style={{ textDecoration: "none" }}
-            title={ar ? "شبكة الجذور التي تلتقي في الآيات نفسها" : "network of roots that meet in the same ayahs"}
+            title={ar ? "نسيجٌ تفاعليّ للجذور التي تلتقي في الآيات نفسها" : "interactive network of roots that meet in the same ayahs"}
           >
-            {ar ? "توارد الجذور — الجذور التي ترد معًا ←" : "Root co-occurrence →"}
+            {ar ? "توارد الجذور — النسيج التفاعلي ←" : "Root co-occurrence →"}
           </Link>
           <Link
             to="/wujuh"
@@ -494,7 +494,10 @@ function RootDetail({ root }: { root: string }) {
                   </Link>
                 ))}
               </div>
-              <div style={{ marginTop: 10 }}>
+              <div style={{ marginTop: 10, display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <Link to={`/fabric/${encodeURIComponent(rootDoc.root)}`}>
+                  {getUILang() === "ar" ? "النسيج التفاعلي ↗" : "Interactive fabric ↗"}
+                </Link>
                 <Link to={`/network/${encodeURIComponent(rootDoc.root)}`}>
                   {t("roots.viewNetwork")}
                 </Link>

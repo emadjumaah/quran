@@ -6,11 +6,11 @@
  * time, so it stays legible on a phone. Route: /graph and /graph/:s/:a.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { REL_INFO, elaborates, isPrinciple, isRootPrinciple, tafsilOf, useJawami, type Rel } from "../jawami";
 import { surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
+import { usePanZoom } from "../panzoom";
 import MushafLink from "../components/MushafLink";
 
 const REL_ORDER: Rel[] = ["بيان", "مثال", "جزاء", "توكيد"];
@@ -19,7 +19,6 @@ const shortRef = (loc: string) => {
   const [s, a] = loc.split(":");
   return `${num(Number(s))}:${num(Number(a))}`;
 };
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 export default function Graph() {
   useUILang();
@@ -50,59 +49,9 @@ export default function Graph() {
     if (jw) setCenter(s && a ? `${s}:${a}` : widest);
   }, [jw, s, a, widest]);
 
-  // pan/zoom transform over a 0..100 viewBox
-  const [view, setView] = useState({ x: 0, y: 0, k: 1 });
-  const reset = () => setView({ x: 0, y: 0, k: 1 });
+  // pan/zoom transform over a 0..100 viewBox (shared engine)
+  const { view, reset, zoomAt, svgHandlers } = usePanZoom(svgRef);
   useEffect(() => reset(), [center]); // re-centre → reset the pan/zoom onto it
-
-  // pointer bookkeeping for drag-pan + pinch-zoom
-  const ptrs = useRef(new Map<number, { x: number; y: number }>());
-  const pinch = useRef<{ dist: number } | null>(null);
-
-  const toSvg = (clientX: number, clientY: number) => {
-    const r = svgRef.current?.getBoundingClientRect();
-    if (!r) return { x: 50, y: 50 };
-    return { x: ((clientX - r.left) / r.width) * 100, y: ((clientY - r.top) / r.height) * 100 };
-  };
-  const zoomAt = (px: number, py: number, factor: number) =>
-    setView((v) => {
-      const k = clamp(v.k * factor, 0.5, 6);
-      const f = k / v.k;
-      return { k, x: px - (px - v.x) * f, y: py - (py - v.y) * f };
-    });
-
-  const onPointerDown = (e: ReactPointerEvent) => {
-    (e.target as Element).setPointerCapture?.(e.pointerId);
-    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  };
-  const onPointerMove = (e: ReactPointerEvent) => {
-    const prev = ptrs.current.get(e.pointerId);
-    if (!prev) return;
-    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    const pts = [...ptrs.current.values()];
-    if (pts.length === 1) {
-      const r = svgRef.current?.getBoundingClientRect();
-      if (!r) return;
-      const dx = ((e.clientX - prev.x) / r.width) * 100;
-      const dy = ((e.clientY - prev.y) / r.height) * 100;
-      setView((v) => ({ ...v, x: v.x + dx, y: v.y + dy }));
-    } else if (pts.length === 2) {
-      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-      if (pinch.current) {
-        const mid = toSvg((pts[0].x + pts[1].x) / 2, (pts[0].y + pts[1].y) / 2);
-        zoomAt(mid.x, mid.y, dist / pinch.current.dist);
-      }
-      pinch.current = { dist };
-    }
-  };
-  const onPointerUp = (e: ReactPointerEvent) => {
-    ptrs.current.delete(e.pointerId);
-    if (ptrs.current.size < 2) pinch.current = null;
-  };
-  const onWheel = (e: ReactWheelEvent) => {
-    const p = toSvg(e.clientX, e.clientY);
-    zoomAt(p.x, p.y, e.deltaY < 0 ? 1.12 : 1 / 1.12);
-  };
 
   if (!jw) {
     return (
@@ -146,7 +95,7 @@ export default function Graph() {
 
         <div className="graph-center-bar">
           <span className="graph-center-ref">{arName(center)}</span>
-          <span className="muted">· {num(fwd.length)} {ar ? "تفصيل" : "tafsīl"}</span>
+          <span className="muted">{num(fwd.length)} {ar ? "تفصيل" : "tafsīl"}</span>
           <span style={{ flex: 1 }} />
           <MushafLink loc={center} />
         </div>
@@ -157,11 +106,7 @@ export default function Graph() {
             className="graph-svg"
             viewBox="0 0 100 100"
             preserveAspectRatio="xMidYMid meet"
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-            onWheel={onWheel}
+            {...svgHandlers}
             role="img"
             aria-label={ar ? "شبكة المحكمة وتفصيلها" : "muḥkama network"}
           >

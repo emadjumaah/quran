@@ -24,6 +24,7 @@ import Amthal from "./views/Amthal";
 import Fawasil from "./views/Fawasil";
 import Mawdui from "./views/Mawdui";
 import Graph from "./views/Graph";
+import RootsGraph from "./views/RootsGraph";
 import Maalim from "./views/Maalim";
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
@@ -269,6 +270,8 @@ function App() {
           <Route path="/muhkamat/:k" element={<Muhkamat />} />
           <Route path="/graph" element={<Graph />} />
           <Route path="/graph/:s/:a" element={<Graph />} />
+          <Route path="/fabric" element={<RootsGraph />} />
+          <Route path="/fabric/:root" element={<RootsGraph />} />
           <Route path="/maalim" element={<Maalim />} />
           <Route path="/lexicon" element={<Lexicon />} />
           <Route path="/wujuh" element={<Wujuh />} />
