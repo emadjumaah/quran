@@ -451,6 +451,31 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 
 /* الجوامع — محكم→تفصيل network view */
 .jw-wrap { max-width: 940px; margin: 0 auto; }
+
+/* فروق التنزيل — verse-pair diff viewer */
+.fr-wrap { max-width: 860px; margin: 0 auto; }
+.fr-list { display: flex; flex-direction: column; gap: 12px; }
+.fr-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }
+.fr-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.fr-ref { font-weight: 700; color: var(--accent); text-decoration: none; }
+.fr-ref:hover { text-decoration: underline; }
+.fr-vs { color: var(--muted); }
+.fr-line { font-size: calc(22px * var(--quran-scale, 1)); line-height: 2.1; padding: 3px 0; }
+.fr-line + .fr-line { border-top: 1px dashed var(--line); }
+.fr-tag {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 6px; margin-inline-end: 8px;
+  font-family: var(--font-ui, sans-serif); font-size: 11px; font-weight: 700;
+  background: var(--panel-2); color: var(--muted); vertical-align: middle;
+}
+/* the words unique to each side */
+.fr-diff { border-radius: 5px; padding: 0 3px; font-weight: 600; }
+.fr-diff-a { background: rgb(200 60 60 / 0.16); color: #b23b3b; }
+.fr-diff-b { background: var(--accent-soft); color: var(--accent); }
+@media (prefers-color-scheme: dark) {
+  .fr-diff-a { background: rgb(230 120 120 / 0.18); color: #e88; }
+}
+:root[data-theme="dark"] .fr-diff-a { background: rgb(230 120 120 / 0.18); color: #e88; }
 .jw-header { text-align: center; margin-bottom: 18px; }
 .jw-title { font-family: var(--font-quran); color: var(--accent); font-size: 30px; margin: 4px 0 6px; }
 .jw-lead { color: var(--ink-2); max-width: 680px; margin: 0 auto 12px; line-height: 1.7; font-size: 14px; }

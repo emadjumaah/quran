@@ -15,6 +15,7 @@ import Omnibox from "./components/Omnibox";
 import Goto from "./views/Goto";
 import Today from "./views/Today";
 import Jawami from "./views/Jawami";
+import Furuq from "./views/Furuq";
 import Mawdui from "./views/Mawdui";
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
@@ -127,6 +128,7 @@ function Nav() {
       <NavLink to="/read" title={getUILang() === "ar" ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
       <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={getUILang() === "ar" ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/jawami" title={getUILang() === "ar" ? "الآيات الجوامع وتفصيلها" : "principle verses & their tafsil"}>{t("nav.jawami")}</NavLink>
+      <NavLink to="/furuq" title={getUILang() === "ar" ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
       <NavLink to="/search">{t("nav.search")}</NavLink>
       <NavLink to="/collections">{t("nav.collections")}</NavLink>
@@ -180,6 +182,7 @@ function App() {
           <Route path="/read/:surahNo" element={<Reader />} />
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />
           <Route path="/jawami" element={<Jawami />} />
+          <Route path="/furuq" element={<Furuq />} />
           <Route path="/mawdui" element={<Mawdui />} />
           <Route path="/mawdui/:s" element={<Mawdui />} />
           <Route path="/mawdui/:s/:t" element={<Mawdui />} />
