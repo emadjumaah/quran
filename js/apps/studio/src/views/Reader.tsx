@@ -748,6 +748,7 @@ export default function Reader() {
               ✕
             </button>
           </div>
+          <VerseContext location={selectedLoc} />
           <TafsilAside location={selectedLoc} />
           {selected && <Inspector word={selected} />}
         </div>
