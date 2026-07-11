@@ -64,14 +64,22 @@ export default function Furuq() {
   const [limit, setLimit] = useState(40);
   const ar = getUILang() === "ar";
 
+  const gpos = (loc: string) => {
+    const [s, a] = loc.split(":").map(Number);
+    return s * 1000 + a;
+  };
+  // drop the «مركّب» composite pairs entirely — a single verdict can't be drawn
+  // from a pair that differs in several ways at once; we keep the clean فروق.
+  const base = useMemo(() => (data ? data.furuq.filter((f) => f.cat !== "مركّب") : []), [data]);
   const rows = useMemo(() => {
-    if (!data) return [];
-    return data.furuq.filter((f) => {
-      if (cat && f.cat !== cat) return false;
-      // fuzzy over the page's own content: refs + the actual differing words
-      return fuzzyMatch(q, arName(f.a), arName(f.b), f.a, f.b, ...f.ops.map((o) => (typeof o === "string" ? o : o[1])));
-    });
-  }, [data, cat, q]);
+    return base
+      .filter((f) => {
+        if (cat && f.cat !== cat) return false;
+        // fuzzy over the page's own content: refs + the actual differing words
+        return fuzzyMatch(q, arName(f.a), arName(f.b), f.a, f.b, ...f.ops.map((o) => (typeof o === "string" ? o : o[1])));
+      })
+      .sort((x, y) => gpos(x.a) - gpos(y.a) || gpos(x.b) - gpos(y.b)); // مصحف order
+  }, [base, cat, q]);
 
   // reset paging when the filter changes
   useEffect(() => setLimit(40), [cat, q]);
@@ -96,8 +104,8 @@ export default function Furuq() {
               : "The Qur'an's near-identical verses: two verses that almost match, aligned word by word to show exactly what differs — from the text and its morphology alone."}
           </p>
           <div className="jw-stats">
-            <span className="chip"><b>{num(data.meta.pairs)}</b> {ar ? "زوجًا" : "pairs"}</span>
-            <span className="chip"><b>{num(CAT_ORDER.length)}</b> {ar ? "فئات محسوبة" : "computed categories"}</span>
+            <span className="chip"><b>{num(base.length)}</b> {ar ? "زوجًا واضحًا" : "clean pairs"}</span>
+            <span className="chip"><b>{num(CAT_ORDER.length - 1)}</b> {ar ? "أنواع فروق" : "difference types"}</span>
           </div>
         </header>
 
@@ -109,9 +117,11 @@ export default function Furuq() {
         <div className="jw-filters">
           <div className="jw-chipset">
             <button className={cat === "" ? "on" : ""} onClick={() => setCat("")} title={ar ? "كل الفئات" : "all"}>
-              {ar ? "الكل" : "all"} <span className="muted">· {num(data.meta.pairs)}</span>
+              {ar ? "الكل" : "all"} <span className="muted">· {num(base.length)}</span>
             </button>
-            {CAT_ORDER.map((c) => (
+            {/* «مركّب» is a catch-all (≈⅔ of pairs) — useless as a filter; keep it
+                only as an info tag on each card, not a chip you can filter by. */}
+            {CAT_ORDER.filter((c) => c !== "مركّب").map((c) => (
               <button
                 key={c}
                 className={cat === c ? "on" : ""}

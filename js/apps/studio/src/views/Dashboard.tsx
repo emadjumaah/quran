@@ -391,6 +391,7 @@ export default function Dashboard() {
               .map(([name, count]) => ({ name, count }))
               .sort((a, b) => b.count - a.count);
             const cats = Object.entries(layers.furuq.categories)
+              .filter(([name]) => name !== "مركّب")
               .map(([name, count]) => ({ name, count }))
               .sort((a, b) => b.count - a.count);
             const net = layers.muhkamat.network;
@@ -401,20 +402,20 @@ export default function Dashboard() {
                   {ar ? "ما حسبناه فوق النصّ — كلٌّ قابل للتصفّح" : "what we computed over the text — each browsable"}
                 </div>
                 <div className="lyr-grid">
-                  <Link to="/jawami" className="lyr">
+                  <Link to="/muhkamat" className="lyr">
                     <div className="lyr-n">{num(layers.jawami.principles)}</div>
-                    <div className="lyr-t">{ar ? "آية جامعة" : "principles"}</div>
+                    <div className="lyr-t">{ar ? "آية في شبكة المحكمات" : "verses in the network"}</div>
                     <div className="lyr-s">{num(layers.jawami.hubs)} {ar ? "لها تفصيل" : "with tafsil"}</div>
                   </Link>
-                  <Link to="/jawami" className="lyr">
+                  <Link to="/muhkamat" className="lyr">
                     <div className="lyr-n">{num(layers.jawami.links)}</div>
                     <div className="lyr-t">{ar ? "رابط تفصيل" : "tafsil links"}</div>
                     <div className="lyr-s">{ar ? "٤ علاقات مُراجَعة" : "4 reviewed relations"}</div>
                   </Link>
                   <Link to="/muhkamat" className="lyr">
                     <div className="lyr-n">{num(layers.muhkamat.count)}</div>
-                    <div className="lyr-t">{ar ? "محكمة جامعة" : "muhkamat"}</div>
-                    <div className="lyr-s">{ar ? `من ${num(layers.muhkamat.kubra)} أصلًا` : `from ${layers.muhkamat.kubra}`}</div>
+                    <div className="lyr-t">{ar ? "محكمة" : "muhkamat"}</div>
+                    <div className="lyr-s">{ar ? `من ${num(layers.muhkamat.kubra)} عنوانًا` : `from ${layers.muhkamat.kubra}`}</div>
                   </Link>
                   <Link to="/mawdui" className="lyr">
                     <div className="lyr-n">{num(layers.mawdui.topics)}</div>
@@ -426,16 +427,16 @@ export default function Dashboard() {
                     <div className="lyr-t">{ar ? "نسيجٌ واحد" : "one fabric"}</div>
                     <div className="lyr-s">{num(layers.network.inNetwork)} {ar ? `آية · ${num(net.avgHops)} خطوة` : "ayahs in network"}</div>
                   </div>
-                  <Link to="/jawami" className="lyr">
+                  <Link to="/jawami/lenses" className="lyr">
                     <div className="lyr-n">{num(layers.network.mathani)}</div>
                     <div className="lyr-t">{ar ? "مثاني" : "mathani"}</div>
                     <div className="lyr-s">{ar ? "أزواج متقابلة" : "reciprocal pairs"}</div>
                   </Link>
-                  <div className="lyr" style={{ cursor: "default" }}>
-                    <div className="lyr-n">{num(layers.furuq.pairs)}</div>
+                  <Link to="/furuq" className="lyr">
+                    <div className="lyr-n">{num(layers.furuq.pairs - (layers.furuq.categories["مركّب"] ?? 0))}</div>
                     <div className="lyr-t">{ar ? "فروق التنزيل" : "furuq"}</div>
-                    <div className="lyr-s">{ar ? "بين المتشابهات لفظًا" : "between look-alikes"}</div>
-                  </div>
+                    <div className="lyr-s">{ar ? "أزواج واضحة بين المتشابهات" : "clean look-alike pairs"}</div>
+                  </Link>
                 </div>
                 <div className="grid-2" style={{ marginTop: 16 }}>
                   <div>
