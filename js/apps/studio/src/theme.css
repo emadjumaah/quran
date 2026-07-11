@@ -517,6 +517,18 @@ a.vc-row:hover .vc-val { color: var(--accent); }
 .fw-cell-name { font-size: 12px; font-weight: 600; text-align: center; line-height: 1.3; }
 .fw-cell-dom { font-size: 20px; color: var(--gold); font-weight: 700; line-height: 1.1; }
 .fw-cell-pct { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* معجم الجوامع — per-kind fingerprint cards */
+.lx-list { display: flex; flex-direction: column; gap: 14px; }
+.lx-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); }
+.lx-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lx-kind { font-size: 24px; font-weight: 700; color: var(--gold); }
+.lx-count { color: var(--muted); font-size: 13px; }
+.lx-grades { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; color: var(--muted); font-size: 12.5px; }
+.lx-grades b { color: var(--accent); }
+.lx-roots { display: flex; flex-wrap: wrap; gap: 6px; }
+a.lx-root { text-decoration: none; }
+a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .jw-header { text-align: center; margin-bottom: 18px; }
 .jw-title { font-family: var(--font-quran); color: var(--accent); font-size: 30px; margin: 4px 0 6px; }
 .jw-lead { color: var(--ink-2); max-width: 680px; margin: 0 auto 12px; line-height: 1.7; font-size: 14px; }

@@ -487,6 +487,9 @@ export default function Jawami() {
             <Link to="/gaps" className="chip link" style={{ textDecoration: "none" }}>
               {ar ? "قد يُكمله ←" : "possibly completes it →"}
             </Link>
+            <Link to="/lexicon" className="chip link" style={{ textDecoration: "none" }}>
+              {ar ? "معجم الجوامع ←" : "lexicon →"}
+            </Link>
           </div>
         </header>
 
