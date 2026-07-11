@@ -1,5 +1,5 @@
 /**
- * رفقاء الكلمة — Companions of the word.
+ * توارد الجذور — root co-occurrence (roots that recur together in the same ayahs).
  *
  * /network            → picker: search + top roots.
  * /network/:root      → ranked companions list; each row expands inline into
