@@ -14,7 +14,8 @@ import CollectButton from "../components/CollectButton";
 import Translations from "../components/Translations";
 import AyahRef from "../components/AyahRef";
 import AudioButton, { ayahIdOf } from "../components/AudioButton";
-import SimilarAyahs from "../components/SimilarAyahs";
+import { SimilarAyahsPanel } from "../components/SimilarAyahs";
+import { similarOf } from "../similar";
 import { getAyahByGlobalNo, searchAyahs, searchRoots } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc, RootDoc } from "../types";
@@ -55,11 +56,32 @@ interface Hit {
   score?: number;
 }
 
-/** One result row — identical look in both modes (score chip when present). */
+/** One result row — identical look in both modes (score chip when present).
+ *  Tapping the verse opens its «آيات ذات صلة» (semantic neighbours) inline;
+ *  the مصحف opens only via the explicit button — so a result is a place to
+ *  explore, not a trapdoor into the reader. */
 function ResultRow({ hit, criterion }: { hit: Hit; criterion: string }) {
   useUILang();
   const navigate = useNavigate();
   const { ayah, score } = hit;
+  const ar = getUILang() === "ar";
+  const gid = ayahIdOf(ayah);
+  const [showRelated, setShowRelated] = useState(false);
+  const [relCount, setRelCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    similarOf(gid).then((ns) => live && setRelCount(ns.length));
+    return () => {
+      live = false;
+    };
+  }, [gid]);
+
+  const openReader = () => navigate(readPathOf(ayah.location));
+  const hasRelated = relCount != null && relCount > 0;
+  // tap the verse → related dropdown when there are neighbours, else the reader
+  const onVerseTap = () => (hasRelated ? setShowRelated((v) => !v) : openReader());
+
   return (
     <div style={{ padding: "12px 0", borderBottom: "1px solid var(--line)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -76,8 +98,15 @@ function ResultRow({ hit, criterion }: { hit: Hit; criterion: string }) {
           {t("reader.page")} <b>{num(ayah.page)}</b>
         </span>
         <span style={{ flex: 1 }} />
-        <AudioButton ayahId={ayahIdOf(ayah)} />
-        <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} />
+        <AudioButton ayahId={gid} />
+        <button
+          className="chip"
+          onClick={openReader}
+          title={ar ? "افتح الآية في المصحف" : "open in the reader"}
+          style={{ border: "none", cursor: "pointer" }}
+        >
+          ↗ {ar ? "المصحف" : "read"}
+        </button>
         <CollectButton
           locations={[ayah.location]}
           criterion={{ kind: "search", value: criterion }}
@@ -87,11 +116,26 @@ function ResultRow({ hit, criterion }: { hit: Hit; criterion: string }) {
       <div
         className="quran"
         style={{ fontSize: 21, lineHeight: 2, cursor: "pointer" }}
-        title={t("nav.reader")}
-        onClick={() => navigate(readPathOf(ayah.location))}
+        title={hasRelated ? (ar ? "آياتٌ ذات صلة" : "related verses") : t("nav.reader")}
+        onClick={onVerseTap}
       >
         {ayah.textUthmani}
       </div>
+      {hasRelated && (
+        <button
+          className={`chip similar${showRelated ? " open" : ""}`}
+          onClick={() => setShowRelated((v) => !v)}
+          style={{ cursor: "pointer", marginTop: 4 }}
+          title={ar ? "آياتٌ ذات صلة بالمعنى" : "semantically related verses"}
+        >
+          ✦ {ar ? "آياتٌ ذات صلة" : "related"}
+          <span className="count-badge">{num(relCount!)}</span>
+          <span style={{ marginInlineStart: 4 }}>{showRelated ? "▾" : "◂"}</span>
+        </button>
+      )}
+      {showRelated && hasRelated && (
+        <SimilarAyahsPanel ayahId={gid} location={ayah.location} />
+      )}
       <Translations ayah={ayah} />
     </div>
   );
