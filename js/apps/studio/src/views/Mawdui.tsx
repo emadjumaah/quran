@@ -12,6 +12,8 @@ import { ayahByLocationMap, surahNameAr } from "../db";
 import type { AyahDoc } from "../types";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
+import PageSearch from "../components/PageSearch";
+import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
@@ -38,6 +40,18 @@ function Crumb({ section, topic }: { section?: { i: number; title: string }; top
 /* ---------- level 0: the 12 sections ---------- */
 function Sections({ sections }: { sections: MSection[] }) {
   const ar = getUILang() === "ar";
+  const [q, setQ] = useState("");
+
+  // when searching, flatten every topic across every section and jump straight to it
+  const hits =
+    q.trim() === ""
+      ? null
+      : sections.flatMap((s, si) =>
+          s.topics
+            .map((tp, ti) => ({ tp, ti, si, sTitle: s.title }))
+            .filter(({ tp, sTitle }) => fuzzyMatch(q, tp.title, tp.theme, sTitle)),
+        );
+
   return (
     <>
       <header className="mw-head">
@@ -48,6 +62,23 @@ function Sections({ sections }: { sections: MSection[] }) {
             : "Browse the whole Qur'an by subject — every verse in its place. Pick a section to go deeper."}
         </p>
       </header>
+      <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في المواضيع…" : "search topics…"} />
+      {hits && (
+        <div className="mw-topics">
+          {hits.map(({ tp, ti, si, sTitle }) => (
+            <Link key={`${si}/${ti}`} to={`/mawdui/${si}/${ti}`} className="mw-topic-card" title={tp.theme}>
+              <span className="mw-topic-name">{tp.title}</span>
+              <span className="mw-topic-count">{sTitle} · {num(tp.members.length)}</span>
+            </Link>
+          ))}
+          {hits.length === 0 && (
+            <div className="muted" style={{ padding: "24px 4px", gridColumn: "1/-1" }}>
+              {ar ? "لا نتائج." : "No matches."}
+            </div>
+          )}
+        </div>
+      )}
+      {!hits && (
       <div className="mw-sections">
         <Link
           to="/amthal"
@@ -76,6 +107,7 @@ function Sections({ sections }: { sections: MSection[] }) {
           </Link>
         ))}
       </div>
+      )}
     </>
   );
 }

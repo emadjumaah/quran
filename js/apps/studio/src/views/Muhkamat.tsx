@@ -96,6 +96,14 @@ function KubraView({ kb, texts }: { kb: Kubra; texts: Map<string, AyahDoc> }) {
 function Index({ data }: { data: NonNullable<ReturnType<typeof useMuhkamat>> }) {
   const ar = getUILang() === "ar";
   const net = data.meta.network;
+  const [q, setQ] = useState("");
+  const kubra = data.kubra
+    .map((kb, i) => [kb, i] as const)
+    .filter(
+      ([kb]) =>
+        kb.muhkamat.length > 0 &&
+        fuzzyMatch(q, kb.title, ...kb.muhkamat.map((m) => m.title), ...kb.muhkamat.map((m) => m.theme ?? "")),
+    );
   return (
     <>
       <header className="jw-header">
@@ -112,20 +120,28 @@ function Index({ data }: { data: NonNullable<ReturnType<typeof useMuhkamat>> }) 
           <span className="chip"><b>{num(net.giantPct)}٪</b> {ar ? "نسيجٌ واحد" : "one fabric"}</span>
         </div>
       </header>
+      <PageSearch
+        value={q}
+        onChange={setQ}
+        placeholder={ar ? "ابحث في الأصول والمحكمات…" : "search principles…"}
+      />
       <div className="mk-kubra-grid">
-        {data.kubra.map((kb, i) =>
-          kb.muhkamat.length === 0 ? null : (
-            <Link key={i} to={`/muhkamat/${i}`} className="mk-kubra-card" title={kb.title}>
-              <span className="mk-kubra-title">{kb.title}</span>
-              <span className="mk-kubra-preview">
-                {kb.muhkamat.map((m) => m.title).slice(0, 3).join(" · ")}
-              </span>
-              <span className="mk-kubra-meta">
-                {num(kb.muhkamat.length)} {ar ? "محكمة" : "muhkamāt"} · {num(jawamiCount(kb))} {ar ? "جامعة" : "verses"}
-                {kb.coherent && <span className="mk-coherent"> · {ar ? "متجانسة" : "coherent"}</span>}
-              </span>
-            </Link>
-          ),
+        {kubra.map(([kb, i]) => (
+          <Link key={i} to={`/muhkamat/${i}`} className="mk-kubra-card" title={kb.title}>
+            <span className="mk-kubra-title">{kb.title}</span>
+            <span className="mk-kubra-preview">
+              {kb.muhkamat.map((m) => m.title).slice(0, 3).join(" · ")}
+            </span>
+            <span className="mk-kubra-meta">
+              {num(kb.muhkamat.length)} {ar ? "محكمة" : "muhkamāt"} · {num(jawamiCount(kb))} {ar ? "جامعة" : "verses"}
+              {kb.coherent && <span className="mk-coherent"> · {ar ? "متجانسة" : "coherent"}</span>}
+            </span>
+          </Link>
+        ))}
+        {kubra.length === 0 && (
+          <div className="muted" style={{ padding: "24px 4px", gridColumn: "1/-1" }}>
+            {ar ? "لا نتائج." : "No matches."}
+          </div>
         )}
       </div>
     </>
