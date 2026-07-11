@@ -27,6 +27,7 @@ import CollectButton from "../components/CollectButton";
 import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs from "../components/SimilarAyahs";
 import TafsilChip, { TafsilPanel } from "../components/TafsilChip";
+import EraabChip, { EraabPanel } from "../components/EraabChip";
 import InlineOmni from "../components/InlineOmni";
 import ScrollTopFab from "../components/ScrollTopFab";
 import TafsilAside from "../components/TafsilAside";
@@ -286,6 +287,7 @@ export default function Reader() {
   // which ayah's محكم→تفصيل panel is open (آيات mode); one at a time keeps the
   // page short and the panel renders beneath the verse, not above it.
   const [openTafsil, setOpenTafsil] = useState<string | null>(null);
+  const [openEraab, setOpenEraab] = useState<string | null>(null); // آيات mode: which verse's إعراب panel is open
   const [searchOpen, setSearchOpen] = useState(false); // mobile: on-page search is a toggle, so the header stays one compact row
   const mainRef = useRef<HTMLElement>(null); // the scroll container (for page-turn scroll-to-top + the FAB)
   // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
@@ -745,6 +747,12 @@ export default function Reader() {
                       setOpenTafsil((cur) => (cur === ayah.location ? null : ayah.location))
                     }
                   />
+                  <EraabChip
+                    open={openEraab === ayah.location}
+                    onToggle={() =>
+                      setOpenEraab((cur) => (cur === ayah.location ? null : ayah.location))
+                    }
+                  />
                 </div>
                 <AyahText
                   words={wordsByAyah.get(ayah.ayahNo) ?? []}
@@ -754,6 +762,7 @@ export default function Reader() {
                 />
                 <Translations ayah={ayah} />
                 <TafsilPanel location={ayah.location} open={openTafsil === ayah.location} />
+                <EraabPanel location={ayah.location} open={openEraab === ayah.location} />
               </article>
             );
           })

@@ -916,6 +916,10 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .mj-src-title { font-size: 14.5px; color: var(--accent); margin: 0 0 10px; font-weight: 700; }
 .mj-text { white-space: pre-wrap; line-height: 2.05; font-size: 16px; color: var(--ink); }
 
+/* الإعراب — grammatical-parse panel in the reader (data: المجتبى للخراط) */
+.eraab-text { white-space: pre-wrap; line-height: 2.15; font-size: 16px; color: var(--ink); }
+.eraab-src { font-size: 11px; margin-top: 10px; }
+
 /* معالم القرآن — landmarks & statistics. CSS columns = masonry: cards pack
    tightly instead of leaving ragged gaps under short cards in a grid row. */
 .maalim-grid { columns: 300px 3; column-gap: 14px; }
