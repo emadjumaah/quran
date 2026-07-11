@@ -11,6 +11,8 @@ import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 import type { AyahDoc } from "../types";
+import PageSearch from "../components/PageSearch";
+import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
@@ -64,16 +66,20 @@ export default function Gaps() {
   const jw = useJawami();
   const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
   const [limit, setLimit] = useState(50);
+  const [q, setQ] = useState("");
   const ar = getUILang() === "ar";
 
   useEffect(() => {
     ayahByLocationMap().then(setTexts);
   }, []);
+  useEffect(() => setLimit(50), [q]);
 
-  const rows = useMemo(
-    () => (jw ? (Object.entries(jw.gaps) as [string, string[]][]).sort((a, b) => b[1].length - a[1].length) : []),
-    [jw],
-  );
+  const rows = useMemo(() => {
+    if (!jw) return [] as [string, string[]][];
+    return (Object.entries(jw.gaps) as [string, string[]][])
+      .filter(([hub, cands]) => fuzzyMatch(q, arName(hub), texts.get(hub)?.textClean, ...cands.map(arName)))
+      .sort((a, b) => b[1].length - a[1].length);
+  }, [jw, q, texts]);
   const total = useMemo(() => rows.reduce((s, [, c]) => s + c.length, 0), [rows]);
 
   if (!jw) {
@@ -99,6 +105,8 @@ export default function Gaps() {
             <span className="chip"><b>{num(total)}</b> {ar ? "اقتراحًا مفتوحًا" : "open suggestions"}</span>
           </div>
         </header>
+
+        <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث بموضع الجامعة أو الآية…" : "search by ref…"} />
 
         <div className="jw-list">
           {rows.slice(0, limit).map(([hub, cands]) => (

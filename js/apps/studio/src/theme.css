@@ -176,6 +176,18 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .page-narrow { max-width: 900px; margin: 0 auto; }
 @media (max-width: 600px) { .page { padding: 16px 12px; } }
 
+/* the one on-page search bar (PageSearch) — identical on every page */
+.page-search { position: relative; display: flex; align-items: center; margin-bottom: 16px; }
+.page-search-icon { position: absolute; inset-inline-start: 13px; color: var(--muted); font-size: 17px; pointer-events: none; }
+.page-search input {
+  width: 100%; padding: 10px 40px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--panel); color: var(--ink); font-size: 15px; font-family: inherit;
+}
+.page-search input::-webkit-search-cancel-button { display: none; }
+.page-search input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+.page-search-clear { position: absolute; inset-inline-end: 9px; border: none; background: none; color: var(--muted); cursor: pointer; padding: 4px 8px; font-size: 13px; line-height: 1; }
+.page-search-clear:hover { color: var(--ink); }
+
 /* cards & chips */
 .card {
   background: var(--panel);

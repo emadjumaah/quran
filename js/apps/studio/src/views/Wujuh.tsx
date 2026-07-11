@@ -11,6 +11,8 @@ import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 import type { AyahDoc } from "../types";
+import PageSearch from "../components/PageSearch";
+import { fuzzyMatch } from "../lib/fuzzy";
 
 interface WWord {
   lemma: string;
@@ -87,7 +89,9 @@ export default function Wujuh() {
   }, []);
 
   const [limit, setLimit] = useState(40);
-  const words = useMemo(() => d?.words ?? [], [d]);
+  const [q, setQ] = useState("");
+  const words = useMemo(() => (d?.words ?? []).filter((w) => fuzzyMatch(q, w.lemma, w.root)), [d, q]);
+  useEffect(() => setLimit(40), [q]);
 
   if (!d) {
     return (
@@ -112,6 +116,8 @@ export default function Wujuh() {
             <span className="chip">{ar ? `من ${num(d.meta.scanned)} كلمة مُفحَصة` : `of ${num(d.meta.scanned)} scanned`}</span>
           </div>
         </header>
+
+        <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث بكلمةٍ أو جذر…" : "search by word or root…"} />
 
         <div className="jw-list">
           {words.slice(0, limit).map((w) => (

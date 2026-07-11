@@ -10,6 +10,8 @@ import { surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 import { CAT_INFO, CAT_ORDER, sides, useFuruq, type Furq } from "../furuq";
+import PageSearch from "../components/PageSearch";
+import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
@@ -64,14 +66,10 @@ export default function Furuq() {
 
   const rows = useMemo(() => {
     if (!data) return [];
-    const needle = q.trim();
     return data.furuq.filter((f) => {
       if (cat && f.cat !== cat) return false;
-      if (needle) {
-        const hay = `${arName(f.a)} ${arName(f.b)} ${f.a} ${f.b}`;
-        if (!hay.includes(needle)) return false;
-      }
-      return true;
+      // fuzzy over the page's own content: refs + the actual differing words
+      return fuzzyMatch(q, arName(f.a), arName(f.b), f.a, f.b, ...f.ops.map((o) => (typeof o === "string" ? o : o[1])));
     });
   }, [data, cat, q]);
 
@@ -103,12 +101,12 @@ export default function Furuq() {
           </div>
         </header>
 
+        <PageSearch
+          value={q}
+          onChange={setQ}
+          placeholder={ar ? "ابحث في الفروق: سورة · موضع · كلمة…" : "search the furūq: surah · ref · word…"}
+        />
         <div className="jw-filters">
-          <input
-            placeholder={ar ? "رشِّح بالسورة أو الموضع (مثل: البقرة · ٢:٢٥)…" : "filter by surah or ref…"}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
           <div className="jw-chipset">
             <button className={cat === "" ? "on" : ""} onClick={() => setCat("")} title={ar ? "كل الفئات" : "all"}>
               {ar ? "الكل" : "all"} <span className="muted">· {num(data.meta.pairs)}</span>
