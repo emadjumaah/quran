@@ -291,7 +291,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .reader-play-icon { font-size: 12px; }
 .reader-icon-btn.on { background: var(--accent-soft); border-color: var(--accent); }
 .reader-icon-btn:hover, .reader-play-icon:hover { background: var(--accent-soft); }
-.reader-search-row { margin: 0 -12px 12px; padding: 0 12px; }
+.reader-search-row { margin: 0 -12px 12px; padding: 10px 12px 0; }
 .reader-search-row .inline-omni { margin-bottom: 0; }
 
 /* Desktop — the search box that fills the reader bar's empty middle */
