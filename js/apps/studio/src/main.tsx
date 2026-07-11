@@ -60,7 +60,7 @@ function Boot({ children }: { children: React.ReactNode }) {
     return (
       <div className="boot">
         <div>
-          <div className="title">مصحف المعرفة</div>
+          <div className="title">مشكاة</div>
           <p style={{ color: "var(--danger)" }}>{error}</p>
           <p className="muted">
             <code>node ../../scripts/convert-to-app-db.mjs</code>
@@ -77,7 +77,7 @@ function Boot({ children }: { children: React.ReactNode }) {
     return (
       <div className="boot">
         <div>
-          <div className="title">مصحف المعرفة</div>
+          <div className="title">مشكاة</div>
           <div className="bar">
             <div style={{ width: pct != null ? `${pct}%` : "30%" }} />
           </div>
@@ -161,7 +161,7 @@ function Brand() {
     >
       <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={30} height={30} />
       <span className="ar" style={{ fontSize: 21, marginInlineStart: 0 }}>
-        مصحف المعرفة
+        مشكاة
       </span>
     </NavLink>
   );

@@ -91,8 +91,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icon.svg"],
       manifest: {
-        name: "مصحف المعرفة",
-        short_name: "مصحف المعرفة",
+        name: "مشكاة",
+        short_name: "مشكاة",
         description:
           "القرآن الكريم كشبكة معرفة: قراءة، صرف كلمة بكلمة، جذور ومعانٍ من المعاجم، بحث بالمعنى — يعمل كاملًا دون اتصال.",
         dir: "rtl",

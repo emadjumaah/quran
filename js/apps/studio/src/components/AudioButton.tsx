@@ -101,7 +101,7 @@ async function updateMediaSession(id: number) {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: `${surahNameAr(ayah.surahNo)} — ${ayah.ayahNo}`,
           artist: reciterOf().ar,
-          album: "مصحف المعرفة",
+          album: "مشكاة",
         });
       }
     }
