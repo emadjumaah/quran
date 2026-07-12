@@ -153,7 +153,7 @@ function Nav() {
       <NavLink to="/furuq" title={ar ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
       <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={ar ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/amthal" title={ar ? "أمثال القرآن والتشبيهات — من نصّ القرآن وحده" : "the Qur'an's own parables & similitudes"}>{ar ? "الأمثال" : "Parables"}</NavLink>
-      <NavLink to="/search">{t("nav.search")}</NavLink>
+      <NavLink to="/search"><span className="ai-spark" aria-hidden /> {t("nav.search")}</NavLink>
       <NavLink to="/collections">{t("nav.collections")}</NavLink>
       <span className="nav-more">
         <button className={`nav-more-btn${moreActive ? " active" : ""}`} onClick={() => setMore((v) => !v)} aria-expanded={more}>
@@ -221,7 +221,7 @@ const DRAWER_LINKS: [string, string, string][] = [
   ["/mawdui", "المواضيع", "Topics"],
   ["/amthal", "أمثال القرآن", "Parables"],
   ["/fawasil", "أطلس الفواصل", "Rhyme"],
-  ["/search", "✦ البحث الدلالي", "✦ Semantic"],
+  ["/search", "البحث الدلالي", "Semantic"],
   ["/collections", "المجموعات", "Collections"],
   ["/dashboard", "إحصاءات المصحف", "Stats"],
 ];
@@ -239,7 +239,10 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
         </div>
         <nav className="drawer-nav" onClick={onClose}>
           {DRAWER_LINKS.map(([to, arL, enL]) => (
-            <NavLink key={to} to={to}>{ar ? arL : enL}</NavLink>
+            <NavLink key={to} to={to}>
+              {to === "/search" && <span className="ai-spark" aria-hidden />}{" "}
+              {ar ? arL : enL}
+            </NavLink>
           ))}
         </nav>
         <div className="drawer-controls">

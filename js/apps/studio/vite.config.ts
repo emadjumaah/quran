@@ -235,13 +235,17 @@ export default defineConfig({
             },
           },
           {
-            // recitation audio — cache what was listened to
+            // recitation audio — cache what was listened to.
+            // rangeRequests: iOS <audio> streams via HTTP Range; without the
+            // RangeRequestsPlugin the SW serves a cached full 200 and Safari
+            // refuses to play it (needs 206). This is *the* iPhone-audio fix.
             urlPattern: /^https:\/\/cdn\.islamic\.network\/quran\/audio\//,
             handler: "CacheFirst",
             options: {
               cacheName: "qkg-audio",
               expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 90 },
               cacheableResponse: { statuses: [0, 200] },
+              rangeRequests: true,
             },
           },
         ],

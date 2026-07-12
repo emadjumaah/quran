@@ -155,7 +155,7 @@ function ResultRow({ hit, criterion, query }: { hit: Hit; criterion: string; que
           style={{ cursor: "pointer", marginTop: 4 }}
           title={ar ? "آياتٌ ذات صلة بالمعنى" : "semantically related verses"}
         >
-          ✦ {ar ? "آياتٌ ذات صلة" : "related"}
+          <span className="ai-spark" aria-hidden /> {ar ? "آياتٌ ذات صلة" : "related"}
           <span className="count-badge">{num(relCount!)}</span>
           <span style={{ marginInlineStart: 4 }}>{showRelated ? "▾" : "◂"}</span>
         </button>

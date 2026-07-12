@@ -121,7 +121,7 @@ export default function ReadingBar({
       {popupOpen && layers.similar && (
         <div ref={simPopRef} className="card similar-popup">
           <div className="similar-popup-head">
-            ✦ {t("similar.title")} — <span className="quran">{surahNameAr(s)} {num(a)}</span>
+            <span className="ai-spark" aria-hidden /> {t("similar.title")} — <span className="quran">{surahNameAr(s)} {num(a)}</span>
           </div>
           <SimilarAyahsPanel ayahId={gid} location={selected} onNavigate={() => setPopupOpen(false)} />
           {onOpenAyat && (
