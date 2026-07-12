@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter, Link, NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { initDb, listSurahs } from "./db";
@@ -8,29 +8,29 @@ import Reader from "./views/Reader";
 import Roots from "./views/Roots";
 import Network from "./views/Network";
 import Search from "./views/Search";
-import Collections from "./views/Collections";
-import Dashboard from "./views/Dashboard";
+const Collections = lazy(() => import("./views/Collections"));
+const Dashboard = lazy(() => import("./views/Dashboard"));
 import { NowPlayingBar } from "./components/AudioButton";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Goto from "./views/Goto";
-import Today from "./views/Today";
+const Today = lazy(() => import("./views/Today"));
 import Jawami from "./views/Jawami";
-import Gaps from "./views/Gaps";
-import Muhkamat from "./views/Muhkamat";
-import Lexicon from "./views/Lexicon";
-import Wujuh from "./views/Wujuh";
-import Furuq from "./views/Furuq";
-import Amthal from "./views/Amthal";
-import Fawasil from "./views/Fawasil";
-import Mawdui from "./views/Mawdui";
-import Graph from "./views/Graph";
-import RootsGraph from "./views/RootsGraph";
-import Maalim from "./views/Maalim";
-import Mujam from "./views/Mujam";
-import Lisan from "./views/Lisan";
-import Sarf from "./views/Sarf";
-import About from "./views/About";
-import Galaxy from "./views/Galaxy";
+const Gaps = lazy(() => import("./views/Gaps"));
+const Muhkamat = lazy(() => import("./views/Muhkamat"));
+const Lexicon = lazy(() => import("./views/Lexicon"));
+const Wujuh = lazy(() => import("./views/Wujuh"));
+const Furuq = lazy(() => import("./views/Furuq"));
+const Amthal = lazy(() => import("./views/Amthal"));
+const Fawasil = lazy(() => import("./views/Fawasil"));
+const Mawdui = lazy(() => import("./views/Mawdui"));
+const Graph = lazy(() => import("./views/Graph"));
+const RootsGraph = lazy(() => import("./views/RootsGraph"));
+const Maalim = lazy(() => import("./views/Maalim"));
+const Mujam = lazy(() => import("./views/Mujam"));
+const Lisan = lazy(() => import("./views/Lisan"));
+const Sarf = lazy(() => import("./views/Sarf"));
+const About = lazy(() => import("./views/About"));
+const Galaxy = lazy(() => import("./views/Galaxy"));
 import SettingsPanel from "./components/SettingsPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
@@ -279,7 +279,9 @@ function RouteBoundary({ children }: { children: React.ReactNode }) {
   const loc = useLocation();
   return (
     <ErrorBoundary compact key={loc.pathname}>
-      {children}
+      <Suspense fallback={<div className="page"><p className="muted">{t("loading")}</p></div>}>
+        {children}
+      </Suspense>
     </ErrorBoundary>
   );
 }

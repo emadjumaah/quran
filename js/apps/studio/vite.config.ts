@@ -215,10 +215,11 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // the app shell precaches; the big data files cache on first use.
-        // json is precached (jawami.json, the محكم→تفصيل network — small, core);
-        // layout.json stays runtime-cached via its globIgnore below.
-        globPatterns: ["**/*.{js,css,html,svg,png,woff,woff2,wasm,json}"],
+        // Precache ONLY the app shell (code, styles, fonts, icons, wasm). The
+        // per-feature data sidecars are NOT precached — that was ~9.5MB pulled on
+        // first visit regardless of which views a reader ever opens. They cache
+        // on first use of their view via the json runtimeCaching rule below.
+        globPatterns: ["**/*.{js,css,html,svg,png,woff,woff2,wasm}"],
         globIgnores: ["**/quran-app.db", "**/*.bin", "**/*.xlsx"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
@@ -229,6 +230,17 @@ export default defineConfig({
             options: {
               cacheName: "qkg-data",
               expiration: { maxEntries: 6 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // per-feature JSON sidecars (furuq/network/eraab/lexnet/…) — cache on
+            // first use of the view that needs them, not at install.
+            urlPattern: /\/[^/]+\.json(\?.*)?$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "qkg-json",
+              expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 60 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
