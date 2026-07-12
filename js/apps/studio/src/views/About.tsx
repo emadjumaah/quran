@@ -57,8 +57,8 @@ export default function About() {
           <h1 className="jw-title">{ar ? "عن المشروع" : "About the project"}</h1>
           <p className="jw-lead">
             {ar
-              ? "«مشكاة» تجربةٌ في خدمة القرآن حاسوبيًّا: نستخرج من نصّ المصحف — بالذكاء الاصطناعيّ والحساب — شبكةً من المعاني والعلاقات، ونعرضها بسطًا يسيرًا. مبدؤنا واحد: نحسب ونعرض، والقارئ يحكم."
-              : "Mishkāt is an experiment in serving the Qur'an computationally: from the mushaf's text — with AI and computation — we extract a graph of meanings and relations, presented simply. One principle: we compute and present; the reader judges."}
+              ? "«مشكاة» تجربةٌ في خدمة القرآن حاسوبيًّا: نستخرج من نصّ المصحف — بالذكاء الاصطناعيّ والحساب — شبكةً من المعاني والعلاقات، ونعرضها في يُسرٍ ووضوح. مبدؤنا واحد: نحسب ونعرض، والقارئ يتدبّر."
+              : "Mishkāt is an experiment in serving the Qur'an computationally: from the mushaf's text — with AI and computation — we extract a graph of meanings and relations, presented with ease and clarity. One principle: we compute and present; the reader reflects."}
           </p>
         </header>
 
@@ -67,8 +67,8 @@ export default function About() {
           <h2 className="ab-h2">{ar ? "الغاية" : "The aim"}</h2>
           <p style={{ marginTop: 0 }}>
             {ar
-              ? "أن نُبرِزَ ترابُطَ القرآن ونظمَه: كيف تتناسب آياتُه وتتشابك جذورُه ومعانيه في نسيجٍ واحدٍ يُتأمَّل بيسرٍ وأمانة. ليست الغايةُ تفسيرًا نُنشئه، بل أداةٌ حاسوبيةٌ تُقرِّب النظرَ في النصّ نفسه وتُعين على التأمّل والبحث، ويبقى الحكمُ للقارئ."
-              : "To bring out the Qur'an's coherence and order: how its verses answer one another and its roots and meanings interlace into one fabric, contemplated easily and faithfully. The aim is not an interpretation we author, but a computational tool for looking closely into the text itself, aiding reflection and research; the judgment stays with the reader."}
+              ? "أن نُبرِزَ ترابُطَ القرآن ونظمَه: كيف تتناسب آياتُه وتتشابك جذورُه ومعانيه في نسيجٍ واحدٍ يُتأمَّل بيسرٍ وأمانة. ليست الغايةُ تفسيرًا نُنشئه، بل أداةٌ حاسوبيةٌ تُقرِّب النظرَ في النصّ نفسه وتُعين على التأمّل والبحث."
+              : "To bring out the Qur'an's coherence and order: how its verses answer one another and its roots and meanings interlace into one fabric, contemplated easily and faithfully. The aim is not an interpretation we author, but a computational tool for looking closely into the text itself, aiding reflection and research."}
           </p>
           <h3 className="ab-h3">{ar ? "لمن؟" : "For whom?"}</h3>
           <div className="ab-who">
@@ -99,7 +99,7 @@ export default function About() {
           <p className="ab-covenant-note">
             {ar
               ? "وليس في هذا حكمٌ على تلك العلوم ولا استغناءٌ عنها — فالتفسيرُ والحديثُ وعلومُ القرآن أصلُ فهمِ الكتاب، ولها أهلُها الراسخون. وإنّما هو انضباطٌ في الأداة: نَقصُرها على ما يُحسَب ويُتحقَّق منه، ولا نُقحِمُ فيه رأيًا من عندنا — نعرض المحسوب، والحكمُ للقارئ. فالمشروعُ رافدٌ بين يدَيه، لا بديلٌ عن عالمٍ ولا عن كتاب."
-              : "This is no judgment on those sciences, nor doing without them — tafsīr, ḥadīth and the Qur'anic sciences are the ground of understanding the Book, with their deeply-rooted scholars. It is a discipline of the tool: we keep it to what can be computed and verified, and we inject no opinion of our own — we present the computed, and the reader judges. The project is an aid in the reader's hands, never a substitute for a scholar or a book."}
+              : "This is no judgment on those sciences, nor doing without them — tafsīr, ḥadīth and the Qur'anic sciences are the ground of understanding the Book, with their deeply-rooted scholars. It is a discipline of the tool: we keep it to what can be computed and verified, and we inject no opinion of our own — we present the computed, and the reader reflects. The project is an aid in the reader's hands, never a substitute for a scholar or a book."}
           </p>
         </div>
 
@@ -131,8 +131,8 @@ export default function About() {
             <li>
               <b>{ar ? "استخراجُ الطبقات من النصّ:" : "Extracting the layers from the text:"}</b>{" "}
               {ar
-                ? "به قرأنا نصَّ المصحف واستخرجنا منه بنيتَه — المحكمات والتفصيل والجوامع، والمواضيع، والأمثال، والفروق، وسواها — تنظيمًا لكلمات القرآن لا إضافةً عليها."
-                : "with it we read the mushaf's text and drew out its structure — the muḥkamāt, tafṣīl and principles, the topics, parables, furūq and more — organizing the Qur'an's own words, adding nothing to them."}
+                ? "به قرأنا نصَّ المصحف واستخرجنا منه بنيتَه — المحكمات والتفصيل والجوامع، والمواضيع، والأمثال، والفروق، وسواها — فما كان منّا إلا ترتيبُها وعرضُها."
+                : "with it we read the mushaf's text and drew out its structure — the muḥkamāt, tafṣīl and principles, the topics, parables, furūq and more — our part being only to arrange and present them."}
             </li>
             <li>
               <b>{ar ? "متّجهات المعنى (embeddings):" : "Meaning-vectors (embeddings):"}</b>{" "}
@@ -149,8 +149,8 @@ export default function About() {
           </ul>
           <p className="ab-ai-ground">
             {ar
-              ? "ومادّتُه في ذلك كلِّه نصُّ القرآن ومعانيه ومعاجمُه — على ما تقدّم في «حدودٍ نلتزمها». ثمّ نعرض ما استخرج ليراجعه القارئ على المصحف؛ نحسب ونعرض، والقارئ يحكم."
-              : "In all of it, its material is the Qur'anic text, its meanings and its lexica — within the bounds set out above. Then we present what it drew out for the reader to check against the mushaf; we compute and present, and the reader judges."}
+              ? "ومادّتُه في ذلك كلِّه نصُّ القرآن ومعانيه ومعاجمُه — على ما تقدّم في «حدودٍ نلتزمها». ثمّ نعرض ما استخرج ليراجعه القارئ على المصحف؛ نحسب ونعرض، والقارئ يتدبّر."
+              : "In all of it, its material is the Qur'anic text, its meanings and its lexica — within the bounds set out above. Then we present what it drew out for the reader to check against the mushaf; we compute and present, and the reader reflects."}
           </p>
         </div>
 
