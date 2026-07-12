@@ -135,58 +135,83 @@ function LangToggle() {
   );
 }
 
-// desktop «المزيد ▾» — the pages that don't fit the primary bar but must still
-// be reachable without typing a URL (this was the desktop gap).
-const MORE_LINKS: [string, string, string][] = [
-  ["/learn", "مسار الجذور", "Learn roots"],
-  ["/eraab", "تدريب الإعراب", "Grammar drill"],
-  ["/journey", "رحلة الجذر", "Root journey"],
-  ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
-  ["/mujam", "معجم القرآن", "Dictionary"],
-  ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
-  ["/sarf", "الصرف بالأرقام", "Morphology"],
-  ["/collections", "المجموعات", "Collections"],
-  ["/dashboard", "إحصاءات المصحف", "Corpus stats"],
-  ["/about", "عن المشروع", "About"],
+// The desktop nav: a couple of always-visible destinations + themed dropdown
+// GROUPS, so the bar stays tidy instead of one long scattered row. The mobile
+// drawer reuses the same groups as labelled sections.
+type NavItem = [to: string, ar: string, en: string];
+const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
+  {
+    ar: "اللغة والجذور", en: "Language & roots",
+    items: [
+      ["/roots", "الجذور", "Roots"],
+      ["/learn", "مسار الجذور", "Learn roots"],
+      ["/journey", "رحلة الجذر", "Root journey"],
+      ["/eraab", "تدريب الإعراب", "Grammar drill"],
+      ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
+      ["/wujuh", "الوجوه والنظائر", "Polysemy"],
+      ["/mujam", "معجم القرآن", "Dictionary"],
+      ["/sarf", "الصرف بالأرقام", "Morphology"],
+    ],
+  },
+  {
+    ar: "البنية والتدبّر", en: "Structure",
+    items: [
+      ["/muhkamat", "المحكمات", "Muḥkamāt"],
+      ["/furuq", "فروق التنزيل", "Furūq"],
+      ["/mawdui", "المواضيع", "Topics"],
+      ["/amthal", "الأمثال", "Parables"],
+      ["/galaxy", "شبكة القرآن", "Network"],
+      ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
+    ],
+  },
+  {
+    ar: "معالم وأدوات", en: "More",
+    items: [
+      ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
+      ["/dashboard", "إحصاءات المصحف", "Corpus stats"],
+      ["/collections", "المجموعات", "Collections"],
+      ["/about", "عن المشروع", "About"],
+    ],
+  },
 ];
+
+function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
+  const loc = useLocation();
+  const [open, setOpen] = useState(false);
+  const ar = getUILang() === "ar";
+  useEffect(() => setOpen(false), [loc.pathname]); // close on navigate
+  const active = items.some(([to]) => loc.pathname.startsWith(to));
+  return (
+    <span className="nav-more">
+      <button className={`nav-more-btn${active ? " active" : ""}`} onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        {label} <span style={{ fontSize: 10 }}>▾</span>
+      </button>
+      {open && (
+        <>
+          <div className="nav-more-backdrop" onClick={() => setOpen(false)} />
+          <div className="nav-more-menu" role="menu">
+            {items.map(([to, arL, enL]) => (
+              <NavLink key={to} to={to} role="menuitem">{ar ? arL : enL}</NavLink>
+            ))}
+          </div>
+        </>
+      )}
+    </span>
+  );
+}
 
 function Nav() {
   useUILang();
-  const loc = useLocation();
   const ar = getUILang() === "ar";
-  const [more, setMore] = useState(false);
-  useEffect(() => setMore(false), [loc.pathname]); // close on navigate
-  // «المواضيع» resumes where you left off; other tabs are plain
-  const inMawdui = loc.pathname.startsWith("/mawdui");
-  const mawduiTo = inMawdui ? loc.pathname : localStorage.getItem("quran-studio:mawdui-last") || "/mawdui";
-  const moreActive = MORE_LINKS.some(([to]) => loc.pathname.startsWith(to));
   return (
     <nav>
       <NavLink to="/read" title={ar ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
-      <NavLink to="/muhkamat" title={ar ? "المحكمات والجوامع: كبرى ← محكمة ← جامعة (أصل) ← تفصيل" : "muḥkamāt & principles: كبرى → محكمة → جامعة → تفصيل"}>{t("nav.muhkamat")}</NavLink>
-      <NavLink to="/roots">{t("nav.roots")}</NavLink>
-      <NavLink to="/lisan" title={ar ? "الفروق اللغوية: قارن كلمتين من المعجمين — مترادفات وحقول دلالية محسوبة" : "compare two words from the two lexica — computed synonyms & fields"}>{t("nav.lisan")}</NavLink>
-      <NavLink to="/furuq" title={ar ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
-      <NavLink to="/wujuh" title={ar ? "الوجوه والنظائر: كلماتٌ بمعانٍ متعدّدة، محسوبةٌ من سياقاتها" : "computed polysemy — words with multiple senses"}>{ar ? "الوجوه والنظائر" : "Polysemy"}</NavLink>
-      <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={ar ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
-      <NavLink to="/amthal" title={ar ? "أمثال القرآن والتشبيهات — من نصّ القرآن وحده" : "the Qur'an's own parables & similitudes"}>{ar ? "الأمثال" : "Parables"}</NavLink>
-      <NavLink to="/search"><span className="ai-spark" aria-hidden /> {t("nav.search")}</NavLink>
-      <NavLink to="/galaxy" title={ar ? "شبكة القرآن: توارد الجذور في الآيات، كوكباتٍ محسوبة" : "the roots co-occurrence galaxy"}>{ar ? "شبكة القرآن" : "Network"}</NavLink>
-      <span className="nav-more">
-        <button className={`nav-more-btn${moreActive ? " active" : ""}`} onClick={() => setMore((v) => !v)} aria-expanded={more}>
-          {ar ? "المزيد" : "More"} <span style={{ fontSize: 10 }}>▾</span>
-        </button>
-        {more && (
-          <>
-            <div className="nav-more-backdrop" onClick={() => setMore(false)} />
-            <div className="nav-more-menu" role="menu">
-              {MORE_LINKS.map(([to, arL, enL]) => (
-                <NavLink key={to} to={to} role="menuitem">{ar ? arL : enL}</NavLink>
-              ))}
-            </div>
-          </>
-        )}
-      </span>
+      {NAV_GROUPS.map((g) => (
+        <NavGroup key={g.ar} label={ar ? g.ar : g.en} items={g.items} />
+      ))}
+      <NavLink to="/search" title={ar ? "البحث بالمعنى في القرآن كلّه" : "meaning-based search"}>
+        <span className="ai-spark" aria-hidden /> {t("nav.search")}
+      </NavLink>
     </nav>
   );
 }
@@ -227,32 +252,7 @@ function useIsMobile(): boolean {
   return m;
 }
 
-// every destination, for the mobile drawer — SAME ORDER as the desktop nav
-// (primary tabs first, then everything under «المزيد»).
-const DRAWER_LINKS: [string, string, string][] = [
-  // primary nav (desktop order)
-  ["/read", "المصحف", "Reader"],
-  ["/muhkamat", "المحكمات", "Muhkamāt"],
-  ["/roots", "الجذور", "Roots"],
-  ["/learn", "مسار الجذور", "Learn roots"],
-  ["/eraab", "تدريب الإعراب", "Grammar drill"],
-  ["/journey", "رحلة الجذر", "Root journey"],
-  ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
-  ["/furuq", "فروق التنزيل", "Furūq"],
-  ["/wujuh", "الوجوه والنظائر", "Polysemy"],
-  ["/mawdui", "المواضيع", "Topics"],
-  ["/amthal", "الأمثال", "Parables"],
-  ["/search", "البحث الدلالي", "Semantic"],
-  ["/galaxy", "شبكة القرآن", "Network"],
-  // «المزيد» (desktop order)
-  ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
-  ["/mujam", "معجم القرآن", "Dictionary"],
-  ["/fawasil", "أطلس الفواصل", "Rhyme"],
-  ["/sarf", "الصرف بالأرقام", "Morphology"],
-  ["/collections", "المجموعات", "Collections"],
-  ["/dashboard", "إحصاءات المصحف", "Stats"],
-  ["/about", "عن المشروع", "About"],
-];
+// (the mobile drawer builds its sections from NAV_GROUPS above.)
 
 function MobileDrawer({ onClose }: { onClose: () => void }) {
   useUILang();
@@ -266,11 +266,15 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
           <button onClick={onClose} aria-label={ar ? "إغلاق" : "close"}>✕</button>
         </div>
         <nav className="drawer-nav" onClick={onClose}>
-          {DRAWER_LINKS.map(([to, arL, enL]) => (
-            <NavLink key={to} to={to}>
-              {to === "/search" && <span className="ai-spark" aria-hidden />}{" "}
-              {ar ? arL : enL}
-            </NavLink>
+          <NavLink to="/read">{ar ? "المصحف" : "Reader"}</NavLink>
+          <NavLink to="/search"><span className="ai-spark" aria-hidden /> {ar ? "البحث الدلالي" : "Semantic search"}</NavLink>
+          {NAV_GROUPS.map((g) => (
+            <div key={g.ar} className="drawer-group">
+              <div className="drawer-group-h">{ar ? g.ar : g.en}</div>
+              {g.items.map(([to, arL, enL]) => (
+                <NavLink key={to} to={to}>{ar ? arL : enL}</NavLink>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="drawer-controls">

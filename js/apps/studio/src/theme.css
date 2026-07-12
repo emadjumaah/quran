@@ -1422,3 +1422,8 @@ table.data tr:hover td { background: var(--panel-2); }
 .rj-verse:last-child { border-bottom: none; }
 .rj-verse:hover { background: var(--accent-soft); border-radius: 8px; }
 .rj-verse-text { font-size: calc(21px * var(--quran-scale,1)); line-height: 2; color: var(--ink); }
+
+/* mobile drawer — grouped sections (mirror the desktop nav dropdowns) */
+.drawer-group { display: flex; flex-direction: column; gap: 2px; }
+.drawer-group-h { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; padding: 12px 6px 4px; margin-top: 6px; border-top: 1px solid var(--line); }
+.drawer-nav > .drawer-group:first-of-type .drawer-group-h { margin-top: 2px; }
