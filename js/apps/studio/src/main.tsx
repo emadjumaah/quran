@@ -213,8 +213,8 @@ function Nav() {
       <NavLink to="/search" title={ar ? "البحث بالمعنى في القرآن كلّه" : "meaning-based search"}>
         <span className="ai-spark" aria-hidden /> {t("nav.search")}
       </NavLink>
-      <NavLink to="/assistant" title={ar ? "المُعين: مساعدُ بحثٍ وصياغةٍ من بيانات القرآن" : "research & drafting assistant"}>
-        <span className="ai-spark" aria-hidden /> {ar ? "المُعين" : "Assistant"}
+      <NavLink to="/assistant" title={ar ? "نِبراس: مساعدُ بحثٍ وصياغةٍ من بيانات القرآن" : "research & drafting assistant"}>
+        <span className="ai-spark" aria-hidden /> {ar ? "نِبراس" : "Nibras"}
       </NavLink>
     </nav>
   );
@@ -272,7 +272,7 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
         <nav className="drawer-nav" onClick={onClose}>
           <NavLink to="/read">{ar ? "المصحف" : "Reader"}</NavLink>
           <NavLink to="/search"><span className="ai-spark" aria-hidden /> {ar ? "البحث الدلالي" : "Semantic search"}</NavLink>
-          <NavLink to="/assistant"><span className="ai-spark" aria-hidden /> {ar ? "المُعين" : "Assistant"}</NavLink>
+          <NavLink to="/assistant"><span className="ai-spark" aria-hidden /> {ar ? "نِبراس" : "Nibras"}</NavLink>
           {NAV_GROUPS.map((g) => (
             <div key={g.ar} className="drawer-group">
               <div className="drawer-group-h">{ar ? g.ar : g.en}</div>

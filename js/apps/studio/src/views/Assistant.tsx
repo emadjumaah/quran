@@ -1,5 +1,5 @@
 /**
- * المُعين — a research chat over مشكاة's own data. It retrieves from the Qur'an
+ * نِبراس — a research chat over مشكاة's own data. It retrieves from the Qur'an
  * (verses by meaning, roots + their lexical sense) and, on request, drafts a
  * منشور / خطبة / محاضرة / تلخيص FROM that gathered material — a grounded draft for
  * a scholar to build on, never tafsir or fatwa. Multi-chat, on-device, no account.
@@ -93,6 +93,19 @@ export default function Assistant() {
   const [busy, setBusy] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  // resizable chat-list column (drag the divider) — persisted, RTL-aware
+  const [listW, setListW] = useState<number>(() => { const v = Number(localStorage.getItem("nibras-listw")); return v >= 180 && v <= 460 ? v : 250; });
+  const wRef = useRef(listW);
+  const dragging = useRef(false);
+  const pageRef = useRef<HTMLDivElement>(null);
+  const onResizeMove = (e: React.PointerEvent) => {
+    if (!dragging.current || !pageRef.current) return;
+    const rect = pageRef.current.getBoundingClientRect();
+    const w = getUILang() === "ar" ? rect.right - e.clientX : e.clientX - rect.left;
+    const clamped = Math.max(180, Math.min(460, Math.round(w)));
+    wRef.current = clamped;
+    setListW(clamped);
+  };
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chat?.messages.length, busy]);
 
@@ -150,7 +163,7 @@ export default function Assistant() {
   };
 
   return (
-    <div className="mu-page">
+    <div className="mu-page" ref={pageRef} style={{ "--mu-listw": `${listW}px` } as React.CSSProperties}>
       {/* chat list */}
       <aside className={`mu-list${listOpen ? " open" : ""}`}>
         <button className="primary mu-new" onClick={() => { navigate("/assistant"); setInput(""); setListOpen(false); }}>
@@ -165,20 +178,29 @@ export default function Assistant() {
           ))}
         </div>
       </aside>
+      <div
+        className="mu-resize"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label={ar ? "تغيير عرض القائمة" : "resize list"}
+        onPointerDown={(e) => { (e.target as Element).setPointerCapture(e.pointerId); dragging.current = true; }}
+        onPointerMove={onResizeMove}
+        onPointerUp={() => { if (dragging.current) { dragging.current = false; localStorage.setItem("nibras-listw", String(wRef.current)); } }}
+      />
       {listOpen && <div className="mu-list-bg" onClick={() => setListOpen(false)} />}
 
       {/* thread */}
       <main className="mu-main">
         <div className="mu-topbar">
           <button className="mu-list-btn" onClick={() => setListOpen((v) => !v)} aria-label={ar ? "المحادثات" : "chats"}>☰</button>
-          <span className="mu-title">{chat?.title || (ar ? "المُعين" : "The Assistant")}</span>
+          <span className="mu-title">{chat?.title || (ar ? "نِبراس" : "Nibras")}</span>
         </div>
 
         <div className="mu-thread">
           {!chat || chat.messages.length === 0 ? (
             <div className="mu-empty">
               <div className="mu-empty-mark"><span className="ai-spark" aria-hidden /></div>
-              <h1 className="mu-empty-h">{ar ? "المُعين" : "The Assistant"}</h1>
+              <h1 className="mu-empty-h">{ar ? "نِبراس" : "Nibras"}</h1>
               <p className="mu-empty-lead">
                 {ar
                   ? "مساعدُ بحثٍ في القرآن: يجمع لك الآيات بالمعنى، ومعاني الجذور، ثم يصوغ منها مسوّدةَ منشورٍ أو خطبةٍ أو محاضرة — من نصّ القرآن وبياناته وحدها، لا تفسيرَ ولا فتوى."
@@ -209,7 +231,7 @@ export default function Assistant() {
             {busy ? "…" : ar ? "إرسال" : "Send"}
           </button>
         </div>
-        <div className="mu-foot muted">{ar ? "المُعين يجمع ويصوغ من بيانات القرآن — مسوّداتٌ للباحث، لا تفسيرَ ولا فتوى." : "Grounded drafts from the Qur'an's data — for research, not tafsir or fatwa."}</div>
+        <div className="mu-foot muted">{ar ? "نِبراس يجمع ويصوغ من بيانات القرآن — مسوّداتٌ للباحث، لا تفسيرَ ولا فتوى." : "Grounded drafts from the Qur'an's data — for research, not tafsir or fatwa."}</div>
       </main>
     </div>
   );

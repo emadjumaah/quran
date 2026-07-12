@@ -1430,7 +1430,10 @@ table.data tr:hover td { background: var(--panel-2); }
 
 /* المُعين — the research chat */
 .mu-page { display: flex; height: 100%; min-height: 0; overflow: hidden; }
-.mu-list { width: 244px; flex: none; border-inline-end: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; padding: 12px; overflow-y: auto; }
+.mu-list { width: var(--mu-listw, 250px); flex: none; background: var(--panel); display: flex; flex-direction: column; padding: 12px; overflow-y: auto; }
+.mu-resize { flex: none; width: 6px; cursor: col-resize; background: transparent; position: relative; border-inline-start: 1px solid var(--line); }
+.mu-resize::before { content: ""; position: absolute; inset-block: 0; inset-inline: 0; }
+.mu-resize:hover, .mu-resize:active { background: var(--accent-soft); }
 .mu-new { width: 100%; margin-bottom: 12px; }
 .mu-chats { display: flex; flex-direction: column; gap: 2px; }
 .mu-chat { display: flex; align-items: center; border-radius: 8px; }
@@ -1485,6 +1488,7 @@ table.data tr:hover td { background: var(--panel-2); }
 @media (max-width: 760px) {
   .mu-list { position: fixed; top: 0; bottom: 0; inset-inline-start: -290px; width: 270px; z-index: 60; transition: inset-inline-start 0.22s ease; box-shadow: 0 0 40px rgb(0 0 0/0.2); }
   .mu-list.open { inset-inline-start: 0; }
+  .mu-resize { display: none; }
   .mu-list-bg { display: block; position: fixed; inset: 0; background: rgb(0 0 0/0.35); z-index: 59; }
   .mu-topbar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
   .mu-list-btn { border: none; background: none; font-size: 20px; cursor: pointer; color: var(--accent); }
