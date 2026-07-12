@@ -18,7 +18,7 @@ function dataVersion(): string {
       break;
     }
   }
-  for (const p of ["./public/quran-neighbors.bin", "./public/eraab.json", "./public/amthal.json"]) {
+  for (const p of ["./public/quran-neighbors.bin", "./public/eraab.json", "./public/amthal.json", "./public/lexnet.json"]) {
     const abs = resolve(__dirname, p);
     if (fs.existsSync(abs)) {
       h.update(fs.readFileSync(abs));

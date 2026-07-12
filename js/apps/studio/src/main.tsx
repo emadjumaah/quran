@@ -26,6 +26,7 @@ import Graph from "./views/Graph";
 import RootsGraph from "./views/RootsGraph";
 import Maalim from "./views/Maalim";
 import Mujam from "./views/Mujam";
+import Lisan from "./views/Lisan";
 import SettingsPanel from "./components/SettingsPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import FocusExit from "./components/FocusExit";
@@ -132,6 +133,7 @@ const MORE_LINKS: [string, string, string][] = [
   ["/mujam", "معجم القرآن", "Dictionary"],
   ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
   ["/wujuh", "الوجوه والنظائر", "Polysemy"],
+  ["/collections", "المجموعات", "Collections"],
   ["/dashboard", "إحصاءات المصحف", "Corpus stats"],
 ];
 
@@ -150,11 +152,11 @@ function Nav() {
       <NavLink to="/read" title={ar ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
       <NavLink to="/muhkamat" title={ar ? "المحكمات والجوامع: كبرى ← محكمة ← جامعة (أصل) ← تفصيل" : "muḥkamāt & principles: كبرى → محكمة → جامعة → تفصيل"}>{t("nav.muhkamat")}</NavLink>
       <NavLink to="/roots">{t("nav.roots")}</NavLink>
+      <NavLink to="/lisan" title={ar ? "الفروق اللغوية: قارن كلمتين من المعجمين — مترادفات وحقول دلالية محسوبة" : "compare two words from the two lexica — computed synonyms & fields"}>{t("nav.lisan")}</NavLink>
       <NavLink to="/furuq" title={ar ? "فروق التنزيل: المتشابهات اللفظية وما اختلف بينها" : "differences between near-identical verses"}>{t("nav.furuq")}</NavLink>
       <Link to={mawduiTo} className={inMawdui ? "active" : undefined} title={ar ? "تصفّح القرآن بحسب الموضوع (يتابع من حيث توقّفت)" : "browse by theme (resumes)"}>{t("nav.mawdui")}</Link>
       <NavLink to="/amthal" title={ar ? "أمثال القرآن والتشبيهات — من نصّ القرآن وحده" : "the Qur'an's own parables & similitudes"}>{ar ? "الأمثال" : "Parables"}</NavLink>
       <NavLink to="/search"><span className="ai-spark" aria-hidden /> {t("nav.search")}</NavLink>
-      <NavLink to="/collections">{t("nav.collections")}</NavLink>
       <span className="nav-more">
         <button className={`nav-more-btn${moreActive ? " active" : ""}`} onClick={() => setMore((v) => !v)} aria-expanded={more}>
           {ar ? "المزيد" : "More"} <span style={{ fontSize: 10 }}>▾</span>
@@ -217,7 +219,8 @@ const DRAWER_LINKS: [string, string, string][] = [
   ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
   ["/roots", "الجذور", "Roots"],
   ["/mujam", "معجم القرآن", "Dictionary"],
-  ["/furuq", "الفروق", "Furūq"],
+  ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
+  ["/furuq", "فروق التنزيل", "Furūq"],
   ["/mawdui", "المواضيع", "Topics"],
   ["/amthal", "أمثال القرآن", "Parables"],
   ["/fawasil", "أطلس الفواصل", "Rhyme"],
@@ -303,6 +306,7 @@ function App() {
           <Route path="/maalim" element={<Maalim />} />
           <Route path="/mujam" element={<Mujam />} />
           <Route path="/mujam/:root" element={<Mujam />} />
+          <Route path="/lisan" element={<Lisan />} />
           <Route path="/lexicon" element={<Lexicon />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />
