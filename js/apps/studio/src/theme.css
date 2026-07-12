@@ -1186,7 +1186,14 @@ table.data tr:hover td { background: var(--panel-2); }
 
 /* ── عن المشروع (About) — research front door ─────────────────────────────── */
 .ab-h2 { font-size: 18px; margin: 0 0 8px; color: var(--ink); }
+.ab-h3 { font-size: 15px; margin: 18px 0 10px; color: var(--gold); }
 .ab-section-h { margin: 26px 0 12px; }
+.ab-purpose { margin-top: 4px; }
+.ab-purpose p { line-height: 1.9; }
+.ab-who { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; }
+.ab-who-item { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; line-height: 1.7; }
+.ab-who-item b { color: var(--accent); }
+.ab-who-item span { color: var(--ink-2, var(--ink)); }
 .ab-covenant-card { margin-top: 4px; }
 .ab-covenant { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
 .ab-col { border-radius: 12px; padding: 12px 16px; }
@@ -1199,17 +1206,20 @@ table.data tr:hover td { background: var(--panel-2); }
 .ab-col li { font-size: 13.5px; line-height: 1.55; }
 .ab-use li::marker { content: "✓  "; color: var(--accent); font-weight: 700; }
 .ab-avoid li { color: var(--muted); }
-.ab-avoid li::marker { content: "✕  "; }
+.ab-avoid li::marker { content: "—  "; color: var(--muted); }
+.ab-covenant-note { margin: 14px 0 0; font-size: 13px; line-height: 1.95; color: var(--ink-2, var(--ink)); border-top: 1px solid var(--line); padding-top: 12px; }
 
 .ab-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .ab-method { margin: 0; }
 .ab-method-t { font-weight: 700; color: var(--accent); font-size: 15px; margin-bottom: 4px; }
 .ab-method-d { font-size: 13.5px; line-height: 1.75; color: var(--ink-2, var(--ink)); }
 
+.ab-build-intro { margin: 0 0 14px; line-height: 1.95; }
 .ab-ai { margin-top: 20px; border: 1px solid var(--gold); }
 .ab-ai p { margin: 4px 0 8px; }
 .ab-ai-list { margin: 0; padding-inline-start: 18px; display: flex; flex-direction: column; gap: 10px; }
 .ab-ai-list li { font-size: 14px; line-height: 1.8; }
+.ab-ai-ground { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13.5px; line-height: 1.95; color: var(--ink-2, var(--ink)); }
 
 .ab-data { margin-top: 20px; text-align: center; }
 .ab-dl {
@@ -1220,5 +1230,5 @@ table.data tr:hover td { background: var(--panel-2); }
 .ab-dl:hover { filter: brightness(1.06); }
 
 @media (max-width: 700px) {
-  .ab-covenant, .ab-methods { grid-template-columns: 1fr; }
+  .ab-covenant, .ab-methods, .ab-who { grid-template-columns: 1fr; }
 }

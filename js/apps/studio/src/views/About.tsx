@@ -15,25 +15,39 @@ export default function About() {
     ? ["نصّ القرآن الكريم (مصحف المدينة، رسم عثمان طه)", "ترجمات ومعاني الكلمات", "«المفردات» للراغب الأصفهاني و«مقاييس اللغة» لابن فارس", "الوسم الصرفيّ لمُدوّنة القرآن (QAC)", "إعرابٌ منشور محكَّم («المجتبى» — الخراط)", "الطباعة والرسم والفواصل"]
     : ["The Qur'anic text (Madina muṣḥaf)", "Word translations & glosses", "al-Rāghib's Mufradāt + Ibn Fāris's Maqāyīs", "The Quranic Arabic Corpus morphology", "One published, reviewed iʿrāb (al-Kharrāṭ)", "Typography, rasm & verse-endings"];
   const AVOID = ar
-    ? ["تفسير", "حديث", "أسباب نزول", "قراءات", "ناسخ ومنسوخ", "أيّ رأيٍ أو ترجيحٍ من عندنا"]
-    : ["Tafsīr", "Ḥadīth", "Occasions of revelation", "Variant readings (qirāʾāt)", "Abrogation (naskh)", "Any opinion or ruling of our own"];
+    ? ["تفسير", "حديث", "أسباب نزول", "قراءات", "ناسخ ومنسوخ"]
+    : ["Tafsīr", "Ḥadīth", "Occasions of revelation", "Variant readings (qirāʾāt)", "Abrogation (naskh)"];
+
+  const AUDIENCE = ar
+    ? [
+        ["طالبُ العلم والباحث", "بياناتٌ محسوبةٌ قابلةٌ للتحقّق — جذورٌ وفروقٌ وإحصاءٌ صرفيّ — مع تصديرٍ كامل."],
+        ["الدارسُ للّغة", "الفروق اللغوية والمترادفات والمعجم والصرف بالأرقام في مكانٍ واحد."],
+        ["القارئُ المتدبّر", "مصحفٌ نظيفٌ للقراءة، والآياتُ المتشابهة، وإعانةٌ على التدبّر بأدواتٍ محسوبة."],
+        ["المطوّر وصانعُ المحتوى", "بياناتٌ مفتوحةٌ جاهزةٌ للبناء عليها أو الاقتباس منها."],
+      ]
+    : [
+        ["Students & researchers", "Computed, verifiable datasets — roots, furūq, morphology — with a full export."],
+        ["Language scholars", "Lexical distinctions, synonyms, the dictionary and morphology-by-numbers in one place."],
+        ["Reflective readers", "A clean reader, the similar verses, and a computed aid to reflection."],
+        ["Developers & creators", "Open data, ready to build on or cite."],
+      ];
 
   const METHODS = ar
     ? [
-        ["المحكمات والجوامع", "نلتقط الجُمل المُحكَمة من القرآن ونربطها بجوامعها (أصولها) عبر شبكةٍ من التوارد، فيظهر هرمُ المعاني من الكبرى إلى التفصيل."],
-        ["فروق التنزيل", "نوازن آليًّا بين الآيات المتشابهة لفظًا ونُبرز مواضع الاختلاف حرفًا حرفًا — إبدالًا وتقديمًا وزيادة."],
-        ["الفروق اللغوية والمترادفات", "نُضمِّن تعريفَ كلِّ جذرٍ من المعجمين بمتّجهٍ دلاليّ، فتنتظم أقربُ الكلمات معنًى (مترادفات) وتتكوّن الحقول الدلالية — والقارئ يوازن الفرق بنفسه."],
-        ["مثلها (الآيات القريبة)", "متّجهاتُ معنى الآيات تكشف أقربَها إليها دلالةً عبر المصحف كلِّه — ترتيبٌ لا تأويل."],
-        ["الصرف والنحو بالأرقام", "إحصاءٌ كاملٌ لأقسام الكلمة والأوزان والأزمنة والإعراب من ١٣٠٬٠٣٠ مقطعًا صرفيًّا."],
-        ["مساعد التدبّر", "توليدٌ مقيَّدٌ بأدواتنا وحدها (إعراب · جذور · جيران) لا يتعدّاها ولا يدّعي أنّه تفسير."],
+        ["المحكمات والجوامع", "نلتقط من القرآن جُمَلَه المُحكَمة، ثم نبني شبكةً من توارُدها — أيُّ المعاني يجتمع مع أيّ في الآيات — فتنتظم في هرمٍ من القاعدة التفصيلية إلى الأصول الجامعة الكبرى، كلُّه بالإحصاء بلا ترتيبٍ مسبق."],
+        ["فروق التنزيل", "نُحاذي آليًّا بين كلِّ آيتين متشابهتين لفظًا بخوارزمية محاذاة النصوص، فتظهر مواضعُ الاختلاف كلمةً كلمة: إبدالًا وتقديمًا وزيادةً ونقصًا."],
+        ["الفروق اللغوية والمترادفات", "نُحوّل تعريفَ كلِّ جذرٍ في المعجمين إلى «متّجهٍ» رقميّ يمثّل معناه، ثم نقيس القُربَ بينها: فأقربُها متّجهًا أقربُها معنًى (مترادفات)، وعناقيدُها المتبادلة حقولٌ دلالية — والقارئ يوازن الفرق بنفسه."],
+        ["مثلها (الآيات القريبة)", "بالطريقة نفسها نُمثّل كلَّ آيةٍ بمتّجه معنى، فنكشف أقربَ الآيات إليها دلالةً عبر المصحف كلِّه — ترتيبٌ بحسب القُرب، لا تأويلٌ للمعنى."],
+        ["الصرف والنحو بالأرقام", "نمرُّ على ١٣٠٬٠٣٠ مقطعًا صرفيًّا في الوسم القرآنيّ (QAC) ونُحصي كلَّ سِمة: قسمَ الكلمة، ووزنَ الفعل وزمنَه، وحالتَه الإعرابية — فيخرج إحصاءٌ للقرآن كلِّه."],
+        ["مساعد التدبّر", "نجمع ما حسبناه عن الآية — إعرابَها وجذورَها ومعانيها وجيرانها — ونعرضه على نموذج توليدٍ بتوجيهٍ صارمٍ يمنعه من تجاوز هذه المادّة أو ادّعاء التفسير."],
       ]
     : [
-        ["Muḥkamāt & principles", "Decisive statements linked to their governing principles through a co-occurrence network — a pyramid of meaning."],
-        ["Furūq al-tanzīl", "Near-identical verses aligned automatically, differences surfaced token by token."],
-        ["Lexical distinctions & synonyms", "Each root's lexicon definition embedded as a meaning-vector; nearest words = synonyms, clusters = fields."],
-        ["Similar verses", "Verse meaning-vectors reveal the closest āyāt across the whole muṣḥaf — ranking, not interpretation."],
-        ["Morphology by the numbers", "A full census of word classes, forms, tense and case from 130,030 segments."],
-        ["Reflection assistant", "Generation grounded strictly in our own tools — it never reaches outside them."],
+        ["Muḥkamāt & principles", "We lift the Qur'an's decisive statements, then build a network of their co-occurrence — which meanings gather with which — so they settle into a pyramid from detail up to the great governing principles, by counting alone, with no prior ordering."],
+        ["Furūq al-tanzīl", "We align every pair of near-identical verses with a sequence-alignment algorithm, surfacing each difference word by word: substitution, reordering, addition, omission."],
+        ["Lexical distinctions & synonyms", "We turn each root's lexicon definition into a numeric meaning-vector, then measure closeness: nearest by vector = nearest by meaning (synonyms), and mutual clusters are semantic fields — the reader weighs the difference."],
+        ["Similar verses", "The same way, each verse becomes a meaning-vector, revealing its closest āyāt across the whole muṣḥaf — ranked by nearness, not interpreted."],
+        ["Morphology by the numbers", "We walk all 130,030 segments of the QAC morphology and tally every feature: word class, verb form and tense, grammatical case — a census of the whole Qur'an."],
+        ["Reflection assistant", "We gather what we computed about a verse — its iʿrāb, roots, glosses and neighbours — and give it to a generation model under a strict instruction that forbids going beyond this material or claiming to be tafsīr."],
       ];
 
   return (
@@ -43,33 +57,59 @@ export default function About() {
           <h1 className="jw-title">{ar ? "عن المشروع" : "About the project"}</h1>
           <p className="jw-lead">
             {ar
-              ? "«مشكاة» تجربةٌ في خدمة القرآن حاسوبيًّا: نبني فوق النصّ شبكةً من المعاني والعلاقات محسوبةً بالكامل، ونعرضها بسطًا يسيرًا. مبدؤنا واحد: نحسب ونعرض، والقارئ يحكم."
-              : "Mishkāt is an experiment in serving the Qur'an computationally: a fully computed graph of meanings and relations built over the text, presented simply. One principle: we compute and present; the reader judges."}
+              ? "«مشكاة» تجربةٌ في خدمة القرآن حاسوبيًّا: نستخرج من نصّ المصحف — بالذكاء الاصطناعيّ والحساب — شبكةً من المعاني والعلاقات، ونعرضها بسطًا يسيرًا. مبدؤنا واحد: نحسب ونعرض، والقارئ يحكم."
+              : "Mishkāt is an experiment in serving the Qur'an computationally: from the mushaf's text — with AI and computation — we extract a graph of meanings and relations, presented simply. One principle: we compute and present; the reader judges."}
           </p>
         </header>
 
-        {/* the data covenant */}
-        <div className="card ab-covenant-card">
-          <h2 className="ab-h2">{ar ? "عهد البيانات" : "The data covenant"}</h2>
-          <p className="muted" style={{ marginTop: 0 }}>
+        {/* purpose + audience */}
+        <div className="card ab-purpose">
+          <h2 className="ab-h2">{ar ? "الغاية" : "The aim"}</h2>
+          <p style={{ marginTop: 0 }}>
             {ar
-              ? "ما يميّز المشروع هو ما يمتنع عنه. كلُّ ما نعرضه محسوبٌ من مصادرَ محدودةٍ معلومة، لا نتعدّاها:"
-              : "What sets the project apart is what it abstains from. Everything is computed from a fixed, known set of sources:"}
+              ? "أن نفتح بنيةَ القرآن الداخلية للعين: كيف تتشابك آياتُه وجذورُه ومعانيه في نسيجٍ واحدٍ يُقلَّب بيسرٍ وأمانة. ليست الغايةُ تفسيرًا نُنشئه، بل عدسةٌ حاسوبيةٌ على النصّ نفسه تُعين على التأمّل والبحث، ويبقى الحكمُ للقارئ."
+              : "To open the Qur'an's inner structure to the eye: how its verses, roots and meanings interlace into one fabric, turned over easily and faithfully. The aim is not an interpretation we author, but a computational lens on the text itself that aids reflection and research — and the judgment stays with the reader."}
           </p>
-          <div className="ab-covenant">
-            <div className="ab-col ab-use">
-              <div className="ab-col-h">{ar ? "نعتمد" : "We use"}</div>
-              <ul>{USE.map((x, i) => <li key={i}>{x}</li>)}</ul>
-            </div>
-            <div className="ab-col ab-avoid">
-              <div className="ab-col-h">{ar ? "لا نقربه" : "We never touch"}</div>
-              <ul>{AVOID.map((x, i) => <li key={i}>{x}</li>)}</ul>
-            </div>
+          <h3 className="ab-h3">{ar ? "لمن؟" : "For whom?"}</h3>
+          <div className="ab-who">
+            {AUDIENCE.map(([who, what]) => (
+              <div key={who} className="ab-who-item"><b>{who}</b><span>{what}</span></div>
+            ))}
           </div>
         </div>
 
-        {/* how each layer is computed */}
-        <h2 className="ab-h2 ab-section-h">{ar ? "كيف نحسب" : "How it's computed"}</h2>
+        {/* the data covenant */}
+        <div className="card ab-covenant-card">
+          <h2 className="ab-h2">{ar ? "حدودٌ نلتزمها" : "The bounds we keep"}</h2>
+          <p className="muted" style={{ marginTop: 0 }}>
+            {ar
+              ? "منهجُنا أن نحسب من مصادرَ محدودةٍ معلومة، ونعرض ما حسبناه وحده. وما وراءها من علومٍ جليلةٍ نتركه لأهله ومظانّه:"
+              : "Our method: compute from a fixed, known set of sources, and present only what we computed. The greater sciences beyond them we leave to their scholars:"}
+          </p>
+          <div className="ab-covenant">
+            <div className="ab-col ab-use">
+              <div className="ab-col-h">{ar ? "نحسب منه" : "We compute from"}</div>
+              <ul>{USE.map((x, i) => <li key={i}>{x}</li>)}</ul>
+            </div>
+            <div className="ab-col ab-avoid">
+              <div className="ab-col-h">{ar ? "نتركه لأهله" : "Left to its scholars"}</div>
+              <ul>{AVOID.map((x, i) => <li key={i}>{x}</li>)}</ul>
+            </div>
+          </div>
+          <p className="ab-covenant-note">
+            {ar
+              ? "وليس في هذا حكمٌ على تلك العلوم ولا استغناءٌ عنها — فالتفسيرُ والحديثُ وعلومُ القرآن أصلُ فهمِ الكتاب، ولها أهلُها الراسخون. وإنّما هو انضباطٌ في الأداة: نَقصُرها على ما يُحسَب ويُتحقَّق منه، ولا نُقحِمُ فيه رأيًا من عندنا — نعرض المحسوب، والحكمُ للقارئ. فالمشروعُ رافدٌ بين يدَيه، لا بديلٌ عن عالمٍ ولا عن كتاب."
+              : "This is no judgment on those sciences, nor doing without them — tafsīr, ḥadīth and the Qur'anic sciences are the ground of understanding the Book, with their deeply-rooted scholars. It is a discipline of the tool: we keep it to what can be computed and verified, and we inject no opinion of our own — we present the computed, and the reader judges. The project is an aid in the reader's hands, never a substitute for a scholar or a book."}
+          </p>
+        </div>
+
+        {/* how the project was built */}
+        <h2 className="ab-h2 ab-section-h">{ar ? "كيف أُنجز المشروع" : "How the project was built"}</h2>
+        <p className="muted ab-build-intro">
+          {ar
+            ? "بدأنا من نصّ المصحف والوسم الصرفيّ (QAC) ومعجمَي الراغب وابن فارس. ثمّ سخّرنا الذكاء الاصطناعيّ لقراءة النصّ واستخراج طبقاته البنيوية، وحسبنا الإحصاءات من الوسم الصرفيّ، ومثّلنا الآيات والكلمات بمتّجهات المعنى للمقارنة، وبنينا فوق ذلك أدواتِ القراءة والتدبّر. وتفصيلُ كلِّ طبقةٍ وكيف أُنجزت فيما يلي:"
+            : "We began from the mushaf's text, the QAC morphology, and the lexica of al-Rāghib and Ibn Fāris. Then we set AI to read the text and extract its structural layers, computed the statistics from the morphology, represented verses and words as meaning-vectors for comparison, and built the reading and reflection tools on top. Each layer and how it was made follows:"}
+        </p>
         <div className="ab-methods">
           {METHODS.map(([t, d]) => (
             <div key={t} className="card ab-method">
@@ -81,26 +121,37 @@ export default function About() {
 
         {/* AI transparency */}
         <div className="card ab-ai">
-          <h2 className="ab-h2"><span className="ai-spark" aria-hidden /> {ar ? "أين يقع الذكاء الاصطناعي؟" : "Where AI fits"}</h2>
+          <h2 className="ab-h2"><span className="ai-spark" aria-hidden /> {ar ? "الذكاء الاصطناعي في المشروع" : "AI in the project"}</h2>
           <p>
             {ar
-              ? "نستعمل نماذج Gemini في موضعين اثنين لا ثالث لهما، وكلاهما شفّاف:"
-              : "We use Gemini models in exactly two places, both transparent:"}
+              ? "الذكاءُ الاصطناعيّ أداةُ الاستخراج الأولى في مشكاة، لا زينةٌ على أطرافها — وكلُّ استعمالٍ له مكشوف:"
+              : "AI is Mishkāt's primary tool of extraction, not an ornament at its edges — and every use of it is open:"}
           </p>
           <ul className="ab-ai-list">
             <li>
+              <b>{ar ? "استخراجُ الطبقات من النصّ:" : "Extracting the layers from the text:"}</b>{" "}
+              {ar
+                ? "به قرأنا نصَّ المصحف واستخرجنا منه بنيتَه — المحكمات والتفصيل والجوامع، والمواضيع، والأمثال، والفروق، وسواها — تنظيمًا لكلمات القرآن لا إضافةً عليها."
+                : "with it we read the mushaf's text and drew out its structure — the muḥkamāt, tafṣīl and principles, the topics, parables, furūq and more — organizing the Qur'an's own words, adding nothing to them."}
+            </li>
+            <li>
               <b>{ar ? "متّجهات المعنى (embeddings):" : "Meaning-vectors (embeddings):"}</b>{" "}
               {ar
-                ? "لترتيب الآيات المتقاربة («مثلها») والكلمات المترادفة («الفروق اللغوية»). الذكاء الاصطناعي هنا يُرتِّب فحسب — لا يضيف معنًى ولا يُنشئ نصًّا."
-                : "to rank similar verses and synonym words. The model only ranks — it adds no meaning and writes no text."}
+                ? "لقياس تقارُب الآيات («مثلها») والكلمات المترادفة («الفروق اللغوية») — ترتيبٌ بالقُرب، لا إنشاءُ نصّ."
+                : "to measure the closeness of verses (similar āyāt) and synonym words — ranking by nearness, writing no text."}
             </li>
             <li>
               <b>{ar ? "مساعد التدبّر (توليد مقيَّد):" : "Reflection assistant (grounded generation):"}</b>{" "}
               {ar
-                ? "يُغذَّى بأدواتنا وحدها — إعراب الآية وجذورها ومعانيها وجيرانها — بتوجيهٍ صارمٍ يمنعه من إدخال أيّ علمٍ خارجيّ، ويمنعه من ادّعاء أنّه تفسير. إعانةٌ على التدبّر بأدوات الموقع، لا بديلٌ عن أهل العلم."
-                : "fed only our own tools — the verse's iʿrāb, roots, glosses and neighbours — under a strict instruction that forbids any outside knowledge and forbids claiming to be tafsīr."}
+                ? "يُغذَّى بما حسبناه عن الآية وحده، بتوجيهٍ صارمٍ يمنعه من تجاوزه أو ادّعاء التفسير."
+                : "fed only what we computed about the verse, under a strict instruction that forbids exceeding it or claiming to be tafsīr."}
             </li>
           </ul>
+          <p className="ab-ai-ground">
+            {ar
+              ? "ومادّتُه في ذلك كلِّه نصُّ القرآن ومعانيه ومعاجمُه؛ لا نُغذّيه بتفسيرٍ ولا حديثٍ نأخذه مصدرًا. ثمّ نعرض ما استخرج ليراجعه القارئ على المصحف — نحسب ونعرض، والقارئ يحكم."
+              : "In all of it, its material is the Qur'anic text, its meanings and its dictionaries; we feed it no tafsīr or ḥadīth as a source. Then we present what it drew out for the reader to check against the mushaf — we compute and present; the reader judges."}
+          </p>
         </div>
 
         {/* open data */}
