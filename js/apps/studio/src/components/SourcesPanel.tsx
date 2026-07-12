@@ -19,8 +19,8 @@ export const SOURCES: { url: string; ar: string; en: string }[] = [
   },
   {
     url: "https://github.com/wizsk/arabic_lexicons",
-    ar: "المعاجم: المفردات (الراغب) · مقاييس اللغة (ابن فارس) · الصحاح · لسان العرب",
-    en: "Lexicons: Mufradāt · Maqāyīs · Ṣiḥāḥ · Lisān al-ʿArab",
+    ar: "المعجمان: المفردات في غريب القرآن (الراغب الأصفهاني) · مقاييس اللغة (ابن فارس)",
+    en: "The two lexica: al-Rāghib's Mufradāt · Ibn Fāris's Maqāyīs",
   },
   {
     url: "https://qbook.kfgqpc.org",
@@ -44,8 +44,8 @@ export const SOURCES: { url: string; ar: string; en: string }[] = [
   },
   {
     url: "https://ai.google.dev",
-    ar: "المتجهات الدلالية للبحث بالمعنى — Gemini embeddings",
-    en: "Semantic vectors for meaning-search — Gemini embeddings",
+    ar: "الذكاء الاصطناعيّ: متّجهاتُ المعنى لتقارُب الآيات والكلمات، والتوليدُ المقيَّد لمساعد التدبّر — نماذج Gemini",
+    en: "AI: meaning-vectors for verse & word similarity, and grounded generation for the reflection assistant — Gemini",
   },
   {
     url: "https://github.com/qataruts/monlite",
