@@ -32,6 +32,7 @@ const Sarf = lazy(() => import("./views/Sarf"));
 const About = lazy(() => import("./views/About"));
 const Galaxy = lazy(() => import("./views/Galaxy"));
 const Learn = lazy(() => import("./views/Learn"));
+const EraabDrill = lazy(() => import("./views/EraabDrill"));
 import SettingsPanel from "./components/SettingsPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
@@ -137,6 +138,7 @@ function LangToggle() {
 // be reachable without typing a URL (this was the desktop gap).
 const MORE_LINKS: [string, string, string][] = [
   ["/learn", "مسار الجذور", "Learn roots"],
+  ["/eraab", "تدريب الإعراب", "Grammar drill"],
   ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
   ["/mujam", "معجم القرآن", "Dictionary"],
   ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
@@ -231,6 +233,7 @@ const DRAWER_LINKS: [string, string, string][] = [
   ["/muhkamat", "المحكمات", "Muhkamāt"],
   ["/roots", "الجذور", "Roots"],
   ["/learn", "مسار الجذور", "Learn roots"],
+  ["/eraab", "تدريب الإعراب", "Grammar drill"],
   ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
   ["/furuq", "فروق التنزيل", "Furūq"],
   ["/wujuh", "الوجوه والنظائر", "Polysemy"],
@@ -366,6 +369,7 @@ function App() {
           <Route path="/collections/:id" element={<Collections />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/learn" element={<Learn />} />
+          <Route path="/eraab" element={<EraabDrill />} />
           <Route path="/today" element={<Today />} />
           <Route path="/goto/:kind/:n" element={<Goto />} />
         </Routes>
