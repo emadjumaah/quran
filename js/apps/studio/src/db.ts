@@ -222,7 +222,10 @@ export async function fuzzyRoots(
   query: string,
   limit = 30,
 ): Promise<{ doc: RootDoc; dist: number }[]> {
-  const q = normLetters(query.trim().replace(/^(?:[وفبكل])?ال/, ""));
+  // strip a leading definite article — but not when doing so leaves too little
+  // (e.g. «اله» must stay «اله» to reach «أله», not become «ه»).
+  const stripped = query.trim().replace(/^(?:[وفبكل])?ال/, "");
+  const q = normLetters(stripped.length >= 2 ? stripped : query.trim());
   if (q.length < 2) return [];
   const all = await allRoots();
   const scored = all

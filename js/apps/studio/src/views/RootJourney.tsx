@@ -7,9 +7,9 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { fuzzyRoots, getRoot, listSurahs } from "../db";
+import { fuzzyRoots, getRoot, listAyahs, listSurahs, searchRoots } from "../db";
 import { getUILang, num, useUILang } from "../i18n";
-import type { RootDoc, SurahDoc } from "../types";
+import type { AyahDoc, RootDoc, SurahDoc } from "../types";
 
 export default function RootJourney() {
   useUILang();
@@ -21,13 +21,41 @@ export default function RootJourney() {
   const [doc, setDoc] = useState<RootDoc | null>(null);
   const [q, setQ] = useState("");
   const [sugs, setSugs] = useState<RootDoc[]>([]);
+  const [selBar, setSelBar] = useState<{ surah: SurahDoc; ayahs: AyahDoc[] } | null>(null);
+
+  // tap a bar (a surah) → the root's verses there, in a popup
+  const openBar = async (s: SurahDoc, count: number) => {
+    if (!count || !doc) return;
+    const nos = new Set<number>();
+    for (const loc of doc.locations ?? []) {
+      const [ss, aa] = String(loc).split(":").map(Number);
+      if (ss === s.surahNo) nos.add(aa);
+    }
+    const all = await listAyahs(s.surahNo).catch(() => [] as AyahDoc[]);
+    setSelBar({ surah: s, ayahs: all.filter((a) => nos.has(a.ayahNo)) });
+  };
 
   useEffect(() => { listSurahs().then(setSurahs).catch(() => setSurahs([])); }, []);
   useEffect(() => { setDoc(null); getRoot(root).then(setDoc).catch(() => setDoc(null)); }, [root]);
+  // same fuzzy behaviour as the الجذور page: prefix matches + fuzzy (weak-letter)
+  // matches merged, so «اله» finds «أله», typos find the nearest root, etc.
   useEffect(() => {
-    if (!q.trim()) { setSugs([]); return; }
+    const query = q.trim();
+    if (!query) { setSugs([]); return; }
     let live = true;
-    fuzzyRoots(q.trim(), 8).then((rs) => live && setSugs(rs.map((x) => x.doc))).catch(() => {});
+    Promise.all([
+      searchRoots(query, 20).catch(() => [] as RootDoc[]),
+      fuzzyRoots(query, 12).catch(() => [] as { doc: RootDoc; dist: number }[]),
+    ])
+      .then(([byPrefix, fuzzyHits]) => {
+        if (!live) return;
+        const seen = new Set<string>();
+        const out: RootDoc[] = [];
+        for (const r of byPrefix) if (!seen.has(r.root)) { seen.add(r.root); out.push(r); }
+        for (const f of fuzzyHits) if (!seen.has(f.doc.root)) { seen.add(f.doc.root); out.push(f.doc); }
+        setSugs(out.slice(0, 8));
+      })
+      .catch(() => { if (live) setSugs([]); });
     return () => { live = false; };
   }, [q]);
 
@@ -107,6 +135,9 @@ export default function RootJourney() {
                     className={`rj-bar ${s.revelation === "Meccan" ? "mecc" : "med"}${count === 0 ? " empty" : ""}`}
                     style={{ height: count === 0 ? 3 : 6 + Math.round((Math.sqrt(count) / Math.sqrt(info.max)) * 64) }}
                     title={`${s.nameAr} — ${count ? `${num(count)} ${ar ? "مرّة" : ""}` : ar ? "لا يرد" : "absent"} · ${s.revelation === "Meccan" ? (ar ? "مكّية" : "Meccan") : (ar ? "مدنية" : "Medinan")}`}
+                    onClick={() => void openBar(s, count)}
+                    role={count ? "button" : undefined}
+                    aria-label={count ? `${s.nameAr} · ${num(count)}` : undefined}
                   />
                 ))}
               </div>
@@ -131,6 +162,27 @@ export default function RootJourney() {
               <Link to={`/learn`} className="chip link">{ar ? "احفظه في مسار الجذور ←" : "learn it →"}</Link>
             </div>
           </>
+        )}
+
+        {selBar && (
+          <div className="rj-modal-bg" onClick={() => setSelBar(null)}>
+            <div className="rj-modal card" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+              <div className="rj-modal-head">
+                <span className="quran rj-modal-title">
+                  {selBar.surah.nameAr}
+                  <span className="muted"> · {selBar.surah.revelation === "Meccan" ? (ar ? "مكّية" : "Meccan") : (ar ? "مدنية" : "Medinan")} · {ar ? `${num(selBar.ayahs.length)} موضعًا` : `${selBar.ayahs.length} verses`}</span>
+                </span>
+                <button className="rj-modal-x" onClick={() => setSelBar(null)} aria-label={ar ? "إغلاق" : "close"}>✕</button>
+              </div>
+              <div className="rj-modal-body">
+                {selBar.ayahs.map((a) => (
+                  <Link key={a.ayahNo} to={`/read/${a.surahNo}/${a.ayahNo}`} className="rj-verse" onClick={() => setSelBar(null)}>
+                    <span className="quran rj-verse-text">{a.textUthmani}<span className="ayah-marker"> ﴿{num(a.ayahNo)}﴾</span></span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
