@@ -44,6 +44,32 @@ const lemmas = db
   .all();
 const versesOf = db.prepare("SELECT DISTINCT ayah_id FROM word WHERE lemma_id=?");
 
+// content lemmas present in each ayah — the raw signal for what distinguishes a
+// sense: the words that co-occur with the target more in one group than the other
+const ayahLemmas = new Map();
+for (const r of db.prepare(
+  `SELECT w.ayah_id aid, l.lemma_ar lm FROM word w
+   JOIN lemma l ON l.lemma_id=w.lemma_id JOIN root rt ON rt.root_id=w.root_id
+   WHERE l.lemma_ar IS NOT NULL`).iterate()) {
+  (ayahLemmas.get(r.aid) ?? ayahLemmas.set(r.aid, []).get(r.aid)).push(r.lm);
+}
+const tally = (ids) => {
+  const m = new Map();
+  for (const id of ids) for (const lm of ayahLemmas.get(id) ?? []) m.set(lm, (m.get(lm) ?? 0) + 1);
+  return m;
+};
+/** lemmas that mark THIS group vs the other — its «characteristic context». */
+const distinctive = (idsA, idsB, self) => {
+  const a = tally(idsA), b = tally(idsB);
+  const out = [];
+  for (const [lm, ca] of a) {
+    if (lm === self) continue;
+    const cb = b.get(lm) ?? 0;
+    if (ca >= 2 && ca > cb) out.push({ lm, d: ca - cb, ca });
+  }
+  return out.sort((x, y) => y.d - x.d || y.ca - x.ca).slice(0, 6).map((x) => x.lm);
+};
+
 const dot = (a, b) => {
   let s = 0;
   for (let i = 0; i < DIM; i++) s += a[i] * b[i];
@@ -106,7 +132,6 @@ for (const L of lemmas) {
     grp
       .map((id) => ({ loc: loc.get(id), s: dot(vec.get(id), c) }))
       .sort((x, y) => y.s - x.s)
-      .slice(0, 4)
       .map((x) => x.loc);
   words.push({
     lemma: L.lm,
@@ -114,8 +139,8 @@ for (const L of lemmas) {
     n: ids.length,
     score,
     faces: [
-      { n: A.length, verses: rep(A, ca) },
-      { n: B.length, verses: rep(B, cb) },
+      { n: A.length, verses: rep(A, ca), keys: distinctive(A, B, L.lm) },
+      { n: B.length, verses: rep(B, cb), keys: distinctive(B, A, L.lm) },
     ],
   });
 }

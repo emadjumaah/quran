@@ -14,13 +14,15 @@ import type { AyahDoc } from "../types";
 import PageSearch from "../components/PageSearch";
 import { fuzzyMatch } from "../lib/fuzzy";
 
+interface WFace { n: number; verses: string[]; keys: string[] }
 interface WWord {
   lemma: string;
   root: string;
   n: number;
   score: number;
-  faces: { n: number; verses: string[] }[];
+  faces: WFace[];
 }
+const ORD_AR = ["الأول", "الثاني", "الثالث", "الرابع"];
 interface WData {
   meta: { candidates: number; scanned: number; minVerses: number };
   words: WWord[];
@@ -28,19 +30,33 @@ interface WData {
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
-function Face({ face, idx, texts }: { face: { n: number; verses: string[] }; idx: number; texts: Map<string, AyahDoc> }) {
+function Face({ face, idx, texts }: { face: WFace; idx: number; texts: Map<string, AyahDoc> }) {
   const ar = getUILang() === "ar";
+  const [all, setAll] = useState(false);
+  const shown = all ? face.verses : face.verses.slice(0, 5);
   return (
     <div className="wj-face">
       <div className="wj-face-h">
-        {ar ? `الوجه ${num(idx + 1)}` : `sense ${num(idx + 1)}`} <span className="muted">{num(face.n)} {ar ? "موضعًا" : "verses"}</span>
+        <b className="wj-face-t">{ar ? `الوجه ${ORD_AR[idx] ?? idx + 1}` : `Sense ${idx + 1}`}</b>
+        <span className="muted">{num(face.n)} {ar ? "موضعًا" : "verses"}</span>
       </div>
-      {face.verses.map((loc) => (
+      {face.keys?.length > 0 && (
+        <div className="wj-keys">
+          <span className="wj-keys-lbl">{ar ? "أبرزُ ما يقترن به:" : "characteristic context:"}</span>
+          {face.keys.map((k) => <span key={k} className="chip quran wj-key">{k}</span>)}
+        </div>
+      )}
+      {shown.map((loc) => (
         <Link key={loc} to={readPathOf(loc)} className="jw-verse">
           <span className="jw-verse-ref">{arName(loc)}</span>
           <span className="jw-verse-text quran">{texts.get(loc)?.textClean ?? loc}</span>
         </Link>
       ))}
+      {face.verses.length > 5 && (
+        <button className="chip" onClick={() => setAll(!all)} style={{ marginTop: 6 }}>
+          {all ? (ar ? "أقلّ" : "less") : (ar ? `عرض كل المواضع (${num(face.verses.length)})` : `all ${face.verses.length}`)}
+        </button>
+      )}
     </div>
   );
 }
