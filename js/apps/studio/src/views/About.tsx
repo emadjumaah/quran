@@ -124,8 +124,8 @@ export default function About() {
           <h2 className="ab-h2"><span className="ai-spark" aria-hidden /> {ar ? "الذكاء الاصطناعي في المشروع" : "AI in the project"}</h2>
           <p>
             {ar
-              ? "الذكاءُ الاصطناعيّ أداةُ الاستخراج الأولى في مشكاة، لا زينةٌ على أطرافها — وكلُّ استعمالٍ له مكشوف:"
-              : "AI is Mishkāt's primary tool of extraction, not an ornament at its edges — and every use of it is open:"}
+              ? "الذكاءُ الاصطناعيّ أداةٌ رئيسةٌ في مشكاة لا ثانويّة، وكلُّ استعمالٍ له واضحٌ مُبيَّن:"
+              : "AI is a primary tool in Mishkāt, not a secondary one, and every use of it is clear and stated:"}
           </p>
           <ul className="ab-ai-list">
             <li>
