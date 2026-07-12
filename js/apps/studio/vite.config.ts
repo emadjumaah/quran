@@ -196,6 +196,8 @@ export default defineConfig({
           "القرآن الكريم كشبكة معرفة: قراءة، صرف كلمة بكلمة، جذور ومعانٍ من المعاجم، بحث بالمعنى — يعمل كاملًا دون اتصال.",
         dir: "rtl",
         lang: "ar",
+        id: "/",
+        categories: ["education", "books", "reference"],
         start_url: "/",
         display: "standalone",
         theme_color: "#0b6e56",
@@ -204,6 +206,12 @@ export default defineConfig({
           { src: "pwa-192.png", sizes: "192x192", type: "image/png" },
           { src: "pwa-512.png", sizes: "512x512", type: "image/png" },
           { src: "pwa-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+        ],
+        shortcuts: [
+          { name: "المصحف", short_name: "المصحف", url: "/#/read" },
+          { name: "البحث الدلالي", short_name: "بحث", url: "/#/search" },
+          { name: "الفروق اللغوية", short_name: "الفروق", url: "/#/lisan" },
+          { name: "الوجوه والنظائر", short_name: "الوجوه", url: "/#/wujuh" },
         ],
       },
       workbox: {
