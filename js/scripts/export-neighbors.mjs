@@ -23,7 +23,7 @@ const DB = path.resolve(HERE, "../../quran-kg.db");
 const OUT = path.resolve(HERE, "../../quran-neighbors.bin");
 const MODEL = "gemini-embedding-001";
 const DIM = 768;
-const K = 8;
+const K = 20; // «مثلها» shows up to this many neighbours (was 8); MIN_SCORE still prunes weak ones
 const MIN_SCORE = 0.5;
 
 const db = new DatabaseSync(DB, { readOnly: true });
