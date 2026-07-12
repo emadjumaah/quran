@@ -47,6 +47,16 @@ export const num = (n: number | string): string => {
   return ar ? String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)]) : String(n);
 };
 
+/** Arabic number–noun agreement for آية (verses): 1 → آية · 2 → آيتان ·
+ *  3–10 → «N آيات» · 11+ → «N آية». English: «N verse[s]». */
+export function ayahsCount(n: number): string {
+  if (getUILang() !== "ar") return `${n} ${n === 1 ? "verse" : "verses"}`;
+  if (n === 1) return "آية واحدة";
+  if (n === 2) return "آيتان";
+  if (n >= 3 && n <= 10) return `${num(n)} آيات`;
+  return `${num(n)} آية`;
+}
+
 const AR: Record<string, string> = {
   "nav.today": "اليوم",
   "nav.reader": "المصحف",

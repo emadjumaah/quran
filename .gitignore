@@ -25,6 +25,9 @@ archive/
 # personal editor config
 *.code-workspace
 
+# local pre-release audit notes (internal, not for publish)
+PRERELEASE-AUDIT.md
+
 # os
 .DS_Store
 

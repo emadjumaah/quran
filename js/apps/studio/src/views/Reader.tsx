@@ -13,7 +13,7 @@ import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getWord, listAyahs, listSurahs, listWords, surahNameAr } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
-import { getUILang, num, t, useUILang } from "../i18n";
+import { ayahsCount, getUILang, num, t, useUILang } from "../i18n";
 import { setSelectedAyah, useReading } from "../reading";
 import { useSettings } from "../settings";
 import { recordProgress, toggleBookmark, useBookmarks } from "../bookmarks";
@@ -198,17 +198,19 @@ function MushafPage({
   const ar = getUILang() === "ar";
   const first = ayahs[0];
   const surahNo = first?.surahNo ?? 0;
-  const surahStartsHere = ayahs.some((a) => a.ayahNo === 1);
+  // the band names the surah that BEGINS on this page (ayahNo===1) — which can
+  // differ from the first ayah physically on it (~51 pages carry two suras).
+  const startAyah = ayahs.find((a) => a.ayahNo === 1);
   return (
     <section className={`mushaf-page${opening ? " opening" : ""}`}>
       <div className="mp-margin">
         <span>{ar ? "الجزء" : "Juz"} {num(first?.juz ?? 0)}</span>
         <span>{surahNameAr(surahNo)} · {ar ? "الحزب" : "Hizb"} {num(first?.hizb ?? 0)}</span>
       </div>
-      {surahStartsHere && (
+      {startAyah && (
         <div className="mp-surah-band">
-          <span className="mp-surah-name quran">سورة {surahNameAr(surahNo)}</span>
-          {surahNo !== 1 && surahNo !== 9 && <div className="mp-basmala quran">{BASMALA}</div>}
+          <span className="mp-surah-name quran">سورة {surahNameAr(startAyah.surahNo)}</span>
+          {startAyah.surahNo !== 1 && startAyah.surahNo !== 9 && <div className="mp-basmala quran">{BASMALA}</div>}
         </div>
       )}
       <div className="quran">
@@ -488,18 +490,26 @@ export default function Reader() {
   const navigateAyah = (dir: -1 | 1) => {
     if (!selectedLoc) return;
     const [ss, aa] = selectedLoc.split(":").map(Number);
-    if (ss !== surahNo) {
-      navigate(`/read/${ss}/${aa + dir}`);
-      return;
+    const cntOf = (n: number) => surahs.find((s) => s.surahNo === n)?.ayahCount ?? 0;
+    let ns = ss;
+    let na = aa + dir;
+    if (na < 1) {
+      // cross backward to the previous surah's LAST ayah (never ayah 0)
+      if (ss <= 1) return;
+      ns = ss - 1;
+      na = cntOf(ns) || 1;
+    } else if (na > cntOf(ss)) {
+      // cross forward to the next surah's first ayah
+      if (ss >= 114) return;
+      ns = ss + 1;
+      na = 1;
     }
-    const nextNo = aa + dir;
-    if (nextNo >= 1 && nextNo <= ayahs.length) {
-      selectAyah(`${surahNo}:${nextNo}`);
-    } else if (nextNo < 1 && surahNo > 1) {
-      navigate(`/read/${surahNo - 1}`); // previous surah
-    } else if (nextNo > ayahs.length && surahNo < 114) {
-      navigate(`/read/${surahNo + 1}/1`);
-      setSelectedAyah(`${surahNo + 1}:1`);
+    const loc = `${ns}:${na}`;
+    if (ns === surahNo) {
+      selectAyah(loc); // same surah in view — select + scroll
+    } else {
+      navigate(`/read/${ns}/${na}`); // crossed a boundary — go there AND keep selection in sync
+      setSelectedAyah(loc);
     }
   };
   useEffect(() => {
@@ -628,7 +638,7 @@ export default function Reader() {
             <span className="reader-bar-name quran">{surah.nameAr}</span>
             <span className="muted reader-bar-meta">
               {surah.revelation === "Meccan" ? t("reader.meccan") : t("reader.medinan")} ·{" "}
-              {num(surah.ayahCount)} {t("reader.ayahs")}
+              {ayahsCount(surah.ayahCount)}
               {getUILang() !== "ar" ? ` · ${surah.nameTranslit}` : ""}
             </span>
             <div className="reader-bar-search"><InlineOmni /></div>

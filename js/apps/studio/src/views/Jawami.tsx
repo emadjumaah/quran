@@ -29,7 +29,7 @@ import PageSearch from "../components/PageSearch";
 import MushafLink from "../components/MushafLink";
 import { fuzzyMatch } from "../lib/fuzzy";
 import type { AyahDoc } from "../types";
-import { getUILang, num, t, useUILang } from "../i18n";
+import { ayahsCount, getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 
 const KINDS = ["حكم", "أخلاق", "عقيدة", "سنة", "وعد"] as const;
@@ -629,7 +629,7 @@ export default function Jawami() {
         </div>
 
         <div className="muted jw-resultcount">
-          {num(rows.length)} {ar ? "آية" : "verses"}
+          {ayahsCount(rows.length)}
           {resolvedRoot && resolvedRoot !== q.trim() && (
             <span
               className="chip gold"

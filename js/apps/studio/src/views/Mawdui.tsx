@@ -10,7 +10,7 @@ import { Link, useParams } from "react-router-dom";
 import { useMawdui, type MSection } from "../mawdui";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import type { AyahDoc } from "../types";
-import { getUILang, num, t, useUILang } from "../i18n";
+import { ayahsCount, getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 import PageSearch from "../components/PageSearch";
 import { fuzzyMatch } from "../lib/fuzzy";
@@ -89,7 +89,7 @@ function Sections({ sections }: { sections: MSection[] }) {
           >
             <span className="mw-sec-name">{s.title}</span>
             <span className="mw-sec-meta">
-              {num(s.topics.length)} {ar ? "موضوعًا" : "topics"} · {num(s.verses)} {ar ? "آية" : "verses"}
+              {num(s.topics.length)} {ar ? "موضوعًا" : "topics"} · {ayahsCount(s.verses)}
             </span>
             <span className="mw-sec-preview">
               {s.topics.slice(0, 3).map((tp) => tp.title).join(" · ")}
@@ -112,7 +112,7 @@ function Section({ section, idx }: { section: MSection; idx: number }) {
         <h1 className="mw-title">{section.title}</h1>
         <p className="mw-lead">{section.theme}</p>
         <div className="muted" style={{ fontSize: 13 }}>
-          {num(section.topics.length)} {ar ? "موضوعًا" : "topics"} · {num(section.verses)} {ar ? "آية" : "verses"}
+          {num(section.topics.length)} {ar ? "موضوعًا" : "topics"} · {ayahsCount(section.verses)}
         </div>
       </header>
       <div className="mw-topics">
@@ -124,7 +124,7 @@ function Section({ section, idx }: { section: MSection; idx: number }) {
             title={tp.theme}
           >
             <span className="mw-topic-name">{tp.title}</span>
-            <span className="mw-topic-count">{num(tp.members.length)} {ar ? "آية" : ""}</span>
+            <span className="mw-topic-count">{ayahsCount(tp.members.length)}</span>
           </Link>
         ))}
       </div>
@@ -145,7 +145,7 @@ function Topic({ section, idx, topicIdx }: { section: MSection; idx: number; top
       <header className="mw-head">
         <h1 className="mw-title">{topic.title}</h1>
         <p className="mw-lead">{topic.theme}</p>
-        <div className="muted" style={{ fontSize: 13 }}>{num(topic.members.length)} {ar ? "آية" : "verses"}</div>
+        <div className="muted" style={{ fontSize: 13 }}>{ayahsCount(topic.members.length)}</div>
       </header>
       <div className="mw-verses">
         {topic.members.map((loc) => (

@@ -7,6 +7,8 @@
  *   POST /api/embed  { "text": "patience in hardship" }
  *   ->               { "vector": [ ...768 floats ] }
  */
+import { guard } from "./_guard.js";
+
 export const config = { runtime: "edge" };
 
 const MODEL = "gemini-embedding-001";
@@ -20,6 +22,8 @@ export default async function handler(req) {
       headers: { "content-type": "application/json" },
     });
   }
+  const blocked = guard(req);
+  if (blocked) return blocked;
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
     return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured" }), {

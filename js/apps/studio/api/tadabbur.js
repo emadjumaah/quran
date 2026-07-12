@@ -9,6 +9,8 @@
  * POST { verse, ref, translation?, eraab?, neighbors?: string[] } -> { text }
  * Set GEMINI_API_KEY (and optionally TADABBUR_MODEL) in Vercel env.
  */
+import { guard } from "./_guard.js";
+
 export const config = { runtime: "edge" };
 
 const MODEL = process.env.TADABBUR_MODEL || "gemini-2.5-flash";
@@ -29,6 +31,8 @@ function json(obj, status = 200) {
 
 export default async function handler(req) {
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
+  const blocked = guard(req);
+  if (blocked) return blocked;
   const key = process.env.GEMINI_API_KEY;
   if (!key) return json({ error: "GEMINI_API_KEY not configured" }, 500);
 

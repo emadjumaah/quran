@@ -11,6 +11,7 @@ import Search from "./views/Search";
 import Collections from "./views/Collections";
 import Dashboard from "./views/Dashboard";
 import { NowPlayingBar } from "./components/AudioButton";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Goto from "./views/Goto";
 import Today from "./views/Today";
 import Jawami from "./views/Jawami";
@@ -272,6 +273,17 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
   );
 }
 
+// Per-route boundary: keyed by path so a broken view shows an inline message
+// (the top bar / nav / now-playing stay), and navigating away remounts + recovers.
+function RouteBoundary({ children }: { children: React.ReactNode }) {
+  const loc = useLocation();
+  return (
+    <ErrorBoundary compact key={loc.pathname}>
+      {children}
+    </ErrorBoundary>
+  );
+}
+
 function App() {
   const mobile = useIsMobile();
   const [drawer, setDrawer] = useState(false);
@@ -306,6 +318,7 @@ function App() {
           )}
         </header>
         {mobile && drawer && <MobileDrawer onClose={() => setDrawer(false)} />}
+        <RouteBoundary>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/read" element={<Home />} />
@@ -349,6 +362,7 @@ function App() {
           <Route path="/today" element={<Today />} />
           <Route path="/goto/:kind/:n" element={<Goto />} />
         </Routes>
+        </RouteBoundary>
         <NowPlayingBar />
         <FocusExit />
       </div>
@@ -358,8 +372,10 @@ function App() {
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Boot>
-      <App />
-    </Boot>
+    <ErrorBoundary>
+      <Boot>
+        <App />
+      </Boot>
+    </ErrorBoundary>
   </React.StrictMode>,
 );

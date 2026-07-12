@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { allAyahs, allRootsList, listSurahs, surahNameAr } from "../db";
-import { getUILang, num, t, useUILang } from "../i18n";
+import { ayahsCount, getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 import type { AyahDoc, RootDoc, SurahDoc } from "../types";
 
@@ -177,12 +177,12 @@ export default function Maalim() {
               <div className="maalim-two">
                 <ol className="maalim-list">
                   {surahStats.longest.map((s) => (
-                    <li key={s.surahNo}><Link to={`/read/${s.surahNo}`} className="maalim-ref">{s.nameAr}</Link><span className="maalim-val">{num(s.ayahCount)} {ar ? "آية" : ""}</span></li>
+                    <li key={s.surahNo}><Link to={`/read/${s.surahNo}`} className="maalim-ref">{s.nameAr}</Link><span className="maalim-val">{ayahsCount(s.ayahCount)}</span></li>
                   ))}
                 </ol>
                 <ol className="maalim-list">
                   {surahStats.shortest.map((s) => (
-                    <li key={s.surahNo}><Link to={`/read/${s.surahNo}`} className="maalim-ref">{s.nameAr}</Link><span className="maalim-val">{num(s.ayahCount)} {ar ? "آية" : ""}</span></li>
+                    <li key={s.surahNo}><Link to={`/read/${s.surahNo}`} className="maalim-ref">{s.nameAr}</Link><span className="maalim-val">{ayahsCount(s.ayahCount)}</span></li>
                   ))}
                 </ol>
               </div>
