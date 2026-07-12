@@ -1375,3 +1375,36 @@ table.data tr:hover td { background: var(--panel-2); }
 .iq-morph-pos { font-weight: 600; color: var(--accent); }
 .iq-feat { font-size: 13px; }
 .iq-next { padding: 11px 28px; font-size: 15px; }
+
+/* رحلة الجذر — a root's path across the revelation order */
+.rj-wrap { max-width: 720px; margin: 0 auto; }
+.rj-head { text-align: center; margin-bottom: 18px; }
+.rj-title { font-family: var(--font-quran); color: var(--accent); font-size: 28px; margin: 0 0 6px; }
+.rj-lead { color: var(--muted); line-height: 1.85; margin: 0 auto 14px; max-width: 520px; font-size: 14.5px; }
+.rj-search { max-width: 320px; margin: 0 auto; position: relative; }
+.rj-sugs { position: absolute; top: calc(100% + 6px); inset-inline: 0; z-index: 20; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 30px rgb(0 0 0 / 0.14); overflow: hidden; }
+.rj-sug { display: flex; justify-content: space-between; width: 100%; border: none; background: none; padding: 9px 14px; cursor: pointer; font-size: 17px; color: var(--ink); border-bottom: 1px solid var(--line); }
+.rj-sug:last-child { border-bottom: none; }
+.rj-sug:hover { background: var(--accent-soft); }
+.rj-hero { display: flex; align-items: center; gap: 16px; justify-content: center; margin-bottom: 18px; flex-wrap: wrap; }
+.rj-root { font-size: calc(46px * var(--quran-scale,1)); color: var(--ink); }
+.rj-facts { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.rj-fact b { color: var(--accent); font-size: 18px; }
+.rj-fact { font-size: 13px; }
+.rj-badge { padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.rj-badge.mecc { background: var(--accent-soft); color: var(--accent); }
+.rj-badge.med { background: var(--gold-soft); color: var(--gold); }
+.rj-timeline-box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.rj-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 6px; direction: ltr; }
+.rj-timeline { display: flex; direction: ltr; align-items: flex-end; gap: 1px; height: 74px; }
+.rj-bar { flex: 1; min-width: 2px; border-radius: 2px 2px 0 0; }
+.rj-bar.mecc { background: var(--accent); }
+.rj-bar.med { background: var(--gold); }
+.rj-bar.empty { background: var(--line); opacity: 0.5; }
+.rj-legend { display: flex; gap: 16px; justify-content: center; margin-top: 12px; font-size: 13px; }
+.rj-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-inline-end: 4px; }
+.rj-dot.mecc { background: var(--accent); }
+.rj-dot.med { background: var(--gold); }
+.rj-narr { text-align: center; line-height: 2; margin: 18px auto; max-width: 560px; }
+.rj-link { color: var(--accent); font-family: var(--font-quran); }
+.rj-links { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }

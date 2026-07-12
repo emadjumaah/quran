@@ -33,6 +33,7 @@ const About = lazy(() => import("./views/About"));
 const Galaxy = lazy(() => import("./views/Galaxy"));
 const Learn = lazy(() => import("./views/Learn"));
 const EraabDrill = lazy(() => import("./views/EraabDrill"));
+const RootJourney = lazy(() => import("./views/RootJourney"));
 import SettingsPanel from "./components/SettingsPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
@@ -139,6 +140,7 @@ function LangToggle() {
 const MORE_LINKS: [string, string, string][] = [
   ["/learn", "مسار الجذور", "Learn roots"],
   ["/eraab", "تدريب الإعراب", "Grammar drill"],
+  ["/journey", "رحلة الجذر", "Root journey"],
   ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
   ["/mujam", "معجم القرآن", "Dictionary"],
   ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
@@ -234,6 +236,7 @@ const DRAWER_LINKS: [string, string, string][] = [
   ["/roots", "الجذور", "Roots"],
   ["/learn", "مسار الجذور", "Learn roots"],
   ["/eraab", "تدريب الإعراب", "Grammar drill"],
+  ["/journey", "رحلة الجذر", "Root journey"],
   ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
   ["/furuq", "فروق التنزيل", "Furūq"],
   ["/wujuh", "الوجوه والنظائر", "Polysemy"],
@@ -370,6 +373,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/learn" element={<Learn />} />
           <Route path="/eraab" element={<EraabDrill />} />
+          <Route path="/journey" element={<RootJourney />} />
+          <Route path="/journey/:root" element={<RootJourney />} />
           <Route path="/today" element={<Today />} />
           <Route path="/goto/:kind/:n" element={<Goto />} />
         </Routes>
