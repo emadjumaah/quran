@@ -472,7 +472,7 @@ export default function Search() {
               <div className="sem-try">
                 <span className="muted">{ar ? "جرّب:" : "try:"}</span>
                 {LINKS_EXAMPLES.map((ex) => (
-                  <button key={ex.loc} className="chip link" onClick={() => runLinks(ex.loc)}>
+                  <button key={ex.loc} type="button" className="chip link" onClick={() => runLinks(ex.loc)}>
                     {ex.label}
                   </button>
                 ))}
@@ -505,6 +505,7 @@ export default function Search() {
                 {examples.map((ex: string) => (
                   <button
                     key={ex}
+                    type="button"
                     className="chip link"
                     onClick={() => {
                       setInput(ex);

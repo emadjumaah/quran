@@ -72,7 +72,9 @@ export default function SourcesPanel() {
   return (
     <div className="set-wrap" ref={ref}>
       <button onClick={() => setOpen(!open)} title={t("footer.sources")} aria-label="sources">
-        ⓘ
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden style={{ verticalAlign: "-4px" }}>
+          <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+        </svg>
       </button>
       {open && (
         <div className="set-panel card">

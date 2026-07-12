@@ -28,6 +28,7 @@ import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId }
 import SimilarAyahs, { SimilarAyahsPanel } from "../components/SimilarAyahs";
 import TafsilChip, { TafsilPanel } from "../components/TafsilChip";
 import EraabChip, { EraabPanel } from "../components/EraabChip";
+import TadabburChip, { TadabburPanel } from "../components/TadabburChip";
 import InlineOmni from "../components/InlineOmni";
 import ScrollTopFab from "../components/ScrollTopFab";
 import TafsilAside from "../components/TafsilAside";
@@ -289,6 +290,7 @@ export default function Reader() {
   const [openTafsil, setOpenTafsil] = useState<string | null>(null);
   const [openEraab, setOpenEraab] = useState<string | null>(null); // آيات mode: which verse's إعراب panel is open
   const [openSimilar, setOpenSimilar] = useState<string | null>(null); // آيات mode: which verse's «مثلها» panel is open
+  const [openTadabbur, setOpenTadabbur] = useState<string | null>(null); // آيات mode: which verse's «تدبّر» panel is open
   const [searchOpen, setSearchOpen] = useState(false); // mobile: on-page search is a toggle, so the header stays one compact row
   const mainRef = useRef<HTMLElement>(null); // the scroll container (for page-turn scroll-to-top + the FAB)
   // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
@@ -759,6 +761,12 @@ export default function Reader() {
                       setOpenEraab((cur) => (cur === ayah.location ? null : ayah.location))
                     }
                   />
+                  <TadabburChip
+                    open={openTadabbur === ayah.location}
+                    onToggle={() =>
+                      setOpenTadabbur((cur) => (cur === ayah.location ? null : ayah.location))
+                    }
+                  />
                 </div>
                 <AyahText
                   words={wordsByAyah.get(ayah.ayahNo) ?? []}
@@ -769,6 +777,7 @@ export default function Reader() {
                 <Translations ayah={ayah} />
                 <TafsilPanel location={ayah.location} open={openTafsil === ayah.location} />
                 <EraabPanel location={ayah.location} open={openEraab === ayah.location} />
+                <TadabburPanel ayah={ayah} ayahId={ayahIdOf(ayah)} open={openTadabbur === ayah.location} />
                 {openSimilar === ayah.location && (
                   <SimilarAyahsPanel ayahId={ayahIdOf(ayah)} location={ayah.location} />
                 )}
