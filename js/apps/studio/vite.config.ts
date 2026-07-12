@@ -211,7 +211,7 @@ export default defineConfig({
         // json is precached (jawami.json, the محكم→تفصيل network — small, core);
         // layout.json stays runtime-cached via its globIgnore below.
         globPatterns: ["**/*.{js,css,html,svg,png,woff,woff2,wasm,json}"],
-        globIgnores: ["**/quran-app.db", "**/*.bin"],
+        globIgnores: ["**/quran-app.db", "**/*.bin", "**/*.xlsx"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {

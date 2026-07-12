@@ -28,6 +28,7 @@ import Maalim from "./views/Maalim";
 import Mujam from "./views/Mujam";
 import Lisan from "./views/Lisan";
 import Sarf from "./views/Sarf";
+import About from "./views/About";
 import SettingsPanel from "./components/SettingsPanel";
 import SourcesPanel from "./components/SourcesPanel";
 import FocusExit from "./components/FocusExit";
@@ -137,6 +138,7 @@ const MORE_LINKS: [string, string, string][] = [
   ["/sarf", "الصرف بالأرقام", "Morphology"],
   ["/collections", "المجموعات", "Collections"],
   ["/dashboard", "إحصاءات المصحف", "Corpus stats"],
+  ["/about", "عن المشروع", "About"],
 ];
 
 function Nav() {
@@ -230,6 +232,7 @@ const DRAWER_LINKS: [string, string, string][] = [
   ["/sarf", "الصرف بالأرقام", "Morphology"],
   ["/collections", "المجموعات", "Collections"],
   ["/dashboard", "إحصاءات المصحف", "Stats"],
+  ["/about", "عن المشروع", "About"],
 ];
 
 function MobileDrawer({ onClose }: { onClose: () => void }) {
@@ -311,6 +314,7 @@ function App() {
           <Route path="/mujam/:root" element={<Mujam />} />
           <Route path="/lisan" element={<Lisan />} />
           <Route path="/sarf" element={<Sarf />} />
+          <Route path="/about" element={<About />} />
           <Route path="/lexicon" element={<Lexicon />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />
