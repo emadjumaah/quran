@@ -14,18 +14,13 @@ import { NowPlayingBar } from "./components/AudioButton";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Goto from "./views/Goto";
 const Today = lazy(() => import("./views/Today"));
-import Jawami from "./views/Jawami";
-const Gaps = lazy(() => import("./views/Gaps"));
-const Muhkamat = lazy(() => import("./views/Muhkamat"));
 const Kulliyat = lazy(() => import("./views/Kulliyat"));
 const AyaCard = lazy(() => import("./views/AyaCard"));
-const Lexicon = lazy(() => import("./views/Lexicon"));
 const Wujuh = lazy(() => import("./views/Wujuh"));
 const Furuq = lazy(() => import("./views/Furuq"));
 const Amthal = lazy(() => import("./views/Amthal"));
 const Fawasil = lazy(() => import("./views/Fawasil"));
 const Mawdui = lazy(() => import("./views/Mawdui"));
-const Graph = lazy(() => import("./views/Graph"));
 const RootsGraph = lazy(() => import("./views/RootsGraph"));
 const Maalim = lazy(() => import("./views/Maalim"));
 const Mujam = lazy(() => import("./views/Mujam"));
@@ -146,34 +141,33 @@ function LangToggle() {
 type NavItem = [to: string, ar: string, en: string];
 const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
+    ar: "الميزان والبنية", en: "The balance",
+    items: [
+      ["/kulliyat", "الكلّيّات والجوامع", "Kulliyyāt"],
+      ["/mawdui", "المواضيع", "Topics"],
+      ["/shabaka", "خريطة المصحف", "Mushaf map"],
+      ["/khayt", "الخيوط الموضوعية", "Thematic threads"],
+      ["/furuq", "فروق التنزيل", "Furūq"],
+      ["/amthal", "الأمثال", "Parables"],
+    ],
+  },
+  {
     ar: "اللغة والجذور", en: "Language & roots",
     items: [
       ["/roots", "الجذور", "Roots"],
       ["/journey", "رحلة الجذر", "Root journey"],
+      ["/galaxy", "شبكة الجذور", "Roots network"],
       ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
       ["/wujuh", "الوجوه والنظائر", "Polysemy"],
       ["/mujam", "معجم القرآن", "Dictionary"],
       ["/sarf", "الصرف بالأرقام", "Morphology"],
-    ],
-  },
-  {
-    ar: "البنية والتدبّر", en: "Structure",
-    items: [
-      ["/kulliyat", "الكلّيّات", "Kulliyyāt"],
-      ["/furuq", "فروق التنزيل", "Furūq"],
-      ["/mawdui", "المواضيع", "Topics"],
-      ["/amthal", "الأمثال", "Parables"],
-      ["/shabaka", "خريطة المصحف", "Mushaf map"],
-      ["/khayt", "الخيوط الموضوعية", "Thematic threads"],
-      ["/galaxy", "شبكة الجذور", "Roots network"],
       ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
     ],
   },
   {
-    ar: "معالم وأدوات", en: "More",
+    ar: "أدوات وإحصاءات", en: "Tools & stats",
     items: [
-      ["/maalim", "معالم وإحصاءات", "Landmarks & stats"],
-      ["/dashboard", "إحصاءات المصحف", "Corpus stats"],
+      ["/maalim", "إحصاءات القرآن", "Qur'an stats"],
       ["/collections", "المجموعات", "Collections"],
     ],
   },
@@ -361,15 +355,15 @@ function App() {
           <Route path="/read" element={<Home />} />
           <Route path="/read/:surahNo" element={<Reader />} />
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />
-          {/* الجوامع merged into المحكمات (one page). /jawami/lenses stays as the analytics view. */}
-          <Route path="/jawami" element={<Navigate to="/muhkamat" replace />} />
-          <Route path="/jawami/lenses" element={<Jawami />} />
-          <Route path="/gaps" element={<Gaps />} />
-          <Route path="/muhkamat" element={<Muhkamat />} />
-          <Route path="/muhkamat/:k" element={<Muhkamat />} />
+          {/* RETIRED (2026-07-13): the old محكمات/جوامع system is superseded by الكلّيّات. */}
+          <Route path="/jawami" element={<Navigate to="/kulliyat" replace />} />
+          <Route path="/jawami/lenses" element={<Navigate to="/kulliyat" replace />} />
+          <Route path="/gaps" element={<Navigate to="/kulliyat" replace />} />
+          <Route path="/muhkamat" element={<Navigate to="/kulliyat" replace />} />
+          <Route path="/muhkamat/:k" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/kulliyat" element={<Kulliyat />} />
-          <Route path="/graph" element={<Graph />} />
-          <Route path="/graph/:s/:a" element={<Graph />} />
+          <Route path="/graph" element={<Navigate to="/kulliyat" replace />} />
+          <Route path="/graph/:s/:a" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/fabric" element={<RootsGraph />} />
           <Route path="/fabric/:root" element={<RootsGraph />} />
           <Route path="/maalim" element={<Maalim />} />
@@ -381,7 +375,7 @@ function App() {
           <Route path="/shabaka" element={<MushafMap />} />
           <Route path="/khayt" element={<ThematicThread />} />
           <Route path="/about" element={<About />} />
-          <Route path="/lexicon" element={<Lexicon />} />
+          <Route path="/lexicon" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />
           <Route path="/amthal" element={<Amthal />} />
