@@ -9,6 +9,7 @@ import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import PageSearch from "../components/PageSearch";
+import WhyRank from "../components/WhyRank";
 import { allVerseLocs, childrenOf, classOf, kulliyatMeta, subtreeCounts, themeName, tierCounts, tierList, useKulliyat, type Tier } from "../kulliyat";
 import { fuzzyMatch } from "../lib/fuzzy";
 
@@ -19,6 +20,7 @@ const mushafKey = (loc: string) => { const [s, a] = loc.split(":").map(Number); 
 /** One verse in the tree — drillable to the verses that gather under it. */
 function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>; depth: number }) {
   const [open, setOpen] = useState(false); // everything collapsed; open what you want
+  const [why, setWhy] = useState(false); // «لماذا هذه المرتبة؟» factor breakdown
   const [kidLimit, setKidLimit] = useState(15); // ceiling on children shown at once
   const ar = getUILang() === "ar";
   const cls = classOf(loc);
@@ -41,7 +43,11 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
         <span className="quran kl-verse-text" onClick={toggle} style={{ cursor: canDrill ? "pointer" : "default" }}>
           {texts.get(loc)?.textClean ?? loc}
         </span>
-        {cls && <span className="kl-jam" title={ar ? "مؤشّر الجامعيّة المحسوب" : "jāmiʿiyya index"}>{num(Math.round(cls.jamiya * 100))}٪</span>}
+        {cls && (
+          <button className={`kl-jam${why ? " on" : ""}`} onClick={() => setWhy((v) => !v)} title={ar ? "لماذا هذه المرتبة؟ (العوامل المحسوبة)" : "why this tier?"}>
+            {num(Math.round(cls.jamiya * 100))}٪
+          </button>
+        )}
       </div>
       {cls && (th || under.length > 0) && (
         <div className="kl-sub">
@@ -49,6 +55,7 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
           {under.length > 0 && <span className="kl-under">{ar ? `تحته ${under.join(" و")}` : `under: ${under.join(", ")}`}</span>}
         </div>
       )}
+      {why && cls && <WhyRank location={loc} />}
       {open && canDrill && (
         <div className="kl-children">
           {kids.slice(0, kidLimit).map((k) => <Node key={k} loc={k} texts={texts} depth={depth + 1} />)}

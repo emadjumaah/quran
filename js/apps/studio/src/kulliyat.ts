@@ -96,6 +96,11 @@ export function themeMembers(theme: number): { kulliya: string | null; jawami: s
   return { kulliya: kulliyaOfTheme(theme), jawami: jawami.sort(byJamiya), tafsil: tafsil.sort(byJamiya) };
 }
 export const kulliyatMeta = (): Payload["meta"] | null => data?.meta ?? null;
+/** The actual factor weights used to compute جامعية (from the run's config). */
+export function kulliyatWeights(): Record<string, number> {
+  const w = (data?.meta.cfg as { weights?: unknown })?.weights;
+  return (w && typeof w === "object" ? w : {}) as Record<string, number>;
+}
 
 /** The computed name of a theme (its most distinctive roots). */
 export function themeName(theme: number): string {
