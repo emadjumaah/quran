@@ -1,57 +1,9 @@
 /**
- * المصحف الموضوعي — the thematic index of the whole Quran, loaded once. A clean
- * three-level tree (قسم → موضوع → آية) built to be browsed simply: the surface
- * is 12 sections; depth is revealed on demand. Also exposes the per-verse
- * unified index (verse-index.json) so any ayah can show its topic + network role.
+ * The per-verse unified index (verse-index.json): given any āyah, its network
+ * role — chiefly its فروق التنزيل twin-count. (The Quran's topic layer is now the
+ * 90 computed محاور in kulliyat.ts; the old hand-picked thematic tree was retired.)
  */
 import { useEffect, useState } from "react";
-
-export interface MTopic {
-  title: string;
-  theme: string;
-  rep: string;
-  members: string[];
-}
-export interface MSection {
-  title: string;
-  theme: string;
-  verses: number;
-  topics: MTopic[];
-}
-interface Mawdui {
-  meta: { sections: number; topics: number; verses: number };
-  sections: MSection[];
-}
-
-let data: Mawdui | null = null;
-let loading: Promise<Mawdui> | null = null;
-
-export function loadMawdui(): Promise<Mawdui> {
-  if (data) return Promise.resolve(data);
-  loading ??= fetch(`${import.meta.env.BASE_URL}mawdui.json?v=${__DATA_VERSION__}`)
-    .then((r) => {
-      if (!r.ok) throw new Error(`mawdui.json: HTTP ${r.status}`);
-      return r.json();
-    })
-    .then((d: Mawdui) => (data = d))
-    .catch((e) => {
-      loading = null;
-      throw e;
-    });
-  return loading;
-}
-
-export function useMawdui(): Mawdui | null {
-  const [d, setD] = useState<Mawdui | null>(data);
-  useEffect(() => {
-    let live = true;
-    loadMawdui().then((x) => live && setD(x)).catch(() => {});
-    return () => {
-      live = false;
-    };
-  }, []);
-  return d;
-}
 
 /* --------------------------- per-verse unified index --------------------------- */
 // verse record: [topicId, kindCode, gradeCode, tafsilDeg, elaborates, twins, muhkamaId]

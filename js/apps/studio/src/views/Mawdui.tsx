@@ -38,6 +38,9 @@ function Themes() {
             : "The Qur'an's topics as they emerge by computation: ninety محاور that gather every āya by meaning-proximity, covering the whole muṣḥaf — each verse in exactly one, no editorial hand. Pick a محور to see its verses (the deepest first)."}
         </p>
         <div className="muted" style={{ fontSize: 13 }}>{num(themes.length)} {ar ? "محورًا" : "محاور"} · {num(6236)} {ar ? "آية" : "verses"}</div>
+        <div className="mw-onenote" title={ar ? "التجميع قِسمةٌ صارمة: مجموعُ أحجام المحاور = عددُ الآيات تمامًا" : "the clustering is a strict partition: theme sizes sum to exactly the verse count"}>
+          ◆ {ar ? "كلُّ آيةٍ في محورٍ واحدٍ فقط — قِسمةٌ محسوبة، لا تكرار." : "Each verse lies in exactly one محور — a computed partition, no duplication."}
+        </div>
       </header>
       <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في المحاور…" : "search محاور…"} />
       <div className="mw-topics">
