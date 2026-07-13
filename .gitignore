@@ -41,3 +41,7 @@ data/passes/
 *-batches.json
 js/scripts/hub-variants/*.full.json
 js/scripts/hub-variants/*.debug.json
+
+# نِبراس RAG corpus — built per book, not committed (see docs)
+rag.db
+rag.db-*

@@ -10,12 +10,14 @@ import { useSyncExternalStore } from "react";
 
 export type ChatAyah = { ref: string; text: string; score?: number };
 export type ChatRoot = { root: string; occ: number; gloss?: string };
+export type ChatBook = { ref: string; text: string; source: string }; // a cited book/tafsir passage
 export type ChatMsg = {
   id: string;
   role: "user" | "assistant";
   text: string;
   ayahs?: ChatAyah[]; // verses this turn retrieved / used
   roots?: ChatRoot[]; // roots this turn retrieved
+  books?: ChatBook[]; // book/tafsir passages this turn retrieved (server rag) — cited
   draft?: string; // a generated draft (خطبة/منشور/…), shown in a distinct block
   composed?: boolean;
   pending?: boolean; // placeholder while the assistant is working

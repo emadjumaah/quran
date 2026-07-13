@@ -44,6 +44,7 @@ export default async function handler(req) {
   const lenSpec = LEN[length];
   const ayahs = Array.isArray(body?.ayahs) ? body.ayahs.slice(0, 16) : [];
   const roots = Array.isArray(body?.roots) ? body.roots.slice(0, 12) : [];
+  const books = Array.isArray(body?.books) ? body.books.slice(0, 8) : [];
   const instruction = String(body?.instruction ?? "").slice(0, 300).trim();
   const previous = String(body?.previous ?? "").slice(0, 4000).trim();
   if (!ayahs.length) return json({ error: "no material" }, 400);
@@ -52,7 +53,14 @@ export default async function handler(req) {
     subject ? `الموضوع: ${subject}` : "",
     "الآيات (من المصحف):\n" + ayahs.map((a) => `• ﴿${String(a.text ?? "").slice(0, 340)}﴾ [${String(a.ref ?? "").slice(0, 28)}]`).join("\n"),
     roots.length ? "معاني بعض ألفاظها (من مفردات الراغب/مقاييس اللغة):\n" + roots.map((r) => `• ${String(r.root ?? "")}: ${String(r.gloss ?? "").slice(0, 220)}`).join("\n") : "",
+    books.length ? "من المصادر المُدخَلة (انسُبْ ما تقتبسُه منها إلى مصدره صراحةً):\n" + books.map((b) => `• [${String(b.source ?? "").slice(0, 40)}${b.ref ? " · " + String(b.ref).slice(0, 20) : ""}] ${String(b.text ?? "").slice(0, 320)}`).join("\n") : "",
   ].filter(Boolean).join("\n\n");
+
+  // when book/tafsir sources are supplied, نِبراس MAY draw on them — but ONLY with
+  // explicit attribution (overrides the Quran-only clause above); inert when none.
+  const booksNote = books.length
+    ? "\n\nملحوظةٌ في المصادر: أُتيحت لك مقاطعُ من مصادرَ معروفةٍ (تفاسيرَ أو كتب). لك أن تستأنسَ بها وتقتبسَ منها، بشرطِ نسبةِ ما تأخذُه إلى مصدره صراحةً (مثل: «قال ابنُ كثير…» أو «في تيسير الكريم الرحمن…»)، ودون أن تجعلَها بديلًا عن تدبّرِ الآيات أو تنقُلَ منها حكمًا فقهيًّا. وما لم يكن مقتبسًا من مصدرٍ فهو تدبّرُك من النصّ."
+    : "";
 
   const SYSTEM = `أنت «نِبراس» في تطبيق «مشكاة»: كاتبٌ بليغٌ متدبّرٌ يُعينُ الباحثَ والمعلّمَ والخطيب، فيصوغُ من مادّةٍ قرآنيّةٍ محسوبةٍ تُعطى لك نصًّا عاليَ الجودة، كاملًا قائمًا بذاته. لك الحرّيّةُ في الإبداعِ والبناءِ والنظر، والانضباطُ في المصدر.
 
@@ -70,7 +78,7 @@ export default async function handler(req) {
 
 التزِمِ السجلَّ المناسبَ للقالبِ المطلوبِ تمامًا: المقالُ نثرٌ مكتوبٌ للقارئِ (بلا نداءٍ منبريٍّ ولا افتتاحِ خطبةٍ)، والخطبةُ خطابٌ للحاضرين، والمحاضرةُ شرحٌ للمتعلّم؛ فلا تُخرِجْ مقالًا في ثوبِ خطبة.
 
-هذه مسوّدةٌ يبني عليها الباحثُ ويُراجعها، ليست تفسيرًا معتمَدًا ولا فتوى. ابدأْ مباشرةً بالنصّ بلا تصديرٍ ولا مقدّماتٍ عن نفسك. الطولُ والبناء: ${lenSpec.g}.`;
+هذه مسوّدةٌ يبني عليها الباحثُ ويُراجعها، ليست تفسيرًا معتمَدًا ولا فتوى. ابدأْ مباشرةً بالنصّ بلا تصديرٍ ولا مقدّماتٍ عن نفسك. الطولُ والبناء: ${lenSpec.g}.${booksNote}`;
 
   const refine = previous && instruction
     ? `\n\nلديك مسوّدةٌ سابقةٌ في هذه المحادثة، والمطلوبُ الآن تطويرُها وفقَ طلب المستخدم: «${instruction}». احتفِظْ بجيّدِها وابنِ عليها (وسِّعْها أو نقِّحْها أو أضِفْ ما طُلب) من المادّةِ نفسِها، ولا تبدأْ من الصفر.\n\nالمسوّدةُ السابقة:\n${previous}`

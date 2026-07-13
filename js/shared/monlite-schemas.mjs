@@ -48,6 +48,21 @@ export const SCHEMAS = {
   },
 };
 
+/**
+ * فِهرسُ نِبراس الدلاليّ — a SEPARATE RAG corpus (rag.db), one row per chunk from
+ * any SOURCE (quran, then tafsir + books). Indexed by @monlite/vector for
+ * findSimilar / hybrid (FTS+vector), filterable by `source` — so نِبراس can cite
+ * per book. Kept APART from the computed layers (Quran+معاجم+QAC only): adding
+ * books here never touches «نحسب ونعرض». Embedding dim = 768 (gemini-embedding-001).
+ */
+export const RAG_DIM = 768;
+export const RAG_SCHEMA = {
+  source: { type: "TEXT", index: true }, // "quran" | "ibn-kathir" | …
+  ref: { type: "TEXT", index: true },    // "2:255" | a book locator
+  text: "TEXT",                          // the chunk (FTS + display + citation)
+  embedding: { type: "JSON" },           // number[RAG_DIM] — indexed by @monlite/vector
+};
+
 /** Open a collection with its canonical schema. */
 export function coll(db, name) {
   return db.collection(name, SCHEMAS[name] ? { schema: SCHEMAS[name] } : undefined);

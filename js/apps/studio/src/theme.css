@@ -1745,3 +1745,10 @@ table.data tr:hover td { background: var(--panel-2); }
 .aya-root-trace:hover { background: var(--accent-soft); }
 .why-note { margin: 6px 0 10px; font-size: 12px; line-height: 1.7; color: var(--muted); border-inline-start: 2px solid var(--gold); padding-inline-start: 8px; }
 .kl-disclaimer { margin: 8px 0 0; font-size: 12.5px; line-height: 1.8; color: var(--ink-2, var(--ink)); background: var(--gold-soft); border-radius: 8px; padding: 8px 12px; }
+
+/* نِبراس — cited book/tafsir passages (server RAG) */
+.mu-books { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.mu-books-h { font-size: 12px; }
+.mu-book { border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); border-radius: 8px; padding: 8px 11px; background: var(--panel); }
+.mu-book-src { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 3px; }
+.mu-book-t { font-size: 13.5px; line-height: 1.8; color: var(--ink-2, var(--ink)); }

@@ -15,6 +15,7 @@ import {
   type ChatAyah, type ChatMsg,
 } from "../chat";
 import { toolRootInfo, toolSearchMeaning } from "../lib/muinTools";
+import { retrieveBooks, hasBooks, bookLabel } from "../rag";
 import { surahNameAr } from "../db";
 
 async function postJson(url: string, body: unknown): Promise<any> {
@@ -65,6 +66,17 @@ function Bubble({ m }: { m: ChatMsg }) {
                       <span className="muted"> · {num(r.occ)}</span>
                       {r.gloss && <div className="mu-root-g">{r.gloss}</div>}
                     </span>
+                  ))}
+                </div>
+              )}
+              {m.books && m.books.length > 0 && (
+                <div className="mu-books">
+                  <div className="mu-books-h muted">{ar ? "من المصادر (مذكورةً):" : "from the sources (cited):"}</div>
+                  {m.books.map((b, i) => (
+                    <div key={i} className="mu-book">
+                      <div className="mu-book-src">◆ {bookLabel(b.source)}{b.ref ? ` · ${b.ref}` : ""}</div>
+                      <div className="mu-book-t">{b.text}</div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -131,6 +143,7 @@ export default function Assistant() {
       const patch: Partial<ChatMsg> = { pending: false, text: plan.reply || "" };
       if (plan.action === "search_meaning" && plan.query) {
         patch.ayahs = await toolSearchMeaning(plan.query);
+        if (hasBooks()) { const bks = await retrieveBooks(plan.query); if (bks.length) patch.books = bks; }
         if (!patch.ayahs.length) patch.text = (plan.reply || "") + (ar ? " (لم أجد آياتٍ مطابقة.)" : "");
       } else if (["search_root", "root_info", "similar_roots"].includes(plan.action) && plan.query) {
         const r = await toolRootInfo(plan.query);
@@ -155,6 +168,9 @@ export default function Assistant() {
         } else {
           // the most recent draft in this chat — so «وسّع / نقّح» continues it, not restarts
           const prev = [...cur2.messages].reverse().find((mm) => mm.draft)?.draft || "";
+          // gather cited book/tafsir passages from the server corpus (inert until a source is registered)
+          const books = hasBooks() ? await retrieveBooks(q || plan.subject || text, { topK: 6 }) : [];
+          if (books.length) patch.books = books;
           const composed = await postJson("/api/compose", {
             task: plan.task || "post", subject: plan.subject || text, length: plan.length || "long",
             ayahs: ayahs.slice(0, 16).map((a) => {
@@ -162,6 +178,7 @@ export default function Assistant() {
               return { ref: `${surahNameAr(Number(s))} ${n}`, text: a.text };
             }),
             roots: prior.roots.slice(0, 12).map((r) => ({ root: r.root, gloss: r.gloss })),
+            books: books.slice(0, 8).map((b) => ({ source: bookLabel(b.source), ref: b.ref, text: b.text })),
             instruction: text, previous: prev,
           });
           patch.text = plan.reply || (ar ? "إليك مسوّدةً تبني عليها:" : "A draft to build on:");

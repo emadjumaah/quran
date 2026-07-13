@@ -16,6 +16,7 @@
     "@fontsource/amiri-quran": "^5.2.0",
     "@monlite/core": "^2.11.0",
     "@monlite/fts": "^0.7.1",
+    "@monlite/vector": "^0.6.3",
     "@monlite/wasm": "^0.2.2",
     "buffer": "^6.0.3",
     "fts5-sql-bundle": "^1.0.2",

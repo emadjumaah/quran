@@ -12,6 +12,7 @@
   "packageManager": "pnpm@10.30.3",
   "dependencies": {
     "@monlite/core": "^2.11.0",
-    "@monlite/fts": "^0.7.1"
+    "@monlite/fts": "^0.7.1",
+    "@monlite/vector": "^0.6.3"
   }
 }
