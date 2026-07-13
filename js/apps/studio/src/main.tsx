@@ -20,6 +20,7 @@ const Furuq = lazy(() => import("./views/Furuq"));
 const Amthal = lazy(() => import("./views/Amthal"));
 const Fawasil = lazy(() => import("./views/Fawasil"));
 const Mawdui = lazy(() => import("./views/Mawdui"));
+const Mawadi = lazy(() => import("./views/Mawadi"));
 const Maalim = lazy(() => import("./views/Maalim"));
 const Mujam = lazy(() => import("./views/Mujam"));
 const Lisan = lazy(() => import("./views/Lisan"));
@@ -142,7 +143,8 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
     items: [
       ["/kulliyat", "الكلّيّات والجوامع", "Kulliyyāt"],
       ["/shabaka", "خريطة المصحف", "Mushaf map"],
-      ["/mawdui", "المواضيع", "Topics"],
+      ["/mawdui", "المحاور", "Axes"],
+      ["/mawadi", "المواضيع", "Topics"],
       ["/khayt", "الخيوط الموضوعية", "Thematic threads"],
       ["/furuq", "فروق التنزيل", "Furūq"],
       ["/amthal", "الأمثال", "Parables"],
@@ -349,7 +351,7 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
       </NavLink>
       <NavLink to="/mawdui" className={`tab${on("/mawdui") ? " active" : ""}`}>
         <svg viewBox="0 0 24 24" aria-hidden><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
-        <span>{ar ? "المواضيع" : "Topics"}</span>
+        <span>{ar ? "المحاور" : "Axes"}</span>
       </NavLink>
       <button className="tab" onClick={onMenu} aria-label={ar ? "القائمة" : "menu"}>
         <svg viewBox="0 0 24 24" aria-hidden><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
@@ -428,6 +430,8 @@ function App() {
           <Route path="/fawasil" element={<Fawasil />} />
           <Route path="/mawdui" element={<Mawdui />} />
           <Route path="/mawdui/:t" element={<Mawdui />} />
+          <Route path="/mawadi" element={<Mawadi />} />
+          <Route path="/mawadi/:sec" element={<Mawadi />} />
           <Route path="/aya/:s/:a" element={<AyaCard />} />
           <Route path="/roots" element={<Roots />} />
           <Route path="/roots/:root" element={<Roots />} />

@@ -198,12 +198,33 @@ export default function Assistant() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); }
   };
 
+  const empty = !chat || chat.messages.length === 0;
+  const composer = (
+    <div className="mu-input">
+      <textarea
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={onKey}
+        rows={1}
+        placeholder={ar ? "اكتبْ ما تريد…" : "write anything…"}
+        aria-label={ar ? "رسالة" : "message"}
+      />
+      <button className="mu-send" onClick={() => void send()} disabled={busy || !input.trim()} aria-label={ar ? "إرسال" : "send"}>
+        {busy ? (
+          <span aria-hidden>…</span>
+        ) : (
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5" /></svg>
+        )}
+      </button>
+    </div>
+  );
+
   return (
     <div className="mu-page" ref={pageRef} style={{ "--mu-listw": `${listW}px` } as React.CSSProperties}>
       {/* chat list */}
       <aside className={`mu-list${listOpen ? " open" : ""}`}>
-        <button className="primary mu-new" onClick={() => { navigate("/assistant"); setInput(""); setListOpen(false); }}>
-          ＋ {ar ? "محادثة جديدة" : "New chat"}
+        <button className="mu-new" onClick={() => { navigate("/assistant"); setInput(""); setListOpen(false); }}>
+          <span className="mu-new-plus" aria-hidden>＋</span> {ar ? "محادثة جديدة" : "New chat"}
         </button>
         <div className="mu-chats">
           {chats.map((c) => (
@@ -232,58 +253,37 @@ export default function Assistant() {
           <span className="mu-title">{chat?.title || (ar ? "نِبراس" : "Nibras")}</span>
         </div>
 
-        <div className="mu-thread">
-          {!chat || chat.messages.length === 0 ? (
-            <div className="mu-empty">
+        <div className={`mu-thread${empty ? " empty" : ""}`}>
+          {empty ? (
+            <div className="mu-hero">
               <div className="mu-empty-mark"><span className="ai-spark" aria-hidden /></div>
-              <h1 className="mu-empty-h">{ar ? "نِبراس" : "Nibras"}</h1>
-              <div className="mu-empty-tag">{ar ? "بحثٌ بالمعنى · ومحادثة" : "meaning-search · chat"}</div>
-              <p className="mu-empty-lead">
+              <h1 className="mu-empty-h">{ar ? "بمَ نبدأ؟" : "Where shall we begin?"}</h1>
+              <p className="mu-hero-sub">
                 {ar
-                  ? "هنا البحثُ بالمعنى: اكتبْ ما تريد بلُغتِك، فيجمعُ نِبراس الآياتِ الأقربَ معنًى ومعاني الجذور، ثم يصوغُ منها — إن شئتَ — مسوّدةَ منشورٍ أو خطبةٍ أو محاضرةٍ من نصّ القرآن وبياناته. (والبحثُ النصّيّ باللفظ في شريط المصحف.)"
-                  : "Meaning-search lives here: write what you want in your own words; Nibras gathers the closest verses by meaning and root senses, then — if you like — drafts a post / khutba / lecture from that material. (Textual search by wording is in the reader's bar.)"}
+                  ? "نِبراس — بحثٌ بالمعنى ومحادثةٌ من نصّ القرآن وبياناته. اكتبْ موضوعًا، أو معنى جذر، أو اطلبْ صياغةً من الآيات."
+                  : "Nibras — meaning-search & chat over the Qur'an's data. Ask for a theme, a root's sense, or a draft from the verses."}
               </p>
-              <ol className="mu-how">
-                <li>
-                  <span className="mu-how-n">١</span>
-                  <span>{ar ? "اطلبْ آياتٍ في موضوعٍ بالمعنى، أو معنى جذرٍ ومواضعِه." : "Ask for verses on a theme by meaning, or a root's sense."}</span>
-                </li>
-                <li>
-                  <span className="mu-how-n">٢</span>
-                  <span>{ar ? "تتجمّعُ الآياتُ والجذورُ في هذه المحادثةِ مادّةً محفوظةً لك." : "Verses and roots accumulate in this chat as saved material."}</span>
-                </li>
-                <li>
-                  <span className="mu-how-n">٣</span>
-                  <span>{ar ? "اطلبْ صياغةَ منشورٍ أو خطبةٍ أو محاضرةٍ منها، تُدعَّمُ بالآيات — ثم قل «وسِّعْ» أو «نقِّحْ» لتطويرها." : "Ask for a post / khutba / lecture from them, cited to the verses — then say 'expand' or 'refine'."}</span>
-                </li>
-              </ol>
-              <div className="mu-ex-label muted">{ar ? "جرِّبْ:" : "Try:"}</div>
+              {composer}
               <div className="mu-examples">
-                {EXAMPLES_AR.map((ex) => (
+                {EXAMPLES_AR.slice(0, 4).map((ex) => (
                   <button key={ex} className="mu-ex" onClick={() => void send(ex)}>{ex}</button>
                 ))}
               </div>
             </div>
           ) : (
-            chat.messages.map((m) => <Bubble key={m.id} m={m} />)
+            <>
+              {chat.messages.map((m) => <Bubble key={m.id} m={m} />)}
+              <div ref={endRef} />
+            </>
           )}
-          <div ref={endRef} />
         </div>
 
-        <div className="mu-input">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={onKey}
-            rows={1}
-            placeholder={ar ? "اطلبْ آياتٍ في موضوع، أو معنى جذر، أو صياغةَ منشورٍ منها…" : "ask for verses on a theme, a root's meaning, or a draft from them…"}
-            aria-label={ar ? "رسالة" : "message"}
-          />
-          <button className="primary mu-send" onClick={() => void send()} disabled={busy || !input.trim()}>
-            {busy ? "…" : ar ? "إرسال" : "Send"}
-          </button>
-        </div>
-        <div className="mu-foot muted">{ar ? "نِبراس يجمع ويصوغ من بيانات القرآن — مسوّداتٌ للباحث." : "Grounded drafts from the Qur'an's data — for research."}</div>
+        {!empty && (
+          <div className="mu-inputbar">
+            {composer}
+            <div className="mu-foot muted">{ar ? "نِبراس يجمع ويصوغ من بيانات القرآن — مسوّداتٌ للباحث." : "Grounded drafts from the Qur'an's data — for research."}</div>
+          </div>
+        )}
       </main>
     </div>
   );

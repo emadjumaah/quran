@@ -277,7 +277,7 @@ mark.hl { background: var(--gold-soft); color: inherit; border-radius: 3px; padd
 /* الذكاء الاصطناعي — a Gemini-style 4-point spark marking AI-produced features */
 .ai-spark {
   display: inline-block; width: 13px; height: 13px; vertical-align: -2px; flex: none;
-  background: linear-gradient(135deg, #4589f0 0%, #9b72cb 55%, #d96570 100%);
+  background: linear-gradient(135deg, #b493e6 0%, #e6bd6a 52%, #efb63c 100%);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 2C12.4 7.2 16.8 11.6 22 12C16.8 12.4 12.4 16.8 12 22C11.6 16.8 7.2 12.4 2 12C7.2 11.6 11.6 7.2 12 2Z'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 2C12.4 7.2 16.8 11.6 22 12C16.8 12.4 12.4 16.8 12 22C11.6 16.8 7.2 12.4 2 12C7.2 11.6 11.6 7.2 12 2Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
@@ -1182,6 +1182,24 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 
 /* المواضيع — thematic browse (progressive disclosure, calm & clear) */
 .mw-wrap { max-width: 940px; margin: 0 auto; }
+
+/* المحاور ⇄ المواضيع — the shared topic-layer toggle */
+.layer-toggle { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); margin: 0 0 20px; }
+.lt-opt { display: inline-flex; align-items: center; gap: 7px; padding: 8px 18px; border-radius: 999px; text-decoration: none; color: var(--ink-2); font-weight: 600; font-size: 14.5px; transition: background .12s, color .12s; }
+.lt-opt .lt-sub { font-size: 11px; color: var(--muted); font-weight: 500; }
+.lt-opt:hover { color: var(--ink); }
+.lt-opt.on { background: var(--accent-soft); color: var(--accent); }
+.lt-opt.on .lt-sub { color: var(--accent); opacity: .78; }
+
+/* traditional المواضيع — a curated note tint + topic accordion */
+.trad-note { border-color: color-mix(in srgb, var(--gold) 40%, var(--line)); color: var(--ink-2); }
+.trad-topics { display: flex; flex-direction: column; gap: 8px; }
+.trad-topic { border: 1px solid var(--line); border-radius: 11px; background: var(--panel); overflow: hidden; }
+.trad-topic-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 13px 15px; background: none; border: none; cursor: pointer; font: inherit; color: var(--ink); text-align: start; }
+.trad-topic-h:hover { background: var(--accent-soft); }
+.trad-topic-name { font-weight: 600; font-size: 15.5px; line-height: 1.5; }
+.trad-topic-count { flex: none; font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.trad-topic-body { padding: 2px 12px 12px; }
 .mw-head { text-align: center; margin: 6px 0 26px; }
 .mw-title { font-family: var(--font-quran); color: var(--accent); font-size: clamp(26px, 5vw, 36px); margin: 4px 0 10px; }
 .mw-lead { color: var(--ink-2); max-width: 640px; margin: 0 auto 8px; line-height: 1.8; font-size: 15px; }
@@ -1214,14 +1232,14 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 /* level 1: topic cards */
 .mw-topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
 .mw-topic-card {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0;
   background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
   padding: 12px 15px; text-decoration: none; color: var(--ink); transition: background 0.12s, border-color 0.12s;
 }
 .mw-topic-card:hover { background: var(--accent-soft); border-color: var(--accent); text-decoration: none; }
-.mw-topic-name { font-weight: 600; color: var(--ink); font-size: 14.5px; line-height: 1.55; }
+.mw-topic-name { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 600; color: var(--ink); font-size: 14.5px; line-height: 1.55; }
 .mw-topic-card:hover .mw-topic-name { color: var(--accent); }
-.mw-topic-count { font-size: 12px; color: var(--muted); white-space: nowrap; font-weight: 600; }
+.mw-topic-count { flex: none; text-align: end; font-size: 12px; color: var(--muted); white-space: nowrap; font-weight: 600; }
 
 /* level 2: verse rows */
 .mw-verses { display: flex; flex-direction: column; gap: 2px; }
@@ -1752,3 +1770,53 @@ table.data tr:hover td { background: var(--panel-2); }
 .mu-book { border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); border-radius: 8px; padding: 8px 11px; background: var(--panel); }
 .mu-book-src { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 3px; }
 .mu-book-t { font-size: 13.5px; line-height: 1.8; color: var(--ink-2, var(--ink)); }
+
+/* «تفسير» — the verse's tafsir(s) in the reader, each attributed */
+.tafsir-panel { margin: 6px 0 4px; display: flex; flex-direction: column; gap: 10px; }
+.tafsir-entry { border: 1px solid var(--line); border-inline-start: 3px solid var(--gold); border-radius: 9px; padding: 10px 13px; background: var(--panel); }
+.tafsir-src { font-size: 12.5px; font-weight: 700; color: var(--gold); margin-bottom: 5px; }
+.tafsir-text { font-size: 14.5px; line-height: 1.95; color: var(--ink-2, var(--ink)); }
+.translate-entry { border-inline-start-color: var(--accent); }
+.translate-src { color: var(--accent); }
+/* the ayah's locate line — plain muted text, not chips */
+.ayah-meta { font-size: 12px; color: var(--muted); margin-inline-end: 6px; align-self: center; }
+
+/* ── نِبراس — modern AI-chat layout (centered start, bottom composer) ───────── */
+.mu-thread.empty { display: flex; align-items: center; justify-content: center; }
+.mu-hero { display: flex; flex-direction: column; align-items: center; gap: 16px; max-width: 680px; width: 100%; margin: 0 auto; padding: 24px 16px; text-align: center; }
+.mu-hero .mu-empty-mark { display: inline-flex; background: none; padding: 0; }
+.mu-hero .mu-empty-mark .ai-spark { width: 46px; height: 46px; }
+.mu-hero .mu-empty-h { font-size: 29px; margin: 2px 0 0; color: var(--ink); font-family: var(--font-quran); }
+.mu-hero-sub { font-size: 14px; line-height: 1.85; color: var(--muted); max-width: 560px; margin: 0; }
+.mu-hero .mu-input { width: 100%; max-width: 640px; margin-top: 4px; }
+
+/* the composer — one rounded field with the send inside */
+.mu-input { position: relative; display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 6px 6px 6px 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+.mu-input:focus-within { border-color: color-mix(in srgb, var(--ink) 22%, var(--line)); box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
+.mu-input textarea { flex: 1; min-width: 0; border: none !important; background: none; resize: none; outline: none !important; box-shadow: none !important; font: inherit; font-size: 16.5px; line-height: 1.6; max-height: 180px; padding: 8px 12px; color: var(--ink); }
+.mu-input textarea:focus { border: none !important; outline: none !important; box-shadow: none !important; }
+.mu-send { flex: none; width: 38px; height: 38px; border-radius: 999px; border: none; background: var(--accent); color: #fff; font-size: 19px; line-height: 1; cursor: pointer; display: grid; place-items: center; transition: opacity .12s ease, transform .12s ease; padding: 0; }
+.mu-send svg { display: block; margin: 0 auto; }
+.mu-send:disabled { opacity: 0.38; cursor: default; }
+.mu-send:not(:disabled):hover { transform: translateY(-1px); }
+
+/* the bottom input bar (while chatting) */
+.mu-inputbar { padding: 8px 16px 10px; max-width: 820px; width: 100%; margin: 0 auto; }
+.mu-inputbar .mu-foot { text-align: center; font-size: 11.5px; margin-top: 6px; }
+
+/* landing suggestions — soft pills */
+.mu-hero .mu-examples { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 640px; }
+.mu-ex { font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-2); cursor: pointer; transition: border-color .12s, color .12s; }
+.mu-ex:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 640px) {
+  .mu-hero { gap: 12px; padding: 16px 12px; }
+  .mu-hero .mu-empty-h { font-size: 24px; }
+  .mu-hero-sub { font-size: 13px; line-height: 1.7; }
+  .mu-hero .mu-empty-mark .ai-spark { width: 38px; height: 38px; }
+  .mu-input textarea { font-size: 15px; padding: 8px 10px; }
+}
+
+/* subtler new-chat button */
+.mu-new { display: inline-flex; align-items: center; gap: 7px; width: 100%; justify-content: flex-start; background: none; border: 1px solid var(--line); border-radius: 10px; padding: 9px 13px; color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer; }
+.mu-new:hover { background: var(--panel-2); border-color: var(--accent); }
+.mu-new-plus { color: var(--accent); font-size: 16px; line-height: 1; }

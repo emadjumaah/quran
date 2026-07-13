@@ -1,0 +1,12 @@
+# Source book corpus is large (~560 MB) and regenerable from scripts/collect-books.mjs
+# + scripts/harvest-quranpedia.mjs. Ship the embedded rag-<id>.bin artifacts, not this.
+# Keep the small curated / metadata files tracked (see negations below).
+*.jsonl
+*.ndjson
+quranpedia/similar.ndjson
+quranpedia/qiraat.ndjson
+
+# ...but DO track these:
+!README.md
+!manifest.json
+!quranpedia/topics.json

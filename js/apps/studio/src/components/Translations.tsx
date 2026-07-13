@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { getUILang, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 
@@ -51,39 +51,24 @@ function useTransState(): { lang: string; visible: boolean } {
  * edge — tap to reveal the translation for that ayah, with a pin to keep
  * translations always on. English UI: shown by default, with a subtle hide-all.
  */
-export default function Translations({ ayah }: { ayah: AyahDoc }) {
+export default function Translations({ ayah, open }: { ayah: AyahDoc; open?: boolean }) {
   const { lang, visible } = useTransState();
-  const [openHere, setOpenHere] = useState(false);
   const trans = ayah.translations ?? {};
   const langs = Object.keys(trans);
   if (langs.length === 0) return null;
   const active = trans[lang] != null ? lang : langs[0];
 
-  if (!visible && !openHere) {
-    return (
-      <button
-        onClick={() => setOpenHere(true)}
-        title="الترجمة · translation"
-        style={{
-          border: "none",
-          background: "none",
-          padding: "0 2px",
-          fontSize: 12,
-          color: "var(--muted)",
-          opacity: 0.4,
-          cursor: "pointer",
-        }}
-      >
-        ت
-      </button>
-    );
-  }
+  // controlled by the reader's «ترجمة» chip (open); English UI still shows by default (visible)
+  if (!visible && !open) return null;
 
+  const ar = getUILang() === "ar";
   return (
-    <div style={{ marginTop: 6 }}>
-      <div style={{ color: "var(--ink-2)", fontSize: 14, lineHeight: 1.65 }}>{trans[active]}</div>
-      <div style={{ display: "flex", gap: 4, marginTop: 4, alignItems: "center" }}>
-        {langs.length > 1 &&
+    <div className="tafsir-panel">
+      <div className="tafsir-entry translate-entry">
+        <div className="tafsir-src translate-src">◆ {ar ? "الترجمة" : "Translation"} · {langName(active)}</div>
+        <div className="tafsir-text" dir="ltr" style={{ textAlign: "start" }}>{trans[active]}</div>
+        <div style={{ display: "flex", gap: 4, marginTop: 8, alignItems: "center" }}>
+          {langs.length > 1 &&
           langs.map((l) => (
             <button
               key={l}
@@ -112,13 +97,6 @@ export default function Translations({ ayah }: { ayah: AyahDoc }) {
             >
               📌 دائمًا
             </button>
-            <button
-              className="chip"
-              style={{ border: "none", cursor: "pointer", fontSize: 10.5, padding: "1px 8px" }}
-              onClick={() => setOpenHere(false)}
-            >
-              ✕
-            </button>
           </>
         ) : (
           <button
@@ -131,14 +109,12 @@ export default function Translations({ ayah }: { ayah: AyahDoc }) {
               opacity: 0.6,
             }}
             title="إخفاء الترجمات · hide translations"
-            onClick={() => {
-              setTranslationsPref("off");
-              setOpenHere(false);
-            }}
+            onClick={() => setTranslationsPref("off")}
           >
             ✕
           </button>
         )}
+        </div>
       </div>
     </div>
   );

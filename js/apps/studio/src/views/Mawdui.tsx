@@ -11,6 +11,7 @@ import { Link, useParams } from "react-router-dom";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { classOf, themeHeadOf, themeName, themesList, themeVerses, useKulliyat } from "../kulliyat";
 import TierBadge from "../components/TierBadge";
+import TopicLayerToggle from "../components/TopicLayerToggle";
 import type { AyahDoc } from "../types";
 import { ayahsCount, getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
@@ -31,7 +32,7 @@ function Themes() {
   return (
     <>
       <header className="mw-head">
-        <h1 className="mw-title">{ar ? "مواضيع القرآن" : "Topics of the Qur'an"}</h1>
+        <h1 className="mw-title">{ar ? "محاور القرآن" : "Axes of the Qur'an"}</h1>
         <p className="mw-lead">
           {ar
             ? "موضوعاتُ القرآن كما تنشأُ حسابيًّا: تسعونَ محورًا يُجمَعُ إليها كلُّ آيةٍ بتقاربِ المعنى، فتُغطّي المصحفَ كلَّه — كلُّ آيةٍ في محورٍ واحد، لا انتقاءَ بالرأي. اختَرْ محورًا لترى آياتِه (الأعمقُ أوّلًا)."
@@ -42,6 +43,7 @@ function Themes() {
           ◆ {ar ? "كلُّ آيةٍ في محورٍ واحدٍ فقط — قِسمةٌ محسوبة، لا تكرار." : "Each verse lies in exactly one محور — a computed partition, no duplication."}
         </div>
       </header>
+      <TopicLayerToggle />
       <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في المحاور…" : "search محاور…"} />
       <div className="mw-topics">
         {shown.map((th) => (
@@ -68,7 +70,7 @@ function ThemeView({ theme, texts }: { theme: number; texts: Map<string, AyahDoc
   return (
     <>
       <nav className="mw-crumb" aria-label="مسار">
-        <Link to="/mawdui" title={ar ? "كل المحاور" : "all محاور"}>{ar ? "المواضيع" : "Topics"}</Link>
+        <Link to="/mawdui" title={ar ? "كل المحاور" : "all محاور"}>{ar ? "المحاور" : "Axes"}</Link>
         <span className="mw-sep">›</span>
         <span className="mw-here">{name || arName(head)}</span>
       </nav>

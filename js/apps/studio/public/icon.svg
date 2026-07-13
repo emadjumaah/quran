@@ -4,15 +4,16 @@
       <stop offset="0" stop-color="#12977a"/>
       <stop offset="1" stop-color="#084c3b"/>
     </linearGradient>
-    <radialGradient id="halo" cx="0.5" cy="0.6" r="0.58">
-      <stop offset="0" stop-color="#ffeeb4" stop-opacity="1"/>
-      <stop offset="0.42" stop-color="#f6cd72" stop-opacity="0.5"/>
+    <radialGradient id="halo" cx="0.5" cy="0.6" r="0.6">
+      <stop offset="0" stop-color="#fff3d4" stop-opacity="1"/>
+      <stop offset="0.4" stop-color="#f3d089" stop-opacity="0.48"/>
       <stop offset="1" stop-color="#f4c96a" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="flame" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fff2cf"/>
-      <stop offset="0.5" stop-color="#ffd678"/>
-      <stop offset="1" stop-color="#e2a63c"/>
+    <!-- the flame is now a diamond of light: violet (AI) melting into gold (lamp) -->
+    <linearGradient id="spark" x1="0.2" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#b493e6"/>
+      <stop offset="0.5" stop-color="#e6bd6a"/>
+      <stop offset="1" stop-color="#efb63c"/>
     </linearGradient>
   </defs>
 
@@ -27,15 +28,20 @@
     <path fill="#053528" d="M180 410 L180 322 A152 152 0 0 1 256 190.4 A152 152 0 0 1 332 322 L332 410 Z"/>
 
     <!-- light filling the niche -->
-    <ellipse cx="256" cy="318" rx="128" ry="158" fill="url(#halo)"/>
+    <ellipse cx="256" cy="316" rx="128" ry="150" fill="url(#halo)"/>
 
     <!-- suspension line + ring of the lamp -->
-    <path d="M256 190 L256 236" stroke="#eccc7d" stroke-width="5" stroke-linecap="round"/>
-    <circle cx="256" cy="190" r="7.5" fill="none" stroke="#eccc7d" stroke-width="5"/>
+    <path d="M256 186 L256 232" stroke="#eccc7d" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="256" cy="186" r="7.5" fill="none" stroke="#eccc7d" stroke-width="5"/>
 
-    <!-- مصباح: the flame of light -->
-    <path fill="url(#flame)" d="M256 228 C302 274 314 322 289 357 C278 372 267 380 256 380 C245 380 234 372 223 357 C198 322 210 274 256 228 Z"/>
-    <path fill="#fff7de" d="M256 286 C280 310 283 340 268 360 C261 369 253 372 256 372 C259 372 251 369 244 360 C229 340 232 310 256 286 Z"/>
+    <!-- مصباح: the flame as a crisp 4-point diamond of light -->
+    <g transform="translate(167.2 219.2) scale(7.4)">
+      <path fill="url(#spark)" d="M12 2C12.4 7.2 16.8 11.6 22 12C16.8 12.4 12.4 16.8 12 22C11.6 16.8 7.2 12.4 2 12C7.2 11.6 11.6 7.2 12 2Z"/>
+    </g>
+    <!-- inner glint (keeps it reading as light, not a solid gem) -->
+    <g transform="translate(205.6 257.6) scale(4.2)">
+      <path fill="#fff7de" opacity="0.9" d="M12 6C12.2 9 14.9 11.7 18 12C14.9 12.3 12.2 15 12 18C11.8 15 9.1 12.3 6 12C9.1 11.7 11.8 9 12 6Z"/>
+    </g>
 
     <!-- niche sill -->
     <rect x="146" y="406" width="220" height="20" rx="10" fill="#f4ecda"/>

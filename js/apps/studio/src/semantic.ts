@@ -86,7 +86,7 @@ export const vectorsReady = (): boolean => store !== null;
 
 const queryCache = new Map<string, Float32Array>();
 
-async function embedQuery(text: string): Promise<Float32Array> {
+export async function embedQuery(text: string): Promise<Float32Array> {
   const cached = queryCache.get(text);
   if (cached) return cached;
 

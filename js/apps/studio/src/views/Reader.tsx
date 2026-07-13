@@ -20,7 +20,6 @@ import { recordProgress, toggleBookmark, useBookmarks } from "../bookmarks";
 import { TAJWID, tajwidWords } from "../tajwid";
 import ReadingBar from "../components/ReadingBar";
 import AyahText from "../components/AyahText";
-import AyahRef from "../components/AyahRef";
 import MorphologyCard from "../components/MorphologyCard";
 import RootMeaning from "../components/RootMeaning";
 import CollectButton from "../components/CollectButton";
@@ -28,6 +27,7 @@ import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId }
 import SimilarAyahs, { SimilarAyahsPanel } from "../components/SimilarAyahs";
 import MuhkamaLine from "../components/MuhkamaLine";
 import EraabChip, { EraabPanel } from "../components/EraabChip";
+import { TafsirChip, TafsirPanel } from "../components/TafsirChip";
 import TadabburChip, { TadabburPanel } from "../components/TadabburChip";
 import InlineOmni from "../components/InlineOmni";
 import ScrollTopFab from "../components/ScrollTopFab";
@@ -296,10 +296,16 @@ export default function Reader() {
   // page short and the panel renders beneath the verse, not above it.
   // ONE study panel open at a time (إعراب · تفصيل · مثلها · تدبّر) — no wall of
   // stacked panels around a single ayah. Key = "kind:surah:ayah".
-  const [openPanel, setOpenPanel] = useState<string | null>(null);
-  const panelOpen = (kind: string, loc: string) => openPanel === `${kind}:${loc}`;
+  // one panel per āyah (loc → kind); each āyah keeps its own open panel independently
+  const [openPanels, setOpenPanels] = useState<Record<string, string>>({});
+  const panelOpen = (kind: string, loc: string) => openPanels[loc] === kind;
   const togglePanel = (kind: string, loc: string) =>
-    setOpenPanel((cur) => (cur === `${kind}:${loc}` ? null : `${kind}:${loc}`));
+    setOpenPanels((cur) => {
+      const next = { ...cur };
+      if (next[loc] === kind) delete next[loc];
+      else next[loc] = kind;
+      return next;
+    });
   const [searchOpen, setSearchOpen] = useState(false); // mobile: on-page search is a toggle, so the header stays one compact row
   const mainRef = useRef<HTMLElement>(null); // the scroll container (for page-turn scroll-to-top + the FAB)
   // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
@@ -728,31 +734,32 @@ export default function Reader() {
                   selected={selected?.location ?? null}
                   onSelect={(w: WordDoc) => setSelected(w)}
                 />
-                <Translations ayah={ayah} />
                 {/* ONE tight line UNDER the verse: locate · listen · study tools ·
                     save · and the verse's computed مرتبة — all as small chips */}
                 <div className="ayah-tools">
-                  <AyahRef location={ayah.location} />
-                  <span className="chip">{t("reader.juz")} {num(ayah.juz)}</span>
-                  <span className="chip">{t("reader.page")} {num(ayah.page)}</span>
-                  {ayah.sajdaType && (
-                    <span className="chip gold" title={ayah.sajdaType}>۩ {t("reader.sajda")}</span>
-                  )}
-                  <AudioButton ayahId={ayahIdOf(ayah)} />
-                  <EraabChip open={panelOpen("eraab", ayah.location)} onToggle={() => togglePanel("eraab", ayah.location)} />
-                  <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} open={panelOpen("similar", ayah.location)} onToggle={() => togglePanel("similar", ayah.location)} />
-                  <TadabburChip open={panelOpen("tadabbur", ayah.location)} onToggle={() => togglePanel("tadabbur", ayah.location)} />
                   <button
-                    className={`chip${bookmarks.includes(ayah.location) ? " on" : ""}`}
+                    className={`chip star-chip${bookmarks.includes(ayah.location) ? " on" : ""}`}
                     onClick={() => toggleBookmark(ayah.location)}
                     title={getUILang() === "ar" ? "علامة مرجعية" : "bookmark"}
                   >
                     {bookmarks.includes(ayah.location) ? "★" : "☆"}
                   </button>
+                  <span className="ayah-meta">{surahNameAr(ayah.surahNo)} {num(ayah.ayahNo)} · {t("reader.juz")} {num(ayah.juz)} · {t("reader.page")} {num(ayah.page)}</span>
+                  {ayah.sajdaType && (
+                    <span className="chip gold" title={ayah.sajdaType}>۩ {t("reader.sajda")}</span>
+                  )}
+                  <AudioButton ayahId={ayahIdOf(ayah)} />
+                  <EraabChip open={panelOpen("eraab", ayah.location)} onToggle={() => togglePanel("eraab", ayah.location)} />
+                  <TafsirChip open={panelOpen("tafsir", ayah.location)} onToggle={() => togglePanel("tafsir", ayah.location)} />
+                  <button className={`chip${panelOpen("translate", ayah.location) ? " on" : ""}`} onClick={() => togglePanel("translate", ayah.location)} title={getUILang() === "ar" ? "الترجمة" : "translation"}>{getUILang() === "ar" ? "ترجمة" : "Translation"}</button>
+                  <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} open={panelOpen("similar", ayah.location)} onToggle={() => togglePanel("similar", ayah.location)} />
+                  <TadabburChip open={panelOpen("tadabbur", ayah.location)} onToggle={() => togglePanel("tadabbur", ayah.location)} />
                   <CollectButton locations={[ayah.location]} criterion={{ kind: "manual", value: ayah.location }} label="⊕" />
                   <MuhkamaLine location={ayah.location} />
                 </div>
                 <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
+                <TafsirPanel location={ayah.location} open={panelOpen("tafsir", ayah.location)} />
+                <Translations ayah={ayah} open={panelOpen("translate", ayah.location)} />
                 <TadabburPanel ayah={ayah} ayahId={ayahIdOf(ayah)} open={panelOpen("tadabbur", ayah.location)} />
                 {panelOpen("similar", ayah.location) && (
                   <SimilarAyahsPanel ayahId={ayahIdOf(ayah)} location={ayah.location} />
