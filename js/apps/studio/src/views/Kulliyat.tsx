@@ -10,6 +10,7 @@ import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import PageSearch from "../components/PageSearch";
 import WhyRank from "../components/WhyRank";
+import TierBadge from "../components/TierBadge";
 import { allVerseLocs, childrenOf, classOf, kulliyatMeta, subtreeCounts, themeName, themeSizeOf, tierCounts, tierList, useKulliyat, type Tier } from "../kulliyat";
 import { fuzzyMatch } from "../lib/fuzzy";
 
@@ -40,7 +41,7 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
           {canDrill ? (open ? "−" : "+") : "•"}
         </button>
         <Link to={`/read/${s}/${a}`} className="kl-verse-ref">{arName(loc)}</Link>
-        {cls && <span className={`kl-badge ${tierCls(cls.tier)}`}>{cls.tier}</span>}
+        {cls && <TierBadge loc={loc} />}
         <span className="quran kl-verse-text" onClick={toggle} style={{ cursor: canDrill ? "pointer" : "default" }}>
           {texts.get(loc)?.textClean ?? loc}
         </span>

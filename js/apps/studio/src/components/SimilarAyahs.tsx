@@ -8,6 +8,7 @@ import { similarOf } from "../similar";
 import { classOf, loadKulliyat } from "../kulliyat";
 import { useSettings } from "../settings";
 import AyahRef from "./AyahRef";
+import TierBadge from "./TierBadge";
 import CollectButton from "./CollectButton";
 import AudioButton, { ayahIdOf } from "./AudioButton";
 
@@ -145,7 +146,7 @@ export function SimilarAyahsPanel({
               <span className="chip gold" style={{ fontSize: 10.5 }}>
                 {num(Math.round(r.score * 100))}٪
               </span>
-              {(() => { const c = classOf(r.ayah.location); return c ? <span className={`kl-badge ${c.tier === "كلّية" ? "k" : c.tier === "جامعة" ? "j" : "t"}`} title={`الجامعيّة ${num(Math.round(c.jamiya * 100))}٪`}>{c.tier}</span> : null; })()}
+              <TierBadge loc={r.ayah.location} />
               <AudioButton ayahId={ayahIdOf(r.ayah)} preview />
               <CollectButton
                 locations={[r.ayah.location]}

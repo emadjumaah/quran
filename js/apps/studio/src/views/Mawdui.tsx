@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { classOf, themeHeadOf, themeName, themesList, themeVerses, useKulliyat } from "../kulliyat";
+import TierBadge from "../components/TierBadge";
 import type { AyahDoc } from "../types";
 import { ayahsCount, getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
@@ -17,7 +18,6 @@ import PageSearch from "../components/PageSearch";
 import { fuzzyMatch } from "../lib/fuzzy";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
-const tierCls = (loc: string) => { const tr = classOf(loc)?.tier; return tr === "كلّية" ? "k" : tr === "جامعة" ? "j" : "t"; };
 
 /* ---------- level 0: the 90 محاور ---------- */
 function Themes() {
@@ -83,7 +83,7 @@ function ThemeView({ theme, texts }: { theme: number; texts: Map<string, AyahDoc
         {verses.map((loc) => (
           <Link key={loc} to={readPathOf(loc)} className={`mw-verse${loc === head ? " rep" : ""}`} title={ar ? "افتح في المصحف" : "open in the reader"}>
             <span className="mw-verse-ref">{arName(loc)}</span>
-            <span className={`kl-badge ${tierCls(loc)}`} style={{ flex: "none" }}>{classOf(loc)?.tier}</span>
+            <TierBadge loc={loc} style={{ flex: "none" }} />
             <span className="mw-verse-text quran">{texts.get(loc)?.textUthmani ?? loc}</span>
           </Link>
         ))}
