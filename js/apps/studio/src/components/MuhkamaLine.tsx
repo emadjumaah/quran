@@ -1,38 +1,40 @@
 /**
- * MuhkamaLine — «تندرجُ تحت» — shows, right under a verse, the root محكمات it
- * belongs to (nearest in meaning among the roots it's linked to). If the verse
- * is itself a root, it says so. Renders nothing outside the network.
+ * The verse's computed place in the الكلّيّات classification — its tier
+ * (كلّيّة / جامعة / تفصيل) and the كلّيّة it belongs under. From kulliyat.json
+ * (see docs/kulliyat-methodology.md). Renders nothing for unclassified verses.
  */
 import { Link } from "react-router-dom";
 import { surahNameAr } from "../db";
 import { getUILang, num } from "../i18n";
-import { isMuhkamaRoot, muhkamatOf, useMuhkama } from "../muhkama";
+import { classOf, kulliyaOf, useKulliyat } from "../kulliyat";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
 export default function MuhkamaLine({ location }: { location: string }) {
-  const ready = useMuhkama();
+  const ready = useKulliyat();
   const ar = getUILang() === "ar";
   if (!ready) return null;
+  const cls = classOf(location);
+  if (!cls) return null;
 
-  if (isMuhkamaRoot(location)) {
+  if (cls.tier === "كلّية") {
     return (
-      <div className="mk-line mk-line-root" title={ar ? "آيةٌ محكمة — أصلٌ جامعٌ يجمع معاني القرآن وتحته تفصيلُه" : "a muḥkam root"}>
-        ◆ {ar ? "هذه آيةٌ محكمة (أصلٌ جامع)" : "This is a muḥkam root"}
+      <div className="mk-line mk-line-root" title={ar ? "من كلّيّات القرآن المحسوبة — من أعلى الآيات جامعيّةً" : "a computed kulliyya"}>
+        ◆ {ar ? "آيةٌ كلّيّة" : "kulliyya"}
+        <Link to="/kulliyat" className="mk-line-chip" style={{ textDecoration: "none" }}>{ar ? "الكلّيّات ←" : "all →"}</Link>
       </div>
     );
   }
-
-  const mk = muhkamatOf(location);
-  if (!mk.length) return null;
+  const k = kulliyaOf(location);
   return (
-    <div className="mk-line" title={ar ? "أقربُ الآياتِ المحكمة (الأصول الجامعة) إلى معناها ممّا تتّصل به في الشبكة" : "the muḥkam roots nearest in meaning that this verse links to"}>
-      <span className="mk-line-lbl">{ar ? "تندرجُ تحت:" : "belongs under:"}</span>
-      {mk.map((m) => (
-        <Link key={m.loc} to={`/read/${m.loc.split(":")[0]}/${m.loc.split(":")[1]}`} className="mk-line-chip quran">
-          {arName(m.loc)}
-        </Link>
-      ))}
+    <div className="mk-line" title={ar ? "مرتبةُ الآية والكلّيّةُ التي تندرجُ تحتها (محسوبة)" : "computed tier + the kulliyya it belongs under"}>
+      <span className={`kl-badge ${cls.tier === "جامعة" ? "j" : "t"}`}>{cls.tier}</span>
+      <span className="mk-line-lbl">{ar ? "تندرجُ تحت:" : "under:"}</span>
+      {k ? (
+        <Link to={`/read/${k.split(":")[0]}/${k.split(":")[1]}`} className="mk-line-chip quran">{arName(k)}</Link>
+      ) : (
+        <span className="muted">—</span>
+      )}
     </div>
   );
 }

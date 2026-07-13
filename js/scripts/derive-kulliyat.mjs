@@ -168,8 +168,21 @@ for (const r of rows) {
   if (best) parent.set(r.i, best.a.location);
 }
 
+// ---------- theme names: the roots most distinctive of each theme ----------
+const rootAr = new Map(db.prepare("SELECT root_id, root_ar FROM root").all().map((r) => [r.root_id, r.root_ar]));
+const overallDF = new Map(); // root -> # of verses (anywhere) that contain it
+for (const s of rootsPer.values()) for (const rid of s) overallDF.set(rid, (overallDF.get(rid) || 0) + 1);
+const themeNames = [];
+for (let th = 0; th < seeds.length; th++) {
+  const df = new Map();
+  for (const r of byCluster[th]) { const s = rootsPer.get(r.a.ayah_id); if (s) for (const rid of s) df.set(rid, (df.get(rid) || 0) + 1); }
+  // distinctive = frequent in this theme but not everywhere (TF ÷ √overall)
+  const scored = [...df.entries()].map(([rid, c]) => [rid, c / Math.sqrt(overallDF.get(rid) || 1)]).sort((a, b) => b[1] - a[1]);
+  themeNames[th] = scored.slice(0, 3).map(([rid]) => rootAr.get(rid)).filter(Boolean);
+}
+
 // ---------- output + report ----------
-const out = { meta: { verses: N, themes: seeds.length, cfg: CFG }, verses: {} };
+const out = { meta: { verses: N, themes: seeds.length, cfg: CFG, themeNames }, verses: {} };
 for (const r of rows) out.verses[r.a.location] = {
   tier: tier.get(r.i), jamiya: Math.round(r.jamiya * 1000) / 1000, theme: cluster[r.i], parent: parent.get(r.i) || null,
   sig: { struct: +r.structP.toFixed(2), cent: +r.centP.toFixed(2), norm: +r.normP.toFixed(2), particLow: +(1 - r.particP).toFixed(2), breadth: +r.breadthP.toFixed(2) },

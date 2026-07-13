@@ -96,6 +96,19 @@ export function themeMembers(theme: number): { kulliya: string | null; jawami: s
 }
 export const kulliyatMeta = (): Payload["meta"] | null => data?.meta ?? null;
 
+/** The كلّيّة this verse belongs under — walk the parent chain up to a كلّيّة. */
+export function kulliyaOf(loc: string): string | null {
+  let cur = loc;
+  for (let guard = 0; guard < 25; guard++) {
+    const v: VerseClass | undefined = data?.verses[cur];
+    if (!v) return null;
+    if (v.tier === "كلّية") return cur;
+    if (!v.parent) return null;
+    cur = v.parent;
+  }
+  return null;
+}
+
 /** All كلّيّات (theme heads), each with its theme size, sorted by جامعية. */
 export function kulliyatList(): { loc: string; theme: number; jamiya: number; size: number }[] {
   if (!data) return [];

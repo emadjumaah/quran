@@ -22,7 +22,7 @@ export interface Settings {
   reciter: string; // key into RECITERS (AudioButton); default al-Ḥuṣarī
   tajwid: boolean; // colour-coded tajwīd in the text reading modes
   layers: {
-    jawami: boolean; // محكم→تفصيل chip in the reader
+    jawami: boolean; // mark آيات كلّيّة (gold marker) on the mushaf page
     roots: boolean; // root chip in the word inspector
     similar: boolean; // «مثلها» semantic-neighbours chip
     collect: boolean; // the ⊕ "add to a collection" button (off by default)

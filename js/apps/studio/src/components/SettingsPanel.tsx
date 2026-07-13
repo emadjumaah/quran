@@ -210,7 +210,7 @@ export default function SettingsPanel() {
           )}
 
           <div className="set-group">{ar ? "طبقات المعرفة" : "Knowledge layers"}</div>
-          <Row label={ar ? "المحكم والتفصيل" : "Principle → tafsil"}>
+          <Row label={ar ? "إبرازُ الآيات الكلّيّة" : "Mark kulliyyāt"}>
             <input
               type="checkbox"
               checked={s.layers.jawami}

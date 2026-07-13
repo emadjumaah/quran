@@ -5,7 +5,7 @@
  * a verse and sees where it sits — no tafsīr.
  */
 import { Link } from "react-router-dom";
-import { ayahsCount, getUILang, num, useUILang } from "../i18n";
+import { getUILang, num, useUILang } from "../i18n";
 import { useVerseIndex, verseInfo } from "../mawdui";
 
 export default function VerseContext({ location }: { location: string | null }) {
@@ -13,7 +13,7 @@ export default function VerseContext({ location }: { location: string | null }) 
   const ready = useVerseIndex();
   if (!location || !ready) return null;
   const info = verseInfo(location);
-  if (!info || (!info.topic && !info.muhkama && !info.jamiaKind)) return null;
+  if (!info || (!info.topic && !info.twins)) return null;
   const ar = getUILang() === "ar";
 
   return (
@@ -30,38 +30,11 @@ export default function VerseContext({ location }: { location: string | null }) 
         </Link>
       )}
 
-      {info.muhkama && (
-        <Link to="/muhkamat" className="vc-row">
-          <span className="vc-lbl">{ar ? "المحكمة" : "muhkama"}</span>
-          <span className="vc-body"><span className="vc-val">{info.muhkama}</span></span>
-        </Link>
-      )}
-
-      {(info.jamiaKind || info.grade) && (
-        <div className="vc-chips">
-          <span className="chip">{ar ? "آية جامعة" : "principle"}</span>
-          {info.jamiaKind && <span className="chip gold">{info.jamiaKind}</span>}
-          {info.grade && <span className="chip gold">{info.grade}</span>}
-        </div>
-      )}
-
-      {(info.tafsilDeg > 0 || info.elaborates > 0 || info.twins > 0) && (
+      {info.twins > 0 && (
         <div className="vc-net">
-          {info.tafsilDeg > 0 && (
-            <Link to="/jawami" className="chip link">
-              {ar ? `تُفصِّلها ${ayahsCount(info.tafsilDeg)}` : `${info.tafsilDeg} elaborate it`}
-            </Link>
-          )}
-          {info.elaborates > 0 && (
-            <Link to="/jawami" className="chip link">
-              {ar ? `تُفصِّل ${num(info.elaborates)}` : `elaborates ${info.elaborates}`}
-            </Link>
-          )}
-          {info.twins > 0 && (
-            <Link to="/furuq" className="chip link">
-              {ar ? `${num(info.twins)} فرق تنزيل` : `${info.twins} furūq`}
-            </Link>
-          )}
+          <Link to="/furuq" className="chip link">
+            {ar ? `${num(info.twins)} فرق تنزيل` : `${info.twins} furūq`}
+          </Link>
         </div>
       )}
     </div>

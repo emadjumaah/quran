@@ -26,14 +26,13 @@ import RootMeaning from "../components/RootMeaning";
 import CollectButton from "../components/CollectButton";
 import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs, { SimilarAyahsPanel } from "../components/SimilarAyahs";
-import TafsilChip, { TafsilPanel } from "../components/TafsilChip";
+import MuhkamaLine from "../components/MuhkamaLine";
 import EraabChip, { EraabPanel } from "../components/EraabChip";
 import TadabburChip, { TadabburPanel } from "../components/TadabburChip";
 import InlineOmni from "../components/InlineOmni";
 import ScrollTopFab from "../components/ScrollTopFab";
-import TafsilAside from "../components/TafsilAside";
 import VerseContext from "../components/VerseContext";
-import { useVerseIndex, verseInfo } from "../mawdui";
+import { classOf, useKulliyat } from "../kulliyat";
 import Translations from "../components/Translations";
 
 const MODE_KEY = "quran-studio:reader-mode";
@@ -194,7 +193,7 @@ function MushafPage({
   opening?: boolean;
 }) {
   const { script, tajwid, layers } = useSettings();
-  const vidxReady = useVerseIndex(); // to mark جوامع on the page
+  const kullReady = useKulliyat(); // to mark كلّيّات on the page
   const ar = getUILang() === "ar";
   const first = ayahs[0];
   const surahNo = first?.surahNo ?? 0;
@@ -218,8 +217,8 @@ function MushafPage({
           const rub = rubMarks.get(ayah.ayahNo);
           const ws = wordsByAyah.get(ayah.ayahNo) ?? [];
           const colored = tajwid ? tajwidWords(ws.map((w) => w.textUthmani)) : null;
-          // mark آيات جامعة (principle verses) with a gold marker
-          const jamia = layers.jawami && vidxReady ? verseInfo(`${ayah.surahNo}:${ayah.ayahNo}`)?.jamiaKind ?? null : null;
+          // mark آيات كلّيّة (the computed flagship verses) with a gold marker
+          const isKulliya = !!(layers.jawami && kullReady && classOf(`${ayah.surahNo}:${ayah.ayahNo}`)?.tier === "كلّية");
           return (
             <Fragment key={ayah.location}>
               {rub && <div className="mp-mark mp-rub"><span>۞ {num(rub)}</span></div>}
@@ -247,9 +246,9 @@ function MushafPage({
                   </span>
                 ))}{" "}
                 <span
-                  className={`ayah-marker${jamia ? " jamia" : ""}`}
+                  className={`ayah-marker${isKulliya ? " jamia" : ""}`}
                   role="button"
-                  title={`${t("reader.ayat")} ${num(ayah.ayahNo)}${ayah.sajdaType ? " ۩" : ""}${jamia ? ` · ${ar ? "آية جامعة" : "principle"} · ${jamia}` : ""}`}
+                  title={`${t("reader.ayat")} ${num(ayah.ayahNo)}${ayah.sajdaType ? " ۩" : ""}${isKulliya ? ` · ${ar ? "آيةٌ كلّيّة" : "kulliyya"}` : ""}`}
                   style={{ cursor: "pointer" }}
                   onClick={() => onAyahMarker(ayah)}
                 >
@@ -749,11 +748,6 @@ export default function Reader() {
                     open={panelOpen("eraab", ayah.location)}
                     onToggle={() => togglePanel("eraab", ayah.location)}
                   />
-                  <TafsilChip
-                    location={ayah.location}
-                    open={panelOpen("tafsil", ayah.location)}
-                    onToggle={() => togglePanel("tafsil", ayah.location)}
-                  />
                   <SimilarAyahs
                     ayahId={ayahIdOf(ayah)}
                     location={ayah.location}
@@ -785,7 +779,7 @@ export default function Reader() {
                   onSelect={(w: WordDoc) => setSelected(w)}
                 />
                 <Translations ayah={ayah} />
-                <TafsilPanel location={ayah.location} open={panelOpen("tafsil", ayah.location)} />
+                <MuhkamaLine location={ayah.location} />
                 <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
                 <TadabburPanel ayah={ayah} ayahId={ayahIdOf(ayah)} open={panelOpen("tadabbur", ayah.location)} />
                 {panelOpen("similar", ayah.location) && (
@@ -812,7 +806,7 @@ export default function Reader() {
           }}
         >
           <VerseContext location={selectedLoc} />
-          <TafsilAside location={selectedLoc} />
+          {selectedLoc && <MuhkamaLine location={selectedLoc} />}
           <Inspector word={selected} />
         </aside>
       )}
@@ -854,7 +848,7 @@ export default function Reader() {
                 ) : null;
               })()}
               <VerseContext location={selectedLoc} />
-              <TafsilAside location={selectedLoc} />
+              {selectedLoc && <MuhkamaLine location={selectedLoc} />}
               {selected && <Inspector word={selected} />}
             </div>
           </div>
