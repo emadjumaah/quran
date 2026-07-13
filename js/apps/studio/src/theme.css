@@ -1362,6 +1362,8 @@ table.data tr:hover td { background: var(--panel-2); }
 /* الخيوط الموضوعية — thematic threads */
 .th-form { display: flex; gap: 8px; margin-top: 10px; }
 .th-form input { flex: 1; }
+.th-clear { flex: none; padding: 0 13px; border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); border-radius: 8px; cursor: pointer; font-size: 15px; }
+.th-clear:hover { border-color: var(--gold); color: var(--gold); }
 .th-suggest { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .th-suggest .chip { cursor: pointer; }
 .th-section-h { margin: 22px 0 8px; font-weight: 700; font-size: 13.5px; color: var(--ink-2); }
