@@ -1,12 +1,11 @@
 import React, { lazy, Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { HashRouter, Link, NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { HashRouter, Link, NavLink, Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { initDb, listSurahs } from "./db";
 import { applyUILang, getUILang, setUILang, t, useUILang } from "./i18n";
 import "./theme.css";
 import Reader from "./views/Reader";
 import Roots from "./views/Roots";
-import Network from "./views/Network";
 import Search from "./views/Search";
 const Collections = lazy(() => import("./views/Collections"));
 const Dashboard = lazy(() => import("./views/Dashboard"));
@@ -21,7 +20,6 @@ const Furuq = lazy(() => import("./views/Furuq"));
 const Amthal = lazy(() => import("./views/Amthal"));
 const Fawasil = lazy(() => import("./views/Fawasil"));
 const Mawdui = lazy(() => import("./views/Mawdui"));
-const RootsGraph = lazy(() => import("./views/RootsGraph"));
 const Maalim = lazy(() => import("./views/Maalim"));
 const Mujam = lazy(() => import("./views/Mujam"));
 const Lisan = lazy(() => import("./views/Lisan"));
@@ -32,7 +30,6 @@ const MushafMap = lazy(() => import("./views/MushafMap"));
 const ThematicThread = lazy(() => import("./views/ThematicThread"));
 const Learn = lazy(() => import("./views/Learn"));
 const EraabDrill = lazy(() => import("./views/EraabDrill"));
-const RootJourney = lazy(() => import("./views/RootJourney"));
 const Assistant = lazy(() => import("./views/Assistant"));
 import SettingsPanel from "./components/SettingsPanel";
 import SourcesPanel from "./components/SourcesPanel";
@@ -144,28 +141,27 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
     ar: "الميزان والبنية", en: "The balance",
     items: [
       ["/kulliyat", "الكلّيّات والجوامع", "Kulliyyāt"],
-      ["/mawdui", "المواضيع", "Topics"],
       ["/shabaka", "خريطة المصحف", "Mushaf map"],
+      ["/mawdui", "المواضيع", "Topics"],
       ["/khayt", "الخيوط الموضوعية", "Thematic threads"],
       ["/furuq", "فروق التنزيل", "Furūq"],
       ["/amthal", "الأمثال", "Parables"],
     ],
   },
   {
-    ar: "اللغة والجذور", en: "Language & roots",
+    ar: "جذور القرآن", en: "Roots",
     items: [
       ["/roots", "الجذور", "Roots"],
-      ["/journey", "رحلة الجذر", "Root journey"],
-      ["/galaxy", "شبكة الجذور", "Roots network"],
       ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
       ["/wujuh", "الوجوه والنظائر", "Polysemy"],
-      ["/mujam", "معجم القرآن", "Dictionary"],
+      ["/galaxy", "شبكة الجذور", "Roots network"],
     ],
   },
   {
     ar: "أدوات وإحصاءات", en: "Tools & stats",
     items: [
       ["/maalim", "إحصاءات القرآن", "Qur'an stats"],
+      ["/mujam", "معجم القرآن", "Dictionary"],
       ["/sarf", "الصرف بالأرقام", "Morphology"],
       ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
     ],
@@ -181,6 +177,13 @@ function useNavGroups() {
       ? { ...g, items: [...g.items, ["/collections", "المجموعات", "Collections"] as NavItem] }
       : g,
   );
+}
+
+/** Retired root-graph (توارد الجذور) + journey routes fold into the root page,
+ *  which now hosts the journey inline. Keeps old links working. */
+function ToRootRedirect() {
+  const { root } = useParams();
+  return <Navigate to={root ? `/roots/${encodeURIComponent(root)}` : "/roots"} replace />;
 }
 
 function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
@@ -376,8 +379,8 @@ function App() {
           <Route path="/kulliyat" element={<Kulliyat />} />
           <Route path="/graph" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/graph/:s/:a" element={<Navigate to="/kulliyat" replace />} />
-          <Route path="/fabric" element={<RootsGraph />} />
-          <Route path="/fabric/:root" element={<RootsGraph />} />
+          <Route path="/fabric" element={<ToRootRedirect />} />
+          <Route path="/fabric/:root" element={<ToRootRedirect />} />
           <Route path="/maalim" element={<Maalim />} />
           <Route path="/mujam" element={<Mujam />} />
           <Route path="/mujam/:root" element={<Mujam />} />
@@ -397,9 +400,9 @@ function App() {
           <Route path="/aya/:s/:a" element={<AyaCard />} />
           <Route path="/roots" element={<Roots />} />
           <Route path="/roots/:root" element={<Roots />} />
-          <Route path="/network" element={<Network />} />
-          <Route path="/network/:root" element={<Network />} />
-          <Route path="/network/:root/:other" element={<Network />} />
+          <Route path="/network" element={<ToRootRedirect />} />
+          <Route path="/network/:root" element={<ToRootRedirect />} />
+          <Route path="/network/:root/:other" element={<ToRootRedirect />} />
           <Route path="/search" element={<Search />} />
           <Route path="/meaning" element={<Navigate to="/search?m=1" replace />} />
           <Route path="/collections" element={<Collections />} />
@@ -407,8 +410,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/learn" element={<Learn />} />
           <Route path="/eraab" element={<EraabDrill />} />
-          <Route path="/journey" element={<RootJourney />} />
-          <Route path="/journey/:root" element={<RootJourney />} />
+          <Route path="/journey" element={<ToRootRedirect />} />
+          <Route path="/journey/:root" element={<ToRootRedirect />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/assistant/:id" element={<Assistant />} />
           <Route path="/today" element={<Today />} />

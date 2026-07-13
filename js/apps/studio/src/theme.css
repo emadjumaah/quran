@@ -152,7 +152,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .nav-more-btn.active { background: var(--accent-soft); color: var(--accent); }
 .nav-more-backdrop { position: fixed; inset: 0; z-index: 40; }
 .nav-more-menu {
-  position: absolute; inset-block-start: calc(100% + 6px); inset-inline-end: 0; z-index: 50;
+  position: absolute; inset-block-start: calc(100% + 6px); inset-inline-start: 0; z-index: 50;
   background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
   box-shadow: var(--shadow); padding: 6px; min-width: 190px;
   display: flex; flex-direction: column; gap: 2px;

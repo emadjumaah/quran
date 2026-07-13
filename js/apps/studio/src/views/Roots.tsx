@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import RootJourneyPanel from "../components/RootJourneyPanel";
 import {
   ayahLocationsOfRoot,
   countRoots,
@@ -192,14 +193,6 @@ function RootIndex() {
           {t("roots.what")}
         </p>
         <p style={{ margin: "-4px 0 14px", fontSize: 13.5, display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Link
-            to="/fabric"
-            className="chip link"
-            style={{ textDecoration: "none" }}
-            title={ar ? "نسيجٌ تفاعليّ للجذور التي تلتقي في الآيات نفسها" : "interactive network of roots that meet in the same ayahs"}
-          >
-            {ar ? "توارد الجذور — النسيج التفاعلي ←" : "Root co-occurrence →"}
-          </Link>
           <Link
             to="/wujuh"
             className="chip link"
@@ -476,45 +469,8 @@ function RootDetail({ root }: { root: string }) {
           </div>
         </div>
 
-        {/* Related roots */}
-        <div className="card" style={{ marginTop: 16 }}>
-          <h3 style={{ marginTop: 0, marginBottom: 4 }}>{t("roots.related")}</h3>
-          {related == null ? (
-            <p className="muted">{t("loading")}</p>
-          ) : related.length === 0 ? (
-            <p className="muted">{t("notFound")}</p>
-          ) : (
-            <>
-              <p className="muted" style={{ marginTop: 0 }}>
-                {t("roots.relatedHint")}
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {related.map((e: NeighborRoot) => (
-                  <Link
-                    key={e.root}
-                    to={`/roots/${encodeURIComponent(e.root)}`}
-                    className="chip link"
-                  >
-                    <span className="quran" style={{ fontSize: 17, lineHeight: 1.3 }}>
-                      {e.root}
-                    </span>
-                    <span>
-                      ({num(e.w)} {t("roots.sharedAyahs")})
-                    </span>
-                  </Link>
-                ))}
-              </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <Link to={`/fabric/${encodeURIComponent(rootDoc.root)}`}>
-                  {getUILang() === "ar" ? "النسيج التفاعلي ↗" : "Interactive fabric ↗"}
-                </Link>
-                <Link to={`/network/${encodeURIComponent(rootDoc.root)}`}>
-                  {t("roots.viewNetwork")}
-                </Link>
-              </div>
-            </>
-          )}
-        </div>
+        {/* رحلة الجذر — embedded here (replaces the old standalone /journey page) */}
+        <RootJourneyPanel root={rootDoc.root} />
 
         {/* Occurrences — full ayahs with matched words highlighted */}
         <div className="card" style={{ marginTop: 16 }}>
@@ -597,6 +553,22 @@ function RootDetail({ root }: { root: string }) {
             </>
           )}
         </div>
+
+        {/* جذور متقاربة — co-occurrence, kept below the fold (no separate graph view) */}
+        {related != null && related.length > 0 && (
+          <div className="card" style={{ marginTop: 16 }}>
+            <h3 style={{ marginTop: 0, marginBottom: 4 }}>{t("roots.related")}</h3>
+            <p className="muted" style={{ marginTop: 0 }}>{t("roots.relatedHint")}</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {related.map((e: NeighborRoot) => (
+                <Link key={e.root} to={`/roots/${encodeURIComponent(e.root)}`} className="chip link">
+                  <span className="quran" style={{ fontSize: 17, lineHeight: 1.3 }}>{e.root}</span>
+                  <span>({num(e.w)} {t("roots.sharedAyahs")})</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
