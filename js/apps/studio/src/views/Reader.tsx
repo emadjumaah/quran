@@ -94,7 +94,8 @@ function SurahSidebar({
           aria-label={t("reader.filter")}
         />
       </div>
-      <div style={{ overflowY: "auto", flex: 1, padding: "0 6px 10px" }}>
+      {/* bottom padding clears the floating نِبراس button so the last sūra stays tappable */}
+      <div style={{ overflowY: "auto", flex: 1, padding: "0 6px 84px" }}>
         {shown.map((s) => {
           const active = s.surahNo === activeNo;
           return (
