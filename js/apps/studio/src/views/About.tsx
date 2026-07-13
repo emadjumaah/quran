@@ -103,6 +103,51 @@ export default function About() {
           </p>
         </div>
 
+        {/* the technical foundation — embeddings & vectors */}
+        <h2 className="ab-h2 ab-section-h">{ar ? "كيف يقيسُ الحاسوبُ قُربَ المعنى؟" : "How the computer measures closeness of meaning"}</h2>
+        <p className="muted ab-build-intro">
+          {ar
+            ? "قلبُ المشروع حسابٌ لا رأي. لكنْ كيف «يقيسُ» جهازٌ معنى آية؟ الجوابُ في ثلاث خطواتٍ يقومُ عليها كلُّ ما نبنيه:"
+            : "The heart of the project is computation, not opinion. But how does a machine «measure» a verse's meaning? In three steps that everything here rests on:"}
+        </p>
+        <div className="ab-embed">
+          <div className="ab-embed-step">
+            <span className="ab-embed-n">١</span>
+            <div>
+              <b>{ar ? "من المعنى إلى الأرقام — التضمين (embedding)" : "From meaning to numbers — the embedding"}</b>
+              <p>{ar
+                ? "نُمرِّرُ كلَّ آيةٍ على نموذجٍ لغويٍّ ضخمٍ (نموذجُ Gemini من غوغل، تعلَّمَ اللغةَ من قدرٍ هائلٍ من النصوص)، فيُحوّلُ معناها إلى سلسلةٍ من ٧٦٨ رقمًا تُسمَّى «المتَّجِه» (vector). فتصيرُ كلُّ آيةٍ نقطةً في «فضاءٍ للمعنى» ذي ٧٦٨ بُعدًا: النقاطُ المتقاربةُ فيه آياتٌ متقاربةُ المعنى، والمتباعدةُ متباعدتُه — بالمعنى لا باللفظِ (فـ«أنفقوا» و«تصدَّقوا» متجاورتان وإن اختلفَ حرفُهما)."
+                : "Each verse is passed through a large language model (Google's Gemini, which learned language from vast amounts of text), and it turns the verse's meaning into a list of 768 numbers — a «vector». Every verse becomes a point in a 768-dimensional «meaning space»: points near each other are verses near in meaning, distant points distant in meaning — by meaning, not wording (so «أنفقوا» and «تصدَّقوا» sit close though their letters differ)."}</p>
+            </div>
+          </div>
+          <div className="ab-embed-step">
+            <span className="ab-embed-n">٢</span>
+            <div>
+              <b>{ar ? "قياسُ القرب — المتَّجهات وجيبُ التمام (cosine)" : "Measuring closeness — vectors & cosine"}</b>
+              <p>{ar
+                ? "نقيسُ قُربَ آيتين بالزاويةِ بين متَّجهيهما (جيبُ تمام الزاوية / cosine similarity): كلّما صغُرت الزاويةُ اشتدَّ تقاربُ المعنى — رقمٌ بين صفرٍ وواحد. هذا حسابٌ هندسيٌّ محضٌ، يُعادُ فيُعطي النتيجةَ نفسَها في كلِّ مرّة، لا يدخلُه رأيٌ ولا مِزاجٌ ولا تأويل."
+                : "We measure the closeness of two verses by the angle between their vectors (cosine similarity): the smaller the angle, the closer the meaning — a number from 0 to 1. Pure geometry, giving the same result every run — no opinion, no mood, no interpretation enters it."}</p>
+            </div>
+          </div>
+          <div className="ab-embed-step">
+            <span className="ab-embed-n">٣</span>
+            <div>
+              <b>{ar ? "ماذا نبني على ذلك" : "What we build on it"}</b>
+              <ul className="ab-embed-uses">
+                <li>{ar ? "«مثلها» والبحثُ بالمعنى: أقربُ الآيات معنًى لآيةٍ أو لسؤال — بالزوايا، لا بحكمٍ بشريّ." : "«Similar verses» & meaning-search: the nearest verses by angle, not by human judgment."}</li>
+                <li>{ar ? "المركز (centroid): متوسّطُ متَّجهاتِ مجموعةِ آياتٍ يُمثّلُ معناها الجامع. به رسَونا «مرساةَ التوحيد» (مركزُ آيات «لا إله إلا»)، وبه نتتبّعُ أيَّ معنًى عبر المصحف في «الخيوط الموضوعيّة»." : "The centroid: the average of a set of vectors represents their shared meaning. It anchors التوحيد (the centre of the «لا إله إلا» verses) and traces any concept across the mushaf in «thematic threads»." }</li>
+                <li>{ar ? "التجميع (k-means): نجمعُ الآياتِ في تسعينَ محورًا بحسبِ تجاورِها في الفضاء، فتُسمَّى بموضوعِها." : "Clustering (k-means): verses group into 90 themes by their proximity in the space, then get named by subject."}</li>
+                <li>{ar ? "الميزانُ والشبكة: «الجامعيّة» تجمعُ المركزيّةَ الدلاليّةَ إلى عواملَ أخرى؛ والشبكةُ مجرّةٌ حجمُ نجمِها جامعيّتُه ولونُه محورُه." : "The ميزان & network: «jāmiʿiyya» blends this semantic centrality with other factors; the network is a galaxy where a star's size is its weight and its colour its theme."}</li>
+              </ul>
+            </div>
+          </div>
+          <p className="ab-embed-honest">
+            {ar
+              ? "وحدُّ الأمانة: النموذجُ يقيسُ قُربَ المعنى فحسب — لا يُفسّرُ، ولا يُفتي، ولا يُضيفُ من عندِه شيئًا. وكلُّ تصنيفٍ نبنيه فوقَ هذه الأرقامِ حسابٌ شفّافٌ يُعادُ بالنتيجةِ نفسِها؛ ودورُ الذكاء الاصطناعيّ بعدَ ذلك التحقّقُ لا الحكم. نحسبُ ونعرض."
+              : "The bound of honesty: the model measures closeness of meaning only — it does not interpret, rule, or add anything. Every classification we build on these numbers is transparent computation, identical every run; and AI's role beyond that is to validate, not to judge. We compute, and we show."}
+          </p>
+        </div>
+
         {/* how the project was built */}
         <h2 className="ab-h2 ab-section-h">{ar ? "كيف أُنجز المشروع" : "How the project was built"}</h2>
         <p className="muted ab-build-intro">
