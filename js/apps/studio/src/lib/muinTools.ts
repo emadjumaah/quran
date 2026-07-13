@@ -4,6 +4,7 @@
  */
 import { fuzzyRoots, getAyahByGlobalNo, getAyahByLocation, getRoot } from "../db";
 import { loadVectors, meaningSearch } from "../semantic";
+import { classOf, loadKulliyat } from "../kulliyat";
 import type { ChatAyah, ChatRoot } from "../chat";
 import type { RootDoc } from "../types";
 
@@ -16,6 +17,7 @@ const glossOf = (doc: RootDoc | null): string => {
 /** Find verses by meaning (semantic embedding search, on-device). */
 export async function toolSearchMeaning(query: string, k = 12): Promise<ChatAyah[]> {
   await loadVectors();
+  await loadKulliyat().catch(() => {}); // classification → prefer foundational verses
   const ranked = (await meaningSearch(query, 30)).slice().sort((a, b) => b.score - a.score);
   if (!ranked.length) return [];
   // Trim the weak tail so a draft rests on verses that genuinely cohere: keep those
@@ -23,13 +25,16 @@ export async function toolSearchMeaning(query: string, k = 12): Promise<ChatAyah
   // build on. This is what stops surface-similar noise from poisoning the composition.
   const top = ranked[0].score;
   const gated = ranked.filter((h) => h.score >= top - 0.15 && h.score >= 0.5);
-  const chosen = (gated.length >= 5 ? gated : ranked.slice(0, 6)).slice(0, k);
-  const out: ChatAyah[] = [];
-  for (const h of chosen) {
+  const pool = gated.length >= 5 ? gated : ranked.slice(0, 6);
+  // Within the RELEVANT set, prefer the more foundational verses (gentle جامعية boost)
+  // so a composition rests on the الكلّيّات, not on incidental surface matches.
+  const withLoc: { h: (typeof pool)[number]; a: NonNullable<Awaited<ReturnType<typeof getAyahByGlobalNo>>>; j: number }[] = [];
+  for (const h of pool) {
     const a = await getAyahByGlobalNo(h.ayahId);
-    if (a) out.push({ ref: a.location, text: a.textUthmani || a.textClean, score: Math.round(h.score * 100) / 100 });
+    if (a) withLoc.push({ h, a, j: classOf(a.location)?.jamiya ?? 0 });
   }
-  return out;
+  withLoc.sort((x, y) => (y.h.score + 0.1 * y.j) - (x.h.score + 0.1 * x.j));
+  return withLoc.slice(0, k).map(({ h, a }) => ({ ref: a.location, text: a.textUthmani || a.textClean, score: Math.round(h.score * 100) / 100 }));
 }
 
 /** A root's meaning + a few of its verses (resolves the nearest root to the query). */

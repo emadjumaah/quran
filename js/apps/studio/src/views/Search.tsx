@@ -32,6 +32,7 @@ import {
   vectorsReady,
 } from "../semantic";
 import { useOmniResults } from "../omni";
+import { classOf, useKulliyat } from "../kulliyat";
 
 const DISPLAY_CAP = 200;
 const TEXT_EXAMPLES = ["الرحمن", '"يا أيها الذين آمنوا"', "صبر*"];
@@ -118,6 +119,16 @@ function ResultRow({ hit, criterion, query }: { hit: Hit; criterion: string; que
             {t("meaning.closeness")} <b>{num((score * 100).toFixed(1))}٪</b>
           </span>
         )}
+        {(() => {
+          const c = classOf(ayah.location);
+          return c ? (
+            <Link to="/kulliyat" className={`kl-badge ${c.tier === "كلّية" ? "k" : c.tier === "جامعة" ? "j" : "t"}`}
+              style={{ textDecoration: "none" }}
+              title={ar ? `مؤشّرُ الجامعيّة ${num(Math.round(c.jamiya * 100))}٪ · المرتبة: ${c.tier}` : `jāmiʿiyya ${Math.round(c.jamiya * 100)}% · ${c.tier}`}>
+              ◆ {ar ? "جامعيّة" : ""} {num(Math.round(c.jamiya * 100))}٪
+            </Link>
+          ) : null;
+        })()}
         <span className="chip">
           {t("reader.juz")} <b>{num(ayah.juz)}</b>
         </span>
@@ -256,6 +267,7 @@ function VersePicker({ onPick }: { onPick: (loc: string) => void }) {
 
 export default function Search() {
   useUILang();
+  useKulliyat(); // load the classification so results can show tier + weight-rank
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") ?? "";
   // «اسأل القرآن» is the AI hub: meaning is the default; ?m=links shows a verse's
@@ -366,9 +378,10 @@ export default function Search() {
         found.map(async (h) => ({ score: h.score, ayah: await getAyahByGlobalNo(h.ayahId) })),
       );
       if (seq.current !== id) return;
-      setHits(
-        resolved.flatMap((x): Hit[] => (x.ayah != null ? [{ score: x.score, ayah: x.ayah }] : [])),
-      );
+      const ranked = resolved.flatMap((x): Hit[] => (x.ayah != null ? [{ score: x.score, ayah: x.ayah }] : []));
+      // gentle جامعية boost — foundational verses nudge upward; semantic relevance still leads
+      ranked.sort((a, b) => (b.score! + 0.1 * (classOf(b.ayah.location)?.jamiya ?? 0)) - (a.score! + 0.1 * (classOf(a.ayah.location)?.jamiya ?? 0)));
+      setHits(ranked);
     } catch (e) {
       if (seq.current !== id) return;
       if ((e as Error).message === "no-embedder") setNeedsSetup(true);
