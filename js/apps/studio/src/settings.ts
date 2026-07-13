@@ -20,6 +20,7 @@ export interface Settings {
   focus: boolean; // distraction-free: hide chrome, just the text
   speed: number; // recitation playback rate (0.75 – 1.25)
   reciter: string; // key into RECITERS (AudioButton); default al-Ḥuṣarī
+  tafsir: string; // preferred tafsir book id (BOOK_SOURCES); default التفسير الميسّر
   tajwid: boolean; // colour-coded tajwīd in the text reading modes
   layers: {
     jawami: boolean; // mark آيات كلّيّة (gold marker) on the mushaf page
@@ -39,6 +40,7 @@ const DEFAULTS: Settings = {
   focus: false,
   speed: 1,
   reciter: "husary",
+  tafsir: "muyassar",
   tajwid: false,
   layers: { jawami: true, roots: true, similar: true, collect: false },
 };

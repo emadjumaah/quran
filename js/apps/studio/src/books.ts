@@ -9,12 +9,42 @@
  */
 import { embedQuery } from "./semantic";
 
-/** Registered book/tafsir sources — each ships as public/rag-<id>.bin + .json. */
-export const BOOK_SOURCES: { id: string; label: string }[] = [
-  { id: "muyassar", label: "التفسير الميسّر" },
-  { id: "jalalayn", label: "تفسير الجلالين" },
+export type Genre = "tafsir" | "gharib" | "i3rab" | "qiraat";
+export interface BookSource { id: string; label: string; genre: Genre; author?: string; embedded?: boolean }
+
+/**
+ * Registered browser books. Each ships as public/rag-<id>.json ([{ref,text[,refEnd]}])
+ * for by-ref display; `embedded` ones also ship rag-<id>.bin (int8) for نِبراس's
+ * semantic search. Heavy classical tafsirs stay out of the browser on purpose
+ * (PHASE-2, server/desktop) — see js/data/README.
+ */
+export const BOOK_SOURCES: BookSource[] = [
+  { id: "muyassar", label: "التفسير الميسّر", genre: "tafsir", embedded: true },
+  { id: "jalalayn", label: "تفسير الجلالين", genre: "tafsir", embedded: true },
+  { id: "mukhtasar", label: "المختصر في التفسير", genre: "tafsir", author: "مركز تفسير" },
+  { id: "saadi", label: "تيسير الكريم الرحمن", genre: "tafsir", author: "السعدي" },
+  { id: "aysar", label: "أيسر التفاسير", genre: "tafsir", author: "أبو بكر الجزائري" },
+  { id: "gharibmuyassar", label: "الميسّر في غريب القرآن", genre: "gharib" },
+  { id: "seraj", label: "السراج في غريب القرآن", genre: "gharib", author: "الخضيري" },
+  { id: "i3rabmuyassar", label: "الإعراب الميسّر", genre: "i3rab" },
+  { id: "nashr", label: "النشر في القراءات العشر", genre: "qiraat", author: "ابن الجزري" },
+  { id: "qiraat", label: "الموسوعة القرآنية للقراءات", genre: "qiraat" },
 ];
-export const bookLabel = (id: string): string => BOOK_SOURCES.find((s) => s.id === id)?.label ?? id;
+export const EMBEDDED_SOURCES = BOOK_SOURCES.filter((s) => s.embedded);
+export const TAFSIR_SOURCES = BOOK_SOURCES.filter((s) => s.genre === "tafsir");
+export const bookById = (id: string): BookSource | undefined => BOOK_SOURCES.find((s) => s.id === id);
+export const bookLabel = (id: string): string => bookById(id)?.label ?? id;
+
+export const GENRE_LABELS: Record<Genre, string> = {
+  tafsir: "التفاسير", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات",
+};
+const GENRE_ORDER: Genre[] = ["tafsir", "gharib", "i3rab", "qiraat"];
+/** Books grouped by genre (registry order), for the تفاسير section. */
+export function booksByGenre(): { genre: Genre; label: string; books: BookSource[] }[] {
+  return GENRE_ORDER
+    .map((g) => ({ genre: g, label: GENRE_LABELS[g], books: BOOK_SOURCES.filter((s) => s.genre === g) }))
+    .filter((x) => x.books.length > 0);
+}
 
 interface Book {
   dim: number;
@@ -91,42 +121,73 @@ export async function searchBooks(query: string, sources: string[], topK: number
   return all.slice(0, topK);
 }
 
-// ── tafsir BY REF (verse-anchored) — direct lookup, no vectors ────────────────
-// The reader's «تفسير» button needs a verse's tafsir text, not a semantic search.
-// We load only the source's .json (ref → text), not the .bin.
-const textMaps = new Map<string, Map<string, string> | null>();
-const textLoading = new Map<string, Promise<Map<string, string> | null>>();
+// ── books BY REF (verse-anchored) — direct lookup, no vectors ─────────────────
+// The reader's «تفسير» button and the تفاسير section need a book's text AT a verse,
+// not a semantic search. We load only the source's .json (grouped {ref,text[,refEnd]})
+// and resolve ranges: an entry may cover a span of āyāt (ref..refEnd).
+export interface BookEntry { ref: string; refEnd?: string; text: string; s: number; e: number }
+const refNum = (ref: string): number => {
+  const [su, ay] = ref.split(":").map(Number);
+  return su * 1000 + ay;
+};
 
-function loadTafsirText(source: string): Promise<Map<string, string> | null> {
-  const done = textMaps.get(source);
+const entryLists = new Map<string, BookEntry[] | null>();
+const entryLoading = new Map<string, Promise<BookEntry[] | null>>();
+
+/** One book's entries, sorted by start ref (range-expanded numerics attached). */
+export function loadBookEntries(source: string): Promise<BookEntry[] | null> {
+  const done = entryLists.get(source);
   if (done !== undefined) return Promise.resolve(done);
-  const inflight = textLoading.get(source);
+  const inflight = entryLoading.get(source);
   if (inflight) return inflight;
-  const p = (async (): Promise<Map<string, string> | null> => {
+  const p = (async (): Promise<BookEntry[] | null> => {
     try {
       const res = await fetch(`${import.meta.env.BASE_URL}rag-${source}.json?v=${__DATA_VERSION__}`);
-      if (!res.ok) { textMaps.set(source, null); return null; }
-      const arr = (await res.json()) as { ref: string; text: string }[];
-      const m = new Map(arr.map((x) => [x.ref, x.text]));
-      textMaps.set(source, m);
-      return m;
+      if (!res.ok) { entryLists.set(source, null); return null; }
+      const arr = (await res.json()) as { ref: string; refEnd?: string; text: string }[];
+      const list: BookEntry[] = arr.map((x) => ({
+        ref: x.ref, refEnd: x.refEnd, text: x.text, s: refNum(x.ref), e: refNum(x.refEnd ?? x.ref),
+      }));
+      list.sort((a, b) => a.s - b.s);
+      entryLists.set(source, list);
+      return list;
     } catch {
-      textMaps.set(source, null);
+      entryLists.set(source, null);
       return null;
     } finally {
-      textLoading.delete(source);
+      entryLoading.delete(source);
     }
   })();
-  textLoading.set(source, p);
+  entryLoading.set(source, p);
   return p;
 }
 
-/** All registered tafsirs' text for one āyah (loc "s:a"), in registry order. */
+/** The entry of `source` covering `loc` (handles ref..refEnd ranges); null if none. */
+function entryAt(list: BookEntry[], loc: string): BookEntry | null {
+  const n = refNum(loc);
+  // last entry whose start ≤ n, then check it spans n (entries are sorted, non-overlapping)
+  let lo = 0, hi = list.length - 1, found = -1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (list[mid].s <= n) { found = mid; lo = mid + 1; } else hi = mid - 1;
+  }
+  if (found < 0) return null;
+  const e = list[found];
+  return n <= e.e ? e : null;
+}
+
+/** One book's text at a verse (loc "s:a"), range-aware. null if the book has none. */
+export async function bookTextAt(source: string, loc: string): Promise<string | null> {
+  const list = await loadBookEntries(source);
+  if (!list) return null;
+  return entryAt(list, loc)?.text ?? null;
+}
+
+/** All TAFSIR-genre books' text for one āyah, in registry order (for the «تفسير» button). */
 export async function tafsirFor(loc: string): Promise<{ source: string; label: string; text: string }[]> {
   const out: { source: string; label: string; text: string }[] = [];
-  for (const s of BOOK_SOURCES) {
-    const m = await loadTafsirText(s.id);
-    const text = m?.get(loc);
+  for (const s of TAFSIR_SOURCES) {
+    const text = await bookTextAt(s.id, loc);
     if (text) out.push({ source: s.id, label: s.label, text });
   }
   return out;

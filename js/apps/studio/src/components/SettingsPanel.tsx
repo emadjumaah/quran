@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import { setSettings, useSettings, type Numerals, type QuranFont, type Script, type Theme } from "../settings";
 import { RECITERS, reloadForReciter, setLivePlaybackRate } from "./AudioButton";
+import { TAFSIR_SOURCES } from "../books";
 import { TAJWID_LEGEND } from "../tajwid";
 import { getUILang, num, useUILang } from "../i18n";
 
@@ -182,6 +183,19 @@ export default function SettingsPanel() {
                 { v: "1.25", label: ar ? "١٫٢٥×" : "1.25×" },
               ]}
             />
+          </Row>
+
+          <div className="set-group">{ar ? "التفسير" : "Tafsir"}</div>
+          <Row label={ar ? "التفسير المفضّل" : "Preferred tafsir"}>
+            <select
+              value={s.tafsir}
+              onChange={(e) => setSettings({ tafsir: e.target.value })}
+              style={{ padding: "4px 8px", maxWidth: 168 }}
+            >
+              {TAFSIR_SOURCES.map((b) => (
+                <option key={b.id} value={b.id}>{b.label}</option>
+              ))}
+            </select>
           </Row>
 
           <div className="set-group">{ar ? "التجويد" : "Tajwīd"}</div>

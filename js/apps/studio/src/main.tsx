@@ -21,6 +21,7 @@ const Amthal = lazy(() => import("./views/Amthal"));
 const Fawasil = lazy(() => import("./views/Fawasil"));
 const Mawdui = lazy(() => import("./views/Mawdui"));
 const Mawadi = lazy(() => import("./views/Mawadi"));
+const Tafasir = lazy(() => import("./views/Tafasir"));
 const Maalim = lazy(() => import("./views/Maalim"));
 const Mujam = lazy(() => import("./views/Mujam"));
 const Lisan = lazy(() => import("./views/Lisan"));
@@ -162,6 +163,7 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
     ar: "أدوات وإحصاءات", en: "Tools & stats",
     items: [
+      ["/tafasir", "التفاسير والمصادر", "Tafsir & sources"],
       ["/maalim", "إحصاءات القرآن", "Qur'an stats"],
       ["/mujam", "معجم القرآن", "Dictionary"],
       ["/sarf", "الصرف بالأرقام", "Morphology"],
@@ -432,6 +434,8 @@ function App() {
           <Route path="/mawdui/:t" element={<Mawdui />} />
           <Route path="/mawadi" element={<Mawadi />} />
           <Route path="/mawadi/:sec" element={<Mawadi />} />
+          <Route path="/tafasir" element={<Tafasir />} />
+          <Route path="/tafasir/:id" element={<Tafasir />} />
           <Route path="/aya/:s/:a" element={<AyaCard />} />
           <Route path="/roots" element={<Roots />} />
           <Route path="/roots/:root" element={<Roots />} />

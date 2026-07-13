@@ -1210,6 +1210,17 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .trad-topic-name { font-weight: 600; font-size: 15.5px; line-height: 1.5; }
 .trad-topic-count { flex: none; font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
 .trad-topic-body { padding: 2px 12px 12px; }
+
+/* التفاسير — cited reference library (browse + search) */
+.tf-genre { margin-bottom: 22px; }
+.tf-genre-h { font-family: var(--font-quran); color: var(--accent); font-size: 20px; margin: 0 0 10px; padding-inline-start: 2px; }
+.tf-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.tf-controls .page-search { flex: 1; min-width: 180px; margin-bottom: 0; }
+.tf-surah {
+  flex: none; font-family: var(--font-quran); font-size: 15px; font-weight: 700; color: var(--accent);
+  border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 9px 12px; cursor: pointer;
+}
+.tf-surah:disabled { opacity: .5; cursor: default; }
 .mw-head { text-align: center; margin: 6px 0 26px; }
 .mw-title { font-family: var(--font-quran); color: var(--accent); font-size: clamp(26px, 5vw, 36px); margin: 4px 0 10px; }
 .mw-lead { color: var(--ink-2); max-width: 640px; margin: 0 auto 8px; line-height: 1.8; font-size: 15px; }
@@ -1788,6 +1799,15 @@ table.data tr:hover td { background: var(--panel-2); }
 .tafsir-text { font-size: 14.5px; line-height: 1.95; color: var(--ink-2, var(--ink)); }
 .translate-entry { border-inline-start-color: var(--accent); }
 .translate-src { color: var(--accent); }
+/* تفسير — pick one source at a time (each loads lazily) */
+.tafsir-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
+.tafsir-tab {
+  font-family: var(--font-quran); font-size: 13.5px; padding: 5px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink-2); cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.tafsir-tab:hover { color: var(--ink); }
+.tafsir-tab.on { background: color-mix(in srgb, var(--gold) 16%, transparent); border-color: var(--gold); color: var(--gold); font-weight: 700; }
 /* the ayah's locate line — plain muted text, not chips */
 .ayah-meta { font-size: 12px; color: var(--muted); margin-inline-end: 6px; align-self: center; }
 
