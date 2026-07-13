@@ -52,11 +52,8 @@ export default function About() {
   const XLSX_URL = `${import.meta.env.BASE_URL}mishkat-dataset.xlsx`;
 
   const USE = ar
-    ? ["نصّ القرآن الكريم (مصحف المدينة، رسم عثمان طه)", "ترجمات ومعاني الكلمات", "«المفردات» للراغب الأصفهاني و«مقاييس اللغة» لابن فارس", "الوسم الصرفيّ لمُدوّنة القرآن (QAC)", "إعرابٌ منشور محكَّم («المجتبى» — الخراط)", "الطباعة والرسم والفواصل"]
-    : ["The Qur'anic text (Madina muṣḥaf)", "Word translations & glosses", "al-Rāghib's Mufradāt + Ibn Fāris's Maqāyīs", "The Quranic Arabic Corpus morphology", "One published, reviewed iʿrāb (al-Kharrāṭ)", "Typography, rasm & verse-endings"];
-  const AVOID = ar
-    ? ["تفسير", "حديث", "أسباب نزول", "قراءات", "ناسخ ومنسوخ"]
-    : ["Tafsīr", "Ḥadīth", "Occasions of revelation", "Variant readings (qirāʾāt)", "Abrogation (naskh)"];
+    ? ["نصّ القرآن الكريم (مصحف المدينة، رسم عثمان طه)", "ترجمات ومعاني الكلمات", "«المفردات» للراغب الأصفهاني و«مقاييس اللغة» لابن فارس", "الوسم الصرفيّ لمُدوّنة القرآن (QAC)", "إعرابٌ منشور محكَّم («المجتبى» — الخراط)", "تضميناتُ نموذج Gemini للمعنى", "الطباعة والرسم والفواصل"]
+    : ["The Qur'anic text (Madina muṣḥaf)", "Word translations & glosses", "al-Rāghib's Mufradāt + Ibn Fāris's Maqāyīs", "The Quranic Arabic Corpus morphology", "One published, reviewed iʿrāb (al-Kharrāṭ)", "Gemini meaning-embeddings", "Typography, rasm & verse-endings"];
 
   return (
     <div className="page">
@@ -73,29 +70,17 @@ export default function About() {
         {/* 1 — the research framing */}
         <Section id="mishkat-research" />
 
-        {/* the data covenant — the bounds every layer is held to */}
+        {/* the sources we rely on */}
         <div className="card ab-covenant-card">
-          <h2 className="ab-h2">{ar ? "حدودٌ نلتزمها" : "The bounds we keep"}</h2>
+          <h2 className="ab-h2">{ar ? "المصادرُ التي نعتمدها" : "The sources we rely on"}</h2>
           <p className="muted" style={{ marginTop: 0 }}>
             {ar
-              ? "منهجُنا أن نحسب من مصادرَ محدودةٍ معلومة، ونعرض ما حسبناه وحده. وما وراءها من علومٍ جليلةٍ نتركه لأهله ومظانّه:"
-              : "Our method: compute from a fixed, known set of sources, and present only what we computed. The greater sciences beyond them we leave to their scholars:"}
+              ? "نعتمدُ في الحساب على مصادرَ معلومةٍ محدّدة:"
+              : "Our computation rests on a fixed, known set of sources:"}
           </p>
-          <div className="ab-covenant">
-            <div className="ab-col ab-use">
-              <div className="ab-col-h">{ar ? "نحسب منه" : "We compute from"}</div>
-              <ul>{USE.map((x, i) => <li key={i}>{x}</li>)}</ul>
-            </div>
-            <div className="ab-col ab-avoid">
-              <div className="ab-col-h">{ar ? "نتركه لأهله" : "Left to its scholars"}</div>
-              <ul>{AVOID.map((x, i) => <li key={i}>{x}</li>)}</ul>
-            </div>
+          <div className="ab-col ab-use ab-sources">
+            <ul>{USE.map((x, i) => <li key={i}>{x}</li>)}</ul>
           </div>
-          <p className="ab-covenant-note">
-            {ar
-              ? "وليس في هذا حكمٌ على تلك العلوم ولا استغناءٌ عنها — فالتفسيرُ والحديثُ وعلومُ القرآن أصلُ فهمِ الكتاب، ولها أهلُها الراسخون. وإنّما هو انضباطٌ في الأداة: نَقصُرها على ما يُحسَب ويُتحقَّق منه، ولا نُقحِمُ فيه رأيًا من عندنا؛ نعرض المحسوب مادّةً بين يدَي القارئ. فالمشروعُ رافدٌ، لا بديلٌ عن عالمٍ ولا عن كتاب."
-              : "This is no judgment on those sciences, nor doing without them — tafsīr, ḥadīth and the Qur'anic sciences are the ground of understanding the Book, with their deeply-rooted scholars. It is a discipline of the tool: we keep it to what can be computed and verified, and we inject no opinion of our own — we present the computed as material in the reader's hands. The project is an aid, never a substitute for a scholar or a book."}
-          </p>
         </div>
 
         {/* 2 — embeddings, vectors, cosine */}
