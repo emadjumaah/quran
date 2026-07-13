@@ -72,6 +72,7 @@ export default function MushafMap() {
         </div>
 
         {sel && selCls && (
+          <div className="mm-modal" onClick={(e) => { if (e.target === e.currentTarget) setSel(null); }} role="dialog" aria-modal="true">
           <div className="mm-panel card">
             <button className="gx-close" onClick={() => setSel(null)} aria-label="close">✕</button>
             <div className="gx-panel-h">
@@ -82,9 +83,10 @@ export default function MushafMap() {
             {texts.get(sel) && <p className="gx-mean quran" dir="rtl">{texts.get(sel)!.textClean}</p>}
             {themeName(selCls.theme) && <div className="muted gx-nb-h">◇ {themeName(selCls.theme)}</div>}
             <div className="gx-links">
+              <Link to={`/aya/${sel.split(":")[0]}/${sel.split(":")[1]}`} className="chip link">{ar ? "بطاقةُ الآية ←" : "verse card ←"}</Link>
               <Link to={`/read/${sel.split(":")[0]}/${sel.split(":")[1]}`} className="chip link">{ar ? "اقرأ الآية ←" : "read ←"}</Link>
-              <Link to="/kulliyat" className="chip link">{ar ? "الكلّيّات ←" : "kulliyyāt ←"}</Link>
             </div>
+          </div>
           </div>
         )}
       </div>

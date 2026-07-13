@@ -1426,7 +1426,10 @@ table.data tr:hover td { background: var(--panel-2); }
 .mm-cell.k { background: var(--gold); box-shadow: 0 0 3px var(--gold); }
 .mm-cell.on { outline: 2px solid var(--ink); outline-offset: 1px; }
 .mm-cell:hover { transform: scale(1.5); }
-.mm-panel { margin-top: 18px; position: relative; }
+.mm-modal { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.42); backdrop-filter: blur(2px); animation: mm-fade .12s ease; }
+@keyframes mm-fade { from { opacity: 0; } to { opacity: 1; } }
+.mm-panel { position: relative; width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto; box-shadow: 0 18px 50px rgba(0,0,0,0.35); }
+.mm-panel .gx-mean { font-size: calc(23px * var(--quran-scale, 1)); line-height: 2.1; color: var(--ink); margin: 6px 0 12px; }
 /* الخيوط الموضوعية — thematic threads */
 .th-form { display: flex; gap: 8px; margin-top: 10px; }
 .th-form input { flex: 1; }

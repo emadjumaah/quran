@@ -160,18 +160,28 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
       ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
       ["/wujuh", "الوجوه والنظائر", "Polysemy"],
       ["/mujam", "معجم القرآن", "Dictionary"],
-      ["/sarf", "الصرف بالأرقام", "Morphology"],
-      ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
     ],
   },
   {
     ar: "أدوات وإحصاءات", en: "Tools & stats",
     items: [
       ["/maalim", "إحصاءات القرآن", "Qur'an stats"],
-      ["/collections", "المجموعات", "Collections"],
+      ["/sarf", "الصرف بالأرقام", "Morphology"],
+      ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
     ],
   },
 ];
+
+/** The nav groups, with المجموعات appended only when its layer is enabled in settings. */
+function useNavGroups() {
+  const s = useSettings();
+  if (!s.layers.collect) return NAV_GROUPS;
+  return NAV_GROUPS.map((g) =>
+    g.en === "Tools & stats"
+      ? { ...g, items: [...g.items, ["/collections", "المجموعات", "Collections"] as NavItem] }
+      : g,
+  );
+}
 
 function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
   const loc = useLocation();
@@ -201,10 +211,11 @@ function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
 function Nav() {
   useUILang();
   const ar = getUILang() === "ar";
+  const groups = useNavGroups();
   return (
     <nav>
       <NavLink to="/read" title={ar ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
-      {NAV_GROUPS.map((g) => (
+      {groups.map((g) => (
         <NavGroup key={g.ar} label={ar ? g.ar : g.en} items={g.items} />
       ))}
       <NavLink to="/about" title={ar ? "عن المشروع" : "about the project"}>{ar ? "عن المشروع" : "About"}</NavLink>
@@ -253,6 +264,7 @@ function useIsMobile(): boolean {
 function MobileDrawer({ onClose }: { onClose: () => void }) {
   useUILang();
   const ar = getUILang() === "ar";
+  const groups = useNavGroups();
   return (
     <>
       <div className="drawer-backdrop" onClick={onClose} />
@@ -263,7 +275,7 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
         </div>
         <nav className="drawer-nav" onClick={onClose}>
           <NavLink to="/read">{ar ? "المصحف" : "Reader"}</NavLink>
-          {NAV_GROUPS.map((g) => (
+          {groups.map((g) => (
             <div key={g.ar} className="drawer-group">
               <div className="drawer-group-h">{ar ? g.ar : g.en}</div>
               {g.items.map(([to, arL, enL]) => (

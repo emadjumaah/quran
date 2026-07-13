@@ -119,12 +119,13 @@ export default function Maalim() {
     <div className="page">
       <div className="jw-wrap">
         <header className="jw-header">
-          <h1 className="jw-title">{ar ? "معالم القرآن" : "Landmarks of the Qur'an"}</h1>
+          <h1 className="jw-title">{ar ? "معالم القرآن وإحصاءاته" : "Landmarks & stats of the Qur'an"}</h1>
           <p className="jw-lead">
             {ar
               ? "حقائقُ محسوبةٌ من نصّ القرآن وبنيته — لا رأيَ فيها: أطولُ الآيات وأقصرُها، مواضعُ السجود، ما تكرّر بلفظه، فواتحُ السور، وأندرُ الجذور وأكثرُها. للباحث والمتدبّر."
               : "Computed facts about the Qur'an's text and structure — no opinion: the longest and shortest verses, the sajda verses, the verbatim refrains, the sura openings, the rarest and commonest roots."}
           </p>
+          <Link to="/dashboard" className="chip link" style={{ textDecoration: "none" }}>{ar ? "الإحصاءاتُ التفصيليّةُ للمصحف ←" : "detailed corpus stats ←"}</Link>
         </header>
 
         <div className="maalim-grid">
