@@ -1187,6 +1187,8 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .mw-verse.rep { background: var(--gold-soft); }
 .mw-verse-ref { color: var(--accent); font-weight: 600; font-size: 13px; white-space: nowrap; min-width: 84px; }
 .mw-verse-text { font-family: var(--font-quran); direction: rtl; text-align: right; font-size: calc(21px * var(--quran-scale, 1)); line-height: 2; color: var(--ink); }
+.mw-domtheme { margin-top: 10px; display: inline-block; padding: 6px 11px; border-radius: 9px; background: var(--accent-soft); border: 1px solid var(--line); font-size: 12.5px; color: var(--ink-2); }
+.mw-domtheme b { color: var(--accent); font-weight: 700; }
 @media (max-width: 620px) { .mw-verse { flex-direction: column; gap: 2px; } }
 
 .muted { color: var(--muted); font-size: 12.5px; }

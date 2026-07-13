@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMawdui, type MSection } from "../mawdui";
 import { ayahByLocationMap, surahNameAr } from "../db";
+import { classOf, themeName, useKulliyat } from "../kulliyat";
 import type { AyahDoc } from "../types";
 import { ayahsCount, getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
@@ -136,8 +137,23 @@ function Section({ section, idx }: { section: MSection; idx: number }) {
 function Topic({ section, idx, topicIdx }: { section: MSection; idx: number; topicIdx: number }) {
   const ar = getUILang() === "ar";
   const topic = section.topics[topicIdx];
+  const ready = useKulliyat();
   const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
   useEffect(() => { ayahByLocationMap().then(setTexts); }, []);
+  // order by جامعية — the أصل (most foundational verse) first
+  const members = useMemo(
+    () => (topic ? [...topic.members].sort((a, b) => (classOf(b)?.jamiya ?? 0) - (classOf(a)?.jamiya ?? 0)) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [topic, ready],
+  );
+  // the bridge: which of the 90 computed محاور this topic's verses mostly fall in
+  const domTheme = useMemo(() => {
+    if (!topic || !ready) return null;
+    const c = new Map<number, number>();
+    for (const loc of topic.members) { const v = classOf(loc); if (v) c.set(v.theme, (c.get(v.theme) ?? 0) + 1); }
+    let best = -1, bn = 0; for (const [th, n] of c) if (n > bn) { bn = n; best = th; }
+    return best >= 0 ? { name: themeName(best), n: bn } : null;
+  }, [topic, ready]);
   if (!topic) return <p className="muted">{t("notFound")}</p>;
   return (
     <>
@@ -146,19 +162,28 @@ function Topic({ section, idx, topicIdx }: { section: MSection; idx: number; top
         <h1 className="mw-title">{topic.title}</h1>
         <p className="mw-lead">{topic.theme}</p>
         <div className="muted" style={{ fontSize: 13 }}>{ayahsCount(topic.members.length)}</div>
+        {domTheme?.name && (
+          <div className="mw-domtheme" title={ar ? "المحور المحسوب الذي تنتمي إليه أكثرُ آيات هذا الموضوع (طبقةٌ مُكمِّلة)" : "the computed محور most of this topic's verses fall in"}>
+            ◇ {ar ? "المحورُ المحسوب الغالب: " : "computed محور: "}<b>{domTheme.name}</b> <span className="muted">({num(domTheme.n)}/{num(topic.members.length)})</span>
+          </div>
+        )}
       </header>
       <div className="mw-verses">
-        {topic.members.map((loc) => (
-          <Link
-            key={loc}
-            to={readPathOf(loc)}
-            className={`mw-verse${loc === topic.rep ? " rep" : ""}`}
-            title={ar ? "افتح في المصحف" : "open in the reader"}
-          >
-            <span className="mw-verse-ref">{arName(loc)}</span>
-            <span className="mw-verse-text quran">{texts.get(loc)?.textUthmani ?? loc}</span>
-          </Link>
-        ))}
+        {members.map((loc) => {
+          const c = classOf(loc);
+          return (
+            <Link
+              key={loc}
+              to={readPathOf(loc)}
+              className={`mw-verse${loc === topic.rep ? " rep" : ""}`}
+              title={ar ? "افتح في المصحف" : "open in the reader"}
+            >
+              <span className="mw-verse-ref">{arName(loc)}</span>
+              {c && <span className={`kl-badge ${c.tier === "كلّية" ? "k" : c.tier === "جامعة" ? "j" : "t"}`} style={{ flex: "none" }}>{c.tier}</span>}
+              <span className="mw-verse-text quran">{texts.get(loc)?.textUthmani ?? loc}</span>
+            </Link>
+          );
+        })}
       </div>
     </>
   );

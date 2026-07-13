@@ -5,6 +5,7 @@ import { num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import { readPathOf } from "../types";
 import { similarOf } from "../similar";
+import { classOf, loadKulliyat } from "../kulliyat";
 import { useSettings } from "../settings";
 import AyahRef from "./AyahRef";
 import CollectButton from "./CollectButton";
@@ -115,11 +116,15 @@ export function SimilarAyahsPanel({
   useEffect(() => {
     let live = true;
     (async () => {
+      await loadKulliyat().catch(() => {});
       const ns = await similarOf(ayahId);
       const resolved = await Promise.all(
         ns.map(async (n) => ({ score: n.score, ayah: await getAyahByGlobalNo(n.ayahId) })),
       );
-      if (live) setRows(resolved.flatMap((r): Row[] => (r.ayah ? [{ ayah: r.ayah, score: r.score }] : [])));
+      const list = resolved.flatMap((r): Row[] => (r.ayah ? [{ ayah: r.ayah, score: r.score }] : []));
+      // deepest first — nudge the more foundational neighbours up (closeness still leads)
+      list.sort((a, b) => (b.score + 0.1 * (classOf(b.ayah.location)?.jamiya ?? 0)) - (a.score + 0.1 * (classOf(a.ayah.location)?.jamiya ?? 0)));
+      if (live) setRows(list);
     })();
     return () => {
       live = false;
@@ -140,6 +145,7 @@ export function SimilarAyahsPanel({
               <span className="chip gold" style={{ fontSize: 10.5 }}>
                 {num(Math.round(r.score * 100))}٪
               </span>
+              {(() => { const c = classOf(r.ayah.location); return c ? <span className={`kl-badge ${c.tier === "كلّية" ? "k" : c.tier === "جامعة" ? "j" : "t"}`} title={`الجامعيّة ${num(Math.round(c.jamiya * 100))}٪`}>{c.tier}</span> : null; })()}
               <AudioButton ayahId={ayahIdOf(r.ayah)} preview />
               <CollectButton
                 locations={[r.ayah.location]}
