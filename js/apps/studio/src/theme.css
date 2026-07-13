@@ -1804,7 +1804,7 @@ table.data tr:hover td { background: var(--panel-2); }
 /* تفسير — pick one source at a time (each loads lazily) */
 .tafsir-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
 .tafsir-tab {
-  font-family: var(--font-quran); font-size: 13.5px; padding: 5px 12px; border-radius: 999px;
+  font-family: var(--font-quran); font-size: 13px; line-height: 1.35; padding: 2px 11px; border-radius: 999px;
   border: 1px solid var(--line); background: var(--panel); color: var(--ink-2); cursor: pointer;
   transition: background .12s, color .12s, border-color .12s;
 }

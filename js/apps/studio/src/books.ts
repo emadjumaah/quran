@@ -21,16 +21,16 @@ export interface BookSource { id: string; label: string; genre: Genre; author?: 
 export const BOOK_SOURCES: BookSource[] = [
   { id: "muyassar", label: "التفسير الميسّر", genre: "tafsir", embedded: true },
   { id: "jalalayn", label: "تفسير الجلالين", genre: "tafsir", embedded: true },
-  { id: "mukhtasar", label: "المختصر في التفسير", genre: "tafsir", author: "مركز تفسير" },
-  { id: "saadi", label: "تيسير الكريم الرحمن", genre: "tafsir", author: "السعدي" },
+  { id: "mukhtasar", label: "المختصر في التفسير", genre: "tafsir", author: "مركز تفسير", embedded: true },
+  { id: "saadi", label: "تيسير الكريم الرحمن", genre: "tafsir", author: "السعدي", embedded: true },
   { id: "aysar", label: "أيسر التفاسير", genre: "tafsir", author: "أبو بكر الجزائري" },
   { id: "gharibmuyassar", label: "الميسّر في غريب القرآن", genre: "gharib" },
-  { id: "seraj", label: "السراج في غريب القرآن", genre: "gharib", author: "الخضيري" },
+  { id: "seraj", label: "السراج في غريب القرآن", genre: "gharib", author: "الخضيري", embedded: true },
   { id: "i3rabmuyassar", label: "الإعراب الميسّر", genre: "i3rab" },
   { id: "nashr", label: "النشر في القراءات العشر", genre: "qiraat", author: "ابن الجزري" },
   { id: "qiraat", label: "الموسوعة القرآنية للقراءات", genre: "qiraat" },
-  { id: "wahidi", label: "أسباب نزول القرآن", genre: "asbab", author: "الواحدي" },
-  { id: "muharrar", label: "المحرَّر في أسباب النزول", genre: "asbab", author: "المزيني" },
+  { id: "wahidi", label: "أسباب نزول القرآن", genre: "asbab", author: "الواحدي", embedded: true },
+  { id: "muharrar", label: "المحرَّر في أسباب النزول", genre: "asbab", author: "المزيني", embedded: true },
 ];
 export const EMBEDDED_SOURCES = BOOK_SOURCES.filter((s) => s.embedded);
 export const TAFSIR_SOURCES = BOOK_SOURCES.filter((s) => s.genre === "tafsir");
