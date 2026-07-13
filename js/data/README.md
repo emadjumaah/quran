@@ -27,6 +27,7 @@ covered) and `textMB`.
 | `i3rab/` | الجدول (محمود صافي) · الدرّ المصون · الدرويش · الإعراب الميسّر |
 | `gharib/` | السراج (الخضيري) · الميسّر في الغريب · تحليل كلمات القرآن |
 | `qiraat/` | الموسوعة القرآنية للقراءات · النشر (ابن الجزري) |
+| `asbab/` | المحرَّر في أسباب النزول (المزيني، 198 آية — الصحيح فقط) · أسباب نزول القرآن (الواحدي، 564 آية) |
 | `quranpedia/` | `topics.json` (تصنيف موضوعي) · `similar.ndjson` (متشابه) · `qiraat.ndjson` (قراءات لكل كلمة) |
 
 ### Quranpedia structured layers (api.quranpedia.net, per-āyah)
@@ -49,6 +50,10 @@ node scripts/collect-books.mjs <tafsir_api/tafsir>
 # 2) quranpedia layers (polite, resumable)
 node scripts/harvest-quranpedia.mjs similar
 node scripts/harvest-quranpedia.mjs qiraat
+# 2b) a single Quranpedia book by id → <genre>/<outId>.jsonl (per-āyah, HTML-stripped)
+node scripts/harvest-quranpedia-book.mjs 460 asbab muharrar   # المحرّر (المزيني)
+node scripts/harvest-quranpedia-book.mjs 2919 asbab wahidi    # أسباب النزول (الواحدي)
+#    NB: run book harvests ONE AT A TIME — concurrent runs throttle the API (~20% errors)
 # 3) embed a book for نِبراس (browser int8 path)
 GEMINI_API_KEY=… node scripts/build-book-embeddings.mjs <genre>/<id>.jsonl <id>
 #    then register {id,label} in src/rag.ts BOOK_SOURCES

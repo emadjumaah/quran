@@ -1799,6 +1799,8 @@ table.data tr:hover td { background: var(--panel-2); }
 .tafsir-text { font-size: 14.5px; line-height: 1.95; color: var(--ink-2, var(--ink)); }
 .translate-entry { border-inline-start-color: var(--accent); }
 .translate-src { color: var(--accent); }
+.asbab-entry { border-inline-start-color: #b5763a; }
+.asbab-src { color: #b5763a; }
 /* تفسير — pick one source at a time (each loads lazily) */
 .tafsir-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
 .tafsir-tab {

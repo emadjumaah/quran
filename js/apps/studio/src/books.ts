@@ -9,7 +9,7 @@
  */
 import { embedQuery } from "./semantic";
 
-export type Genre = "tafsir" | "gharib" | "i3rab" | "qiraat";
+export type Genre = "tafsir" | "asbab" | "gharib" | "i3rab" | "qiraat";
 export interface BookSource { id: string; label: string; genre: Genre; author?: string; embedded?: boolean }
 
 /**
@@ -29,6 +29,8 @@ export const BOOK_SOURCES: BookSource[] = [
   { id: "i3rabmuyassar", label: "الإعراب الميسّر", genre: "i3rab" },
   { id: "nashr", label: "النشر في القراءات العشر", genre: "qiraat", author: "ابن الجزري" },
   { id: "qiraat", label: "الموسوعة القرآنية للقراءات", genre: "qiraat" },
+  { id: "wahidi", label: "أسباب نزول القرآن", genre: "asbab", author: "الواحدي" },
+  { id: "muharrar", label: "المحرَّر في أسباب النزول", genre: "asbab", author: "المزيني" },
 ];
 export const EMBEDDED_SOURCES = BOOK_SOURCES.filter((s) => s.embedded);
 export const TAFSIR_SOURCES = BOOK_SOURCES.filter((s) => s.genre === "tafsir");
@@ -36,9 +38,9 @@ export const bookById = (id: string): BookSource | undefined => BOOK_SOURCES.fin
 export const bookLabel = (id: string): string => bookById(id)?.label ?? id;
 
 export const GENRE_LABELS: Record<Genre, string> = {
-  tafsir: "التفاسير", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات",
+  tafsir: "التفاسير", asbab: "أسباب النزول", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات",
 };
-const GENRE_ORDER: Genre[] = ["tafsir", "gharib", "i3rab", "qiraat"];
+const GENRE_ORDER: Genre[] = ["tafsir", "asbab", "gharib", "i3rab", "qiraat"];
 /** Books grouped by genre (registry order), for the تفاسير section. */
 export function booksByGenre(): { genre: Genre; label: string; books: BookSource[] }[] {
   return GENRE_ORDER
@@ -187,6 +189,38 @@ export async function bookTextAt(source: string, loc: string): Promise<string | 
 export async function tafsirFor(loc: string): Promise<{ source: string; label: string; text: string }[]> {
   const out: { source: string; label: string; text: string }[] = [];
   for (const s of TAFSIR_SOURCES) {
+    const text = await bookTextAt(s.id, loc);
+    if (text) out.push({ source: s.id, label: s.label, text });
+  }
+  return out;
+}
+
+// ── أسباب النزول ──────────────────────────────────────────────────────────────
+export const ASBAB_SOURCES = BOOK_SOURCES.filter((s) => s.genre === "asbab");
+
+/** Tiny index (sorted [start,end] ref-num ranges) of verses that HAVE a sabab, so
+ *  the reader shows the «سبب النزول» chip only where one exists — no big load. */
+let asbabIdx: [number, number][] | null = null;
+let asbabIdxLoading: Promise<[number, number][]> | null = null;
+export function loadAsbabIndex(): Promise<[number, number][]> {
+  if (asbabIdx) return Promise.resolve(asbabIdx);
+  asbabIdxLoading ??= fetch(`${import.meta.env.BASE_URL}asbab-index.json?v=${__DATA_VERSION__}`)
+    .then((r) => (r.ok ? r.json() : []))
+    .then((d: [number, number][]) => (asbabIdx = d))
+    .catch(() => (asbabIdx = []));
+  return asbabIdxLoading;
+}
+/** Does `loc` have a recorded sabab? (index must be loaded — see loadAsbabIndex.) */
+export function hasAsbab(loc: string): boolean {
+  if (!asbabIdx) return false;
+  const n = refNum(loc);
+  return asbabIdx.some(([s, e]) => n >= s && n <= e);
+}
+
+/** All أسباب-النزول books' text for one āyah, range-aware (for the «سبب النزول» chip). */
+export async function asbabFor(loc: string): Promise<{ source: string; label: string; text: string }[]> {
+  const out: { source: string; label: string; text: string }[] = [];
+  for (const s of ASBAB_SOURCES) {
     const text = await bookTextAt(s.id, loc);
     if (text) out.push({ source: s.id, label: s.label, text });
   }

@@ -24,9 +24,14 @@ const BOOKS = [
   ["i3rabmuyassar", "i3rab", "الإعراب الميسّر"],
   ["nashr", "qiraat", "النشر في القراءات العشر — ابن الجزري"],
   ["qiraat", "qiraat", "الموسوعة القرآنية للقراءات"],
+  ["wahidi", "asbab", "أسباب نزول القرآن — الواحدي"],
+  ["muharrar", "asbab", "المحرَّر في أسباب النزول — المزيني"],
 ];
 
 const clean = (s) => s.replace(/\s+/g, " ").trim();
+const refNum = (ref) => { const [s, a] = ref.split(":").map(Number); return s * 1000 + a; };
+
+const asbabRanges = []; // [startNum, endNum] union, for a tiny "which verses have a sabab" index
 
 for (const [id, genre, label] of BOOKS) {
   const src = join(DATA, genre, `${id}.jsonl`);
@@ -40,10 +45,22 @@ for (const [id, genre, label] of BOOKS) {
     const e = { ref: rec.ref, text: clean(rec.text) };
     if (rec.refEnd && rec.refEnd !== rec.ref) e.refEnd = rec.refEnd;
     out.push(e);
+    if (genre === "asbab") asbabRanges.push([refNum(e.ref), refNum(e.refEnd ?? e.ref)]);
   }
   const dest = join(OUT, `rag-${id}.json`);
   writeFileSync(dest, JSON.stringify(out));
   const mb = (Buffer.byteLength(JSON.stringify(out)) / 1e6).toFixed(1);
   console.log(`${id.padEnd(16)} ${String(out.length).padStart(5)} blocks  ${mb} MB  (${genre})  ${label}`);
 }
+
+// merged, sorted range index → the reader shows «سبب النزول» only where one exists
+asbabRanges.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+const merged = [];
+for (const [s, e] of asbabRanges) {
+  const last = merged[merged.length - 1];
+  if (last && s <= last[1] + 1) last[1] = Math.max(last[1], e);
+  else merged.push([s, e]);
+}
+writeFileSync(join(OUT, "asbab-index.json"), JSON.stringify(merged));
+console.log(`asbab-index      ${merged.length} ranges`);
 console.log("done →", OUT);

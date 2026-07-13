@@ -28,6 +28,7 @@ import SimilarAyahs, { SimilarAyahsPanel } from "../components/SimilarAyahs";
 import MuhkamaLine from "../components/MuhkamaLine";
 import EraabChip, { EraabPanel } from "../components/EraabChip";
 import { TafsirChip, TafsirPanel } from "../components/TafsirChip";
+import { AsbabChip, AsbabPanel } from "../components/AsbabChip";
 import TadabburChip, { TadabburPanel } from "../components/TadabburChip";
 import InlineOmni from "../components/InlineOmni";
 import ScrollTopFab from "../components/ScrollTopFab";
@@ -751,6 +752,7 @@ export default function Reader() {
                   <AudioButton ayahId={ayahIdOf(ayah)} />
                   <EraabChip open={panelOpen("eraab", ayah.location)} onToggle={() => togglePanel("eraab", ayah.location)} />
                   <TafsirChip open={panelOpen("tafsir", ayah.location)} onToggle={() => togglePanel("tafsir", ayah.location)} />
+                  <AsbabChip location={ayah.location} open={panelOpen("asbab", ayah.location)} onToggle={() => togglePanel("asbab", ayah.location)} />
                   <button className={`chip${panelOpen("translate", ayah.location) ? " on" : ""}`} onClick={() => togglePanel("translate", ayah.location)} title={getUILang() === "ar" ? "الترجمة" : "translation"}>{getUILang() === "ar" ? "ترجمة" : "Translation"}</button>
                   <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} open={panelOpen("similar", ayah.location)} onToggle={() => togglePanel("similar", ayah.location)} />
                   <TadabburChip open={panelOpen("tadabbur", ayah.location)} onToggle={() => togglePanel("tadabbur", ayah.location)} />
@@ -759,6 +761,7 @@ export default function Reader() {
                 </div>
                 <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
                 <TafsirPanel location={ayah.location} open={panelOpen("tafsir", ayah.location)} />
+                <AsbabPanel location={ayah.location} open={panelOpen("asbab", ayah.location)} />
                 <Translations ayah={ayah} open={panelOpen("translate", ayah.location)} />
                 <TadabburPanel ayah={ayah} ayahId={ayahIdOf(ayah)} open={panelOpen("tadabbur", ayah.location)} />
                 {panelOpen("similar", ayah.location) && (

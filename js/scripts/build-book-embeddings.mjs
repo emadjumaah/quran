@@ -68,5 +68,9 @@ const header = Buffer.from(headerJson);
 const head = Buffer.alloc(4); head.writeUInt32LE(header.length);
 const binPath = path.join(PUB, `rag-${source}.bin`);
 fs.writeFileSync(binPath, Buffer.concat([head, header, Buffer.from(scales.buffer), Buffer.from(data.buffer)]));
-fs.writeFileSync(path.join(PUB, `rag-${source}.json`), JSON.stringify(records.map((r) => ({ ref: String(r.ref), text: String(r.text) }))));
+fs.writeFileSync(path.join(PUB, `rag-${source}.json`), JSON.stringify(records.map((r) => {
+  const o = { ref: String(r.ref), text: String(r.text).replace(/\s+/g, " ").trim() };
+  if (r.refEnd && r.refEnd !== r.ref) o.refEnd = String(r.refEnd); // keep ranges for by-ref display
+  return o;
+})));
 console.log(`wrote rag-${source}.bin (${(fs.statSync(binPath).size / 1e6).toFixed(1)} MB, ${count} vectors) + rag-${source}.json`);
