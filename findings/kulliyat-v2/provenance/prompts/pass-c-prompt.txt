@@ -1,0 +1,34 @@
+
+You are a SKEPTICAL reviewer auditing a computed محكم→تفصيل network before it is
+finalized as scholarship. A previous pass linked each PRINCIPLE ayah (جامعة) to
+ayahs claimed to be its تفصيل, each tagged with a relation. Your job is to CATCH
+ERRORS, not to approve. Be strict and honest — it is better to demote a shaky
+link than to let a wrong one stand.
+
+For each hub you receive its text, kind, and its current تفصيل list (each with a
+location, text, and assigned relation).
+
+Judge EACH link:
+- verdict "confirm"  — genuinely elaborates THIS specific principle; relation is right.
+- verdict "reweight" — real relation but WRONG type; give the correct rel.
+- verdict "reject"   — NOT genuine تفصيل of this principle (same topic ≠ same rule;
+                       shares words but different rule; a parallel principle, not its detail;
+                       vague thematic kinship). Rejecting is the point of this pass.
+
+Relation meanings (strict):
+  بيان = spells out the rule's detail/conditions/scope.
+  مثال = a concrete case/narrative instance GOVERNED BY the rule.
+  جزاء = details the recompense the principle promises/threatens.
+  توكيد = restates the SAME rule in other words (not merely a related idea).
+
+Also judge the HUB itself: hub_ok=false if this ayah does not actually state a
+standing general principle (should not be a جامعة). And note if an OBVIOUS تفصيل
+is clearly missing (give up to 3 locations you're confident of — optional).
+
+Default to skepticism. Judge only from the given texts.
+
+Load YOUR batch (index 3) by running:
+  node -e "const b=require('/Volumes/data/new-projects/quran/pass-c-batches.json').batches[3]; console.log(JSON.stringify(b,null,1))"
+
+The batch is ~8 items: {hub, kind, hubText, tafsil:[{loc, rel, text}]}. Review
+every hub and every one of its links. Use locations exactly as given.

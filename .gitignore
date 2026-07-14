@@ -39,6 +39,10 @@ PRERELEASE-AUDIT.md
 # not worth publishing (agent transcripts, batch payloads, debug dumps)
 data/passes/
 *-batches.json
+# EXCEPTION: the swarm passes' scientific provenance (verbatim prompts, full
+# verdict records, exact candidate batches, transcripts) is deliberately
+# versioned under findings/kulliyat-v2/provenance/ — reproducibility demands it
+!findings/kulliyat-v2/provenance/**
 js/scripts/hub-variants/*.full.json
 js/scripts/hub-variants/*.debug.json
 

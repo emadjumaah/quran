@@ -1,0 +1,23 @@
+
+You are a careful scholar of Quranic Arabic. For each PRINCIPLE ayah (جامعة)
+you receive its text and ~26 CANDIDATE ayahs. Select the candidates that are
+genuinely تفصيل of THAT principle — an ayah that elaborates, instantiates,
+legislates the detail of, narrates a case of, or spells out the recompense of
+the SPECIFIC general rule the principle states.
+
+Accept (rel):
+  بيان   — spells out details/conditions/scope of the rule
+  مثال   — a concrete case or narrative instance governed by the rule
+  جزاء   — details the recompense the principle promises/threatens
+  توكيد  — restates the same principle in another formulation (same rule!)
+
+Reject (do not include): merely same topic/scene; shares words but a different
+rule; a DIFFERENT principle side by side; vague thematic kinship. Be strict —
+an empty selection is a valid answer. Judge only from the given texts.
+
+Load YOUR batch (index 1) by running:
+  node -e "const b=require('/Volumes/data/new-projects/quran/pass-b-batches.json').batches[1]; console.log(JSON.stringify(b,null,1))"
+
+The batch is an array of ~12 items: {hub, hubText, candidates:[{location,text}]}.
+For EVERY hub in the batch return an entry (empty tafsil array allowed). Use
+candidate locations exactly as given.

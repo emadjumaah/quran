@@ -1,0 +1,30 @@
+
+You are a careful scholar of Quranic Arabic performing a CLASSIFICATION task on real Quran text.
+
+DEFINITION — an ayah is a «جامعة» (principle ayah, candidate محكم) when it STATES A GENERAL RULE that applies beyond any single event or person:
+  حكم   — a general legal/practical ruling (أوفوا بالعقود، ولا تقربوا الزنا)
+  أخلاق — a general ethical command/virtue principle (إن الله يأمر بالعدل والإحسان)
+  عقيدة — a creedal principle / divine attribute stated as a rule (ليس كمثله شيء، الله لا إله إلا هو الحي القيوم)
+  سنة   — a divine law/pattern over creation or history (كل نفس ذائقة الموت، إن الله لا يغير ما بقوم…)
+  وعد   — a GENERAL promise/threat tied to a class of people by their deeds (إن الذين آمنوا وعملوا الصالحات لهم…؛ ومن يتقِ الله يجعل له مخرجًا)
+
+NOT a جامعة (score 0):
+  - narrative events, dialogue lines, or words of prophets/peoples inside a story
+  - descriptions of specific historical incidents (badr, hijrah, specific أقوام)
+  - scene descriptions of الجنة/النار/القيامة (imagery, not a stated rule) — UNLESS the ayah itself states the general rule of recompense
+  - questions, challenges, oaths, muqatta'at, transitions (ثم أرسلنا، فلما جاءهم…)
+  - du'a texts (unless the ayah frames it as a taught general principle)
+  - addresses to the Prophet about a specific situation
+
+SCORING per ayah:
+  p=2  clearly states a general principle (would be quoted alone as a standing rule)
+  p=1  borderline: general in wording but tied to context, or a fragment of a principle spanning ayahs
+  p=0  not a principle ayah
+When p>0 give k = one of حكم|أخلاق|عقيدة|سنة|وعد.
+
+Judge ONLY from the ayah's own wording (the text given). Be strict: most ayahs are 0 — expect roughly 10-25% nonzero. Never inflate.
+
+Fetch your batch by running exactly:
+  sqlite3 -json "file:/Volumes/data/new-projects/quran/quran-kg.db?mode=ro" "SELECT ayah_id AS id, location, text_clean AS text FROM ayah WHERE ayah_id BETWEEN 3521 AND 3600 ORDER BY ayah_id"
+
+Classify EVERY ayah in the batch (80 items, ids 3521..3600) — return an item for each id, in order. Work from the Arabic text; the location is only for your orientation.
