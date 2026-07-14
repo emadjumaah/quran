@@ -1,5 +1,5 @@
 /**
- * المواضيع — the Qur'an's TRADITIONAL thematic index (متوارث, not computed). The
+ * المواضيع — the full thematic index (المصحف الموضوعي). COMPUTED in origin —
  * retained hand-organized tree: 12 أبواب → topics → verses. It sits in its own
  * section beside the computed المحاور (/mawdui), clearly labelled as curated, and
  * never mixed into the computed graph. Two levels:
@@ -30,12 +30,12 @@ function Sections() {
         <h1 className="mw-title">{ar ? "مواضيع القرآن" : "Topics of the Qur'an"}</h1>
         <p className="mw-lead">
           {ar
-            ? "تصنيفٌ موضوعيٌّ متوارَث: اثنا عشرَ بابًا كبيرًا تنتظمُ تحتها موضوعاتُ القرآن كما رتّبها أهلُ العلم — طريقةُ التصفّح المألوفة. وهو تصنيفٌ منقولٌ لا محسوب؛ للطبقة المحسوبة انظُر «المحاور»."
-            : "A traditional thematic index: twelve chapters under which the Qur'an's themes are arranged as scholars organized them — the familiar way to browse. This layer is curated, not computed; for the computed layer see «Axes»."}
+            ? "فهرسٌ موضوعيٌّ جامع: اثنا عشرَ بابًا كبيرًا تنتظمُ تحتها موضوعاتُ القرآن كلُّها — طريقةُ التصفّح المألوفة. نشأ حسابًا: عُنقدت الآياتُ بالمعنى، وسمّى الموضوعاتِ وتحقّقَ منها سربُ وكلاء، ثم رُتّبت الأبوابُ بمراجعةٍ تحريريةٍ واحدة. وللقسمة التلقائية الخالصة انظُر «المحاور»."
+            : "The full thematic index: twelve chapters holding all the Qur'an's themes — the familiar way to browse. Computed in origin: verses clustered by meaning, topics named and verified by an agent swarm, then the chapters arranged in one editorial pass. For the purely automatic partition see «Axes»."}
         </p>
         <div className="muted" style={{ fontSize: 13 }}>{num(sections.length)} {ar ? "بابًا" : "chapters"} · {ayahsCount(totalVerses)}</div>
-        <div className="mw-onenote trad-note" title={ar ? "تصنيفٌ منقولٌ عن أهل العلم، يُعرَض كما هو" : "a curated classification, shown as-is"}>
-          ◆ {ar ? "تصنيفٌ متوارَثٌ منقول — يُعرَض كما هو، لا يُحسَب." : "A traditional, curated classification — shown as-is, not computed."}
+        <div className="mw-onenote trad-note" title={ar ? "فهرسٌ محسوبُ النشأة بتسميةٍ مُدقَّقة وترتيبٍ تحريري" : "computed in origin; names verified; one editorial arrangement"}>
+          ◆ {ar ? "فهرسٌ محسوبُ النشأة، سُمّي ودُقّق بسربِ وكلاء، ورُتّبت أبوابُه تحريريًّا — كلُّ آيةٍ في موضعٍ واحد." : "Computed in origin, named and verified by an agent swarm, chapters arranged editorially — every verse in exactly one place."}
         </div>
       </header>
       <TopicLayerToggle />
@@ -88,10 +88,10 @@ function SectionView({ sec, texts }: { sec: number; texts: Map<string, AyahDoc> 
       </nav>
       <header className="mw-head">
         <h1 className="mw-title">{data.title}</h1>
-        <div className="muted" style={{ fontSize: 13 }}>{num(data.topics.length)} {ar ? "موضوعًا" : "topics"} · {ayahsCount(totalVerses)} · {ar ? "تصنيفٌ متوارَث" : "traditional"}</div>
+        <div className="muted" style={{ fontSize: 13 }}>{num(data.topics.length)} {ar ? "موضوعًا" : "topics"} · {ayahsCount(totalVerses)} · {ar ? "فهرسٌ جامع" : "full index"}</div>
       </header>
       {bridge.length > 0 && (
-        <div className="tf-bridge" title={ar ? "الطبقةُ المحسوبة التي تُقاطع هذا الباب المتوارَث" : "the computed layer overlapping this traditional chapter"}>
+        <div className="tf-bridge" title={ar ? "شبكةُ المحكمات التي تُقاطع هذا الباب" : "the network layer overlapping this chapter"}>
           <span className="tf-bridge-h"><span className="ai-spark" aria-hidden /> {ar ? "محاورُ محسوبةٌ تُقاطع هذا الباب:" : "computed axes overlapping this chapter:"}</span>
           {bridge.map((b) => (
             <Link key={b.theme} to={`/mawdui/${b.theme}`} className="tf-bridge-chip">

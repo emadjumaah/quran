@@ -62,11 +62,12 @@ export function verseInfo(loc: string): VerseInfo | null {
   };
 }
 
-/* ------------------------- traditional المواضيع (curated) -------------------------
- * The retained, hand-organized thematic tree: 12 أبواب → topics → verses. This is a
- * TRADITIONAL/متوارث classification (not computed) — presented in its own section,
- * clearly labelled, never mixed into the computed المحاور. Each verse sits under the
- * topic it was assigned; topics roll up into the 12 sections.
+/* ----------------------- المصحف الموضوعي (computed index) -----------------------
+ * The full thematic tree: 12 أبواب → 262 topics → all verses. COMPUTED in origin
+ * (semantic clustering → 90-agent naming/audit swarm → fragment merge → k-means
+ * sections → section-naming swarm → one editorial arrangement pass). Presented in
+ * its own section beside the raw automatic المحاور. Each verse sits under exactly
+ * one topic; topics roll up into the 12 sections.
  */
 export interface TradSection { idx: number; title: string; topics: number; verses: number; }
 export interface TradTopic { id: number; title: string; verses: string[]; }

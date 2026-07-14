@@ -426,8 +426,8 @@ export default function Dashboard() {
                   </Link>
                   <Link to="/mawadi" className="lyr">
                     <div className="lyr-n">{num(layers.mawdui.topics)}</div>
-                    <div className="lyr-t">{ar ? "موضوعًا متوارثًا" : "inherited topics"}</div>
-                    <div className="lyr-s">{num(layers.mawdui.sections)} {ar ? "بابًا · عن أهل العلم" : "chapters · from the scholars"}</div>
+                    <div className="lyr-t">{ar ? "موضوعًا" : "topics"}</div>
+                    <div className="lyr-s">{num(layers.mawdui.sections)} {ar ? "بابًا · تغطية كاملة" : "chapters · full coverage"}</div>
                   </Link>
                   <div className="lyr" style={{ cursor: "default" }}>
                     <div className="lyr-n">{num(net.giantPct)}٪</div>
