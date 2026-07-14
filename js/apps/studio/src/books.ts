@@ -9,7 +9,7 @@
  */
 import { embedQuery } from "./semantic";
 
-export type Genre = "tafsir" | "asbab" | "gharib" | "i3rab" | "qiraat";
+export type Genre = "tafsir" | "asbab" | "gharib" | "i3rab" | "qiraat" | "lexicon";
 export interface BookSource { id: string; label: string; genre: Genre; author?: string; embedded?: boolean }
 
 /**
@@ -31,6 +31,8 @@ export const BOOK_SOURCES: BookSource[] = [
   { id: "qiraat", label: "الموسوعة القرآنية للقراءات", genre: "qiraat" },
   { id: "wahidi", label: "أسباب نزول القرآن", genre: "asbab", author: "الواحدي", embedded: true },
   { id: "muharrar", label: "المحرَّر في أسباب النزول", genre: "asbab", author: "المزيني", embedded: true },
+  // root-keyed lexicon — نِبراس-only (shown in the word card, not the verse-anchored تفاسير section)
+  { id: "mufradat", label: "المفردات في غريب القرآن", genre: "lexicon", author: "الراغب الأصفهاني", embedded: true },
 ];
 export const EMBEDDED_SOURCES = BOOK_SOURCES.filter((s) => s.embedded);
 export const TAFSIR_SOURCES = BOOK_SOURCES.filter((s) => s.genre === "tafsir");
@@ -38,8 +40,9 @@ export const bookById = (id: string): BookSource | undefined => BOOK_SOURCES.fin
 export const bookLabel = (id: string): string => bookById(id)?.label ?? id;
 
 export const GENRE_LABELS: Record<Genre, string> = {
-  tafsir: "التفاسير", asbab: "أسباب النزول", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات",
+  tafsir: "التفاسير", asbab: "أسباب النزول", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات", lexicon: "المعاجم",
 };
+// lexicon (root-keyed) is intentionally excluded — the تفاسير section is verse-anchored
 const GENRE_ORDER: Genre[] = ["tafsir", "asbab", "gharib", "i3rab", "qiraat"];
 /** Books grouped by genre (registry order), for the تفاسير section. */
 export function booksByGenre(): { genre: Genre; label: string; books: BookSource[] }[] {
