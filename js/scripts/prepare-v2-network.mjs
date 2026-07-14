@@ -211,6 +211,11 @@ mkdirSync(join(OUT, "provenance", "v2-run"), { recursive: true });
 writeFileSync(join(OUT, "provenance", "v2-run", "hubs.json"), JSON.stringify(hubs.map(({ candidates, ...h }) => ({ ...h, nCand: candidates.length }))));
 writeFileSync(join(OUT, "provenance", "v2-run", "judge-batches.json"), JSON.stringify(batches));
 writeFileSync(join(OUT, "provenance", "v2-run", "kappa-batches.json"), JSON.stringify(kappaBatches));
+// ملفُّ دفعةٍ مستقلٌّ لكلِّ وكيل (لا يقرأ الوكيل إلا دفعتَه)
+const BD = join(OUT, "provenance", "v2-run", "batches");
+mkdirSync(BD, { recursive: true });
+batches.forEach((b, i) => writeFileSync(join(BD, `batch-${String(i).padStart(4, "0")}.json`), JSON.stringify(b)));
+kappaBatches.forEach((b, i) => writeFileSync(join(BD, `kappa-${String(i).padStart(3, "0")}.json`), JSON.stringify(b)));
 writeFileSync(join(OUT, "provenance", "v2-run", "retrieval-params.json"), JSON.stringify({
   FWD_K, REV_K, ROOT_K, RARE_OCC, CAP, COS_FLOOR, NEAR_DUP, KAPPA_PAIRS, HUBS_PER_BATCH,
   hubs: hubs.length, pairs, batches: batches.length, kappaBatches: kappaBatches.length, date: "2026-07-14",
