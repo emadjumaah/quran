@@ -1513,6 +1513,11 @@ table.data tr:hover td { background: var(--panel-2); }
 .th-verse:hover { border-color: var(--gold); background: var(--gold-soft); }
 .th-ref { color: var(--accent); font-weight: 700; font-size: 12.5px; white-space: nowrap; }
 .th-p { font-size: 11.5px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--gold); }
+/* مصدر كل آية في الخيط: لفظ صريح / امتداد جذر / صدى دلالي — شفافية العهد */
+.th-src { flex: none; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.th-src-lex { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.th-src-root { color: #b5763a; border-color: color-mix(in srgb, #b5763a 45%, var(--line)); }
+.th-src-sem { color: #7c69c9; border-color: color-mix(in srgb, #7c69c9 45%, var(--line)); }
 .th-text { font-family: var(--font-quran); direction: rtl; text-align: right; font-size: 17px; line-height: 1.85; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
 .gx-titlebar { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; max-width: 1120px; margin: 0 auto; }
 .gx-title { margin: 0; font-size: 22px; }

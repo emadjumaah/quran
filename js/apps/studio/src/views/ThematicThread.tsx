@@ -15,7 +15,7 @@ import { loadVectors, meaningSearch, vectorsReady } from "../semantic";
 const SUGGESTIONS = ["الرحمة", "الآخرة والحساب", "الصبر عند الشدّة", "التوحيد", "العدل والقسط", "الشكر", "الخوف والرجاء", "التوبة والمغفرة", "خلق السماوات والأرض", "الإنفاق في سبيل الله"];
 const mushafKey = (loc: string) => { const [s, a] = loc.split(":").map(Number); return s * 1000 + a; };
 
-interface TV { loc: string; text: string; p: number; surah: number }
+interface TV { loc: string; text: string; p: number; surah: number; src: "lex" | "root" | "sem" }
 
 export default function ThematicThread() {
   useUILang();
@@ -51,7 +51,14 @@ export default function ThematicThread() {
       // count reflects rarity: «وسوس» → a handful, «الرحمة» → many). We then add only a
       // FEW near-top semantic verses, to catch the field's synonyms (غفور for الرحمة)
       // without letting the fuzzy cloud back in.
-      const [lex, sem, rm] = await Promise.all([searchAyahs(query), meaningSearch(query, 200), fuzzyRoots(query, 1)]);
+      // v2 (مراجعة 2026-07-14): حارسُ الجذر للاستعلام المفرد فقط — مسافةُ الحروف
+      // على عبارةٍ كاملةٍ بلا معنى («الصبر عند الشدة» ليست جذرًا)
+      const singleWord = !/\s/.test(query) && query.length >= 2;
+      const [lex, sem, rm] = await Promise.all([
+        searchAyahs(query),
+        meaningSearch(query, 200),
+        singleWord ? fuzzyRoots(query, 1) : Promise.resolve([]),
+      ]);
       if (seq.current !== id) return;
       const semResolved = (await Promise.all(sem.map(async (h) => {
         const a = await getAyahByGlobalNo(h.ayahId);
@@ -60,24 +67,33 @@ export default function ThematicThread() {
       if (seq.current !== id) return;
       const semScore = new Map(semResolved.map((x) => [x.loc, x.score]));
       const map = new Map<string, TV>();
-      for (const a of lex) map.set(a.location, { loc: a.location, text: a.textClean || a.textUthmani, surah: a.surahNo, p: semScore.get(a.location) ?? 0 });
-      // add a RARE root's FULL occurrences — catches the morphological forms FTS
-      // misses (فوسوس/توسوس for root وسوس). Skip common roots (رحم → الرحمن everywhere).
+      for (const a of lex) map.set(a.location, { loc: a.location, text: a.textClean || a.textUthmani, surah: a.surahNo, p: semScore.get(a.location) ?? 0, src: "lex" });
+      // v2: التأصيلُ الجذري يُضمَّن دائمًا — كان جرفُ «≤50» يُسقط أيَّ معنًى شائع
+      // (الصبر ~100 موضعًا كانت تسقط كلُّها). العرضُ يرقّم، لا نبتر البيانات.
       const rd = rm[0]?.doc;
       // .locations may be word-level (s:a:w) — normalize to verse (s:a) + dedupe
-      const rvLocs = rd ? [...new Set((rd.locations ?? []).map((l) => String(l).split(":").slice(0, 2).join(":")))] : [];
-      const rootLocs = rvLocs.length <= 50 ? rvLocs : [];
+      const rootLocs = rd ? [...new Set((rd.locations ?? []).map((l) => String(l).split(":").slice(0, 2).join(":")))] : [];
       for (const loc of rootLocs) {
         if (map.has(loc)) continue;
         const a = await getAyahByLocation(loc);
-        if (a) map.set(loc, { loc, text: a.textClean || a.textUthmani, surah: a.surahNo, p: semScore.get(loc) ?? 0 });
+        if (a) map.set(loc, { loc, text: a.textClean || a.textUthmani, surah: a.surahNo, p: semScore.get(loc) ?? 0, src: "root" });
       }
-      const top = sem[0]?.score ?? 0;
-      let halo = 0;
-      for (const x of semResolved) {
-        if (halo >= 12 || x.score < top - 0.05) break;
-        if (!map.has(x.loc)) { map.set(x.loc, { loc: x.loc, text: x.text, surah: x.surah, p: x.score }); halo++; }
+      // v2: هالةٌ متكيّفة — القطع عند أكبر هبوطٍ في منحنى الدرجات (المرفق) بدل
+      // فجوة 0.05 الثابتة؛ بسقفٍ معلن 16 وأرضيةِ أمانٍ top-0.10
+      const semTop = semResolved.filter((x) => !map.has(x.loc)).slice(0, 24);
+      let cut = semTop.length;
+      {
+        let bestDrop = 0;
+        for (let i = 1; i < semTop.length; i++) {
+          const drop = semTop[i - 1].score - semTop[i].score;
+          if (drop > bestDrop) { bestDrop = drop; cut = i; }
+        }
+        const top = semResolved[0]?.score ?? 0;
+        cut = Math.min(cut, 16);
+        while (cut > 0 && semTop[cut - 1].score < top - 0.10) cut--;
       }
+      for (const x of semTop.slice(0, cut))
+        map.set(x.loc, { loc: x.loc, text: x.text, surah: x.surah, p: x.score, src: "sem" });
       const verses = [...map.values()];
       setThread(verses.sort((a, b) => mushafKey(a.loc) - mushafKey(b.loc)));
       const mx = new Float32Array(114);
@@ -136,6 +152,9 @@ export default function ThematicThread() {
               {thread.map((v) => (
                 <Link key={v.loc} to={`/read/${v.loc.split(":")[0]}/${v.loc.split(":")[1]}`} className="th-verse">
                   <span className="th-ref">{surahNameAr(v.surah)} {num(v.loc.split(":")[1])}</span>
+                  <span className={`th-src th-src-${v.src}`} title={ar ? (v.src === "lex" ? "ورد اللفظُ نصًّا" : v.src === "root" ? "ورد جذرُ اللفظ" : "قريبُ المعنى (تضمينات)") : v.src}>
+                    {ar ? (v.src === "lex" ? "لفظ" : v.src === "root" ? "جذر" : "معنى") : v.src}
+                  </span>
                   <span className="th-p">{v.p > 0 ? `${num(Math.round(v.p * 100))}٪` : "•"}</span>
                   <span className="quran th-text">{v.text}</span>
                 </Link>
