@@ -28,7 +28,7 @@ covered) and `textMB`.
 | `gharib/` | السراج (الخضيري) · الميسّر في الغريب · تحليل كلمات القرآن |
 | `qiraat/` | الموسوعة القرآنية للقراءات · النشر (ابن الجزري) |
 | `asbab/` | المحرَّر في أسباب النزول (المزيني، 198 آية — الصحيح فقط) · أسباب نزول القرآن (الواحدي، 564 آية) |
-| `lexicon/` | المفردات في غريب القرآن (الراغب الأصفهاني، تحقيق الداوودي) — **root-organized**, `{root, letter, text, ayahs}` |
+| `lexicon/` | مقاييس اللغة (ابن فارس، 5273 جذر) · المفردات في غريب القرآن (الراغب، 1629 جذر) — **root-keyed** `{root, text}`, join to مشكاة's QAC roots |
 | `quranpedia/` | `topics.json` (تصنيف موضوعي) · `similar.ndjson` (متشابه) · `qiraat.ndjson` (قراءات لكل كلمة) |
 
 ### Quranpedia structured layers (api.quranpedia.net, per-āyah)
@@ -55,9 +55,11 @@ node scripts/harvest-quranpedia.mjs qiraat
 node scripts/harvest-quranpedia-book.mjs 460 asbab muharrar   # المحرّر (المزيني)
 node scripts/harvest-quranpedia-book.mjs 2919 asbab wahidi    # أسباب النزول (الواحدي)
 #    NB: run book harvests ONE AT A TIME — concurrent runs throttle the API (~20% errors)
-# 2c) المفردات للراغب (root-organized, from Quranpedia's book-contents dump)
-curl -s https://api.quranpedia.net/books-contents/book-353.json -o /tmp/mufradat353.json
-node scripts/collect-mufradat.mjs /tmp/mufradat353.json
+# 2c) root-keyed lexicons from the wizsk/arabic_lexicons SQLite (11 classical dicts)
+#     grab the linux release, extract assets/.../db/db.sqlite, then:
+node scripts/collect-lexicon-db.mjs db.sqlite maqayeesul_luga maqayis      # مقاييس اللغة (ابن فارس)
+node scripts/collect-lexicon-db.mjs db.sqlite mufradat_alfajul_quran mufradat  # المفردات (الراغب, clean per-root)
+#     other tables available: lisanularab · mujamul_shihah · mujamul_muhith · mujamul_wasith · mujamul_ghoni · mujamul_muashiroh
 # 3) embed a book for نِبراس (browser int8 path)
 GEMINI_API_KEY=… node scripts/build-book-embeddings.mjs <genre>/<id>.jsonl <id>
 #    then register {id,label} in src/rag.ts BOOK_SOURCES
