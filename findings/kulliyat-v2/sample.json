@@ -1,0 +1,566 @@
+{
+ "frozen": false,
+ "splitRule": "md5(firstRef) first byte even→tune",
+ "items": [
+  {
+   "id": 1,
+   "refs": "2:255",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "أعظم آية — صحيح مسلم",
+   "half": "tune"
+  },
+  {
+   "id": 2,
+   "refs": "112:1-4",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "ثلث القرآن — البخاري",
+   "half": "holdout"
+  },
+  {
+   "id": 3,
+   "refs": "1:1-7",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "السبع المثاني — البخاري",
+   "half": "tune"
+  },
+  {
+   "id": 4,
+   "refs": "99:7-8",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "الجامعة الفاذّة — البخاري",
+   "half": "tune"
+  },
+  {
+   "id": 5,
+   "refs": "16:90",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "أجمع آية — أثر ابن مسعود",
+   "half": "tune"
+  },
+  {
+   "id": 6,
+   "refs": "6:151-153",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "وصية النبي ﷺ — الترمذي",
+   "half": "tune"
+  },
+  {
+   "id": 7,
+   "refs": "39:53",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "أرجى آية — آثار",
+   "half": "tune"
+  },
+  {
+   "id": 8,
+   "refs": "103:1-3",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "قول الشافعي",
+   "half": "holdout"
+  },
+  {
+   "id": 9,
+   "refs": "65:2-3",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "حديث أبي ذر",
+   "half": "tune"
+  },
+  {
+   "id": 10,
+   "refs": "2:286",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "التكليف بالوسع",
+   "half": "tune"
+  },
+  {
+   "id": 11,
+   "refs": "2:185",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "التيسير",
+   "half": "holdout"
+  },
+  {
+   "id": 12,
+   "refs": "22:78",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "نفي الحرج",
+   "half": "tune"
+  },
+  {
+   "id": 13,
+   "refs": "5:1",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "لزوم العقود",
+   "half": "holdout"
+  },
+  {
+   "id": 14,
+   "refs": "4:58",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "الأمانة والقضاء بالعدل",
+   "half": "holdout"
+  },
+  {
+   "id": 15,
+   "refs": "42:38",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "الشورى",
+   "half": "holdout"
+  },
+  {
+   "id": 16,
+   "refs": "2:275",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "أصل المعاملات",
+   "half": "holdout"
+  },
+  {
+   "id": 17,
+   "refs": "6:164",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "شخصية المسؤولية — مقطع من آية «قل»",
+   "half": "tune"
+  },
+  {
+   "id": 18,
+   "refs": "53:38-39",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "المسؤولية والسعي",
+   "half": "tune"
+  },
+  {
+   "id": 19,
+   "refs": "4:29",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "التراضي",
+   "half": "holdout"
+  },
+  {
+   "id": 20,
+   "refs": "2:256",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "لا إكراه",
+   "half": "tune"
+  },
+  {
+   "id": 21,
+   "refs": "17:15",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "لا عقوبة قبل البيان",
+   "half": "holdout"
+  },
+  {
+   "id": 22,
+   "refs": "4:135",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "العدل المطلق",
+   "half": "holdout"
+  },
+  {
+   "id": 23,
+   "refs": "42:11",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "التنزيه",
+   "half": "tune"
+  },
+  {
+   "id": 24,
+   "refs": "51:56",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "غاية الخلق",
+   "half": "holdout"
+  },
+  {
+   "id": 25,
+   "refs": "67:2",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "الابتلاء",
+   "half": "tune"
+  },
+  {
+   "id": 26,
+   "refs": "21:107",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "غاية الرسالة",
+   "half": "tune"
+  },
+  {
+   "id": 27,
+   "refs": "3:185",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "كل نفس ذائقة الموت + إنما توفون",
+   "half": "holdout"
+  },
+  {
+   "id": 28,
+   "refs": "4:48",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "حد المغفرة",
+   "half": "tune"
+  },
+  {
+   "id": 29,
+   "refs": "30:30",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "الفطرة",
+   "half": "tune"
+  },
+  {
+   "id": 30,
+   "refs": "3:26",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "التدبير المطلق — تختبر «اللهمّ»",
+   "half": "tune"
+  },
+  {
+   "id": 31,
+   "refs": "2:143",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "الوسطية",
+   "half": "holdout"
+  },
+  {
+   "id": 32,
+   "refs": "7:199",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "أجمع آية لمكارم الأخلاق",
+   "half": "holdout"
+  },
+  {
+   "id": 33,
+   "refs": "17:23-39",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "وصايا الإسراء",
+   "half": "holdout"
+  },
+  {
+   "id": 34,
+   "refs": "31:13-19",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "وصايا لقمان",
+   "half": "tune"
+  },
+  {
+   "id": 35,
+   "refs": "2:177",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "آية البِرّ",
+   "half": "tune"
+  },
+  {
+   "id": 36,
+   "refs": "5:2",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "التعاون",
+   "half": "tune"
+  },
+  {
+   "id": 37,
+   "refs": "49:13",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "ميزان الكرامة",
+   "half": "tune"
+  },
+  {
+   "id": 38,
+   "refs": "13:11",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "سنّة التغيير",
+   "half": "tune"
+  },
+  {
+   "id": 39,
+   "refs": "35:43",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "اطّراد السنن",
+   "half": "tune"
+  },
+  {
+   "id": 40,
+   "refs": "41:46",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "شخصية العمل ونفي الظلم — مثانٍ",
+   "half": "tune"
+  },
+  {
+   "id": 41,
+   "refs": "16:97",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "جزاء العمل الصالح",
+   "half": "holdout"
+  },
+  {
+   "id": 42,
+   "refs": "55:60",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "قاعدة الجزاء — حصر استفهامي",
+   "half": "holdout"
+  },
+  {
+   "id": 43,
+   "refs": "10:44",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "نفي الظلم",
+   "half": "holdout"
+  },
+  {
+   "id": 44,
+   "refs": "24:55",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "سنّة الاستخلاف",
+   "half": "tune"
+  },
+  {
+   "id": 45,
+   "refs": "94:5-6",
+   "unit": "aya",
+   "expected": "rule",
+   "evidence": "قاعدة الفرج — مثانٍ داخلي",
+   "half": "holdout"
+  },
+  {
+   "id": 46,
+   "refs": "2:153",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "الاستعانة والمعيّة",
+   "half": "tune"
+  },
+  {
+   "id": 47,
+   "refs": "5:3",
+   "unit": "segment",
+   "expected": "rule",
+   "evidence": "إكمال الدين — قضية المقطع",
+   "half": "holdout"
+  },
+  {
+   "id": 48,
+   "refs": "2:282",
+   "unit": "segment",
+   "expected": "rule-bab",
+   "evidence": "قاعدة التوثيق — جامعة بابٍ (يقابل #70)",
+   "half": "tune"
+  },
+  {
+   "id": 49,
+   "refs": "12:4",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "سرد رؤيا",
+   "half": "tune"
+  },
+  {
+   "id": 50,
+   "refs": "12:36",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "حوار السجن",
+   "half": "holdout"
+  },
+  {
+   "id": 51,
+   "refs": "12:62",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "أمر سردي لمعيّن",
+   "half": "holdout"
+  },
+  {
+   "id": 52,
+   "refs": "28:23",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "سقي موسى",
+   "half": "tune"
+  },
+  {
+   "id": 53,
+   "refs": "18:77",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "رحلة الخضر",
+   "half": "holdout"
+  },
+  {
+   "id": 54,
+   "refs": "27:22",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "خبر الهدهد",
+   "half": "tune"
+  },
+  {
+   "id": 55,
+   "refs": "26:63",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "أمر واقعة معجزة",
+   "half": "holdout"
+  },
+  {
+   "id": 56,
+   "refs": "19:25",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "أمر لمعيّن في واقعة — الضد الصعب",
+   "half": "holdout"
+  },
+  {
+   "id": 57,
+   "refs": "2:35",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "أمر واقعة لآدم",
+   "half": "tune"
+  },
+  {
+   "id": 58,
+   "refs": "37:102",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "حوار الذبيح",
+   "half": "tune"
+  },
+  {
+   "id": 59,
+   "refs": "33:37",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "واقعة زيد",
+   "half": "holdout"
+  },
+  {
+   "id": 60,
+   "refs": "8:7",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "واقعة بدر",
+   "half": "tune"
+  },
+  {
+   "id": 61,
+   "refs": "9:40",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "واقعة الغار",
+   "half": "holdout"
+  },
+  {
+   "id": 62,
+   "refs": "58:1",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "واقعة المجادِلة",
+   "half": "tune"
+  },
+  {
+   "id": 63,
+   "refs": "66:3",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "واقعة الإسرار",
+   "half": "tune"
+  },
+  {
+   "id": 64,
+   "refs": "48:18",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "بيعة الشجرة",
+   "half": "holdout"
+  },
+  {
+   "id": 65,
+   "refs": "111:1-5",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "نزلت في معيّن",
+   "half": "holdout"
+  },
+  {
+   "id": 66,
+   "refs": "80:1-2",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "واقعة عين",
+   "half": "tune"
+  },
+  {
+   "id": 67,
+   "refs": "105:1-5",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "سرد واقعة",
+   "half": "holdout"
+  },
+  {
+   "id": 68,
+   "refs": "4:11",
+   "unit": "aya",
+   "expected": "tafsil",
+   "evidence": "تشريع تفصيلي — أنصبة",
+   "half": "tune"
+  },
+  {
+   "id": 69,
+   "refs": "24:31",
+   "unit": "segment",
+   "expected": "tafsil",
+   "evidence": "تعداد تفصيلي للستر",
+   "half": "holdout"
+  },
+  {
+   "id": 70,
+   "refs": "2:282",
+   "unit": "segment",
+   "expected": "tafsil",
+   "evidence": "المقطع الإجرائي — يقابل #48",
+   "half": "tune"
+  }
+ ]
+}

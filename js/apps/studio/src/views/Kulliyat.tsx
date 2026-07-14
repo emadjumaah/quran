@@ -124,6 +124,12 @@ export default function Kulliyat() {
               ? "هذه مراتبُ عمومِ الدلالة: الأصلُ الجامعُ الذي تنضوي تحته المعاني، ثمّ ما يتفرّعُ عنه تفصيلًا. والتفصيلُ ليس أدنى؛ إنّما يُبيّنُ الأصلَ ويُفصّله."
               : "These are tiers of meaning-breadth: the gathering principle under which meanings fall, then what elaborates it as detail. A detail is not lesser; it unfolds the principle."}
           </p>
+          {/* honest interim status while the v2 rebuild (gates + directed network) is underway */}
+          <p className="kl-disclaimer kl-review">
+            {ar
+              ? "⚠ هذا الميزانُ قيدُ مراجعةٍ منهجيّةٍ جذريّة: تُبنى نسخةٌ ثانيةٌ على بواباتِ عمومٍ وشبكةِ تفصيلٍ موجَّهة، بتحقُّقٍ معلن. حتى تكتمل، اقرأِ المراتبَ ترتيبًا استكشافيًّا لا حكمًا."
+              : "⚠ This scale is under fundamental methodological review: a v2 built on generality gates and a directed elaboration network, with published validation, is underway. Until it lands, read these tiers as exploratory, not verdicts."}
+          </p>
           <div className="jw-stats">
             <span className="chip"><b>{num(meta?.verses ?? 6236)}</b> {ar ? "آية" : "verses"}</span>
             <span className="chip"><b>{num(meta?.themes ?? 0)}</b> {ar ? "محورًا" : "themes"}</span>
