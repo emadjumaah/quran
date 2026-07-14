@@ -392,6 +392,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "سرد رؤيا",
+   "counterType": "narrative",
    "half": "tune"
   },
   {
@@ -400,6 +401,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "حوار السجن",
+   "counterType": "narrative",
    "half": "holdout"
   },
   {
@@ -408,6 +410,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "أمر سردي لمعيّن",
+   "counterType": "narrative",
    "half": "holdout"
   },
   {
@@ -416,6 +419,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "سقي موسى",
+   "counterType": "narrative",
    "half": "tune"
   },
   {
@@ -424,6 +428,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "رحلة الخضر",
+   "counterType": "narrative",
    "half": "holdout"
   },
   {
@@ -432,6 +437,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "خبر الهدهد",
+   "counterType": "narrative",
    "half": "tune"
   },
   {
@@ -440,6 +446,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "أمر واقعة معجزة",
+   "counterType": "narrative",
    "half": "holdout"
   },
   {
@@ -448,6 +455,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "أمر لمعيّن في واقعة — الضد الصعب",
+   "counterType": "narrative",
    "half": "holdout"
   },
   {
@@ -456,6 +464,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "أمر واقعة لآدم",
+   "counterType": "narrative",
    "half": "tune"
   },
   {
@@ -464,6 +473,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "حوار الذبيح",
+   "counterType": "narrative",
    "half": "tune"
   },
   {
@@ -472,6 +482,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "واقعة زيد",
+   "counterType": "narrative",
    "half": "holdout"
   },
   {
@@ -480,6 +491,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "واقعة بدر",
+   "counterType": "narrative",
    "half": "tune"
   },
   {
@@ -488,6 +500,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "واقعة الغار",
+   "counterType": "narrative",
    "half": "holdout"
   },
   {
@@ -496,6 +509,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "واقعة المجادِلة",
+   "counterType": "narrative",
    "half": "tune"
   },
   {
@@ -504,6 +518,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "واقعة الإسرار",
+   "counterType": "narrative",
    "half": "tune"
   },
   {
@@ -512,6 +527,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "بيعة الشجرة",
+   "counterType": "narrative",
    "half": "holdout"
   },
   {
@@ -520,6 +536,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "نزلت في معيّن",
+   "counterType": "narrative",
    "half": "holdout"
   },
   {
@@ -528,6 +545,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "واقعة عين",
+   "counterType": "narrative",
    "half": "tune"
   },
   {
@@ -536,6 +554,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "سرد واقعة",
+   "counterType": "narrative",
    "half": "holdout"
   },
   {
@@ -544,6 +563,7 @@
    "unit": "aya",
    "expected": "tafsil",
    "evidence": "تشريع تفصيلي — أنصبة",
+   "counterType": "specific",
    "half": "tune"
   },
   {
@@ -552,6 +572,7 @@
    "unit": "segment",
    "expected": "tafsil",
    "evidence": "تعداد تفصيلي للستر",
+   "counterType": "specific",
    "half": "holdout"
   },
   {
@@ -560,6 +581,7 @@
    "unit": "segment",
    "expected": "tafsil",
    "evidence": "المقطع الإجرائي — يقابل #48",
+   "counterType": "specific",
    "half": "tune"
   }
  ]

@@ -69,28 +69,31 @@ const ITEMS = [
   [47, "5:3", "segment", "rule", "إكمال الدين — قضية المقطع"],
   [48, "2:282", "segment", "rule-bab", "قاعدة التوثيق — جامعة بابٍ (يقابل #70)"],
   // ——— القسم الثاني: الضدّ (٢٢) ———
-  [49, "12:4", "aya", "tafsil", "سرد رؤيا"],
-  [50, "12:36", "aya", "tafsil", "حوار السجن"],
-  [51, "12:62", "aya", "tafsil", "أمر سردي لمعيّن"],
-  [52, "28:23", "aya", "tafsil", "سقي موسى"],
-  [53, "18:77", "aya", "tafsil", "رحلة الخضر"],
-  [54, "27:22", "aya", "tafsil", "خبر الهدهد"],
-  [55, "26:63", "aya", "tafsil", "أمر واقعة معجزة"],
-  [56, "19:25", "aya", "tafsil", "أمر لمعيّن في واقعة — الضد الصعب"],
-  [57, "2:35", "aya", "tafsil", "أمر واقعة لآدم"],
-  [58, "37:102", "aya", "tafsil", "حوار الذبيح"],
-  [59, "33:37", "aya", "tafsil", "واقعة زيد"],
-  [60, "8:7", "aya", "tafsil", "واقعة بدر"],
-  [61, "9:40", "aya", "tafsil", "واقعة الغار"],
-  [62, "58:1", "aya", "tafsil", "واقعة المجادِلة"],
-  [63, "66:3", "aya", "tafsil", "واقعة الإسرار"],
-  [64, "48:18", "aya", "tafsil", "بيعة الشجرة"],
-  [65, "111:1-5", "aya", "tafsil", "نزلت في معيّن"],
-  [66, "80:1-2", "aya", "tafsil", "واقعة عين"],
-  [67, "105:1-5", "aya", "tafsil", "سرد واقعة"],
-  [68, "4:11", "aya", "tafsil", "تشريع تفصيلي — أنصبة"],
-  [69, "24:31", "segment", "tafsil", "تعداد تفصيلي للستر"],
-  [70, "2:282", "segment", "tafsil", "المقطع الإجرائي — يقابل #48"],
+  // counterType: "narrative" = يجب أن يسقط بالبوابات نفسها ·
+  //              "specific"  = قاعدةٌ ضيّقة: يجوز اجتيازُ البوابات، وواجبُ الإسقاط
+  //                            على طبقة الشبكة (عتبة الانتشار) — الطبقة النهائية تفصيل
+  [49, "12:4", "aya", "tafsil", "سرد رؤيا", "narrative"],
+  [50, "12:36", "aya", "tafsil", "حوار السجن", "narrative"],
+  [51, "12:62", "aya", "tafsil", "أمر سردي لمعيّن", "narrative"],
+  [52, "28:23", "aya", "tafsil", "سقي موسى", "narrative"],
+  [53, "18:77", "aya", "tafsil", "رحلة الخضر", "narrative"],
+  [54, "27:22", "aya", "tafsil", "خبر الهدهد", "narrative"],
+  [55, "26:63", "aya", "tafsil", "أمر واقعة معجزة", "narrative"],
+  [56, "19:25", "aya", "tafsil", "أمر لمعيّن في واقعة — الضد الصعب", "narrative"],
+  [57, "2:35", "aya", "tafsil", "أمر واقعة لآدم", "narrative"],
+  [58, "37:102", "aya", "tafsil", "حوار الذبيح", "narrative"],
+  [59, "33:37", "aya", "tafsil", "واقعة زيد", "narrative"],
+  [60, "8:7", "aya", "tafsil", "واقعة بدر", "narrative"],
+  [61, "9:40", "aya", "tafsil", "واقعة الغار", "narrative"],
+  [62, "58:1", "aya", "tafsil", "واقعة المجادِلة", "narrative"],
+  [63, "66:3", "aya", "tafsil", "واقعة الإسرار", "narrative"],
+  [64, "48:18", "aya", "tafsil", "بيعة الشجرة", "narrative"],
+  [65, "111:1-5", "aya", "tafsil", "نزلت في معيّن", "narrative"],
+  [66, "80:1-2", "aya", "tafsil", "واقعة عين", "narrative"],
+  [67, "105:1-5", "aya", "tafsil", "سرد واقعة", "narrative"],
+  [68, "4:11", "aya", "tafsil", "تشريع تفصيلي — أنصبة", "specific"],
+  [69, "24:31", "segment", "tafsil", "تعداد تفصيلي للستر", "specific"],
+  [70, "2:282", "segment", "tafsil", "المقطع الإجرائي — يقابل #48", "specific"],
 ];
 
 const firstRef = (refs) => {
@@ -105,8 +108,8 @@ const half = (id, refs) => {
   return h[0] % 2 === 0 ? "tune" : "holdout";
 };
 
-const out = ITEMS.map(([id, refs, unit, expected, evidence]) => ({
-  id, refs, unit, expected, evidence, half: half(id, refs),
+const out = ITEMS.map(([id, refs, unit, expected, evidence, counterType]) => ({
+  id, refs, unit, expected, evidence, ...(counterType ? { counterType } : {}), half: half(id, refs),
 }));
 const counts = { tune: 0, holdout: 0, tuneRule: 0, holdRule: 0, tuneTafsil: 0, holdTafsil: 0 };
 for (const o of out) {
