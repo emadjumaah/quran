@@ -5,7 +5,9 @@
  *   exact      — identical clean text
  *   near       — high lemma n-gram overlap (Jaccard ≥ 0.45)
  *   phrase     — share a long common lemma run (≥ 5 words) without being near
- *   paraphrase — meaning-close (Gemini cosine ≥ 0.82) without lexical overlap
+ *   paraphrase — meaning-close without lexical overlap: mutual-nearest neighbours
+ *                with cosine ≥ 0.62 (the mutual-nearest gate dominates; empirically
+ *                every kept pair has cosine ≥ 0.80)
  *
  * Candidate generation: inverted index over lemma 4-grams (lexical) unioned
  * with embedding cosine (semantic). Writes quran-twins.json + prints stats.

@@ -625,6 +625,12 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 /* two calm, theme-aware colours — never red (red reads as «error» on Quran text) */
 .fr-diff-a { background: var(--gold-soft); color: var(--gold); }
 .fr-diff-b { background: var(--accent-soft); color: var(--accent); }
+/* same-lemma form difference: one word in two forms — underlined, no fill,
+   so it reads as «الكلمة نفسها بصيغةٍ أخرى» not as a removed/added word */
+.fr-form { background: transparent; color: inherit; text-decoration: underline dotted var(--gold) 2px; text-underline-offset: 6px; }
+/* folded context of a windowed (best-passage) alignment */
+.fr-ctx { color: var(--muted); letter-spacing: 2px; cursor: help; }
+.fr-note { font-size: 12.5px; margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); }
 
 /* أمثال القرآن — parable verse cards */
 .am-card { display: block; text-decoration: none; color: var(--ink); transition: border-color .15s; }

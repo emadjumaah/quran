@@ -391,7 +391,6 @@ export default function Dashboard() {
               .map(([name, count]) => ({ name, count }))
               .sort((a, b) => b.count - a.count);
             const cats = Object.entries(layers.furuq.categories)
-              .filter(([name]) => name !== "مركّب")
               .map(([name, count]) => ({ name, count }))
               .sort((a, b) => b.count - a.count);
             const net = layers.muhkamat.network;
@@ -433,7 +432,7 @@ export default function Dashboard() {
                     <div className="lyr-s">{ar ? "أزواج متقابلة" : "reciprocal pairs"}</div>
                   </Link>
                   <Link to="/furuq" className="lyr">
-                    <div className="lyr-n">{num(layers.furuq.pairs - (layers.furuq.categories["مركّب"] ?? 0))}</div>
+                    <div className="lyr-n">{num(layers.furuq.pairs)}</div>
                     <div className="lyr-t">{ar ? "فروق التنزيل" : "furuq"}</div>
                     <div className="lyr-s">{ar ? "أزواج واضحة بين المتشابهات" : "clean look-alike pairs"}</div>
                   </Link>

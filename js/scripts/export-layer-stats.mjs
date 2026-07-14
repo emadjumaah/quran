@@ -14,9 +14,10 @@ const read = (f) => JSON.parse(fs.readFileSync(path.join(PUB, f), "utf8"));
 
 const jawami = read("jawami.json").meta ?? {};
 const muhkamat = read("muhkamat.json").meta ?? {};
-const mawdui = read("mawdui.json").meta ?? {};
 const furuq = read("furuq.json").meta ?? {};
 const verseIndex = read("verse-index.json").meta ?? {};
+// mawdui.json merged into the unified verse index — its stats live there now
+const mawdui = { sections: verseIndex.sections, topics: verseIndex.topics, verses: verseIndex.verses };
 
 // jawami.tafsil = { "s:a": [ [loc, rel], ... ] }
 const jw = read("jawami.json");

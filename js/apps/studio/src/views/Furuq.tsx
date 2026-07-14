@@ -1,11 +1,13 @@
 /**
- * فروق التنزيل — the Qur'an's near-identical verses.
+ * فروق التنزيل v2 — the Qur'an's near-identical verses.
  *  · «تطابق» (identical): a phrase like «الم» recurs in six suras → shown ONCE
  *    as one family of six, not fifteen redundant pairs.
- *  · every other kind is a clear TWO-verse comparison, aligned word by word with
- *    exactly what differs highlighted.
- * Computed from the text + roots alone; the reader judges. Composite («مركّب»)
- * pairs are dropped — no single verdict can be read from them.
+ *  · every other kind is a clear TWO-verse comparison, lemma-aligned word by
+ *    word: same-lemma form changes shown as ONE word in two forms (⇆), moved
+ *    phrases flagged, and long verses aligned on their best window with the
+ *    rest folded as «…» context — the way فروق books quote the شاهد itself.
+ * Computed from the text + QAC morphology alone; the reader sees exactly what
+ * differs, nothing is asserted beyond the alignment.
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -27,19 +29,23 @@ type Pair = { kind: "pair"; f: Furq };
 type Item = Family | Pair;
 const itemPos = (it: Item) => (it.kind === "family" ? gpos(it.verses[0]) : gpos(it.f.a));
 
-/** one verse row of a two-verse comparison, its unique words highlighted */
-function VerseLine({ segs, side }: { segs: { text: string; diff: boolean }[]; side: "a" | "b" }) {
+/** one verse row of a two-verse comparison, its unique words highlighted;
+ *  a windowed side gets «…» where its folded context lies */
+function VerseLine({ segs, side, fold }: { segs: { text: string; diff: boolean; form?: boolean }[]; side: "a" | "b"; fold?: { pre: number; post: number } }) {
   return (
     <div className="fr-line quran">
       <span className="fr-tag">{side === "a" ? "أ" : "ب"}</span>
+      {fold && fold.pre > 0 && <span className="fr-ctx" title={`${num(fold.pre)} كلمة قبلها — الموضعُ المشترك مقتبسٌ من آيةٍ أطول`}>… </span>}
       {segs.map((s, i) => (
-        <span key={i} className={s.diff ? `fr-diff fr-diff-${side}` : undefined}>{s.text}{" "}</span>
+        <span key={i} className={s.diff ? (s.form ? "fr-diff fr-form" : `fr-diff fr-diff-${side}`) : undefined}>{s.text}{" "}</span>
       ))}
+      {fold && fold.post > 0 && <span className="fr-ctx" title={`${num(fold.post)} كلمة بعدها — الموضعُ المشترك مقتبسٌ من آيةٍ أطول`}>…</span>}
     </div>
   );
 }
 
 function PairCard({ f }: { f: Furq }) {
+  const ar = getUILang() === "ar";
   const { a, b } = useMemo(() => sides(f.ops), [f]);
   return (
     <div className="fr-card">
@@ -48,10 +54,19 @@ function PairCard({ f }: { f: Furq }) {
         <span className="fr-vs">↔</span>
         <Link to={readPathOf(f.b)} className="fr-ref">{arName(f.b)}</Link>
         <span className="spacer" style={{ flex: 1 }} />
+        {f.taq === 1 && <span className="chip" title={ar ? "فيه لفظٌ تقدّم في إحداهما وتأخّر في الأخرى" : "contains a moved phrase"}>{ar ? "فيه تقديم" : "reorder"}</span>}
+        {f.morph === 1 && <span className="chip" title={ar ? "فيه فرقُ صيغةٍ صرفية" : "contains a morphological form difference"}>{ar ? "صيغة" : "form"}</span>}
         <span className="chip gold" title={CAT_INFO[f.cat]?.note}>{catLabel(f.cat)}</span>
       </div>
-      <VerseLine segs={a} side="a" />
-      <VerseLine segs={b} side="b" />
+      <VerseLine segs={a} side="a" fold={f.win?.s === "a" ? f.win : undefined} />
+      <VerseLine segs={b} side="b" fold={f.win?.s === "b" ? f.win : undefined} />
+      {f.win && (
+        <div className="fr-note muted">
+          {ar
+            ? "الموضعُ المشتركُ مقتبسٌ من الآية الأطول، وباقيها مطويٌّ «…» — تُقرأ بتمامها من رقمها أعلاه."
+            : "The shared passage is quoted from the longer verse; the rest is folded «…» — read it in full via its reference above."}
+        </div>
+      )}
     </div>
   );
 }
@@ -85,7 +100,7 @@ export default function Furuq() {
   const [limit, setLimit] = useState(40);
   const ar = getUILang() === "ar";
 
-  const base = useMemo<Furq[]>(() => (data ? data.furuq.filter((f) => f.cat !== "مركّب") : []), [data]);
+  const base = useMemo<Furq[]>(() => data?.furuq ?? [], [data]);
   const locText = useMemo(() => {
     const m = new Map<string, string>();
     for (const f of base) {
@@ -150,13 +165,13 @@ export default function Furuq() {
           <h1 className="jw-title">{ar ? "فروق التنزيل" : "Furūq al-Tanzīl"}</h1>
           <p className="jw-lead">
             {ar
-              ? "المتشابهات اللفظية في القرآن: المتطابقةُ تُجمع في موضعٍ واحد، والمختلفةُ تُحاذى آيتين كلمةً بكلمة لنرى ما تغيّر — من نصّ القرآن وصرفه وحدهما."
-              : "The Qur'an's near-identical verses: identical phrases gathered into one place, differing ones aligned two-by-two to show exactly what changed — from the text and its morphology alone."}
+              ? "المتشابهات اللفظية في القرآن: المتطابقةُ تُجمع في موضعٍ واحد، والمختلفةُ تُحاذى آيتين كلمةً بكلمة — على أصل الكلمة لا رسمِها، فيظهر فرقُ الصيغة صيغتين لكلمةٍ واحدة، ويظهر اللفظُ المنتقلُ من موضعٍ إلى موضع. من نصّ القرآن وصرفه وحدهما."
+              : "The Qur'an's near-identical verses: identical phrases gathered into one place, differing ones aligned two-by-two on the lemma — form changes appear as one word in two forms, moved phrases are flagged. From the text and its morphology alone."}
           </p>
           <div className="jw-stats">
             <span className="chip"><b>{num(items.length)}</b> {ar ? "بطاقة" : "cards"}</span>
-            <span className="chip"><b>{num(base.length)}</b> {ar ? "زوجًا واضحًا" : "clean pairs"}</span>
-            <span className="chip"><b>{num(CAT_ORDER.length - 1)}</b> {ar ? "أنواع فروق" : "difference types"}</span>
+            <span className="chip"><b>{num(base.length)}</b> {ar ? "زوجًا" : "pairs"}</span>
+            <span className="chip"><b>{num(CAT_ORDER.filter((c) => (catCounts[c] ?? 0) > 0).length)}</b> {ar ? "أنواع فروق" : "difference types"}</span>
           </div>
         </header>
 
@@ -170,7 +185,7 @@ export default function Furuq() {
             <button className={cat === "" ? "on" : ""} onClick={() => setCat("")} title={ar ? "كل الأنواع" : "all"}>
               {ar ? "الكل" : "all"} <span className="muted">{num(items.length)}</span>
             </button>
-            {CAT_ORDER.filter((c) => c !== "مركّب").map((c) => (
+            {CAT_ORDER.filter((c) => (catCounts[c] ?? 0) > 0).map((c) => (
               <button
                 key={c}
                 className={cat === c ? "on" : ""}
