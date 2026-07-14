@@ -23,6 +23,17 @@ const db = new DatabaseSync(join(ROOT, "quran-kg.db"), { readOnly: true });
 
 const LEM = { kull: 137, jamee: 205, allah: 3, allahumma: 1182, qala: 64, iyya: 14, laysa: 560 };
 const LEGIS = new Set([197, 709, 764, 810, 578, 443, 1282, 623]);
+// أعيانٌ شرعيّةٌ يسِمُها QAC أعلامًا وليست أشخاصَ وقائع — قائمةٌ مغلقةٌ معلنةٌ
+// بمعرّفات lemma (كقائمة أفعال التشريع): ٩٣٪ من حجب العلَم كان بها باطلًا.
+// شيطان، جهنم، قرآن، جنة، توراة، إنجيل، نصراني، مسلم، يهود، إسلام، عدن، سقر، اللهم
+const EXEMPT_PN = new Set([89, 838, 753, 172, 1137, 1138, 376, 613, 559, 1176, 2363, 4208, 1182]);
+// نصُّ احتياطٍ للنوادر غير الملمَّة (فردوس، سجين، عليون، تسنيم، سلسبيل، كوثر، زبور، فرقان، رمضان)
+const DOCTRINAL_PN = new Set(["جنه", "جهنم", "شيطان", "قرءان", "قران", "توراه", "انجيل", "زبور", "فرقان", "اسلام", "رمضان", "فردوس", "سجين", "عليون", "تسنيم", "سلسبيل", "كوثر"]);
+const normPN = (t) => (t || "").normalize("NFC").replace(/[ً-ْٰـٱ]/g, "").replace(/^ال/, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه");
+// جذور أفعال التشريع (لاسم المفعول التشريعي: «نصيبًا مفروضًا») — تُستخرَج من القاعدة
+const LEGIS_ROOTS = new Set(
+  db.prepare("SELECT root_id FROM root WHERE root_ar IN ('أمر','نهي','كتب','حرم','حلل','فرض','وصي','قضي')").all().map((r) => r.root_id),
+);
 const WAQF = /[ۖ-ۜ]/; // ۖ ۗ ۘ ۙ ۚ ۛ ۜ
 
 // ── data ─────────────────────────────────────────────────────────────────────
@@ -87,11 +98,12 @@ function frameBlockers(list) {
   return b;
 }
 function localBlockers(W) {
-  // تخصيص المقطع — علَم غير إلهي، ذلك-بأنّ افتتاحًا
+  // تخصيص المقطع — علَمُ شخصٍ/واقعة (لا الأعيان الشرعية)، ذلك-بأنّ افتتاحًا
   const b = new Set();
   for (const w of W)
     for (const s of w.segs)
-      if (s.pos === "PN" && s.lemma_id !== LEM.allah && s.lemma_id !== LEM.allahumma) b.add("G3:علَم");
+      if (s.pos === "PN" && s.lemma_id !== LEM.allah && s.lemma_id !== LEM.allahumma &&
+          !EXEMPT_PN.has(s.lemma_id) && !DOCTRINAL_PN.has(normPN(s.text))) b.add("G3:علَم");
   const w0 = W[0], w1 = W[1];
   const isDem = (w) => w && w.segs.some((s) => s.pos === "DEM");
   const isBiAnna = (w) => w && w.segs.some((s) => s.family === "إِنّ") && w.segs.some((s) => strip(s.text) === "ب");
@@ -114,22 +126,41 @@ function g1Gates(W) {
 
   if (has((s) => s.pos === "COND" && ["من", "ما", "مهما", "اي", "أي"].includes(strip(s.text))))
     gates.add("G1b:شرط-العموم");
+  // v1.1: «إن» الشرطية بخطاب الجمع («إن تنصروا الله ينصركم») — شرطُ عمومٍ للمخاطبين
+  for (let i = 0; i < B.length - 1; i++) {
+    if (!B[i].segs.some((s) => s.pos === "COND" && ["ان", "إن"].includes(strip(s.text)))) continue;
+    const nxt = B[i + 1];
+    if (nxt && nxt.segs.some((s) => s.pos_basic === "V" && String(s.person) === "2")) { gates.add("G1b:شرط-الخطاب"); break; }
+  }
 
-  // G1c بأنماطه الثلاثة
+  // G1c بأنماطه الثلاثة — v1.1: لا يعبر النمطُ ضميرَ غائبٍ متّصلًا («فما كان له من
+  // فئة»، «فلم يجدوا لهم أنصارا» نفيٌ مرسًى على معيَّنٍ لا استغراق) — قاعدةٌ عامة
   {
     const isNegHead = (w) => w.segs.some((s) => s.pos === "NEG" || s.pos === "PRO" || s.lemma_id === LEM.laysa);
+    const has3rdSuffix = (w) =>
+      // v1.1b: النقض للجارّ العاري (حرف+ضمير غائب: له، لهم، بهم) لا للمضاف (كمثلِهِ)
+      w.segs.some((s) => s.pos === "PRON" && s.role === "suffix" && String(s.person) === "3") &&
+      !w.segs.some((s) => s.pos_basic === "N" || s.pos_basic === "V");
     outer: for (let i = 0; i < B.length; i++) {
       if (!isNegHead(B[i])) continue;
-      for (let j = i + 1; j <= Math.min(i + 3, B.length - 1); j++)
-        if (B[j].segs.some((s) => s.pos_basic === "N" && s.state === "INDEF")) { gates.add("G1c:نفي+نكرة"); break outer; }
+      let blocked = false;
+      for (let j = i + 1; j <= Math.min(i + 3, B.length - 1); j++) {
+        if (B[j].segs.some((s) => s.pos_basic === "N" && s.state === "INDEF")) {
+          if (!blocked) { gates.add("G1c:نفي+نكرة"); break outer; }
+          break;
+        }
+        if (has3rdSuffix(B[j])) blocked = true;
+      }
       const nx = B[i + 1];
-      if (nx && nx.segs.some((s) => s.pos_basic === "N" && s.role === "stem") &&
+      if (nx && !has3rdSuffix(nx) && nx.segs.some((s) => s.pos_basic === "N" && s.role === "stem") &&
           !nx.segs.some((s) => s.pos === "DET") && !nx.segs.some((s) => s.pos === "PRON" && s.role === "suffix")) {
         gates.add("G1c:نفي+نكرة"); break;
       }
+      blocked = false;
       for (let j = i + 1; j < B.length - 1; j++) {
+        if (has3rdSuffix(B[j])) blocked = true;
         const isMin = B[j].segs.some((s) => s.pos_basic === "P" && ["من", "مِن"].includes(strip(s.text)));
-        if (isMin && B[j + 1].segs.some((s) => s.pos_basic === "N" && (s.state === "INDEF" ||
+        if (isMin && !blocked && B[j + 1].segs.some((s) => s.pos_basic === "N" && (s.state === "INDEF" ||
             (!B[j + 1].segs.some((x) => x.pos === "DET") && !B[j + 1].segs.some((x) => x.pos === "PRON" && x.role === "suffix"))))) {
           gates.add("G1c:نفي+نكرة"); break outer;
         }
@@ -137,31 +168,82 @@ function g1Gates(W) {
     }
   }
 
+  // G1d — الحصر: RES، أو استثناءٌ مفرَّغ (EXP مسبوقٌ بنفيٍ في الوحدة: «لا إله إلا هو»)،
+  // أو نمط «إنّ+ما»
   if (has((s) => s.pos === "RES")) gates.add("G1d:حصر-إلا");
+  {
+    let negSeen = false;
+    for (const w of B) {
+      if (w.segs.some((s) => s.pos === "NEG" || s.pos === "PRO" || s.lemma_id === LEM.laysa)) negSeen = true;
+      if (negSeen && w.segs.some((s) => s.pos === "EXP")) { gates.add("G1d:حصر-مفرَّغ"); break; }
+    }
+  }
   for (let i = 0; i < body.length - 1; i++)
     if (body[i].family === "إِنّ" && body[i + 1].pos === "PREV") { gates.add("G1d:حصر-إنما"); break; }
 
-  if (has((s) => s.lemma_id === LEM.iyya)) gates.add("G1e:قصر-إيّا");
+  // G1e — v1.1: «إيّا» المتقدّمةُ فقط (رأسُ الوحدة) — «إياك نعبد» لا المعطوفة اللاحقة
+  if (B.slice(0, 2).some((w) => w.segs.some((s) => s.lemma_id === LEM.iyya))) gates.add("G1e:قصر-إيّا");
 
+  // G1f — v1.1: الإسناد إلى الله في صدر الوحدة:
+  //   أ) وحدةٌ بلا فعلٍ ولفظُ الجلالة في أوّل كلمتين («اللهُ لطيفٌ بعباده»)
+  //   ب) لفظُ الجلالة في الصدر (بعد إنّ/و/فـ) وخبرُه مضارعٌ استمراريّ («إنّ الله يأمر…»،
+  //      «واللهُ يحبّ المحسنين») — لا الماضي (سردُ فِعالٍ ماضية)
   {
     const hasVerb = body.some((s) => s.pos_basic === "V");
-    const hasAllah = body.some((s) => s.lemma_id === LEM.allah || s.lemma_id === LEM.allahumma);
-    if (!hasVerb && hasAllah && body.length > 0) gates.add("G1f:اسمية-لله");
+    const allahAt = B.findIndex((w) => w.segs.some((s) => s.lemma_id === LEM.allah || s.lemma_id === LEM.allahumma));
+    if (!hasVerb && allahAt >= 0 && allahAt <= 1 && body.length > 0) gates.add("G1f:اسمية-لله");
+    if (hasVerb && allahAt >= 0 && allahAt <= 1) {
+      for (let j = allahAt + 1; j <= Math.min(allahAt + 3, B.length - 1); j++)
+        if (B[j].segs.some((s) => s.pos_basic === "V" && s.aspect === "IMPF" && String(s.person) === "3")) {
+          gates.add("G1f:إسناد-مضارع-لله");
+          break;
+        }
+    }
   }
 
+  // G1g — v1.1: المبني للمفعول التشريعي يتطلّب بصمةَ الخطاب («كُتب عليكم»، «أُحلّ لكم»):
+  // جارٌّ بضمير مخاطبٍ في جوار ±٢ — وإلا فالفاعلُ الإلهي القريب كما كان.
+  // ويضاف اسمُ المفعول التشريعي («نصيبًا مفروضًا»): PASS_PCPL من جذور القائمة.
   for (let i = 0; i < B.length; i++) {
     const leg = B[i].segs.find((s) => LEGIS.has(s.lemma_id) && s.pos_basic === "V");
     if (!leg) continue;
-    if (leg.voice === "PASS") { gates.add("G1g:تشريع"); break; }
+    if (leg.voice === "PASS") {
+      const lo = Math.max(0, i - 2), hi = Math.min(B.length - 1, i + 2);
+      let addressed = false;
+      for (let j = lo; j <= hi; j++)
+        if (B[j].segs.some((s) => s.pos_basic === "P") &&
+            B[j].segs.some((s) => s.pos === "PRON" && s.role === "suffix" && String(s.person) === "2")) addressed = true;
+      if (addressed) { gates.add("G1g:تشريع"); break; }
+      continue;
+    }
     const lo = Math.max(0, i - 3), hi = Math.min(B.length - 1, i + 3);
     for (let j = lo; j <= hi; j++)
       if (B[j].segs.some((s) => s.lemma_id === LEM.allah || s.lemma_id === LEM.allahumma)) { gates.add("G1g:تشريع"); i = B.length; break; }
   }
+  if (has((s) => s.derivation === "PASS_PCPL" && LEGIS_ROOTS.has(s.root_id))) gates.add("G1g:اسم-مفعول-تشريعي");
 
+  // G1h — v1.1: الأمر الجمعي + النهي الجمعي (لا الناهية + مضارع مجزوم للمخاطبين)
+  //   + أمرُ المفرد المذكّر (خطاب النبي ﷺ التشريعي: «خذ العفو») — المؤنّثُ المفرد
+  //   يبقى خارجًا (أوامر الوقائع: «هزّي») والحواجبُ تعمل كما هي.
   if (has((s) => s.aspect === "IMPV" && String(s.person) === "2" && s.number === "P" && s.lemma_id !== LEM.qala))
     gates.add("G1h:أمر-جمعي");
+  for (let i = 0; i < B.length - 1; i++) {
+    if (!B[i].segs.some((s) => s.pos === "PRO")) continue;
+    for (let j = i + 1; j <= Math.min(i + 1, B.length - 1); j++)
+      if (B[j].segs.some((s) => s.pos_basic === "V" && s.aspect === "IMPF" && s.mood === "JUS" && String(s.person) === "2" && s.number === "P")) {
+        gates.add("G1h:نهي-جمعي");
+        i = B.length;
+        break;
+      }
+  }
+  if (has((s) => s.aspect === "IMPV" && String(s.person) === "2" && s.number === "S" && s.gender === "M" && s.lemma_id !== LEM.qala))
+    gates.add("G1h:أمر-مفرد");
   for (let i = 0; i < body.length - 1; i++)
     if (body[i].pos === "IMPV_LAM" && body[i + 1].aspect === "IMPF" && body[i + 1].mood === "JUS") { gates.add("G1h:لام-الأمر"); break; }
+
+  // G1i — v1.1: الموصولُ العامّ في صدر الوحدة («الذين يؤمنون…»، «مَن يعمل…» الموصولية):
+  // REL في أوّل كلمتين + جملةٌ بعده (≥ ٣ كلمات) — أكبرُ فجوةٍ كشفها فحص محاور Pass A
+  if (B.length >= 4 && B.slice(0, 2).some((w) => w.segs.some((s) => s.pos === "REL"))) gates.add("G1i:موصول-العموم");
 
   return { gates, warnings };
 }
