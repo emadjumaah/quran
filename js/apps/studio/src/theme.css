@@ -1882,3 +1882,17 @@ table.data tr:hover td { background: var(--panel-2); }
 .fw-fp-name { flex: none; width: 92px; font-size: 14px; color: var(--ink); text-align: start; }
 .fw-fp-strip { flex: 1; display: flex; height: 14px; border-radius: 4px; overflow: hidden; }
 .fw-fp-cell { flex: 1; min-width: 1px; }
+/* لوحة الدليل بالشارتين (قرار ب) */
+.ev-panel { margin-bottom: 14px; }
+.ev-h { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+.ev-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.ev-badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-quran); font-size: 14.5px; font-weight: 700; padding: 4px 13px; border-radius: 999px; }
+.ev-rule { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.ev-net { background: color-mix(in srgb, var(--gold) 14%, transparent); color: var(--gold); border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.ev-tw { background: color-mix(in srgb, #7c69c9 12%, transparent); color: #7c69c9; border: 1px solid color-mix(in srgb, #7c69c9 40%, var(--line)); }
+.ev-gates { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.ev-rels { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
+.ev-rel { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.ev-rel-h { flex: none; font-family: var(--font-quran); font-weight: 700; color: var(--ink); font-size: 14.5px; }
+.ev-rel-locs { display: flex; flex-wrap: wrap; gap: 5px; }
+.ev-foot { font-size: 11px; margin-top: 10px; line-height: 1.7; }

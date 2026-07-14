@@ -12,6 +12,7 @@ import { ayahByLocationMap, surahNameAr, wordsOfAyah } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import WhyRank from "../components/WhyRank";
+import EvidencePanel from "../components/EvidencePanel";
 import { ayahIdOf } from "../components/AudioButton";
 import { similarOf } from "../similar";
 import { loadFuruq, catLabel } from "../furuq";
@@ -151,7 +152,7 @@ export default function AyaCard() {
           </div>
         </div>
 
-        <WhyRank location={loc} />
+        <EvidencePanel location={loc} />        <WhyRank location={loc} />
 
         {/* folded layers — the verse across the project */}
         {neighbors.length > 0 && (
