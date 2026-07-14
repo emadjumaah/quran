@@ -683,6 +683,10 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .wj-word { font-size: 22px; font-weight: 700; color: var(--gold); }
 .wj-faces { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 4px 6px 8px; }
 @media (max-width: 640px) { .wj-faces { grid-template-columns: 1fr; } }
+/* شاهدُ المعجم تمهيدٌ بعرض المدخل كلّه — لا خانةَ شبكةٍ تُخلّف فراغًا تحتها */
+.wj-faces > .wj-quote { grid-column: 1 / -1; margin-bottom: 0; }
+/* وجهٌ بلا قرينٍ في صفّه يمتدّ بالعرض كلّه بدل عمودٍ فارغ */
+.wj-faces > .wj-face-wide { grid-column: 1 / -1; }
 .wj-face { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
 .wj-face-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
 .wj-face-t { font-weight: 700; font-size: 14px; color: var(--accent); }

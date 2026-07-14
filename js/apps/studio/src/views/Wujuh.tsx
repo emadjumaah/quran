@@ -32,12 +32,12 @@ interface WData {
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
-function Face({ face, idx, texts }: { face: WFace; idx: number; texts: Map<string, AyahDoc> }) {
+function Face({ face, idx, texts, wide }: { face: WFace; idx: number; texts: Map<string, AyahDoc>; wide?: boolean }) {
   const ar = getUILang() === "ar";
   const [all, setAll] = useState(false);
   const shown = all ? face.verses : face.verses.slice(0, 5);
   return (
-    <div className="wj-face">
+    <div className={`wj-face${wide ? " wj-face-wide" : ""}`}>
       <div className="wj-face-h">
         <b className="wj-face-t">{face.sense ? face.sense : ar ? `الوجه ${ORD_AR[idx] ?? idx + 1}` : `Sense ${idx + 1}`}</b>
         <span className="muted">{num(face.n)} {ar ? "موضعًا" : "verses"}</span>
@@ -90,7 +90,7 @@ function WordCard({ w, texts }: { w: WWord; texts: Map<string, AyahDoc> }) {
             </div>
           )}
           {w.faces.map((f, i) => (
-            <Face key={i} face={f} idx={i} texts={texts} />
+            <Face key={i} face={f} idx={i} texts={texts} wide={w.faces.length % 2 === 1 && i === w.faces.length - 1} />
           ))}
         </div>
       )}
@@ -132,7 +132,7 @@ export default function Wujuh() {
           <h1 className="jw-title">{ar ? "الوجوه والنظائر" : "Polysemy (computed)"}</h1>
           <p className="jw-lead">
             {ar
-              ? "الكلمةُ الواحدة قد تحمل في القرآن أكثرَ من وجهٍ في المعنى. نجمع مواضعَ كلِّ كلمةٍ ونقيس تقارُبها بمتّجهات الآيات، ثم لا نعرض وجهين إلا إذا **أكّدهما المعجم**: مدخلُ الراغب في المفردات أو ابن فارس في المقاييس يوثّق تعدُّدَ المعنى — فكلُّ وجهٍ هنا مسمًّى بلغة المعجم، ومعه شاهدُه. ما كان انقسامًا موضوعيًّا لا تعدُّدَ معنًى استُبعد."
+              ? "الكلمةُ الواحدة قد تحمل في القرآن أكثرَ من وجهٍ في المعنى. نجمع مواضعَ كلِّ كلمةٍ ونقيس تقارُبها بمتّجهات الآيات، ثم لا نعرض وجهين إلا إذا أكّدهما المعجم: مدخلُ الراغب في المفردات أو ابن فارس في المقاييس يوثّق تعدُّدَ المعنى — فكلُّ وجهٍ هنا مسمًّى بلغة المعجم، ومعه شاهدُه. ما كان انقسامًا موضوعيًّا لا تعدُّدَ معنًى استُبعد."
               : "One word may carry more than one sense across the Qur'an. We gather occurrences and measure meaning-proximity, then show two senses only when the classical lexica (al-Rāghib's Mufradāt or Ibn Fāris) document real polysemy — each sense named in the lexicon's language with its citation. Topical splits without sense difference were excluded."}
           </p>
           <div className="jw-stats">
