@@ -1869,3 +1869,6 @@ table.data tr:hover td { background: var(--panel-2); }
 .mu-new { display: inline-flex; align-items: center; gap: 7px; width: 100%; justify-content: flex-start; background: none; border: 1px solid var(--line); border-radius: 10px; padding: 9px 13px; color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer; }
 .mu-new:hover { background: var(--panel-2); border-color: var(--accent); }
 .mu-new-plus { color: var(--accent); font-size: 16px; line-height: 1; }
+/* الوجوه المؤصَّلة — شاهد المعجم */
+.wj-quote { font-size: 13px; line-height: 1.9; color: var(--ink-2); border-inline-start: 3px solid var(--gold); padding: 6px 12px; margin-bottom: 10px; background: var(--panel-2); border-radius: 8px; }
+.wj-quote-src { color: var(--gold); font-weight: 700; font-size: 12px; }

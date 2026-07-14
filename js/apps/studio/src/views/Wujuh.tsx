@@ -14,13 +14,15 @@ import type { AyahDoc } from "../types";
 import PageSearch from "../components/PageSearch";
 import { fuzzyMatch } from "../lib/fuzzy";
 
-interface WFace { n: number; verses: string[]; keys: string[] }
+interface WFace { n: number; verses: string[]; keys: string[]; sense?: string }
 interface WWord {
   lemma: string;
   root: string;
   n: number;
   score: number;
   faces: WFace[];
+  quote?: string; // شاهد المعجم الموجز
+  source?: string; // المفردات | المقاييس | كلاهما
 }
 const ORD_AR = ["الأول", "الثاني", "الثالث", "الرابع"];
 interface WData {
@@ -37,7 +39,7 @@ function Face({ face, idx, texts }: { face: WFace; idx: number; texts: Map<strin
   return (
     <div className="wj-face">
       <div className="wj-face-h">
-        <b className="wj-face-t">{ar ? `الوجه ${ORD_AR[idx] ?? idx + 1}` : `Sense ${idx + 1}`}</b>
+        <b className="wj-face-t">{face.sense ? face.sense : ar ? `الوجه ${ORD_AR[idx] ?? idx + 1}` : `Sense ${idx + 1}`}</b>
         <span className="muted">{num(face.n)} {ar ? "موضعًا" : "verses"}</span>
       </div>
       {face.keys?.length > 0 && (
@@ -82,6 +84,11 @@ function WordCard({ w, texts }: { w: WWord; texts: Map<string, AyahDoc> }) {
       </button>
       {open && (
         <div className="wj-faces">
+          {w.quote && (
+            <div className="wj-quote">
+              <span className="wj-quote-src">◆ {w.source === "كلاهما" ? "المفردات والمقاييس" : w.source}</span> {w.quote}
+            </div>
+          )}
           {w.faces.map((f, i) => (
             <Face key={i} face={f} idx={i} texts={texts} />
           ))}
@@ -125,20 +132,20 @@ export default function Wujuh() {
           <h1 className="jw-title">{ar ? "الوجوه والنظائر" : "Polysemy (computed)"}</h1>
           <p className="jw-lead">
             {ar
-              ? "الكلمةُ الواحدة قد تحمل في القرآن أكثرَ من وجهٍ في المعنى بحسب سياقها. نجمع مواضعَ كلِّ كلمةٍ ونقيس تقارُبها في المعنى بمتّجهات الآيات؛ فإذا انقسمت مواضعُها إلى مجموعتين متمايزتين، عرَضناها هنا احتمالًا لوجهين — استنباطًا من الاستعمال القرآنيّ نفسه، لا نقلًا عن كتب الوجوه والنظائر، مرتّبةً بحسب وضوح الانقسام."
-              : "One word may carry more than one «sense» (wajh) across the Qur'an by its context. We gather each word's occurrences and measure their meaning-proximity with verse-vectors; where they split into two distinct groups, we show it here as a possible two senses — drawn from Qur'anic usage itself, not copied from a polysemy lexicon, ranked by how clear the split is."}
+              ? "الكلمةُ الواحدة قد تحمل في القرآن أكثرَ من وجهٍ في المعنى. نجمع مواضعَ كلِّ كلمةٍ ونقيس تقارُبها بمتّجهات الآيات، ثم لا نعرض وجهين إلا إذا **أكّدهما المعجم**: مدخلُ الراغب في المفردات أو ابن فارس في المقاييس يوثّق تعدُّدَ المعنى — فكلُّ وجهٍ هنا مسمًّى بلغة المعجم، ومعه شاهدُه. ما كان انقسامًا موضوعيًّا لا تعدُّدَ معنًى استُبعد."
+              : "One word may carry more than one sense across the Qur'an. We gather occurrences and measure meaning-proximity, then show two senses only when the classical lexica (al-Rāghib's Mufradāt or Ibn Fāris) document real polysemy — each sense named in the lexicon's language with its citation. Topical splits without sense difference were excluded."}
           </p>
           <div className="jw-stats">
             <span className="chip"><span className="ai-spark" aria-hidden /> {ar ? "محسوبٌ بالمعنى" : "meaning-computed"}</span>
             <span className="chip"><b>{num(d.meta.candidates)}</b> {ar ? "كلمةً لها وجهان محتمَلان" : "words with two senses"}</span>
             <span className="chip">{ar ? `من ${num(d.meta.scanned)} كلمةٍ كثيرةِ الورود` : `of ${num(d.meta.scanned)} frequent words`}</span>
           </div>
-          {/* honest interim status — review (2026-07-14) found ~40% of entries are
-              narrative/topical splits, not true polysemy; re-grounding on المفردات/مقاييس planned */}
-          <p className="kl-disclaimer kl-review">
+          {/* re-grounded 2026-07-14: of 80 computed splits, only these survived
+              lexicon corroboration (المفردات/مقاييس) — the rest were topical variance */}
+          <p className="kl-disclaimer">
             {ar
-              ? "⚠ هذا القسمُ قيدُ المراجعة: الانقسامُ الدلاليُّ المحسوبُ قد يعكسُ تباينَ الموضوعات لا تعدُّدَ المعنى الحقيقيّ. يُعادُ تأسيسُه على مداخل المفردات والمقاييس — فلا تُبنى على وجوهه نتيجةٌ حتى إشعارٍ آخر."
-              : "⚠ Under review: the computed split may reflect topical variance, not true polysemy. Re-grounding on the classical lexica is underway — treat the senses as provisional."}
+              ? "أُسِّس هذا القسمُ على المعاجم: من ٨٠ انقسامًا محسوبًا لم يثبت تعدُّدُ المعنى معجميًّا إلا لما تراه هنا — والبقيةُ تباينُ موضوعاتٍ استُبعد بأمانة."
+              : "Lexicon-grounded: of 80 computed splits, only those shown here were corroborated as true polysemy — the rest were topical variance, honestly excluded."}
           </p>
         </header>
 

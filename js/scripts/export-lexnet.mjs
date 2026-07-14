@@ -73,19 +73,29 @@ for (const { root, occurrences, data } of rows) {
   // definition text for the embedding — مقاييس core first (it states the أصل),
   // then الراغب, de-noised and capped so the essential sense dominates.
   const embedText = `${root}\n${deNoise(maq).slice(0, 600)}\n${deNoise(raq).slice(0, 900)}`.slice(0, 1500);
-  // explicit distinctions الراغب writes himself (verbatim sentence extraction)
-  // v2 (مراجعة 2026-07-14): القطعُ عند نهايات الجمل [.؛] فقط — الفاصلةُ «،» ليست
-  // نهايةَ جملة، وكان القطعُ عندها يبترُ شطرَ الفرقِ الشارحَ نفسَه
+  // explicit distinctions الراغب writes himself — v2 (مراجعة 2026-07-14):
+  // الالتقاط من عبارة الفرق نفسها حتى أول نهاية جملةٍ [.؛] أو نهاية النص —
+  // كان القطع عند الفاصلة «،» يبتر شطرَ الفرق الشارح، واشتراطُ علامةِ ختمٍ
+  // يُسقط المقتطفات القصيرة أصلًا (مصدرُنا مقتطفات لا النص الكامل)
   const contrast = [];
-  for (const sent of cleanRaghib(raq).split(/(?<=[.؛])\s+/)) {
-    const t = sent.trim();
-    if (t.length < 18 || t.length > 420) continue;
-    if (!CONTRAST_OK.test(t)) continue;      // a real distinction opener
-    if (FRAGMENT_START.test(t)) continue;    // not an anaphoric mid-sentence piece
-    if (/[[\]|]|ص\s*\d|\d\s*\/\s*\d/.test(t)) continue; // any leftover citation/marker
-    if (!/[.؛]$/.test(t)) continue;          // must end cleanly (not truncated)
-    contrast.push(t);
-    if (contrast.length >= 3) break;
+  {
+    const txt = cleanRaghib(raq);
+    const re = new RegExp(CONTRAST_OK.source, "g");
+    let m;
+    while ((m = re.exec(txt)) && contrast.length < 3) {
+      // بداية الجملة: بعد آخر [.؛] قبل الموضع
+      const before = txt.slice(0, m.index);
+      const start = Math.max(before.lastIndexOf("."), before.lastIndexOf("؛")) + 1;
+      // نهايتها: أول [.؛] بعده، وإلا نهاية النص (بسقف طول)
+      const rest = txt.slice(m.index);
+      const endRel = rest.search(/[.؛]/);
+      const end = endRel === -1 ? txt.length : m.index + endRel + 1;
+      const t = txt.slice(start, end).trim();
+      if (t.length < 18 || t.length > 420) continue;
+      if (FRAGMENT_START.test(t)) continue;
+      if (/[[\]|]|ص\s*\d|\d\s*\/\s*\d/.test(t)) continue;
+      if (!contrast.includes(t)) contrast.push(t);
+    }
   }
   roots.push({ root, occ: occurrences, embedText, contrast });
 }
