@@ -1,21 +1,23 @@
 /**
- * نِبراس — a research chat over مشكاة's own data. It retrieves from the Qur'an
- * (verses by meaning, roots + their lexical sense) and, on request, drafts a
- * منشور / خطبة / محاضرة / تلخيص FROM that gathered material — a grounded draft for
- * a scholar to build on, never tafsir or fatwa. Multi-chat, on-device, no account.
+ * نِبراس — an expert research ASSISTANT over مشكاة's own data (agentic loop).
  *
- * Flow: /api/chat plans (which local tool, or compose, or answer) → the tools run
- * here for free → /api/compose writes only from what this chat gathered.
+ * The model holds the whole conversation and drives مشكاة's tools ITSELF —
+ * meaning-search, roots, cited tafsir/asbāb, book passages, draft composing —
+ * calling them as many times as it needs inside one reply (/api/assist returns
+ * either tool calls or the final text; the tools execute here, on-device, free).
+ * Free in style and conversation; bound in facts to what the tools returned —
+ * verses are NEVER written from model memory. Multi-chat, on-device, no account.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getUILang, num, useUILang } from "../i18n";
 import {
   addMessage, chatMaterial, createChat, deleteChat, getChat, patchMessage, renameChat, useChats,
-  type ChatAyah, type ChatMsg,
+  type ChatAyah, type ChatBook, type ChatMsg, type ChatRoot,
 } from "../chat";
 import { toolRootInfo, toolSearchMeaning } from "../lib/muinTools";
 import { retrieveBooks, hasBooks, bookLabel } from "../rag";
+import { asbabFor, tafsirFor } from "../books";
 import { surahNameAr } from "../db";
 
 async function postJson(url: string, body: unknown): Promise<any> {
@@ -25,11 +27,52 @@ async function postJson(url: string, body: unknown): Promise<any> {
 }
 
 const EXAMPLES_AR = [
-  "ابحث عن آياتٍ في الصبر على البلاء",
-  "ما معنى جذر «رحم» ومواضعه؟",
-  "اجمع آياتٍ عن العدل، ثم اكتب منشورًا موجزًا منها",
-  "آيات في شكر النعمة، ثم مسوّدة خطبة",
+  "حدّثني عن الصبر في القرآن: آياتُه ومعناه في المعاجم",
+  "رتّبْ لي محاورَ خطبةٍ عن شكر النعمة ثم اكتبها",
+  "ما الفرق بين الخوف والخشية في القرآن؟",
+  "أُعِدُّ بحثًا عن العدل — ساعدني في مادته ومخططه",
 ];
+
+/** ما تعرضه فقاعة الحالة أثناء نداء أداة */
+const TOOL_STATUS: Record<string, (a: Record<string, unknown>) => string> = {
+  search_meaning: (a) => `يبحث عن آيات: ${String(a.query ?? "").slice(0, 60)}…`,
+  search_root: (a) => `يستقصي الجذر: ${String(a.word ?? "")}`,
+  tafsir_of: (a) => `يقرأ التفاسير عند ${String(a.ref ?? "")}`,
+  asbab_of: (a) => `يراجع أسباب النزول عند ${String(a.ref ?? "")}`,
+  search_books: (a) => `يبحث في الكتب: ${String(a.query ?? "").slice(0, 60)}…`,
+  compose_draft: (a) => `يؤلّف مسودة: ${String(a.subject ?? "")}`,
+};
+
+const refName = (ref: string): string => {
+  const [s, n] = ref.split(":");
+  return `${surahNameAr(Number(s))} ${n}`;
+};
+
+/** عرضٌ آمنٌ لنص المساعد: يحوّل عادات Markdown الخفيفة (**غامق**، `*` نقاط،
+ *  ## عناوين) إلى عناصرَ حقيقية بدل ظهور الوسوم حرفيًّا — بلا HTML خام. */
+function renderReply(text: string): ReactNode {
+  const bold = (line: string, key: number): ReactNode => {
+    const parts = line.split(/\*\*([^*]+)\*\*/g);
+    if (parts.length === 1) return <span key={key}>{line}</span>;
+    return <span key={key}>{parts.map((p, i) => (i % 2 ? <b key={i}>{p}</b> : p))}</span>;
+  };
+  return text.split("\n").map((raw, i) => {
+    let line = raw;
+    const head = /^#{1,4}\s+(.*)$/.exec(line);
+    if (head) return <div key={i} style={{ fontWeight: 700, marginTop: 6 }}>{bold(head[1], 0)}</div>;
+    const m = /^(\s*)([*•-])\s+(.*)$/.exec(line);
+    if (m) {
+      const depth = Math.min(Math.floor(m[1].length / 2), 3);
+      return (
+        <div key={i} style={{ paddingInlineStart: 14 + depth * 14 }}>
+          <span className="muted">• </span>{bold(m[3], 0)}
+        </div>
+      );
+    }
+    if (!line.trim()) return <div key={i} style={{ height: 6 }} />;
+    return <div key={i}>{bold(line, 0)}</div>;
+  });
+}
 
 function Bubble({ m }: { m: ChatMsg }) {
   const ar = getUILang() === "ar";
@@ -41,10 +84,13 @@ function Bubble({ m }: { m: ChatMsg }) {
       ) : (
         <div className="mu-asst">
           {m.pending ? (
-            <div className="mu-typing"><span /><span /><span /></div>
+            <>
+              <div className="mu-typing"><span /><span /><span /></div>
+              {m.text && <div className="mu-status">{m.text}</div>}
+            </>
           ) : (
             <>
-              {m.text && <div className={`mu-reply${m.error ? " err" : ""}`}>{m.text}</div>}
+              {m.text && <div className={`mu-reply${m.error ? " err" : ""}`}>{renderReply(m.text)}</div>}
               {m.ayahs && m.ayahs.length > 0 && (
                 <div className="mu-ayahs">
                   {m.ayahs.map((a) => {
@@ -135,58 +181,98 @@ export default function Assistant() {
     setBusy(true);
     try {
       const cur = getChat(cid)!;
-      const mat = chatMaterial(cur);
-      const plan = await postJson("/api/chat", {
-        messages: cur.messages.filter((m) => !m.pending).map((m) => ({ role: m.role, text: m.text })),
-        material: { ayahs: mat.ayahs.map((a) => ({ ref: a.ref, text: a.text })), roots: mat.roots.map((r) => ({ root: r.root })) },
-      });
-      const patch: Partial<ChatMsg> = { pending: false, text: plan.reply || "" };
-      if (plan.action === "search_meaning" && plan.query) {
-        patch.ayahs = await toolSearchMeaning(plan.query);
-        if (hasBooks()) { const bks = await retrieveBooks(plan.query); if (bks.length) patch.books = bks; }
-        if (!patch.ayahs.length) patch.text = (plan.reply || "") + (ar ? " (لم أجد آياتٍ مطابقة.)" : "");
-      } else if (["search_root", "root_info", "similar_roots"].includes(plan.action) && plan.query) {
-        const r = await toolRootInfo(plan.query);
-        patch.roots = r.roots; patch.ayahs = r.ayahs;
-        if (!r.roots.length) patch.text = (plan.reply || "") + (ar ? " (لم أجد هذا الجذر.)" : "");
-      } else if (plan.action === "compose" || plan.action === "search_compose") {
-        const cur2 = getChat(cid)!;
-        const prior = chatMaterial(cur2);
-        // gather now if asked in one message (search_compose), or if nothing's gathered yet
-        let fresh: ChatAyah[] = [];
-        const q = plan.query || plan.subject || "";
-        if ((plan.action === "search_compose" || prior.ayahs.length === 0) && q) {
-          fresh = await toolSearchMeaning(q);
-          if (fresh.length) patch.ayahs = fresh;
+      // تاريخ الحوار للنموذج — المسودات السابقة تُلحق بنصها مقتطعةً ليبني عليها
+      const history = cur.messages
+        .filter((m) => !m.pending)
+        .map((m) => ({
+          role: m.role,
+          text: (m.text || "") + (m.draft ? `\n[مسودة سابقة]\n${m.draft.slice(0, 1500)}` : ""),
+        }));
+
+      // ما يتراكم عبر نداءات الأدوات في هذا الدور — يُعرض تحت الجواب النهائي
+      const acc: { ayahs: ChatAyah[]; roots: ChatRoot[]; books: ChatBook[]; draft?: string } = { ayahs: [], roots: [], books: [] };
+      const seenAyah = new Set<string>();
+      const addAyahs = (list: ChatAyah[]) => {
+        for (const a of list) if (!seenAyah.has(a.ref)) { seenAyah.add(a.ref); acc.ayahs.push(a); }
+      };
+
+      /** ينفّذ أداةً محليًّا ويعيد نتيجتها للنموذج (مقتضبةً ومسندة) */
+      const runTool = async (name: string, args: Record<string, unknown>): Promise<unknown> => {
+        if (name === "search_meaning") {
+          const k = Math.min(Number(args.k) || 8, 14);
+          const ayahs = await toolSearchMeaning(String(args.query ?? ""), k);
+          addAyahs(ayahs);
+          return { ayahs: ayahs.map((a) => ({ ref: a.ref, surah: refName(a.ref), text: a.text })) };
         }
-        // union of freshly-found + already-gathered verses (dedupe by ref)
-        const seen = new Set<string>();
-        const ayahs: ChatAyah[] = [];
-        for (const a of [...fresh, ...prior.ayahs]) if (!seen.has(a.ref)) { seen.add(a.ref); ayahs.push(a); }
-        if (!ayahs.length) {
-          patch.text = ar ? "لم أجدْ آياتٍ في هذا الموضوع لأبني عليها — جرّبْ صياغةً أخرى للطلب، أو ابحثْ أوّلًا ثمّ اطلبِ الكتابة." : "No verses found to build on — try rephrasing, or search first then compose.";
-        } else {
-          // the most recent draft in this chat — so «وسّع / نقّح» continues it, not restarts
-          const prev = [...cur2.messages].reverse().find((mm) => mm.draft)?.draft || "";
-          // gather cited book/tafsir passages from the server corpus (inert until a source is registered)
-          const books = hasBooks() ? await retrieveBooks(q || plan.subject || text, { topK: 6 }) : [];
-          if (books.length) patch.books = books;
+        if (name === "search_root") {
+          const r = await toolRootInfo(String(args.word ?? ""));
+          for (const rt of r.roots) if (!acc.roots.some((x) => x.root === rt.root)) acc.roots.push(rt);
+          addAyahs(r.ayahs.slice(0, 6));
+          return {
+            roots: r.roots.map((rt) => ({ root: rt.root, occurrences: rt.occ, sense: (rt.gloss || "").slice(0, 400) })),
+            ayahs: r.ayahs.slice(0, 6).map((a) => ({ ref: a.ref, surah: refName(a.ref), text: a.text })),
+          };
+        }
+        if (name === "tafsir_of" || name === "asbab_of") {
+          const ref = String(args.ref ?? "").trim();
+          if (!/^\d{1,3}:\d{1,3}$/.test(ref)) return { error: "ref يجب أن يكون بصيغة رقم_السورة:رقم_الآية" };
+          const entries = name === "tafsir_of" ? (await tafsirFor(ref)).slice(0, 3) : (await asbabFor(ref)).slice(0, 2);
+          for (const e of entries) acc.books.push({ source: e.source, ref: refName(ref), text: e.text.slice(0, 700) });
+          if (!entries.length) return { ref, found: false, note: "لا نصَّ عند هذا الموضع في المصادر المضمّنة" };
+          return { ref, surah: refName(ref), entries: entries.map((e) => ({ source: e.label, text: e.text.slice(0, 700) })) };
+        }
+        if (name === "search_books") {
+          if (!hasBooks()) return { entries: [], note: "لا كتبَ مضمّنةً للبحث الدلالي" };
+          const hits = await retrieveBooks(String(args.query ?? ""), { topK: 6 });
+          for (const b of hits) acc.books.push({ source: b.source, ref: b.ref, text: b.text });
+          return { entries: hits.map((b) => ({ source: bookLabel(b.source), ref: b.ref, text: b.text.slice(0, 500) })) };
+        }
+        if (name === "compose_draft") {
+          const prior = chatMaterial(getChat(cid!)!);
+          const seen = new Set<string>();
+          const ayahs: ChatAyah[] = [];
+          for (const a of [...acc.ayahs, ...prior.ayahs]) if (!seen.has(a.ref)) { seen.add(a.ref); ayahs.push(a); }
+          if (!ayahs.length) return { ok: false, note: "لا آياتَ مجموعةً بعد — ابحث أولًا ثم ألِّف" };
+          const roots = [...acc.roots, ...prior.roots].slice(0, 12);
+          const books = acc.books.length ? acc.books : hasBooks() ? await retrieveBooks(String(args.subject ?? text), { topK: 6 }) : [];
+          const prev = [...getChat(cid!)!.messages].reverse().find((mm) => mm.draft)?.draft || "";
           const composed = await postJson("/api/compose", {
-            task: plan.task || "post", subject: plan.subject || text, length: plan.length || "long",
-            ayahs: ayahs.slice(0, 16).map((a) => {
-              const [s, n] = a.ref.split(":");
-              return { ref: `${surahNameAr(Number(s))} ${n}`, text: a.text };
-            }),
-            roots: prior.roots.slice(0, 12).map((r) => ({ root: r.root, gloss: r.gloss })),
+            task: String(args.task ?? "post"), subject: String(args.subject ?? text), length: String(args.length ?? "long"),
+            ayahs: ayahs.slice(0, 16).map((a) => ({ ref: refName(a.ref), text: a.text })),
+            roots: roots.map((r) => ({ root: r.root, gloss: r.gloss })),
             books: books.slice(0, 8).map((b) => ({ source: bookLabel(b.source), ref: b.ref, text: b.text })),
             instruction: text, previous: prev,
           });
-          patch.text = plan.reply || (ar ? "إليك مسوّدةً تبني عليها:" : "A draft to build on:");
-          patch.draft = composed.text;
-          patch.composed = true;
+          acc.draft = composed.text;
+          return { ok: true, shown: true, opening: String(composed.text || "").slice(0, 300) };
+        }
+        return { error: `أداة غير معروفة: ${name}` };
+      };
+
+      // حلقة الوكيل: النموذج يطلب أدواتٍ فنُنفّذها ونعيد النداء، حتى نصٍّ نهائي
+      const steps: { name: string; args: Record<string, unknown>; result: unknown }[] = [];
+      let finalText = "";
+      for (let round = 0; round < 5; round++) {
+        const res = await postJson("/api/assist", { messages: history, steps });
+        if (res.text) { finalText = res.text; break; }
+        const calls: { name: string; args: Record<string, unknown> }[] = Array.isArray(res.calls) ? res.calls.slice(0, 4) : [];
+        if (!calls.length) { finalText = ar ? "لم أستطع إتمام هذا الطلب." : "Could not complete this request."; break; }
+        for (const c of calls) {
+          patchMessage(cid, aid, { pending: true, text: TOOL_STATUS[c.name]?.(c.args) ?? c.name });
+          const result = await runTool(c.name, c.args ?? {});
+          steps.push({ name: c.name, args: c.args ?? {}, result });
         }
       }
-      patchMessage(cid, aid, patch);
+      if (!finalText) finalText = ar ? "طال البحث — هذا ما جمعتُه حتى الآن، فاسألني عنه أو ضيّق الطلب." : "Search ran long — here is what was gathered; narrow the request.";
+
+      patchMessage(cid, aid, {
+        pending: false,
+        text: finalText,
+        ...(acc.ayahs.length ? { ayahs: acc.ayahs.slice(0, 12) } : {}),
+        ...(acc.roots.length ? { roots: acc.roots.slice(0, 8) } : {}),
+        ...(acc.books.length ? { books: acc.books.slice(0, 6) } : {}),
+        ...(acc.draft ? { draft: acc.draft, composed: true } : {}),
+      });
     } catch {
       patchMessage(cid, aid, { pending: false, error: true, text: ar ? "تعذّر إتمام الطلب — تأكّد من الاتصال وحاوِل ثانيةً." : "Request failed — check your connection and retry." });
     } finally {
@@ -260,8 +346,8 @@ export default function Assistant() {
               <h1 className="mu-empty-h">{ar ? "بمَ نبدأ؟" : "Where shall we begin?"}</h1>
               <p className="mu-hero-sub">
                 {ar
-                  ? "نِبراس — بحثٌ بالمعنى ومحادثةٌ من نصّ القرآن وبياناته. اكتبْ موضوعًا، أو معنى جذر، أو اطلبْ صياغةً من الآيات."
-                  : "Nibras — meaning-search & chat over the Qur'an's data. Ask for a theme, a root's sense, or a draft from the verses."}
+                  ? "نِبراس — مساعدُ بحثٍ يحاورك ويبحث بنفسه في القرآن ولغته والتفاسير المسندة أثناء الحديث: اسأل، وناقش، ورتّب أفكارك، واطلب بحثًا أو خطبةً أو مقالة — وكلُّ واقعةٍ عنده بمصدرها."
+                  : "Nibras — a research assistant that converses and searches the Qur'an, its language and cited tafsīr on its own as you talk: ask, discuss, organize ideas, request a paper or khutba — every fact carries its source."}
               </p>
               {composer}
               <div className="mu-examples">
@@ -281,7 +367,7 @@ export default function Assistant() {
         {!empty && (
           <div className="mu-inputbar">
             {composer}
-            <div className="mu-foot muted">{ar ? "نِبراس يجمع ويصوغ من بيانات القرآن — مسوّداتٌ للباحث." : "Grounded drafts from the Qur'an's data — for research."}</div>
+            <div className="mu-foot muted">{ar ? "نِبراس يبحث في بياناتنا ويؤلّف منها بإسناد — عونٌ للباحث لا فتوى، والعبرةُ بمراجعة أهل العلم." : "Nibras searches our data and composes from it with citations — research aid, not fatwa."}</div>
           </div>
         )}
       </main>
