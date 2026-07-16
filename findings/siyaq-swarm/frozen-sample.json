@@ -1,0 +1,307 @@
+{
+ "frozen": true,
+ "date": "2026-07-15",
+ "grain": "tafsil (~1300 unit)",
+ "sample": [
+  {
+   "id": "2:7",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "2:103",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "2:182",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "2:257",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "3:30",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "3:148",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "4:25",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "4:76",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "4:126",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "5:19",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "5:66",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "6:70",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "6:150",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "7:84",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "7:147",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "9:16",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "9:72",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "10:30",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "11:49",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "12:29",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "14:41",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "16:50",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "17:77",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "18:82",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "20:76",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "23:22",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "24:34",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "26:9",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "26:191",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "28:75",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "33:8",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "34:9",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "37:21",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "39:31",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "40:68",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "43:56",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "48:26",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "55:25",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "62:8",
+   "kind": "boundary",
+   "half": "tune"
+  },
+  {
+   "id": "70:35",
+   "kind": "boundary",
+   "half": "holdout"
+  },
+  {
+   "id": "2:3",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "3:98",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "5:70",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "7:113",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "10:46",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "13:40",
+   "kind": "counter",
+   "half": "tune"
+  },
+  {
+   "id": "17:41",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "20:19",
+   "kind": "counter",
+   "half": "tune"
+  },
+  {
+   "id": "22:74",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "26:38",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "27:74",
+   "kind": "counter",
+   "half": "tune"
+  },
+  {
+   "id": "33:43",
+   "kind": "counter",
+   "half": "tune"
+  },
+  {
+   "id": "37:97",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "40:41",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "45:17",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "53:10",
+   "kind": "counter",
+   "half": "tune"
+  },
+  {
+   "id": "56:75",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "69:34",
+   "kind": "counter",
+   "half": "tune"
+  },
+  {
+   "id": "77:29",
+   "kind": "counter",
+   "half": "holdout"
+  },
+  {
+   "id": "85:5",
+   "kind": "counter",
+   "half": "holdout"
+  }
+ ]
+}
