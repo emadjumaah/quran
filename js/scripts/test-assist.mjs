@@ -25,9 +25,11 @@ const { default: handler } = await import(`${ROOT}/js/apps/studio/api/assist.js`
 // ——— بيانات حقيقية ———
 const db = new DatabaseSync(`${ROOT}/quran-kg.db`, { readOnly: true });
 const verse = (s, a) => db.prepare("SELECT text_clean t FROM ayah WHERE surah_no=? AND ayah_no=?").get(s, a)?.t;
+// أدوات البحث في المتصفح تعيد الرسم العثماني (muinTools: textUthmani || textClean)
+const verseU = (s, a) => db.prepare("SELECT text_uthmani t FROM ayah WHERE surah_no=? AND ayah_no=?").get(s, a)?.t;
 const SURAHS = new Map(db.prepare("SELECT surah_no n, name_ar nm FROM surah").all().map((r) => [r.n, r.nm]));
 const refName = (ref) => { const [s, a] = ref.split(":"); return `${SURAHS.get(Number(s))} ${a}`; };
-const ayahsOf = (refs) => refs.map((r) => { const [s, a] = r.split(":").map(Number); return { ref: r, surah: refName(r), text: verse(s, a) }; });
+const ayahsOf = (refs) => refs.map((r) => { const [s, a] = r.split(":").map(Number); return { ref: r, surah: refName(r), text: verseU(s, a) || verse(s, a) }; });
 
 const SABR = ayahsOf(["2:153", "2:155", "3:200", "39:10", "2:45"]);
 const SHUKR = ayahsOf(["14:7", "2:152", "31:12", "16:114"]);
