@@ -49,3 +49,5 @@ js/scripts/hub-variants/*.debug.json
 # نِبراس RAG corpus — built per book, not committed (see docs)
 rag.db
 rag.db-*
+findings/deepening/waves/dirA-*.json
+findings/deepening/waves/sym-*.json
