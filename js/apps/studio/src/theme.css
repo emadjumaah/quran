@@ -1701,6 +1701,18 @@ table.data tr:hover td { background: var(--panel-2); }
 .mu-reply.err { color: #d9534f; }
 /* سطر حالة الأدوات أثناء عمل نبراس («يبحث عن…») */
 .mu-status { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+/* الآية المنسوجة داخل نثر الجواب — بخط المصحف دون تضخيم يقطع السطر */
+.mu-vq { font-family: var(--font-quran); font-size: 1.18em; color: var(--accent); }
+/* المراجع الداعمة — قسم مطوي أنيق تحت الجواب */
+.mu-refs { margin: 12px 0 2px; border-top: 1px solid var(--line); padding-top: 8px; }
+.mu-refs summary { display: flex; align-items: center; gap: 7px; cursor: pointer; list-style: none; font-size: 13px; color: var(--muted); user-select: none; padding: 2px 0; }
+.mu-refs summary::-webkit-details-marker { display: none; }
+.mu-refs summary:hover { color: var(--accent); }
+.mu-refs-chev { flex: none; transition: transform 0.18s ease; }
+.mu-refs[open] .mu-refs-chev { transform: rotate(180deg); }
+.mu-refs-t { font-weight: 600; }
+.mu-refs-n { font-size: 12px; }
+.mu-refs-body { margin-top: 10px; }
 .mu-ayahs, .mu-roots { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
 .mu-ayah { display: block; padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; text-decoration: none; }
 .mu-ayah:hover { border-color: var(--accent); }

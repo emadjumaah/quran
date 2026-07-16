@@ -51,35 +51,83 @@ const refName = (ref: string): string => {
   return `${surahNameAr(Number(s))} ${n}`;
 };
 
+// ——— القاعدة الذهبية أداةً (لا وعدًا): تنقية الاقتباسات القرآنية ———
+/** حركات وتطويل وعلامات ضبط — ما قد يضيفه النموذج من ذاكرته فوق نصنا النظيف */
+const TASHKEEL = /[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g;
+/** يجمع كل النصوص التي أعادتها الأدوات في هذا الدور (آيات ومقاطع ومصادر) */
+function collectToolTexts(v: unknown, into: string[]): void {
+  if (!v || typeof v !== "object") return;
+  for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+    if (typeof val === "string" && (k === "text" || k === "sense")) into.push(val);
+    else if (typeof val === "object") collectToolTexts(val, into);
+  }
+}
+/** كل ﴿…﴾ في الجواب طابقت حروفُه نصَّ أداةٍ بعد تجريد التشكيل يُستبدل به النصُّ
+ *  الحرفي النظيف كما أعادته الأداة — فلا يبقى تشكيلٌ مضافٌ من ذاكرة النموذج
+ *  فوق كتاب الله. ما لم تطابق حروفُه يُترك كما هو (يكشفه الفحص لا نُجمّله). */
+function enforceVerbatim(text: string, toolTexts: string[]): string {
+  if (!toolTexts.length) return text;
+  const hay = toolTexts.join("\n");
+  return text.replace(/﴿([^﴾]*)﴾/g, (whole, q: string) => {
+    const frags = q.split(/…|\.\.\./);
+    const stripped = frags.map((f) => f.replace(TASHKEEL, "").trim());
+    if (stripped.join("") === frags.map((f) => f.trim()).join("")) return whole; // نظيفٌ أصلًا
+    if (!stripped.every((f) => !f || hay.includes(f))) return whole;
+    return `﴿${stripped.join(" … ")}﴾`;
+  });
+}
+
 /** عرضٌ آمنٌ لنص المساعد: يحوّل عادات Markdown الخفيفة (**غامق**، `*` نقاط،
- *  ## عناوين) إلى عناصرَ حقيقية بدل ظهور الوسوم حرفيًّا — بلا HTML خام. */
+ *  ## عناوين) إلى عناصرَ حقيقية بدل ظهور الوسوم حرفيًّا — بلا HTML خام.
+ *  والآياتُ المنسوجة بين ﴿…﴾ تُعرض بخط المصحف داخل الجملة. */
 function renderReply(text: string): ReactNode {
   const bold = (line: string, key: number): ReactNode => {
     const parts = line.split(/\*\*([^*]+)\*\*/g);
     if (parts.length === 1) return <span key={key}>{line}</span>;
     return <span key={key}>{parts.map((p, i) => (i % 2 ? <b key={i}>{p}</b> : p))}</span>;
   };
+  const rich = (line: string, key: number): ReactNode => {
+    const segs = line.split(/(﴿[^﴾]*﴾)/g);
+    if (segs.length === 1) return bold(line, key);
+    return (
+      <span key={key}>
+        {segs.map((s, i) => (s.startsWith("﴿") ? <span key={i} className="mu-vq">{s}</span> : bold(s, i)))}
+      </span>
+    );
+  };
   return text.split("\n").map((raw, i) => {
     let line = raw;
     const head = /^#{1,4}\s+(.*)$/.exec(line);
-    if (head) return <div key={i} style={{ fontWeight: 700, marginTop: 6 }}>{bold(head[1], 0)}</div>;
+    if (head) return <div key={i} style={{ fontWeight: 700, marginTop: 6 }}>{rich(head[1], 0)}</div>;
     const m = /^(\s*)([*•-])\s+(.*)$/.exec(line);
     if (m) {
       const depth = Math.min(Math.floor(m[1].length / 2), 3);
       return (
         <div key={i} style={{ paddingInlineStart: 14 + depth * 14 }}>
-          <span className="muted">• </span>{bold(m[3], 0)}
+          <span className="muted">• </span>{rich(m[3], 0)}
         </div>
       );
     }
     if (!line.trim()) return <div key={i} style={{ height: 6 }} />;
-    return <div key={i}>{bold(line, 0)}</div>;
+    return <div key={i}>{rich(line, 0)}</div>;
   });
 }
+
+/** عدٌّ عربيٌّ سليم لسطر «المراجع»: مفرد/مثنى/جمع */
+const countAr = (n: number, one: string, two: string, few: string): string =>
+  n === 1 ? one : n === 2 ? two : n <= 10 ? `${num(n)} ${few}` : `${num(n)} ${one}`;
 
 function Bubble({ m }: { m: ChatMsg }) {
   const ar = getUILang() === "ar";
   const copy = () => navigator.clipboard?.writeText(m.draft || m.text || "");
+  const nAyahs = m.ayahs?.length ?? 0;
+  const nRoots = m.roots?.length ?? 0;
+  const nBooks = m.books?.length ?? 0;
+  const refCounts = [
+    nAyahs ? (ar ? countAr(nAyahs, "آية", "آيتان", "آيات") : `${nAyahs} verses`) : "",
+    nRoots ? (ar ? countAr(nRoots, "جذر", "جذران", "جذور") : `${nRoots} roots`) : "",
+    nBooks ? (ar ? countAr(nBooks, "مصدر", "مصدران", "مصادر") : `${nBooks} sources`) : "",
+  ].filter(Boolean).join(" · ");
   return (
     <div className={`mu-msg ${m.role}`}>
       {m.role === "user" ? (
@@ -94,47 +142,59 @@ function Bubble({ m }: { m: ChatMsg }) {
           ) : (
             <>
               {m.text && <div className={`mu-reply${m.error ? " err" : ""}`}>{renderReply(m.text)}</div>}
-              {m.ayahs && m.ayahs.length > 0 && (
-                <div className="mu-ayahs">
-                  {m.ayahs.map((a) => {
-                    const [s, n] = a.ref.split(":");
-                    return (
-                      <Link key={a.ref} to={`/read/${s}/${n}`} className="mu-ayah">
-                        <span className="quran mu-ayah-t">{a.text}</span>
-                        <span className="muted mu-ayah-r">{ar ? "الآية" : ""} {a.ref}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-              {m.roots && m.roots.length > 0 && (
-                <div className="mu-roots">
-                  {m.roots.map((r) => (
-                    <span key={r.root} className="mu-root">
-                      <Link to={`/journey/${encodeURIComponent(r.root)}`} className="quran mu-root-w">{r.root}</Link>
-                      <span className="muted"> · {num(r.occ)}</span>
-                      {r.gloss && <div className="mu-root-g">{r.gloss}</div>}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {m.books && m.books.length > 0 && (
-                <div className="mu-books">
-                  <div className="mu-books-h muted">{ar ? "من المصادر (مذكورةً):" : "from the sources (cited):"}</div>
-                  {m.books.map((b, i) => (
-                    <div key={i} className="mu-book">
-                      <div className="mu-book-src">◆ {bookLabel(b.source)}{b.ref ? ` · ${b.ref}` : ""}</div>
-                      <div className="mu-book-t">{b.text}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
               {m.draft && (
                 <div className="mu-draft">
-                  <div className="mu-draft-note muted">{ar ? "مسوّدةٌ محسوبةٌ من الآيات أعلاه — راجِعْها." : "A computed draft from the verses above — review it."}</div>
+                  <div className="mu-draft-note muted">{ar ? "مسوّدةٌ مؤلّفةٌ من المادة المجموعة — راجِعْها." : "A draft composed from the gathered material — review it."}</div>
                   <div className="mu-draft-body">{m.draft}</div>
                   <button className="chip mu-copy" onClick={copy}>{ar ? "نسخ" : "copy"} ⧉</button>
                 </div>
+              )}
+              {/* المراجعُ الداعمة — مطويةٌ تحت الجواب؛ المتنُ هو النثر المنسوج أعلاه */}
+              {refCounts && (
+                <details className="mu-refs">
+                  <summary>
+                    <svg className="mu-refs-chev" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9l6 6 6-6" /></svg>
+                    <span className="mu-refs-t">{ar ? "المراجع" : "References"}</span>
+                    <span className="mu-refs-n">{refCounts}</span>
+                  </summary>
+                  <div className="mu-refs-body">
+                    {nAyahs > 0 && (
+                      <div className="mu-ayahs">
+                        {m.ayahs!.map((a) => {
+                          const [s, n] = a.ref.split(":");
+                          return (
+                            <Link key={a.ref} to={`/read/${s}/${n}`} className="mu-ayah">
+                              <span className="quran mu-ayah-t">{a.text}</span>
+                              <span className="muted mu-ayah-r">{ar ? "الآية" : ""} {a.ref}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {nRoots > 0 && (
+                      <div className="mu-roots">
+                        {m.roots!.map((r) => (
+                          <span key={r.root} className="mu-root">
+                            <Link to={`/journey/${encodeURIComponent(r.root)}`} className="quran mu-root-w">{r.root}</Link>
+                            <span className="muted"> · {num(r.occ)}</span>
+                            {r.gloss && <div className="mu-root-g">{r.gloss}</div>}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {nBooks > 0 && (
+                      <div className="mu-books">
+                        <div className="mu-books-h muted">{ar ? "من المصادر (مذكورةً):" : "from the sources (cited):"}</div>
+                        {m.books!.map((b, i) => (
+                          <div key={i} className="mu-book">
+                            <div className="mu-book-src">◆ {bookLabel(b.source)}{b.ref ? ` · ${b.ref}` : ""}</div>
+                            <div className="mu-book-t">{b.text}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </details>
               )}
             </>
           )}
@@ -286,19 +346,34 @@ export default function Assistant() {
 
       // حلقة الوكيل: النموذج يطلب أدواتٍ فنُنفّذها ونعيد النداء، حتى نصٍّ نهائي
       const steps: { name: string; args: Record<string, unknown>; result: unknown }[] = [];
+      const toolTexts: string[] = []; // نصوص الأدوات الحرفية — للتنقية القرآنية
       let finalText = "";
       for (let round = 0; round < 5; round++) {
         const res = await postJson("/api/assist", { messages: history, steps });
+        if (res.finalize) {
+          // المادة اكتملت — نداءٌ مستقل للتأليف النهائي بالنموذج الأقوى،
+          // ونصُّ المرحلة الأولى احتياطٌ إن أخفق
+          patchMessage(cid, aid, { pending: true, text: ar ? "ينسج الجوابَ من المادة…" : "weaving the answer…" });
+          try {
+            const fin = await postJson("/api/assist", { messages: history, steps, finalize: true });
+            finalText = fin.text || res.text || "";
+          } catch {
+            finalText = res.text || "";
+          }
+          break;
+        }
         if (res.text) { finalText = res.text; break; }
         const calls: { name: string; args: Record<string, unknown> }[] = Array.isArray(res.calls) ? res.calls.slice(0, 4) : [];
         if (!calls.length) { finalText = ar ? "لم أستطع إتمام هذا الطلب." : "Could not complete this request."; break; }
         for (const c of calls) {
           patchMessage(cid, aid, { pending: true, text: TOOL_STATUS[c.name]?.(c.args) ?? c.name });
           const result = await runTool(c.name, c.args ?? {});
+          collectToolTexts(result, toolTexts);
           steps.push({ name: c.name, args: c.args ?? {}, result });
         }
       }
       if (!finalText) finalText = ar ? "طال البحث — هذا ما جمعتُه حتى الآن، فاسألني عنه أو ضيّق الطلب." : "Search ran long — here is what was gathered; narrow the request.";
+      finalText = enforceVerbatim(finalText, toolTexts);
 
       patchMessage(cid, aid, {
         pending: false,
