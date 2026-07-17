@@ -30,3 +30,5 @@ cd findings/bayan
 python3 queries/usage_map.py /tmp/qkg.db \
   ../../js/apps/studio/public/siyaq-units.json ata-jaa maps
 ```
+
+- ملف تكليف الجلسة الثانية (الخطة النهائية): `findings/BAYAN-PLAN-SESSION-PROMPT.md` — مع ملحق مراجعة 2026-07-17 في ذيله.
