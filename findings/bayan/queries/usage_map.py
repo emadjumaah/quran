@@ -70,6 +70,29 @@ CARDS = {
             ("بصيرة/بصائر", ["بَصِيرَة"]),
         ]),
     },
+    # بطاقات ب٢ — الدفعة الأولى (2026-07-18)
+    "aam-sana": {
+        "title": "عام / سنة",
+        "sides": OrderedDict([
+            ("سنة/سنين", ["سَنَة", "سِنِين"]),
+            ("عام", ["عام"]),
+        ]),
+    },
+    "rih-riyah": {
+        "title": "ريح / رياح",
+        # لمّة واحدة يفصلها العدد الصرفي: مفرد/جمع
+        "sides": OrderedDict([
+            ("الريح (مفردًا)", {"lemmas": ["رِيح"], "number": "S"}),
+            ("الرياح (جمعًا)", {"lemmas": ["رِيح"], "number": "P"}),
+        ]),
+    },
+    "matar-ghayth": {
+        "title": "مطر / غيث",
+        "sides": OrderedDict([
+            ("مطر (الأسرة)", ["مَطَر", "أُمْطِرَتْ", "مُمْطِر"]),
+            ("غيث (الأسرة)", ["غَيْث", "يُغاثُ"]),
+        ]),
+    },
 }
 
 # أدوات وظيفية تُستبعد من المصاحبات (أقسام كلام لا لمّات بعينها)
@@ -106,6 +129,11 @@ def resolve_lemma_ids(cx, names):
     ids = []
     for name in names:
         hits = by_skel.get(skeleton(name), [])
+        if len(hits) > 1:
+            # اشتباه هيكلي (كسَنَة/سُنَّة/سِنَة) — تفصل المطابقة الحرفية للضبط
+            exact = [h for h in hits if h[1] == name]
+            if len(exact) == 1:
+                hits = exact
         if len(hits) != 1:
             raise SystemExit("لمّة غير محسومة: %s → %s" % (name, hits))
         ids.append(hits[0][0])
@@ -199,7 +227,17 @@ def collocations(cx, ayah_ids, exclude_lemmas):
 
 
 def side_map(cx, units, lemmas):
+    # مواصفة الطرف: قائمة لمّات، أو كائن {lemmas, number} لفصل مفرد/جمع
+    number = None
+    if isinstance(lemmas, dict):
+        number = lemmas.get("number")
+        lemmas = lemmas["lemmas"]
     occs = occurrences(cx, resolve_lemma_ids(cx, lemmas))
+    if number == "S":
+        # وسم QAC يترك المفرد بلا علامة عدد — الفارغ مفرد
+        occs = [o for o in occs if o["number"] in (None, "S")]
+    elif number:
+        occs = [o for o in occs if o["number"] == number]
     rows = []
     ayah_ids = set()
     for o in occs:
@@ -263,7 +301,7 @@ def main():
         rows, agg, aids = side_map(cx, units, lemmas)
         exclude = set()
         for ls in all_sides.values():
-            exclude.update(ls)
+            exclude.update(ls["lemmas"] if isinstance(ls, dict) else ls)
         coll = collocations(cx, aids, exclude)
         result["sides"][name] = {
             "lemmas": lemmas,
@@ -281,7 +319,7 @@ def main():
         # نعيد حساب المصاحبات كاملة (لا top فقط) للافتراق
         exclude = set()
         for ls in all_sides.values():
-            exclude.update(ls)
+            exclude.update(ls["lemmas"] if isinstance(ls, dict) else ls)
         full_a = collocations(cx, side_ayahs[a], exclude)
         full_b = collocations(cx, side_ayahs[b], exclude)
         only_a = [(l, n) for l, n in full_a.most_common() if n >= 2 and l not in full_b]
