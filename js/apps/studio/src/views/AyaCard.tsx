@@ -116,7 +116,7 @@ export default function AyaCard() {
           <div className="aya-head-badges">
             <Link to={`/read/${s}/${a}`} className="kl-verse-ref" style={{ fontSize: 15 }}>{arName(loc)}</Link>
             <span className={`kl-badge ${tierCls(cls.tier)}`}>{cls.tier}</span>
-            <span className="chip">{ar ? "جامعيّة" : "jāmiʿiyya"} {num(Math.round(cls.jamiya * 100))}٪</span>
+            <span className="chip">{ar ? "مفصِّلات" : "elaborators"} {num(cls.m ?? 0)}{(cls.mu ?? 0) > 0 ? (ar ? ` · مثانٍ ${num(cls.mu ?? 0)}` : ` · mutual ${num(cls.mu ?? 0)}`) : ""}</span>
           </div>
         </header>
 
@@ -125,10 +125,10 @@ export default function AyaCard() {
         </div>
 
         <div className="card aya-facts">
-          <div className="aya-fact" title={ar ? "من ترتيبِ الجيل الأوّل الاستكشافيّ — الدليلُ المحسوبُ الأحدث في أعلى البطاقة" : "from the first-generation exploratory ordering — the newer computed evidence sits atop this card"}>
+          <div className="aya-fact" title={ar ? "وسمُ الشبكة الموحّدة — نسخةٌ أولى قبل موجاتِ التعميق، تُحدَّث بعدها" : "unified-network tier — first edition before the deepening waves; updates after"}>
             <span className="aya-fact-l">{ar ? "المرتبة" : "tier"}</span>
             <span className="aya-fact-v"><span className={`kl-badge ${tierCls(cls.tier)}`}>{cls.tier}</span>
-              <span className="muted" style={{ marginInlineStart: 8 }}>{ar ? "مؤشّرُ الجامعيّة" : "index"} {num(Math.round(cls.jamiya * 100))}٪ · {ar ? "الجيل الأوّل" : "gen 1"}</span>
+              <span className="muted" style={{ marginInlineStart: 8 }}>{ar ? `مفصِّلات ${num(cls.m ?? 0)} · محاور ${num(cls.T ?? 0)} · قبل التعميق` : `m ${num(cls.m ?? 0)} · axes ${num(cls.T ?? 0)} · pre-deepening`}</span>
             </span>
           </div>
           <div className="aya-fact">

@@ -1,67 +1,133 @@
 /**
- * الكلّيّات والجوامع والتفصيل — the computed classification of every āyah, loaded
- * once from kulliyat.json (built by js/scripts/derive-kulliyat.mjs; see
- * docs/kulliyat-methodology.md). Every verse has a tier, a theme, its parent in
- * the theme tree, and its five signal-scores.
+ * الكلّيّات والجوامع والتفصيل — v3 (2026-07-19): الوسم من الشبكة الموحدة
+ * المفحوصة بالسياق (٩٬٤٩٤ صلة موجهة + ١٬٣١٢ توكيدًا متبادلًا) والمحاور
+ * المنبثقة (٢٠٦ بثبات ٩٩٫٦٪). نسخة أولى قبل موجات التعميق — تقرير المعايرة
+ * وامتحان العينة المصونة منشوران في findings/unified/TUNE-REPORT.md.
+ * الواجهة البرمجية القديمة أُبقيت كما هي؛ الميزان الموزون القديم أُزيل نهائيًّا.
  */
 import { useEffect, useState } from "react";
 
 export type Tier = "كلّية" | "جامعة" | "تفصيل";
 export interface Signals {
-  tawhid: number;    // القربُ من محور التوحيد «لا إله إلا»
-  cent: number;      // المعنى المركزيّ
-  gen: number;       // عمومُ المفردات
-  selfstand: number; // الاستقلالُ النحويّ
-  norm: number;      // قوّةُ الإنشاء والتقرير
-  breadth: number;   // السَّعةُ المفهوميّة
+  tawhid: number;
+  cent: number;
+  gen: number;
+  selfstand: number;
+  norm: number;
+  breadth: number;
 }
 export interface VerseClass {
   tier: Tier;
-  jamiya: number;    // 0..1
-  theme: number;     // theme index
-  parent: string | null; // nearest higher-tier verse in the theme (loc), or null for a theme head
+  jamiya: number; // 0..1 — ترتيب عرضٍ مشتق من (م، ت، مثانٍ) لا «درجة ميزان»
+  theme: number;
+  parent: string | null;
   sig: Signals;
+  /** أدلة v3 المعلنة */
+  m?: number; // عدد المفصلات الموجهة
+  T?: number; // اتساع المحاور
+  mu?: number; // شركاء التوكيد المتبادل
+  rels?: Record<string, string[]>; // العلاقات الأربع بمواضعها
+  mutual?: string[]; // شركاء التوكيد المتبادل بمواضعهم
+  gates?: string[];
 }
 interface Payload {
   meta: { verses: number; themes: number; cfg: Record<string, unknown>; themeNames?: string[][]; themeLabels?: string[] };
   verses: Record<string, VerseClass>;
 }
 
+const ZERO_SIG: Signals = { tawhid: 0, cent: 0, gen: 0, selfstand: 0, norm: 0, breadth: 0 };
+
 let data: Payload | null = null;
 let loading: Promise<Payload> | null = null;
-/** theme index -> its كلّية loc (built once) */
 let heads: Map<number, string> | null = null;
-/** loc -> child locs (reverse of parent, built once) */
 let children: Map<string, string[]> | null = null;
-/** theme index -> its representative (highest-جامعية) verse loc + its size */
 let themeHead: Map<number, string> | null = null;
 let themeSize: Map<number, number> | null = null;
 
+interface EvUnit { u: string; g?: string[]; links?: Record<string, string[]> }
+interface Evidence { meta: Record<string, unknown>; verses: Record<string, EvUnit[]>; mutual?: Record<string, string[]>; ax?: Record<string, number> }
+interface Ranks { meta: { thresholds: Record<string, number> }; ranks: Record<string, { r: string; m: number; T: number; mu: number }> }
+interface Axes { meta: Record<string, unknown>; axes: { id: number; size: number; topLocs: string[]; label: string }[] }
+
 export function loadKulliyat(): Promise<Payload> {
   if (data) return Promise.resolve(data);
-  loading ??= fetch(`${import.meta.env.BASE_URL}kulliyat.json?v=${__DATA_VERSION__}`)
-    .then((r) => {
-      if (!r.ok) throw new Error(`kulliyat.json: HTTP ${r.status}`);
-      return r.json();
-    })
-    .then((p: Payload) => {
-      data = p;
+  const v = `?v=${__DATA_VERSION__}`;
+  loading ??= Promise.all([
+    fetch(`${import.meta.env.BASE_URL}v3-evidence.json${v}`).then((r) => r.json() as Promise<Evidence>),
+    fetch(`${import.meta.env.BASE_URL}ranks-v1.json${v}`).then((r) => r.json() as Promise<Ranks>),
+    fetch(`${import.meta.env.BASE_URL}axes-v1.json${v}`).then((r) => r.json() as Promise<Axes>),
+  ])
+    .then(([ev, ranks, axes]) => {
+      const axisHead = new Map<number, string>();
+      const themeLabels: string[] = [];
+      let maxAxis = 0;
+      for (const a of axes.axes) {
+        axisHead.set(a.id, a.topLocs[0]);
+        themeLabels[a.id] = a.label;
+        if (a.id > maxAxis) maxAxis = a.id;
+      }
+      const verses: Record<string, VerseClass> = {};
+      for (const [loc, units] of Object.entries(ev.verses)) {
+        const rels: Record<string, string[]> = {};
+        let m = 0;
+        const gates = new Set<string>();
+        for (const u of units) {
+          for (const g of u.g ?? []) gates.add(g);
+          for (const [rel, locs] of Object.entries(u.links ?? {})) {
+            rels[rel] = [...new Set([...(rels[rel] ?? []), ...locs])];
+          }
+        }
+        for (const locs of Object.values(rels)) m += locs.length;
+        const rk = ranks.ranks[loc];
+        const mu = (ev.mutual?.[loc] ?? []).length;
+        const T = rk?.T ?? 0;
+        const tier: Tier = rk?.r === "كلية" ? "كلّية" : rk?.r === "جامعة" ? "جامعة" : "تفصيل";
+        const theme = ev.ax?.[loc] ?? -1;
+        const head = theme >= 0 ? axisHead.get(theme) ?? null : null;
+        verses[loc] = {
+          tier,
+          jamiya: Math.min(1, (m * 2 + T * 4 + mu * 2) / 60),
+          theme,
+          parent: head && head !== loc ? head : null,
+          sig: ZERO_SIG,
+          m, T, mu,
+          rels,
+          mutual: ev.mutual?.[loc] ?? [],
+          gates: [...gates],
+        };
+      }
+      data = {
+        meta: {
+          verses: Object.keys(verses).length,
+          themes: maxAxis + 1,
+          cfg: {
+            model: "unified-context-network v3",
+            note: "نسخة أولى قبل موجات التعميق — كل صلة فُحصت بنوافذ وحدات السياق؛ التقارير منشورة",
+          },
+          themeLabels,
+        },
+        verses,
+      };
       heads = new Map();
       children = new Map();
       themeHead = new Map();
       themeSize = new Map();
-      for (const [loc, v] of Object.entries(p.verses)) {
-        if (v.tier === "كلّية") heads.set(v.theme, loc);
-        themeSize.set(v.theme, (themeSize.get(v.theme) ?? 0) + 1);
-        const cur = themeHead.get(v.theme);
-        if (cur === undefined || v.jamiya > p.verses[cur].jamiya) themeHead.set(v.theme, loc);
-        if (v.parent) {
-          const list = children.get(v.parent) ?? [];
+      for (const [loc, vc] of Object.entries(verses)) {
+        if (vc.theme >= 0) {
+          themeSize.set(vc.theme, (themeSize.get(vc.theme) ?? 0) + 1);
+          const cur = themeHead.get(vc.theme);
+          if (cur === undefined || vc.jamiya > verses[cur].jamiya) themeHead.set(vc.theme, loc);
+          if (vc.tier === "كلّية" && !heads.has(vc.theme)) heads.set(vc.theme, loc);
+        }
+        if (vc.parent && verses[vc.parent]) {
+          const list = children.get(vc.parent) ?? [];
           list.push(loc);
-          children.set(v.parent, list);
+          children.set(vc.parent, list);
         }
       }
-      return p;
+      // محور بلا كلّية: رأسه أعلى أعضائه
+      for (const [t, h] of themeHead) if (!heads.has(t)) heads.set(t, h);
+      return data;
     })
     .catch((e) => {
       loading = null;
@@ -85,45 +151,33 @@ export function useKulliyat(): boolean {
 }
 
 export const classOf = (loc: string): VerseClass | null => data?.verses[loc] ?? null;
-/** The كلّيّة (theme head) of the verse's theme. */
 export const kulliyaOfTheme = (theme: number): string | null => heads?.get(theme) ?? null;
-/** Direct children of a verse in the theme tree. */
 export const childrenOf = (loc: string): string[] => children?.get(loc) ?? [];
-/** All verses of a theme, grouped by tier. */
 export function themeMembers(theme: number): { kulliya: string | null; jawami: string[]; tafsil: string[] } {
   const jawami: string[] = [];
   const tafsil: string[] = [];
+  const head = kulliyaOfTheme(theme);
   if (data) {
     for (const [loc, v] of Object.entries(data.verses)) {
-      if (v.theme !== theme) continue;
-      if (v.tier === "جامعة") jawami.push(loc);
-      else if (v.tier === "تفصيل") tafsil.push(loc);
+      if (v.theme !== theme || loc === head) continue;
+      if (v.tier === "جامعة" || v.tier === "كلّية") jawami.push(loc);
+      else tafsil.push(loc);
     }
   }
   const byJamiya = (a: string, b: string) => (classOf(b)?.jamiya ?? 0) - (classOf(a)?.jamiya ?? 0);
-  return { kulliya: kulliyaOfTheme(theme), jawami: jawami.sort(byJamiya), tafsil: tafsil.sort(byJamiya) };
+  return { kulliya: head, jawami: jawami.sort(byJamiya), tafsil: tafsil.sort(byJamiya) };
 }
 export const kulliyatMeta = (): Payload["meta"] | null => data?.meta ?? null;
-/** The actual factor weights used to compute جامعية (from the run's config). */
 export function kulliyatWeights(): Record<string, number> {
-  const w = (data?.meta.cfg as { weights?: unknown })?.weights;
-  return (w && typeof w === "object" ? w : {}) as Record<string, number>;
+  return {};
 }
 
-/** The theme's scholarly name (falls back to its distinctive roots). */
 export function themeName(theme: number): string {
-  const label = data?.meta.themeLabels?.[theme];
-  if (label) return label;
-  const tn = data?.meta.themeNames?.[theme];
-  return tn && tn.length ? tn.join(" ") : "";
+  return data?.meta.themeLabels?.[theme] ?? "";
 }
-/** The theme's representative verse (its highest-جامعية member) and its size. */
 export const themeHeadOf = (theme: number): string | null => themeHead?.get(theme) ?? null;
 export const themeSizeOf = (theme: number): number => themeSize?.get(theme) ?? 0;
 
-/** All computed محاور (themes), each with its name, representative verse, size,
- *  and the جامعية of its deepest verse — sorted foundational-first. This IS the
- *  Quran's topic layer: the 90 clusters cover every āyah, one place each. */
 export function themesList(): { theme: number; name: string; head: string | null; size: number; jamiya: number }[] {
   if (!data) return [];
   const out: { theme: number; name: string; head: string | null; size: number; jamiya: number }[] = [];
@@ -132,64 +186,47 @@ export function themesList(): { theme: number; name: string; head: string | null
     if (!head) continue;
     out.push({ theme: t, name: themeName(t), head, size: themeSizeOf(t), jamiya: classOf(head)?.jamiya ?? 0 });
   }
-  return out.sort((a, b) => b.jamiya - a.jamiya);
+  return out.sort((a, b) => b.size - a.size || b.jamiya - a.jamiya);
 }
-/** Every āya of a theme, ordered by جامعية (the أصل first). */
 export function themeVerses(theme: number): string[] {
   if (!data) return [];
   const out: string[] = [];
   for (const [loc, v] of Object.entries(data.verses)) if (v.theme === theme) out.push(loc);
   return out.sort((a, b) => (data!.verses[b].jamiya) - (data!.verses[a].jamiya));
 }
-/** Count of جوامع and تفصيل verses anywhere below this verse in its tree. */
 export function subtreeCounts(loc: string): { jamia: number; tafsil: number } {
   let jamia = 0, tafsil = 0;
-  const walk = (l: string) => {
-    for (const c of childrenOf(l)) {
-      const t = classOf(c)?.tier;
-      if (t === "جامعة") jamia++; else if (t === "تفصيل") tafsil++;
-      walk(c);
-    }
-  };
-  walk(loc);
+  for (const c of childrenOf(loc)) {
+    const t = classOf(c)?.tier;
+    if (t === "جامعة") jamia++;
+    else if (t === "تفصيل") tafsil++;
+  }
   return { jamia, tafsil };
 }
 
-/** The كلّيّة this verse belongs under — walk the parent chain up to a كلّيّة. */
 export function kulliyaOf(loc: string): string | null {
-  let cur = loc;
-  for (let guard = 0; guard < 25; guard++) {
-    const v: VerseClass | undefined = data?.verses[cur];
-    if (!v) return null;
-    if (v.tier === "كلّية") return cur;
-    if (!v.parent) return null;
-    cur = v.parent;
-  }
-  return null;
+  const v = data?.verses[loc];
+  if (!v) return null;
+  if (v.tier === "كلّية") return loc;
+  return v.theme >= 0 ? kulliyaOfTheme(v.theme) : null;
 }
 
-/** All كلّيّات (theme heads), each with its theme size, sorted by جامعية. */
 export function kulliyatList(): { loc: string; theme: number; jamiya: number; size: number }[] {
   if (!data) return [];
-  const sizes = new Map<number, number>();
-  for (const v of Object.values(data.verses)) sizes.set(v.theme, (sizes.get(v.theme) ?? 0) + 1);
   const out: { loc: string; theme: number; jamiya: number; size: number }[] = [];
-  for (const [loc, v] of Object.entries(data.verses)) if (v.tier === "كلّية") out.push({ loc, theme: v.theme, jamiya: v.jamiya, size: sizes.get(v.theme) ?? 0 });
+  for (const [loc, v] of Object.entries(data.verses)) if (v.tier === "كلّية") out.push({ loc, theme: v.theme, jamiya: v.jamiya, size: v.theme >= 0 ? themeSizeOf(v.theme) : 0 });
   return out.sort((a, b) => b.jamiya - a.jamiya);
 }
-/** Every classified verse loc, sorted by جامعية (desc) — for whole-Qur'an search. */
 export function allVerseLocs(): string[] {
   if (!data) return [];
   return Object.keys(data.verses).sort((a, b) => data!.verses[b].jamiya - data!.verses[a].jamiya);
 }
-/** All locs of a given tier, sorted by جامعية (desc). */
 export function tierList(tier: Tier): string[] {
   if (!data) return [];
   const out: string[] = [];
   for (const [loc, v] of Object.entries(data.verses)) if (v.tier === tier) out.push(loc);
   return out.sort((a, b) => (data!.verses[b].jamiya) - (data!.verses[a].jamiya));
 }
-/** Tier counts across the whole Qur'an. */
 export function tierCounts(): { kulliya: number; jamia: number; tafsil: number } {
   const c = { kulliya: 0, jamia: 0, tafsil: 0 };
   if (data) for (const v of Object.values(data.verses)) v.tier === "كلّية" ? c.kulliya++ : v.tier === "جامعة" ? c.jamia++ : c.tafsil++;

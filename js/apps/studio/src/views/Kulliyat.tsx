@@ -112,13 +112,13 @@ export default function Kulliyat() {
           <h1 className="jw-title">{ar ? "الكلّيّات والجوامع والتفصيل" : "Kulliyyāt · Jawāmiʿ · Tafṣīl"}</h1>
           <p className="jw-lead">
             {ar
-              ? "ترتيبٌ استكشافيٌّ من الجيل الأوّل لمشكاة: انتظمتِ الآياتُ فيه على ثلاث مراتبَ من عمومِ الدلالة — كلّيّةٌ فجوامعُ فتفصيل — بستّةِ عواملَ حُسبت من بيانات القرآن نفسِه. اختَرِ المرتبة، وابحثْ، وانقُرِ المثلّثَ لتفتحَ ما يندرجُ تحت الآية، وانقُرِ النسبةَ لترى حسابَها كاملًا."
-              : "A first-generation exploratory ordering: the verses arranged in three tiers of meaning-breadth — kulliyyāt, jawāmiʿ, tafṣīl — by six factors computed from the Qur'an's own data. Pick a tier, search, drill down; tap the percentage to see the full arithmetic."}
+              ? "وسمٌ محسوبٌ من الشبكة الموحّدة: قواعدُ المصحف المؤهّلةُ ببواباتِ صيغةِ العموم، فُحصت صلاتُها صلةً صلةً بقارئٍ يرى كلَّ زوجٍ بمقطعَي سياقِه — ٩٬٤٩٤ صلةً موجَّهةً و١٬٣١٢ توكيدًا متبادلًا. الكلّيّةُ قاعدةٌ تلتقي عندها المحاور، والجامعةُ دونها اتساعًا، والتفصيلُ يُبيِّنُهما. اخترِ المرتبة، وابحثْ، وانقرِ المرتبةَ لترى أدلّتَها كاملة."
+              : "A computed tiering from the unified network: the gate-qualified rules of the muṣḥaf, every link examined one by one with both passages' context in view — 9,494 directed links and 1,312 mutual affirmations. Pick a tier, search, tap a tier chip to see its full evidence."}
           </p>
           <p className="jw-lead" style={{ marginTop: -6, fontSize: 13.5 }}>
             {ar
-              ? "وقد راجعنا هذا الميزانَ مراجعةً جذريّةً معلنة، وخرج منها دليلٌ أصدق: شارتا «صيغةُ قاعدة» و«ثبت تفرُّعُه» في بطاقة كلِّ آية — تصفانِ ولا تُرتِّبان. القصّةُ كاملةً في "
-              : "We have since reviewed this scale openly, root and branch; what emerged is more truthful evidence: the «rule form» and «proven elaboration» badges on each verse's card — they describe, they do not rank. The full story is in "}
+              ? "نسخةٌ أولى قبل موجاتِ التعميق — حَسَبنا وعرضنا ما ظهر بلا مواربة: تقريرُ المعايرةِ وامتحانُ العيّنةِ المصونةِ منشوران بنتائجهما، وموجاتُ التعميقِ القادمةُ ترفعُ الاستدعاءَ ثم يُحدَّثُ الوسمُ ويُعادُ الامتحانُ ويُسجَّلُ الفرق. القصّةُ كاملةً في "
+              : "First edition, before the deepening waves — we computed and we show what emerged, plainly: the calibration report and the held-out exam are published with their results; the coming waves raise recall, then the tiers update and the exam is re-taken and the difference recorded. The full story is in "}
             <Link to="/about" className="kl-aboutlink">{ar ? "صفحةِ «عن المشروع» ←" : "the About page ←"}</Link>
           </p>
           <p className="kl-disclaimer">

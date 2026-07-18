@@ -109,8 +109,26 @@ units.forEach((u, ui) => {
   out.push(entry);
 });
 
+// —— انتماء كل آية (للطبقة العارضة): أغلبية محاور وحداتها القاعدية ثم محور مفصلتها ——
+const verseAxis = {};
+for (const [loc, unitsArr] of Object.entries(ev.verses)) {
+  const cnt = new Map();
+  for (const u of unitsArr) { const ax = ruleAxis.get(`${loc}/${u.u}`); if (ax) cnt.set(ax, (cnt.get(ax) ?? 0) + 1); }
+  let ax = cnt.size ? [...cnt.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0] : elabAxis.get(loc);
+  if (ax) verseAxis[loc] = ax;
+}
+ev.ax = verseAxis;
+fs.writeFileSync(path.join(PUB, "v3-evidence.json"), JSON.stringify(ev));
+
+// —— أسماء مبدئية حتمية للمحاور من نص أعلى قاعدة ——
+const { DatabaseSync } = await import("node:sqlite");
+const db = new DatabaseSync(path.join(ROOT, "quran-kg.db"), { readOnly: true });
+const txt = new Map(db.prepare("SELECT surah_no s, ayah_no a, text_clean t FROM ayah").all().map((r) => [`${r.s}:${r.a}`, r.t]));
+db.close();
+const labelOf = (loc) => (txt.get(loc) ?? "").split(" ").slice(0, 5).join(" ");
+
 // —— أصول النشر ——
-const axesPub = axes.axes.map((a) => ({ id: a.id, size: a.size, topLocs: a.topLocs.slice(0, 3) }));
+const axesPub = axes.axes.map((a) => ({ id: a.id, size: a.size, topLocs: a.topLocs.slice(0, 3), label: labelOf(a.topLocs[0]) }));
 fs.writeFileSync(path.join(PUB, "axes-v1.json"), JSON.stringify({ meta: { ...axes.meta, note: "محاور منبثقة من الشبكة الموحدة — أسماء جمالية لاحقًا؛ تُحدَّث بعد موجات التعميق" }, axes: axesPub }));
 fs.writeFileSync(path.join(PUB, "tabwib-v1.json"), JSON.stringify({ meta: { date: "2026-07-19", evidence: evd, approx, outside, note: "تبويب محسوب: وحدات السياق × المحاور المنبثقة" }, units: out }));
 const doc = `# التبويب الموضوعي المحسوب v1 (2026-07-19)
