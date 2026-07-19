@@ -173,7 +173,24 @@
    "kind": "lexical",
    "roots": [
     "أله"
-   ]
+   ],
+   "accept": [
+    {
+     "kinds": [
+      "lexical"
+     ],
+     "roots": [
+      "أله"
+     ]
+    },
+    {
+     "kinds": [
+      "grammatical"
+     ],
+     "roots": []
+    }
+   ],
+   "note": "لفظ الجلالة/اللهم: يقبل معجميًّا بجذره أو أداتيًّا (نداء)"
   }
  },
  {
@@ -529,7 +546,27 @@
     "غفر",
     "شرك"
    ],
-   "note": "تركيب حول آية؛ تقبل grammatical أو الجذران"
+   "accept": [
+    {
+     "kinds": [
+      "grammatical",
+      "continuation"
+     ],
+     "roots": []
+    },
+    {
+     "kinds": [
+      "grammatical",
+      "continuation",
+      "lexical"
+     ],
+     "roots": [
+      "غفر",
+      "شرك"
+     ]
+    }
+   ],
+   "note": "فرق تركيبي حول أن المصدرية"
   }
  },
  {
@@ -671,8 +708,9 @@
   "gold": {
    "kind": "continuation",
    "roots": [
-    "أتي"
-   ]
+    "غير"
+   ],
+   "note": "صُحح 2026-07-19 بعد بوابة الضبط: الوجه تغيير خلق الله لا الإتيان — خطأ تذهيب موثق"
   }
  },
  {
@@ -698,7 +736,24 @@
    "kind": "grammatical",
    "terms": [
     "هل"
-   ]
+   ],
+   "accept": [
+    {
+     "kinds": [
+      "grammatical"
+     ],
+     "roots": []
+    },
+    {
+     "kinds": [
+      "lexical"
+     ],
+     "roots": [
+      "هدي"
+     ]
+    }
+   ],
+   "note": "رقمنة دمجت رأس «هل» بمتن «الهدى» — كلا القراءتين مشروع"
   }
  }
 ]
