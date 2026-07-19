@@ -12,9 +12,9 @@ import { guard } from "./_guard.js";
 export const config = { runtime: "edge" };
 // المسودات الكاملة (خطبة/مقالة/محاضرة) تأليفٌ يستحق النموذجَ الأقوى — قرار مالك
 // 2026-07-19؛ وميزانية التفكير ١٠٢٤ لا أكثر: غلافُ برو المجرَّب ضمن مهلة Edge.
-// NIBRAS_TIER=flash (سويتش التجربة الواحد — انظر assist.js) يحوّل هذا الموضعَ
-// أيضًا إلى فلاش، وCOMPOSE_MODEL المخصوص يغلبه إن ضُبط.
-const TIER = (process.env.NIBRAS_TIER || "pro").toLowerCase();
+// سويتش التجربة الواحد (انظر assist.js): غيابُ NIBRAS_TIER = فلاش هنا أيضًا،
+// وpro يعيد برو؛ وCOMPOSE_MODEL المخصوص يغلبه إن ضُبط.
+const TIER = (process.env.NIBRAS_TIER || "flash").toLowerCase();
 const MODEL = process.env.COMPOSE_MODEL || (TIER === "flash" ? "gemini-2.5-flash" : "gemini-2.5-pro");
 
 const TASK = {
