@@ -1986,3 +1986,4 @@ table.data tr:hover td { background: var(--panel-2); }
 .by-tab { background: none; border: none; border-bottom: 2.5px solid transparent; padding: 8px 14px; font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit; }
 .by-tab.on { color: inherit; border-bottom-color: var(--gold, #b8891f); }
 .by-book { text-align: start; cursor: pointer; font-family: inherit; font-size: inherit; }
+.by-group { margin: 18px 0 4px; color: var(--muted); font-size: 14px; }

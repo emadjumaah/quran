@@ -19,6 +19,14 @@ OCC_CAP = 40
 def main():
     db, units_path, furuq_path, out_path = sys.argv[1:5]
     cx = sqlite3.connect(db)
+    # الزمر: الحقول الدلالية المحسوبة (lexnet) — جذر البطاقة الأول يحدد حقلها
+    import os
+    lex_path = os.path.join(os.path.dirname(out_path), "lexnet.json")
+    field_of = {}
+    if os.path.exists(lex_path):
+        for f in json.load(open(lex_path, encoding="utf-8")).get("fields", []):
+            for r in f.get("roots", []):
+                field_of.setdefault(r, f["label"])
     cx.row_factory = sqlite3.Row
     units = json.load(open(units_path, encoding="utf-8"))["units"]
 
@@ -95,7 +103,9 @@ def main():
         for s in sides:
             s.pop("_coll_full")
         head = (e["anchor"].get("term") or "").replace("$", " ").strip()
+        group = next((field_of[r] for r in roots if r in field_of), "متفرقات")
         cards.append({
+            "group": group,
             "id": "auto-" + e["id"], "head": head, "roots": roots[:3], "sides": sides,
             "contrast": {a["root"]: only_a, b["root"]: only_b},
             "reading": {"src": "الفروق اللغوية — أبو هلال العسكري",

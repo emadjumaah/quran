@@ -30,7 +30,7 @@ interface LibEntry { id: string; head: string; roots: string[]; text: string }
 interface LibBookMeta { id: string; label: string; count: number }
 
 interface AutoSide { root: string; total: number; makki: number; madani: number; colloc: [string, number][]; occ: { loc: string; form: string; unit: string }[]; capped: boolean }
-interface AutoCard { id: string; head: string; roots: string[]; sides: AutoSide[]; contrast: Record<string, [string, number][]>; reading: Reading }
+interface AutoCard { id: string; head: string; group?: string; roots: string[]; sides: AutoSide[]; contrast: Record<string, [string, number][]>; reading: Reading }
 
 let cache: BayanData | null = null;
 let libIndexCache: LibBookMeta[] | null = null;
@@ -394,18 +394,38 @@ export default function Bayan() {
           : autoCache;
         const lim = hits.slice(0, q.trim() ? 60 : 434);
         if (!hits.length) return null;
+        // زمر الحقول الدلالية المحسوبة: الكبيرة أقسامًا مسماة والصغيرة «متفرقات»
+        const byGroup = new Map<string, AutoCard[]>();
+        for (const c of lim) {
+          const g = c.group && c.group !== "متفرقات" ? c.group : "متفرقات";
+          byGroup.set(g, [...(byGroup.get(g) ?? []), c]);
+        }
+        const bigs: [string, AutoCard[]][] = [];
+        const rest: AutoCard[] = [];
+        for (const [g, cs] of byGroup) (g !== "متفرقات" && cs.length >= 4 ? bigs : rest).push(...(g !== "متفرقات" && cs.length >= 4 ? ([[g, cs]] as [string, AutoCard[]][]) : cs) as never[]);
+        bigs.sort((x, y) => y[1].length - x[1].length);
+        const tile = (c: AutoCard) => (
+          <Link key={c.id} to={`/bayan/${c.id}`} className="fr-card by-tile">
+            <b>{c.head}</b>
+            <span className="by-tile-kashf">{c.roots.join(" · ")}</span>
+            <span className="chip">{c.sides.map((s) => num(s.total)).join(" · ")} موضعًا</span>
+          </Link>
+        );
         return (
           <section>
             <h3>{ar ? "البطاقات الآلية" : "Generated cards"} <span className="chip" title="ولّدها الحساب من فهرس الفروق المسند — الخريطة حتمية والنص منقول، بلا تحرير بشري">{num(hits.length)}</span></h3>
-            <div className="by-grid">
-              {lim.map((c) => (
-                <Link key={c.id} to={`/bayan/${c.id}`} className="fr-card by-tile">
-                  <b>{c.head}</b>
-                  <span className="by-tile-kashf">{c.roots.join(" · ")}</span>
-                  <span className="chip">{c.sides.map((s) => num(s.total)).join(" · ")} موضعًا</span>
-                </Link>
-              ))}
-            </div>
+            {bigs.map(([g, cs]) => (
+              <div key={g}>
+                <h4 className="by-group">{ar ? `الحقل الدلالي: ${g}` : g} ({num(cs.length)})</h4>
+                <div className="by-grid">{cs.map(tile)}</div>
+              </div>
+            ))}
+            {rest.length > 0 && (
+              <div>
+                <h4 className="by-group">{ar ? "متفرقات" : "misc"} ({num(rest.length)})</h4>
+                <div className="by-grid">{rest.map(tile)}</div>
+              </div>
+            )}
           </section>
         );
       })()}
