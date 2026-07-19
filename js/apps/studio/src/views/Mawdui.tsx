@@ -10,10 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { classOf, themeHeadOf, themeName, themesList, themeVerses, useKulliyat } from "../kulliyat";
-import { loadSiyaq, type SiyaqUnit } from "../siyaq";
-import { loadTabwib, unitsOfAxis } from "../tabwib";
 import TierBadge from "../components/TierBadge";
-import TopicLayerToggle from "../components/TopicLayerToggle";
 import type { AyahDoc } from "../types";
 import { ayahsCount, getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
@@ -45,7 +42,6 @@ function Themes() {
           ◆ {ar ? "منبثقةٌ من صلاتِ الكتابِ نفسِه — حسبنا وعرضنا، والقارئُ يتدبّر." : "Emergent from the Book's own links — computed and shown; the reader reflects."}
         </div>
       </header>
-      <TopicLayerToggle />
       <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في المحاور…" : "search محاور…"} />
       <div className="mw-topics">
         {shown.map((th) => (
@@ -68,18 +64,6 @@ function ThemeView({ theme, texts }: { theme: number; texts: Map<string, AyahDoc
   const name = themeName(theme);
   const head = themeHeadOf(theme);
   const verses = useMemo(() => themeVerses(theme), [theme]);
-  const [units, setUnits] = useState<{ unit: SiyaqUnit; approx: boolean }[]>([]);
-  useEffect(() => {
-    let live = true;
-    Promise.all([loadSiyaq(), loadTabwib()]).then(([sy]) => {
-      if (!live || !sy) return;
-      const all = unitsOfAxis(theme)
-        .map(({ u, approx }) => ({ unit: (sy as { units: SiyaqUnit[] }).units[u], approx }))
-        .filter((x) => x.unit);
-      setUnits(all);
-    });
-    return () => { live = false; };
-  }, [theme]);
   if (!head) return <p className="muted">{t("notFound")}</p>;
   return (
     <>
@@ -95,25 +79,6 @@ function ThemeView({ theme, texts }: { theme: number; texts: Map<string, AyahDoc
         </p>
         <div className="muted" style={{ fontSize: 13 }}>{ayahsCount(verses.length)} · {ar ? "محورٌ محسوب" : "computed محور"}</div>
       </header>
-      {units.length > 0 && (
-        <section style={{ marginBlockEnd: 18 }}>
-          <div className="mw-onenote" style={{ marginBlockEnd: 8 }} title={ar ? "التبويب الموضوعي المحسوب: وحداتُ السياق المسمّاة المسندةُ لهذا المحور بصلات آياتها المفحوصة (أو بتقارب المعنى حيث يُذكر)" : "the computed topical tabwīb: named context units assigned to this axis by their verses' examined links (or by meaning-proximity where marked)"}>
-            ◆ {ar ? `مقاطعُ هذا المحور في المصحف — ${num(units.length)} وحدة` : `this axis's passages across the muṣḥaf — ${num(units.length)} units`}
-          </div>
-          <div className="mw-verses">
-            {units.map(({ unit, approx }) => (
-              <Link key={unit.i} to={`/read/${unit.s}/${unit.a1}`} className="mw-verse" title={ar ? "افتح الوحدة في المصحف" : "open the unit in the reader"}>
-                <span className="mw-verse-ref">{surahNameAr(unit.s)} {num(unit.a1)}–{num(unit.a2)}</span>
-                {approx && <span className="chip" style={{ flex: "none", fontSize: 11 }}>{ar ? "بتقارب المعنى" : "by proximity"}</span>}
-                <span className="mw-verse-text">{unit.name}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-      <div className="mw-onenote" style={{ marginBlockEnd: 8 }}>
-        ◆ {ar ? "قواعدُ المحور وآياتُه" : "the axis's rules and verses"}
-      </div>
       <div className="mw-verses">
         {verses.map((loc) => (
           <Link key={loc} to={readPathOf(loc)} className={`mw-verse${loc === head ? " rep" : ""}`} title={ar ? "افتح في المصحف" : "open in the reader"}>

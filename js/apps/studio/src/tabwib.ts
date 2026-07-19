@@ -36,3 +36,18 @@ export function loadTabwib(): Promise<TabwibData | null> {
 export function unitsOfAxis(axisId: number): { u: number; approx: boolean }[] {
   return byAxis?.get(axisId) ?? [];
 }
+
+export interface Bab { id: number; name: string; axes: number[]; units: number; rules: number }
+interface AbwabData { meta: Record<string, unknown>; babs: Bab[] }
+let abwab: AbwabData | null = null;
+let abwabLoading: Promise<AbwabData | null> | null = null;
+
+export function loadAbwab(): Promise<AbwabData | null> {
+  if (abwab) return Promise.resolve(abwab);
+  abwabLoading ??= fetch(`${import.meta.env.BASE_URL}abwab-v1.json?v=${__DATA_VERSION__}`)
+    .then((r) => (r.ok ? (r.json() as Promise<AbwabData>) : null))
+    .then((d) => (abwab = d));
+  return abwabLoading;
+}
+export const babsList = (): Bab[] => abwab?.babs ?? [];
+export const babOf = (id: number): Bab | null => abwab?.babs.find((b) => b.id === id) ?? null;

@@ -26,6 +26,7 @@ const Amthal = lazy(() => import("./views/Amthal"));
 const Fawasil = lazy(() => import("./views/Fawasil"));
 const Mawdui = lazy(() => import("./views/Mawdui"));
 const Mawadi = lazy(() => import("./views/Mawadi"));
+const Tabwib = lazy(() => import("./views/Tabwib"));
 const Tafasir = lazy(() => import("./views/Tafasir"));
 const Maalim = lazy(() => import("./views/Maalim"));
 const Mujam = lazy(() => import("./views/Mujam"));
@@ -147,7 +148,8 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
     ar: "الموضوعات", en: "Themes",
     items: [
-      ["/mawdui", "المحاور والتبويب", "Axes & topics"],
+      ["/tabwib", "المواضيع", "Topics"],
+      ["/mawdui", "المحاور", "Axes"],
       ["/khayt", "الخيوط الموضوعية", "Thematic threads"],
       ["/amthal", "الأمثال", "Parables"],
     ],
@@ -441,6 +443,8 @@ function App() {
           <Route path="/fawasil" element={<Fawasil />} />
           <Route path="/mawdui" element={<Mawdui />} />
           <Route path="/mawdui/:t" element={<Mawdui />} />
+          <Route path="/tabwib" element={<Tabwib />} />
+          <Route path="/tabwib/:bab" element={<Tabwib />} />
           <Route path="/mawadi" element={<Mawadi />} />
           <Route path="/mawadi/:sec" element={<Mawadi />} />
           <Route path="/tafasir" element={<Tafasir />} />
