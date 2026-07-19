@@ -423,12 +423,20 @@ export default function Assistant() {
   };
 
   const onKey = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); }
+    // إنتر = سطر جديد (جوالا وحاسوبا)؛ الإرسال بالزر — وCtrl/Cmd+Enter اختصار
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); void send(); }
   };
 
   const empty = !chat || chat.messages.length === 0;
   const composer = (
     <div className="mu-input">
+      <button className="mu-send" onClick={() => void send()} disabled={busy || !input.trim()} aria-label={ar ? "إرسال" : "send"}>
+        {busy ? (
+          <span aria-hidden>…</span>
+        ) : (
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5" /></svg>
+        )}
+      </button>
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
@@ -437,13 +445,6 @@ export default function Assistant() {
         placeholder={ar ? "اكتبْ ما تريد…" : "write anything…"}
         aria-label={ar ? "رسالة" : "message"}
       />
-      <button className="mu-send" onClick={() => void send()} disabled={busy || !input.trim()} aria-label={ar ? "إرسال" : "send"}>
-        {busy ? (
-          <span aria-hidden>…</span>
-        ) : (
-          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5" /></svg>
-        )}
-      </button>
     </div>
   );
 
