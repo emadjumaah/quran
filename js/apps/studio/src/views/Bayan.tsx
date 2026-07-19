@@ -320,10 +320,10 @@ export default function Bayan() {
   const data = useBayan();
   const { id } = useParams();
   const [q, setQ] = useState("");
-  const [seg, setSeg] = useState<"cards" | "auto" | "lib">("cards");
+  const [seg, setSeg] = useState<"cards" | "lib">("cards");
   const [, forceAuto] = useState(0);
   useEffect(() => {
-    if (seg === "auto" || (id && id.startsWith("auto-"))) loadAuto(() => forceAuto((n) => n + 1));
+    if (seg === "cards" || (id && id.startsWith("auto-"))) loadAuto(() => forceAuto((n) => n + 1));
   }, [seg, id]);
 
   const cardHits = useMemo(() => {
@@ -363,10 +363,7 @@ export default function Bayan() {
       {!q.trim() && (
         <p className="by-tabs">
           <button className={"by-tab" + (seg === "cards" ? " on" : "")} onClick={() => setSeg("cards")}>
-            {ar ? "البطاقات المحرَّرة" : "Curated cards"} ({num(data.cards.length)})
-          </button>
-          <button className={"by-tab" + (seg === "auto" ? " on" : "")} onClick={() => setSeg("auto")}>
-            {ar ? "البطاقات الآلية" : "Generated cards"} {autoCache ? `(${num(autoCache.length)})` : "(٤٣٤)"}
+            {ar ? "البطاقات" : "Cards"} ({autoCache ? num(data.cards.length + autoCache.length) : num(data.cards.length) + "+"})
           </button>
           <button className={"by-tab" + (seg === "lib" ? " on" : "")} onClick={() => setSeg("lib")}>
             {ar ? "مكتبة البيان — خمسة كتب" : "Bayān library"}
@@ -391,7 +388,7 @@ export default function Bayan() {
           </section>
         );
       })}
-      {(seg === "auto" || q.trim() !== "") && autoCache && (() => {
+      {(seg === "cards" || q.trim() !== "") && autoCache && (() => {
         const hits = q.trim()
           ? autoCache.filter((c) => fuzzyMatch(q, c.head) || c.roots.some((r) => fuzzyMatch(q, r)))
           : autoCache;
