@@ -83,12 +83,11 @@ export function loadKulliyat(): Promise<Payload> {
         const T = rk?.T ?? 0;
         const tier: Tier = rk?.r === "كلية" ? "كلّية" : rk?.r === "جامعة" ? "جامعة" : "تفصيل";
         const theme = ev.ax?.[loc] ?? -1;
-        const head = theme >= 0 ? axisHead.get(theme) ?? null : null;
         verses[loc] = {
           tier,
           jamiya: Math.min(1, (m * 2 + T * 4 + mu * 2) / 60),
           theme,
-          parent: head && head !== loc ? head : null,
+          parent: null,
           sig: ZERO_SIG,
           m, T, mu,
           rels,
@@ -108,6 +107,28 @@ export function loadKulliyat(): Promise<Payload> {
         },
         verses,
       };
+      // الأبوة من الصلات المفحوصة وحدها (جرد 2026-07-19): الأب قاعدةٌ ثبت
+      // أن هذه الآية تفصّلها؛ يقدَّم أبٌ كليةٌ ثم الأوسع أدلةً — لا أبوة بعضوية محور.
+      const examinedParents = new Map<string, string[]>();
+      for (const [ploc, pv] of Object.entries(verses)) {
+        if (pv.tier === "تفصيل") continue;
+        for (const locs of Object.values(pv.rels ?? {})) for (const c of locs) {
+          if (c === ploc || !verses[c]) continue;
+          const list = examinedParents.get(c) ?? [];
+          list.push(ploc);
+          examinedParents.set(c, list);
+        }
+      }
+      for (const [loc, vc] of Object.entries(verses)) {
+        const ps = examinedParents.get(loc);
+        if (!ps?.length) continue;
+        ps.sort((a, b) => {
+          const ka = verses[a].tier === "كلّية" ? 0 : 1;
+          const kb = verses[b].tier === "كلّية" ? 0 : 1;
+          return ka - kb || (verses[b].m ?? 0) - (verses[a].m ?? 0) || (a < b ? -1 : 1);
+        });
+        vc.parent = ps[0];
+      }
       heads = new Map();
       children = new Map();
       themeHead = new Map();
