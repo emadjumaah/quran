@@ -116,6 +116,16 @@ export default function About() {
             ? "المصادر: نصّ مصحف المدينة وخطّ KFGQPC (مجمع الملك فهد) · «المفردات» للراغب و«مقاييس اللغة» لابن فارس · الوسم الصرفيّ QAC · «المجتبى من مشكل إعراب القرآن» للخراط · نماذج Gemini للمتّجهات والتوليد المقيَّد."
             : "Sources: Madina muṣḥaf text + KFGQPC font (King Fahd Complex) · al-Rāghib's Mufradāt & Ibn Fāris's Maqāyīs · QAC morphology · al-Kharrāṭ's iʿrāb · Gemini models for vectors & grounded generation."}
         </p>
+
+        {/* التواصل — باهتٌ لكنه واضح، في ذيل الصفحة */}
+        <p className="muted" style={{ textAlign: "center", margin: "0 0 26px", fontSize: 12.5, lineHeight: 2 }}>
+          {ar ? "للتواصل: " : "Contact: "}
+          <b style={{ fontWeight: 650 }}>{ar ? "المهندس عماد جمعة" : "Eng. Emad Jumaah"}</b>
+          {" · "}
+          <a href="tel:+97433882806" dir="ltr" style={{ color: "inherit", textDecorationColor: "var(--line)" }}>+974 3388 2806</a>
+          {" · "}
+          <a href="mailto:emadjumaah@gmail.com" dir="ltr" style={{ color: "inherit", textDecorationColor: "var(--line)" }}>emadjumaah@gmail.com</a>
+        </p>
       </div>
     </div>
   );
