@@ -52,3 +52,4 @@ rag.db-*
 findings/deepening/waves/dirA-*.json
 findings/deepening/waves/sym-*.json
 findings/deepening/rejudge/dirA-r*.json
+hosted-data/
