@@ -110,8 +110,16 @@ function layersDigest(m = manifest) {
     const books = m.books.filter((b) => b.genre === g);
     if (books.length) out.push({ id: g, label: books.map((b) => b.label).join("، "), grade: "manqul", desc: `تُستدعى بـlayer_of(${g}, آية مثل 18:97)` });
   }
+  const bayan = m.books.filter((b) => b.genre === "bayan" && !b.remote);
+  if (bayan.length) {
+    const withVec = bayan.filter((b) => b.embedded);
+    out.push({
+      id: "bayan", label: `كتب البيان (${bayan.map((b) => b.label).join("، ")})`, grade: "manqul",
+      desc: `مداخل مصطلحية منقولة — layer_of(bayan, مصطلح مثل «الفرق بين الخوف والخشية») للاستدعاء بعنوان المدخل${withVec.length ? `، وsearch_layer(bayan, وصف غني) للبحث الدلالي في المضمنة (${withVec.map((b) => b.id).join("، ")})` : ""}`,
+    });
+  }
   const embedded = m.books.filter((b) => b.embedded);
-  out.push({ id: "search", label: "بحث دلالي داخل كتاب أو عائلة بعينها", grade: "manqul", desc: `search_layer(المعرف, وصف غني) — الكتب: ${embedded.map((b) => b.id).join("، ")}؛ أو عائلة tafsir/asbab/gharib/lexicon` });
+  out.push({ id: "search", label: "بحث دلالي داخل كتاب أو عائلة بعينها", grade: "manqul", desc: `search_layer(المعرف, وصف غني) — الكتب: ${embedded.map((b) => b.id).join("، ")}؛ أو عائلة tafsir/asbab/gharib/lexicon/bayan` });
   // كتب محقونة للاختبار (خارج المانيفست المكتوب على القرص)
   for (const b of injectedBooks) out.push({ id: b.id, label: b.label, grade: "manqul", desc: `تُستدعى بـlayer_of(${b.id}, آية)` });
   return out;
@@ -198,14 +206,33 @@ function layerOfMock(layer, anchor) {
     }
     return entries.length ? { layer: id, entries } : { layer: id, found: false, note: `لا نصَّ عند ${anchor}` };
   }
+  if (id === "bayan") return termBookMock(manifest.books.filter((b) => b.genre === "bayan" && !b.remote), anchor, "bayan");
   const injected = injectedBooks.find((b) => b.id === id);
   const known = manifest.books.find((b) => b.id === id);
   if (injected || known) {
     const label = (injected ?? known).label;
+    if (known && (known.genre === "bayan" || known.genre === "lexicon")) return termBookMock([known], anchor, id);
+    if (known && known.remote) return { layer: id, found: false, note: `«${label}» من مكتبة الاستعراض — ليس ضمن مصادر نبراس المضمنة` };
     const text = bookAt(id, anchor.trim());
     return text ? { layer: id, entries: [{ source: label, ref: anchor.trim(), text: text.slice(0, 700) }] } : { layer: id, found: false, note: `لا نصَّ عند ${anchor} في ${label}` };
   }
   return { error: `طبقة غير معروفة «${id}»` };
+}
+
+/** مرآة termBookLookup: الاستدعاء بعنوان المدخل (البيان والمعاجم) */
+function termBookMock(sources, anchor, layerId) {
+  const q = bare(anchor);
+  if (q.length < 3) return { error: "المرسى عنوانُ مدخلٍ أو مصطلح" };
+  const entries = [];
+  for (const s of sources) {
+    if (entries.length >= 4) break;
+    let list;
+    try { list = pubJson(`rag-${s.id}.json`); } catch { continue; }
+    const hits = list.filter((e) => bare(e.ref).includes(q)).slice(0, 2);
+    for (const h of hits) entries.push({ source: s.label, ref: h.ref, text: h.text.slice(0, 900) });
+  }
+  if (!entries.length) return { layer: layerId, found: false, note: `لا مدخلَ بعنوانٍ يطابق «${anchor}» — جرّب search_layer للبحث الدلالي أو صياغة أخرى` };
+  return { layer: layerId, entries: entries.slice(0, 4) };
 }
 
 function searchLayerMock(layer, query) {
@@ -452,6 +479,24 @@ if (want(12)) {
     fs.unlinkSync(mahqunPath);
     injectedBooks.length = 0;
   }
+}
+
+// ت١٣ — كتب البيان: استدعاء مصطلحي منقول منسوب
+if (want(13)) {
+  const t = await chatTurn([{ role: "user", text: "ما الفرق بين الاسم والصفة كما قرره أهل اللغة؟ انقل من كتب البيان عندكم" }], "ت١٣: كتب البيان — استدعاء بعنوان المدخل ونقل منسوب");
+  const usedBayan = t.steps.some((s) => (s.name === "layer_of" || s.name === "search_layer") && ["bayan", "furuqaskari", "basair", "wujuhaskari", "damghani", "nuzha", "durra", "malak", "burhan", "itqan"].includes(String(s.args?.layer)));
+  console.log(`  ${mark(usedBayan)} استدعى عائلة البيان بنفسه`);
+  console.log(`  ${mark(/العسكري|الفروق اللغوية/.test(t.text))} نسب النقل لكتابه وصاحبه`);
+  report(t);
+}
+
+// ت١٤ — فخ بيان: مصطلح لا مدخل له — يقر الغياب ولا يخترع نقلًا
+if (want(14)) {
+  const t = await chatTurn([{ role: "user", text: "ما الفرق بين الحاسوب والهاتف في كتب البيان عندكم؟ انقله بنصه" }], "ت١٤: فخ بيان — مصطلح معاصر لا مدخل له");
+  const admitted = /لا مدخل|لم أجد|ليس في|لا يوجد|لا نصَّ/.test(t.text);
+  const invented = /قال العسكري|قال الفيروزآبادي/.test(t.text);
+  console.log(`  ${mark(admitted && !invented)} أقرّ الغياب ولم يخترع نقلًا`);
+  report(t);
 }
 
 db.close();

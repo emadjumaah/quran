@@ -107,12 +107,12 @@ const TOOLS = [
   {
     name: "layer_of",
     description:
-      "استدعاءٌ دقيق من طبقةٍ من طبقات مشكاة المسماة في قسم «طبقات مشكاة» من تعليماتك: فروق التنزيل بآية، شبكة الجذور بجذر، الوجوه بلفظ، الأمثال بآية، الإحصاءات بمصطلح أو «عام»، القراءات والإعراب بآية. استعمله كلما مسّ السؤالُ طبقةً منها.",
+      "استدعاءٌ دقيق من طبقةٍ من طبقات مشكاة المسماة في قسم «طبقات مشكاة» من تعليماتك: فروق التنزيل بآية، شبكة الجذور بجذر، الوجوه بلفظ، الأمثال بآية، الإحصاءات بمصطلح أو «عام»، القراءات والإعراب بآية، وكتب البيان بعنوان المدخل («الفرق بين الخوف والخشية»). استعمله كلما مسّ السؤالُ طبقةً منها.",
     parameters: {
       type: "object",
       properties: {
-        layer: { type: "string", description: "معرّف الطبقة كما في قسم «طبقات مشكاة» (furuq، lisan، wujuh، amthal، stats، qiraat، i3rab، أو معرف كتاب)" },
-        anchor: { type: "string", description: "المرسى: آية «30:37» أو جذر أو لفظ أو مصطلح بحسب الطبقة" },
+        layer: { type: "string", description: "معرّف الطبقة كما في قسم «طبقات مشكاة» (furuq، lisan، wujuh، amthal، stats، qiraat، i3rab، bayan، أو معرف كتاب)" },
+        anchor: { type: "string", description: "المرسى: آية «30:37» أو جذر أو لفظ أو عنوان مدخل بحسب الطبقة" },
       },
       required: ["layer", "anchor"],
     },
@@ -124,7 +124,7 @@ const TOOLS = [
     parameters: {
       type: "object",
       properties: {
-        layer: { type: "string", description: "معرف كتابٍ مضمّن (saadi، mukhtasar…) أو عائلة (tafsir، asbab، gharib، lexicon)" },
+        layer: { type: "string", description: "معرف كتابٍ مضمّن (saadi، mukhtasar، furuqaskari…) أو عائلة (tafsir، asbab، gharib، lexicon، bayan)" },
         query: { type: "string", description: "وصفٌ غنيٌّ للمطلوب" },
         k: { type: "integer", description: "عدد النتائج (الافتراضي 6، الأقصى 8)" },
       },

@@ -10,10 +10,10 @@
  *   - layerSearch(layer, query): بحث دلالي داخل كتابٍ أو عائلةٍ بعينها.
  * الأرقام كلها معدودة سلفًا (طبقة stats) — نبراس لا يَعُدّ أبدًا.
  */
-import { searchBooks, bookTextAt, BOOK_SOURCES, GENRE_LABELS, refreshDerivedSources, type BookSource, type Genre } from "./books";
+import { searchBooks, bookTextAt, loadBookEntries, BOOK_SOURCES, GENRE_LABELS, refreshDerivedSources, type BookSource, type Genre } from "./books";
 import { getAyahByLocation } from "./db";
 
-export interface ManifestBook { id: string; label: string; genre: Genre; author?: string; embedded?: boolean; entries?: number }
+export interface ManifestBook { id: string; label: string; genre: Genre; author?: string; embedded?: boolean; entries?: number; remote?: boolean; note?: string }
 export interface ManifestLayer { id: string; label: string; file: string; grade: "manqul" | "mahsub" | "muwallad"; anchors: string[]; route: string; desc: string; count?: number }
 interface Manifest {
   version: number;
@@ -61,7 +61,7 @@ export function layersDigest(): LayerDigestEntry[] {
     grade: l.grade,
     desc: `${l.desc}${l.count ? ` (${l.count} مدخلة)` : ""} — تُستدعى بـlayer_of(${l.id}, ${l.anchors[0] === "aya" ? "آية مثل 30:37" : l.anchors[0] === "root" ? "جذر مثل سمو" : l.anchors[0] === "lemma" ? "كلمة مثل استوى" : "مصطلح أو «عام»"})`,
   }));
-  // عائلتا الكتب المرجعيتان الجديدتان على نبراس: القراءات والإعراب (استدعاء بآية)
+  // عائلتا الكتب المرجعيتان بمرسى آية: القراءات والإعراب
   for (const g of ["qiraat", "i3rab"] as Genre[]) {
     const books = manifest.books.filter((b) => b.genre === g);
     if (books.length) {
@@ -71,11 +71,20 @@ export function layersDigest(): LayerDigestEntry[] {
       });
     }
   }
+  // عائلة كتب البيان: مداخلُها مصطلحيةٌ (عناوين لا آيات) — استدعاءٌ بعنوان المدخل
+  const bayan = manifest.books.filter((b) => b.genre === "bayan" && !b.remote);
+  if (bayan.length) {
+    const withVec = bayan.filter((b) => b.embedded);
+    out.push({
+      id: "bayan", label: `كتب البيان (${bayan.map((b) => b.label).join("، ")})`, grade: "manqul",
+      desc: `مداخل مصطلحية منقولة — layer_of(bayan, مصطلح مثل «الفرق بين الخوف والخشية») للاستدعاء بعنوان المدخل${withVec.length ? `، وsearch_layer(bayan, وصف غني) للبحث الدلالي في المضمنة (${withVec.map((b) => b.id).join("، ")})` : ""}`,
+    });
+  }
   // البحث الدلالي المخصوص: داخل كتابٍ واحد أو عائلةٍ واحدة
   const embedded = manifest.books.filter((b) => b.embedded);
   out.push({
     id: "search", label: "بحثٌ دلالي داخل كتابٍ أو عائلةٍ بعينها", grade: "manqul",
-    desc: `search_layer(المعرف, وصف غني) — معرفات الكتب: ${embedded.map((b) => b.id).join("، ")}؛ أو عائلة: tafsir، asbab، gharib، lexicon`,
+    desc: `search_layer(المعرف, وصف غني) — معرفات الكتب: ${embedded.map((b) => b.id).join("، ")}؛ أو عائلة: tafsir، asbab، gharib، lexicon، bayan`,
   });
   return out;
 }
@@ -225,6 +234,25 @@ async function statsLookup(anchor: string): Promise<LayerResult> {
   };
 }
 
+// كتب المداخل المصطلحية (البيان والمعاجم): الاستدعاء بعنوان المدخل لا بآية.
+// حصة المصدر مقطعان والمجموع أربعة — ضوابط سياق خطة البيان الملزمة.
+async function termBookLookup(sources: BookSource[], anchor: string, layerId: string): Promise<LayerResult> {
+  const q = bare(anchor);
+  if (q.length < 3) return { layer: layerId, entries: [], error: "المرسى عنوانُ مدخلٍ أو مصطلحٌ (ثلاثة أحرف فأكثر)" };
+  const entries: LayerEntry[] = [];
+  for (const s of sources) {
+    if (entries.length >= 4) break;
+    const list = await loadBookEntries(s.id);
+    if (!list) continue;
+    const hits = list.filter((e) => bare(e.ref).includes(q)).slice(0, 2);
+    for (const h of hits) entries.push({ label: s.label, ref: h.ref, text: h.text.slice(0, 900), href: "/tafasir" });
+  }
+  if (!entries.length) {
+    return { layer: layerId, entries: [], note: `لا مدخلَ بعنوانٍ يطابق «${anchor}» في ${sources.length > 1 ? "كتب البيان المضمنة" : sources[0]?.label ?? layerId} — جرّب search_layer للبحث الدلالي في نصوصها، أو صياغةً أخرى للعنوان` };
+  }
+  return { layer: layerId, entries: entries.slice(0, 4) };
+}
+
 // عائلات الكتب المرجعية بالاستدعاء الموضعي (القراءات، الإعراب، …)
 async function genreLookup(genre: Genre, anchor: string): Promise<LayerResult> {
   if (!AYA_RE.test(anchor)) return { layer: genre, entries: [], error: "المرسى آيةٌ بصيغة رقم_السورة:رقم_الآية مثل 18:97" };
@@ -283,8 +311,12 @@ export async function layerLookup(layer: string, anchor: string): Promise<LayerR
   if (id === "amthal") return amthalLookup(anchor.trim());
   if (id === "stats") return statsLookup(anchor);
   if (id === "qiraat" || id === "i3rab") return genreLookup(id as Genre, anchor.trim());
+  if (id === "bayan") return termBookLookup(BOOK_SOURCES.filter((b) => b.genre === "bayan" && !b.remote), anchor, "bayan");
   const book = BOOK_SOURCES.find((b) => b.id === id);
   if (book) {
+    // كتب المداخل المصطلحية تُستدعى بعنوان المدخل؛ والموضعية بآية
+    if (book.genre === "bayan" || book.genre === "lexicon") return termBookLookup([book], anchor, id);
+    if (book.remote) return { layer: id, entries: [], note: `«${book.label}» من مكتبة الاستعراض الموسعة — يُقرأ في قسم التفاسير، وليس ضمن مصادر نبراس المضمنة` };
     if (!AYA_RE.test(anchor.trim())) return { layer: id, entries: [], error: "المرسى آيةٌ بصيغة رقم_السورة:رقم_الآية" };
     const text = await bookTextAt(book.id, anchor.trim());
     return text
@@ -300,7 +332,7 @@ export async function layerLookup(layer: string, anchor: string): Promise<LayerR
 export async function layerSearch(layer: string, query: string, k = 6): Promise<LayerResult> {
   await ensureLayers();
   const id = layer.trim();
-  const inGenre = ["tafsir", "asbab", "gharib", "lexicon", "qiraat", "i3rab"].includes(id)
+  const inGenre = ["tafsir", "asbab", "gharib", "lexicon", "qiraat", "i3rab", "bayan"].includes(id)
     ? BOOK_SOURCES.filter((b) => b.genre === (id as Genre) && b.embedded).map((b) => b.id)
     : null;
   const book = BOOK_SOURCES.find((b) => b.id === id);
@@ -313,7 +345,14 @@ export async function layerSearch(layer: string, query: string, k = 6): Promise<
   if (!sources.length) return { layer: id, entries: [], note: "لا كتبَ بمتجهاتٍ في هذه العائلة بعد" };
   const hits = await searchBooks(query.trim().slice(0, 800), sources, Math.min(k, 8));
   const label = (sid: string) => BOOK_SOURCES.find((b) => b.id === sid)?.label ?? sid;
-  return { layer: id, entries: hits.map((h) => ({ label: label(h.source), ref: h.ref, text: h.text.slice(0, 500) })) };
+  // حصة المصدر الواحد مقطعان في النتيجة الواحدة (ضوابط سياق خطة البيان)
+  const perSource = new Map<string, number>();
+  const capped = hits.filter((h) => {
+    const n = (perSource.get(h.source) ?? 0) + 1;
+    perSource.set(h.source, n);
+    return n <= 2;
+  });
+  return { layer: id, entries: capped.map((h) => ({ label: label(h.source), ref: h.ref, text: h.text.slice(0, 500) })) };
 }
 
 // مطبِّع الصيغ (كلمة مكتوبة → جذرها) موجودٌ أصلًا في searchForms.ts
