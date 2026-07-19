@@ -27,7 +27,7 @@ interface Manifest {
 }
 
 const STRIP = /[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g;
-const bare = (s: string): string => String(s).replace(STRIP, "").trim();
+const bare = (s: string): string => String(s).replace(STRIP, "").replace(/\u0671/g, "ا").trim();
 const AYA_RE = /^\d{1,3}:\d{1,3}$/;
 
 // \u0645\u0631\u0633\u0649 \u0627\u0644\u0622\u064A\u0629 \u0628\u0627\u0644\u0635\u064A\u063A\u062A\u064A\u0646: \u00AB112:1\u00BB \u0623\u0648 \u00AB\u0627\u0644\u0625\u062E\u0644\u0627\u0635 1\u00BB \u0623\u0648 \u00AB\u0633\u0648\u0631\u0629 \u0627\u0644\u0625\u062E\u0644\u0627\u0635 \u0661\u00BB \u2014 \u064A\u064F\u062D\u0644 \u0647\u0646\u0627

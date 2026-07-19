@@ -72,15 +72,22 @@ function collectToolTexts(v: unknown, into: string[]): void {
  *  فوق كتاب الله. ما لم تطابق حروفُه يُترك كما هو (يكشفه الفحص لا نُجمّله). */
 function enforceVerbatim(text: string, toolTexts: string[]): string {
   if (!toolTexts.length) return text;
-  // المطابقة مجرّدًا بمجرّد: نصوص الأدوات قد تكون عثمانيةً مشكولة، واقتباس
-  // الذاكرة قد يخالف ضبطها — فإن اتفقت الحروف أعدناه إلى الرسم النظيف المسنود
-  const hayBare = toolTexts.join("\n").replace(TASHKEEL, "");
+  // مقارنتان: مجرّدةٌ (التشكيل والوصل والمدّ مطوية)، ثم عديمةُ الألف احتياطًا —
+  // فالخنجرية ٰ تنوب عن الألف أحيانًا (وَٰلديه=والديه) ولا تنوب أحيانًا
+  // (هَٰذا=هذا)، وءا العثمانية = آ الممدودة؛ هيكلُ الحروف بلا ألفاتٍ هو الفيصل
+  const cmp = (x: string): string => x.replace(TASHKEEL, "").replace(/\u0671/g, "ا").replace(/آ/g, "ءا");
+  const hayBare = cmp(toolTexts.join("\n"));
+  const hayA = hayBare.replace(/ا/g, "");
+  const dispFold = (f: string): string => f.replace(/\u0670/g, "ا").replace(TASHKEEL, "").replace(/\u0671/g, "ا").trim();
   return text.replace(/﴿([^﴾]*)﴾/g, (whole, q: string) => {
     const frags = q.split(/…|\.\.\./);
-    const stripped = frags.map((f) => f.replace(TASHKEEL, "").trim());
-    if (stripped.join("") === frags.map((f) => f.trim()).join("")) return whole; // نظيفٌ أصلًا
-    if (!stripped.every((f) => !f || hayBare.includes(f))) return whole;
-    return `﴿${stripped.join(" … ")}﴾`;
+    const plain = frags.map((f) => f.replace(TASHKEEL, "").replace(/\u0671/g, "ا").trim());
+    if (plain.join("") === frags.map((f) => f.trim()).join("")) return whole; // نظيفٌ أصلًا
+    const stripped = frags.map((f) => cmp(f).trim());
+    if (stripped.every((f) => !f || hayBare.includes(f))) return `﴿${plain.join(" … ")}﴾`;
+    const aless = stripped.map((f) => f.replace(/ا/g, ""));
+    if (aless.every((f) => !f || hayA.includes(f))) return `﴿${frags.map(dispFold).join(" … ")}﴾`;
+    return whole;
   });
 }
 
@@ -127,6 +134,9 @@ const countAr = (n: number, one: string, two: string, few: string): string =>
 function Bubble({ m }: { m: ChatMsg }) {
   const ar = getUILang() === "ar";
   const copy = () => navigator.clipboard?.writeText(m.draft || m.text || "");
+  const copyReply = () => navigator.clipboard?.writeText(m.text || "");
+  // وسمٌ بصري إذا تضمن الجواب استنباطًا مولَّدًا — درجة السند الثالثة ظاهرة للعين
+  const hasIstinbat = !!m.text && /استنباط\s*مولّ?د/.test(m.text);
   const nAyahs = m.ayahs?.length ?? 0;
   const nRoots = m.roots?.length ?? 0;
   const nBooks = m.books?.length ?? 0;
@@ -149,6 +159,12 @@ function Bubble({ m }: { m: ChatMsg }) {
           ) : (
             <>
               {m.text && <div className={`mu-reply${m.error ? " err" : ""}`}>{renderReply(m.text)}</div>}
+              {m.text && !m.error && (
+                <div className="mu-reply-bar">
+                  {hasIstinbat && <span className="mu-ist-tag">{ar ? "يتضمن استنباطًا مولَّدًا بمقدماته — ليس نقلًا" : "includes a generated inference"}</span>}
+                  <button className="mu-copy-sm" onClick={copyReply} title={ar ? "نسخ الجواب بمقدماته" : "copy answer"}>⧉</button>
+                </div>
+              )}
               {m.draft && (
                 <div className="mu-draft">
                   <div className="mu-draft-note muted">{ar ? "مسوّدةٌ مؤلّفةٌ من المادة المجموعة — راجِعْها." : "A draft composed from the gathered material — review it."}</div>
@@ -388,7 +404,7 @@ export default function Assistant() {
       const steps: { name: string; args: Record<string, unknown>; result: unknown }[] = [];
       const toolTexts: string[] = []; // نصوص الأدوات الحرفية — للتنقية القرآنية
       let finalText = "";
-      for (let round = 0; round < 5; round++) {
+      for (let round = 0; round < 6; round++) {
         const res = await postJson("/api/assist", { messages: history, steps, layers });
         if (res.finalize) {
           // المادة اكتملت — نداءٌ مستقل للتأليف النهائي بالنموذج الأقوى،
@@ -406,11 +422,26 @@ export default function Assistant() {
         const calls: { name: string; args: Record<string, unknown> }[] = Array.isArray(res.calls) ? res.calls.slice(0, 4) : [];
         if (!calls.length) { finalText = ar ? "لم أستطع إتمام هذا الطلب." : "Could not complete this request."; break; }
         for (const c of calls) {
+          // نداءٌ مطابقٌ لسابقه لا يُنفَّذ ثانية — تُعاد نتيجته بتنبيهٍ يوقف التكرار
+          const dupKey = `${c.name}|${JSON.stringify(c.args ?? {})}`;
+          const prev = steps.find((st) => `${st.name}|${JSON.stringify(st.args)}` === dupKey);
+          if (prev) {
+            steps.push({ name: c.name, args: c.args ?? {}, result: { note: "نداءٌ مكرر — النتيجة نفسها أعلاه؛ لا تكرر الجمع: اكتب بما حضر" } });
+            continue;
+          }
           patchMessage(cid, aid, { pending: true, text: TOOL_STATUS[c.name]?.(c.args) ?? c.name });
           const result = await runTool(c.name, c.args ?? {});
           collectToolTexts(result, toolTexts);
           steps.push({ name: c.name, args: c.args ?? {}, result });
         }
+      }
+      if (!finalText && steps.length) {
+        // نفدت الجولات والمادة مجموعة — تأليفٌ قسري بالنموذج الأقوى مما حضر
+        patchMessage(cid, aid, { pending: true, text: ar ? "ينسج الجوابَ من المادة…" : "weaving the answer…" });
+        try {
+          const fin = await postJson("/api/assist", { messages: history, steps, layers, finalize: true });
+          finalText = fin.text || "";
+        } catch { /* يسقط للرسالة الاحتياطية */ }
       }
       if (!finalText) finalText = ar ? "طال البحث — هذا ما جمعتُه حتى الآن، فاسألني عنه أو ضيّق الطلب." : "Search ran long — here is what was gathered; narrow the request.";
       // سندُ التنقية: نصوص أدوات هذا الدور + أجوبةُ المساعد السابقة (آياتُها من أدوات أدوارٍ مضت)

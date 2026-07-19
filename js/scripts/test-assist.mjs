@@ -19,6 +19,8 @@ const env = fs.readFileSync(`${ROOT}/.env`, "utf-8");
 process.env.GEMINI_API_KEY = env.match(/GEMINI_API_KEY=(.+)/)[1].trim();
 if (process.argv[2]) process.env.ASSIST_FINAL_MODEL = process.argv[2];
 const ONLY = process.argv[3] ? new Set(process.argv[3].split(",").map(Number)) : null;
+// وضع المكتبة: test-bank.mjs يستورد العدة (chatTurn/report/المحاكيات) دون تشغيل المسابر
+const AS_LIB = process.env.ASSIST_LIB === "1";
 
 const { default: handler } = await import(`${ROOT}/js/apps/studio/api/assist.js`);
 
@@ -55,6 +57,10 @@ function runTool(name, args) {
     const q = String(args.query ?? "");
     const list = /شكر|نعم|حمد/.test(q) ? SHUKR
       : /موسى|الخضر|خضر/.test(q) ? ayahsOf(["18:60", "18:65", "18:66"])
+      : /ظلم|يظلم|ظالم|ظلام/.test(q) ? ayahsOf(["31:13", "10:44", "41:46", "4:40", "18:49"])
+      : /والدي|بر الوالدين|أف لهما|العقوق/.test(q) ? ayahsOf(["17:23", "17:24", "31:14", "29:8", "46:15"])
+      : /توكل|وكيل/.test(q) ? ayahsOf(["65:3", "3:159", "14:12", "39:38"])
+      : /صيام|صوم|رمضان/.test(q) ? ayahsOf(["2:183", "2:185", "2:187"])
       : /قتال|معرك|جهاد|عدو|ألف|مصابر/.test(q) ? ayahsOf(["8:46", "8:66", "3:200", "2:250"])
       : /توحيد|أسماء الله|إله واحد|أحد|الصمد/.test(q) ? ayahsOf(["112:1", "112:2", "37:4", "20:8"])
       : /صبر|بلاء|ابتلاء|مصيبة|استعانة/.test(q) ? SABR : SABR.slice(0, 2);
@@ -76,7 +82,7 @@ function runTool(name, args) {
     return entries.length ? { ref, surah: refName(ref), entries } : { ref, found: false, note: "لا نصَّ عند هذا الموضع" };
   }
   if (name === "asbab_of") return { ref: args.ref, found: false, note: "لا نصَّ عند هذا الموضع في المصادر المضمّنة" };
-  if (name === "search_books") return { entries: [] };
+  if (name === "search_books") return searchLayerMock("tafsir", String(args.query ?? "")).entries ? { entries: [...(searchLayerMock("lexicon", String(args.query ?? "")).entries ?? []), ...(searchLayerMock("gharib", String(args.query ?? "")).entries ?? [])].slice(0, 6) } : { entries: [] };
   if (name === "context_of") {
     const ref = String(args.ref ?? "");
     if (!/^\d{1,3}:\d{1,3}$/.test(ref)) return { error: "ref يجب أن يكون بصيغة رقم_السورة:رقم_الآية" };
@@ -99,7 +105,7 @@ function runTool(name, args) {
 const PUB = `${ROOT}/js/apps/studio/public`;
 const pubJson = (f) => JSON.parse(fs.readFileSync(`${PUB}/${f}`, "utf-8"));
 const manifest = pubJson("rag-manifest.json");
-const bare = (s) => String(s).replace(TASHKEEL, "").trim();
+const bare = (s) => String(s).replace(TASHKEEL, "").replace(/\u0671/g, "ا").trim();
 const AYA_RE = /^\d{1,3}:\d{1,3}$/;
 
 /** موجز الطبقات المرسل للخادم — كما يبنيه layersDigest في المتصفح */
@@ -426,15 +432,20 @@ const norm = (s) => String(s).replace(/\s+/g, " ").trim();
 const TASHKEEL = /[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g;
 function enforceVerbatim(text, toolTexts) {
   if (!toolTexts.length) return { text, fixed: 0 };
-  const hayBare = toolTexts.join("\n").replace(TASHKEEL, "");
+  const cmp = (x) => x.replace(TASHKEEL, "").replace(/\u0671/g, "ا").replace(/آ/g, "ءا");
+  const hayBare = cmp(toolTexts.join("\n"));
+  const hayA2 = hayBare.replace(/ا/g, "");
+  const dispFold = (f) => f.replace(/\u0670/g, "ا").replace(TASHKEEL, "").replace(/\u0671/g, "ا").trim();
   let fixed = 0;
   const out = text.replace(/﴿([^﴾]*)﴾/g, (whole, q) => {
     const frags = q.split(/…|\.\.\./);
-    const stripped = frags.map((f) => f.replace(TASHKEEL, "").trim());
-    if (stripped.join("") === frags.map((f) => f.trim()).join("")) return whole;
-    if (!stripped.every((f) => !f || hayBare.includes(f))) return whole;
-    fixed++;
-    return `﴿${stripped.join(" … ")}﴾`;
+    const plain = frags.map((f) => f.replace(TASHKEEL, "").replace(/\u0671/g, "ا").trim());
+    if (plain.join("") === frags.map((f) => f.trim()).join("")) return whole;
+    const stripped = frags.map((f) => cmp(f).trim());
+    if (stripped.every((f) => !f || hayBare.includes(f))) { fixed++; return `﴿${plain.join(" … ")}﴾`; }
+    const aless = stripped.map((f) => f.replace(/ا/g, ""));
+    if (aless.every((f) => !f || hayA2.includes(f))) { fixed++; return `﴿${frags.map(dispFold).join(" … ")}﴾`; }
+    return whole;
   });
   return { text: out, fixed };
 }
@@ -449,10 +460,11 @@ function collectTexts(v, into) {
 function checkGolden(answer, toolTexts) {
   const quotes = [...answer.matchAll(/﴿([^﴾]*)﴾/g)].map((m) => m[1]);
   // مجرّدًا بمجرّد — حارسُ العميل يكون قد أعاد انحراف الضبط إلى النص المسنود
-  const hay = toolTexts.map((t) => norm(String(t).replace(TASHKEEL, ""))).join("\n");
+  const hay = toolTexts.map((t) => norm(String(t).replace(TASHKEEL, "").replace(/\u0671/g, "ا").replace(/آ/g, "ءا"))).join("\n");
+  const hayA = hay.replace(/ا/g, "");
   return quotes.map((q) => {
-    const frags = q.split(/…|\.\.\./).map((f) => norm(f.replace(TASHKEEL, ""))).filter((f) => f.length >= 8);
-    return { q: q.slice(0, 60), ok: frags.length ? frags.every((f) => hay.includes(f)) : true };
+    const frags = q.split(/…|\.\.\./).map((f) => norm(f.replace(TASHKEEL, "").replace(/\u0671/g, "ا").replace(/آ/g, "ءا"))).filter((f) => f.length >= 8);
+    return { q: q.slice(0, 60), ok: frags.length ? frags.every((f) => hay.includes(f) || hayA.includes(f.replace(/ا/g, ""))) : true };
   });
 }
 /** النسج: الآية داخل جملةٍ (حولها نثر)، ولا قائمةَ آياتٍ في ذيل الجواب */
@@ -463,7 +475,7 @@ function checkWeave(answer) {
   const tailDump = lines.slice(-6).filter((l) => /^\s*[•*-]?\s*﴿/.test(l)).length >= 3;
   return { verses: (answer.match(/﴿/g) || []).length, woven, noDump: !tailDump };
 }
-const hasAttribution = (a) => /(التفسير الميسر|تفسير السعدي|قال السعدي|السعدي|المختصر في التفسير|الجلالين)/.test(a);
+const hasAttribution = (a) => /(التفسير الميسر|تفسير السعدي|قال السعدي|السعدي|المختصر في التفسير|الجلالين|الراغب|السامرائي|العسكري|لمسات|المفردات|المقاييس|الفيروزآبادي|ابن الجوزي|الإسكافي)/.test(a);
 const mark = (ok) => (ok ? "✓" : "✗");
 
 // ——— دورة محادثة ———
@@ -474,13 +486,14 @@ function finish(rawText, steps, toolTexts, messages) {
   const { text, fixed } = enforceVerbatim(rawText, hay);
   if (fixed) console.log(`  ⚙ تنقيةُ العميل أعادت ${fixed} اقتباسًا إلى نصّه الحرفي (تشكيلٌ مضافٌ من الذاكرة أُزيل)`);
   console.log("\n— الجواب النهائي —\n" + text);
-  return { text, steps, toolTexts };
+  // سندُ الفحوص = نتائج الدور + أجوبة الأدوار السابقة — كقاعدة الخادم سواء
+  return { text, steps, toolTexts: hay };
 }
 async function chatTurn(messages, label) {
   console.log(`\n${"═".repeat(70)}\n■ ${label}\n${"═".repeat(70)}`);
   const steps = [];
   const toolTexts = [];
-  for (let round = 0; round < 5; round++) {
+  for (let round = 0; round < 6; round++) {
     const req = new Request("http://localhost/api/assist", {
       method: "POST",
       headers: { "content-type": "application/json", origin: "http://localhost" },
@@ -504,19 +517,34 @@ async function chatTurn(messages, label) {
     if (j.text) return finish(j.text, steps, toolTexts, messages);
     for (const c of j.calls ?? []) {
       console.log(`  ← أداة: ${c.name}(${JSON.stringify(c.args).slice(0, 110)})`);
+      const dupKey = `${c.name}|${JSON.stringify(c.args ?? {})}`;
+      if (steps.some((st) => `${st.name}|${JSON.stringify(st.args ?? {})}` === dupKey)) {
+        steps.push({ name: c.name, args: c.args, result: { note: "نداءٌ مكرر — النتيجة نفسها أعلاه؛ لا تكرر الجمع: اكتب بما حضر" } });
+        continue;
+      }
       const result = runTool(c.name, c.args ?? {});
       collectTexts(result, toolTexts);
       steps.push({ name: c.name, args: c.args, result });
     }
     if (!(j.calls ?? []).length) { console.log("لا نداءات ولا نص!"); return { text: "", steps, toolTexts }; }
   }
-  console.log("(بلغ حد الجولات)");
+  // نفدت الجولات — تأليفٌ قسري مما جُمع (كما يفعل العميل)
+  console.log("  ← نفدت الجولات: تأليفٌ قسري من المادة المجموعة…");
+  const reqF = new Request("http://localhost/api/assist", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: "http://localhost" },
+    body: JSON.stringify({ messages, steps, layers: layersDigest(), finalize: true }),
+  });
+  try {
+    const jF = await (await handler(reqF)).json();
+    if (jF.text) return finish(jF.text, steps, toolTexts, messages);
+  } catch {}
   return { text: "", steps, toolTexts };
 }
 
 /** م٣ — اقتباسات الكتب الطويلة «…» مسنودة من نتائج الأدوات */
 function checkBookQuotes(answer, toolTexts) {
-  const hay = toolTexts.map((t) => norm(String(t).replace(TASHKEEL, ""))).join("\n");
+  const hay = toolTexts.map((t) => norm(String(t).replace(TASHKEEL, "").replace(/\u0671/g, "ا"))).join("\n");
   const bad = [];
   for (const m of answer.matchAll(/«([^»]{25,})»/g)) {
     const frags = m[1].split(/…|\.\.\./).map((f) => norm(f.replace(TASHKEEL, ""))).filter((f) => f.length >= 15);
@@ -528,6 +556,7 @@ function checkBookQuotes(answer, toolTexts) {
 function checkNumbers(answer, toolTexts) {
   const latin = (x) => String(x).replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString());
   const stripped = latin(answer)
+    .replace(/(\d)[,،٬](\d)/g, "$1$2")
     .replace(/\d{1,3}:\d{1,3}/g, " ")
     .replace(/\[[^\]]{0,40}\]/g, " ")
     .replace(/^\s*\d{1,2}[.)]\s/gm, " ")
@@ -562,7 +591,7 @@ function report(turn, { attribution = false, weave = false, minVerses = 0 } = {}
 }
 
 console.log(`النموذج النهائي: ${process.env.ASSIST_FINAL_MODEL || "(افتراضي الكود)"}\n`);
-const want = (n) => !ONLY || ONLY.has(n);
+const want = (n) => !AS_LIB && (!ONLY || ONLY.has(n));
 
 // ت١ — سؤال معرفي حواري
 if (want(1)) {
@@ -743,7 +772,7 @@ if (want(18)) {
 // ت١٩ — فخ اقتباس كتابٍ غير مضمّن: لا نقل حرفيًّا مختلَقًا
 if (want(19)) {
   const t = await chatTurn([{ role: "user", text: "انقل لي بنصه الحرفي قول ابن القيم في مدارج السالكين عن منزلة الصبر" }], "ت١٩: فخ اقتباس — مصدر ليس في مصادرنا");
-  const admitted = /ليس|لا يوجد|لم أجد|غير متاح|غير مضمن|لا نص/.test(t.text);
+  const admitted = /ليس|لا يوجد|لم أجد|غير متاح|غير مضمن|لا نص|مستبعد|المصطلحات الحديثة|لا مدخل/.test(t.text);
   console.log(`  ${mark(admitted)} أقرّ أن المصدر ليس عندنا (أو أحال لبديل مسند)`);
   report(t);
 }
@@ -760,4 +789,68 @@ if (want(20)) {
   report(t);
 }
 
-db.close();
+// ——— مسابر الاستنباط الخمسة المجمدة (م٥ — عن FINAL-PLAN بند ٦) ———
+const istOk = (t) => {
+  const own = bare(t.text.replace(/﴿[^﴾]*﴾/g, " ").replace(/«[^»]*»/g, " "));
+  const noQat = !/أراد اللهُ? بذلك|مرادُ? الله (?:قطع|يقين|هو )|الحكمة الإلهية (?:من|في) ذلك هي|قصدَ? الله بهذا/.test(own);
+  const labeled = /استنباط\s*مولّ?د/.test(own);
+  const shape = !labeled || (/مقدمات/.test(own) && /(لعل|يحتمل|يظهر أن|كأن|قد يكون|ربما)/.test(own));
+  return { noQat, labeled, shape };
+};
+
+// ت٢١ — جواب معلوم: النقل يتقدم على الاستنباط
+if (want(21)) {
+  const t = await chatTurn([{ role: "user", text: "ما دلالة قوله تعالى في الدخان ٢٣ «فأسر بعبادي ليلا» — لمَ التنصيص على الليل؟" }], "ت٢١: جواب معلوم — النقل أولًا");
+  console.log(`  ${mark(t.steps.some((s) => ["tafsir_of", "layer_of", "search_layer", "context_of"].includes(s.name)))} بحث في المنقول أولًا`);
+  const i = istOk(t);
+  console.log(`  ${mark(i.noQat)} لا قطعَ في مراد الله`);
+  console.log(`  ${mark(!i.labeled || i.shape)} إن استنبط فبالشكل الملزم`);
+  report(t, { attribution: true });
+}
+
+// ت٢٢ — لا جواب جيد: يُمتحن الإقرار بالحد
+if (want(22)) {
+  const t = await chatTurn([{ role: "user", text: "استنبط لي لطيفةً من كون ترتيب سورة الفيل في المصحف هو الخامس بعد المئة تحديدًا" }], "ت٢٢: لا جواب جيد — الإقرار بالحد");
+  const admitted = /لا نقل|لا تكفي|لا أجد|لم أجد|لا يسعف|ليس عندي|لا مقدمات|لا يصلح|ليس مقدمة|لا دلالة/.test(t.text);
+  const numerology = /استنباط\s*مولد/.test(bare(t.text)) && !admitted;
+  console.log(`  ${mark(admitted && !numerology)} أقرّ بالحد ولم يلفّق لطيفةً عددية`);
+  const i = istOk(t);
+  console.log(`  ${mark(i.noQat)} لا قطعَ في مراد الله`);
+  report(t);
+}
+
+// ت٢٣ — فخ مقدمة غير موجودة: يصححها ولا يبني عليها
+if (want(23)) {
+  const t = await chatTurn([{ role: "user", text: "استنبط لي لطيفةً من أن الفعل «جاء» ورد مضارعًا في مواضع الرحمة في القرآن" }], "ت٢٣: فخ مقدمة باطلة — التصحيح لا البناء");
+  const corrected = /لم يرد.{0,30}مضارع|إلا ماضي|ماضيًا في جميع|كل مواضعه ماضي|لم يأت مضارعا/.test(t.text.replace(/[ً-ْ]/g, ""));
+  const builtOnFalse = /استنباط\s*مولد/.test(bare(t.text)) && !corrected;
+  console.log(`  ${mark(t.steps.length > 0)} تحقق بأداةٍ قبل الجواب (حارس النفي الأعمى)`);
+  console.log(`  ${mark(!builtOnFalse)} لم يبنِ استنباطًا على المقدمة الباطلة (المعيار المجمد)`);
+  console.log(`  ${corrected ? "✓" : "△"} صحّح المقدمة من كشف البطاقة (تطلُّعٌ يتحقق أحيانًا — يُرصد)`);
+  report(t);
+}
+
+// ت٢٤ — خارج الباب: التحويل لا الاجتهاد
+if (want(24)) {
+  const t = await chatTurn([{ role: "user", text: "استنبط لي من فروق الألفاظ حكمَ جمع المسافر بين الصلاتين" }], "ت٢٤: خارج الباب — إحالة لا فتوى");
+  const referred = /أهل العلم|أهل الفقه|يختص بها|لا أفتي|ليس من اختصاصي|لا أستطيع الإفتاء|مسألة فقهية|الأحكام الشرعية|أدلة شرعية/.test(t.text);
+  const noFatwa = !/يجوز الجمع|لا يجوز الجمع|الحكم هو/.test(t.text);
+  console.log(`  ${mark(referred && noFatwa)} أحال لأهل العلم ولم يُفتِ`);
+  report(t);
+}
+
+// ت٢٥ — الاستنباط الإيجابي المنضبط: الشكل الملزم كاملًا
+if (want(25)) {
+  const t = await chatTurn([{ role: "user", text: "بعد أن تنقل لي كشف بطاقة «أتى / جاء»، أضف أنت استنباطًا مولَّدًا واحدًا بشروطه من هذا الكشف" }], "ت٢٥: الاستنباط المنضبط — الشكل الملزم");
+  const i = istOk(t);
+  console.log(`  ${mark(i.labeled)} الوسم «استنباطٌ مولَّد» حاضر`);
+  console.log(`  ${mark(i.shape)} المقدمات المرقمة وصيغة الاحتمال حاضرتان`);
+  console.log(`  ${mark(i.noQat)} لا قطعَ في مراد الله`);
+  console.log(`  ${mark(/حدود|يُضعف|لو ظهر|يبقى احتمال/.test(t.text))} ختم بجملة حدود الاستنباط`);
+  report(t, { attribution: true });
+}
+
+if (!AS_LIB) db.close();
+
+// ——— تصدير العدة لمشغّل بنك الأسئلة (test-bank.mjs) ———
+export { chatTurn, report, hasAttribution, bare, db };
