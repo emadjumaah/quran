@@ -4,9 +4,12 @@
  * المتبادل. كل رقمٍ محسوبٌ من الشبكة الموحدة المفحوصة بالسياق — «نحسب ونعرض».
  * نسخة أولى قبل موجات التعميق؛ تقارير المعايرة والامتحان منشورة في المستودع.
  */
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { classOf } from "../kulliyat";
-import { surahNameAr } from "../db";
+import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num } from "../i18n";
+import { readPathOf, type AyahDoc } from "../types";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
@@ -19,10 +22,26 @@ const RELS: { key: string; ar: string; en: string }[] = [
 
 export default function WhyRank({ location }: { location: string }) {
   const cls = classOf(location);
-  if (!cls) return null;
   const ar = getUILang() === "ar";
-  const rels = cls.rels ?? {};
-  const mutual = cls.mutual ?? [];
+  const rels = cls?.rels ?? {};
+  const mutual = cls?.mutual ?? [];
+  // الشواهد بنصوصها: كل آيات الأدلة أعلاه، كلٌّ بوصف علاقتها بآية البطاقة
+  const [open, setOpen] = useState(false);
+  const [texts, setTexts] = useState<Map<string, AyahDoc> | null>(null);
+  useEffect(() => {
+    if (!open || texts) return;
+    let live = true;
+    void ayahByLocationMap().then((m) => live && setTexts(m));
+    return () => { live = false; };
+  }, [open, texts]);
+  const shawahid = useMemo(() => {
+    const out: { loc: string; rel: string }[] = [];
+    for (const { key, ar: la, en } of RELS) for (const l of rels[key] ?? []) out.push({ loc: l, rel: ar ? la : en });
+    for (const l of mutual) out.push({ loc: l, rel: ar ? "توكيدٌ متبادل" : "mutual" });
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location, ar]);
+  if (!cls) return null;
 
   return (
     <div className="why">
@@ -66,9 +85,30 @@ export default function WhyRank({ location }: { location: string }) {
           </span>
         </div>
       </div>
+      {shawahid.length > 0 && (
+        <>
+          <button className={`why-shbtn${open ? " on" : ""}`} onClick={() => setOpen((v) => !v)}>
+            <span>{ar ? `الشواهدُ بنصوصها (${num(shawahid.length)})` : `witnesses in full (${shawahid.length})`}</span>
+            <span aria-hidden="true">{open ? "▴" : "▾"}</span>
+          </button>
+          {open && (
+            <div className="why-shawahid">
+              {shawahid.map(({ loc, rel }, i) => (
+                <div className="why-sh" key={`${loc}-${rel}-${i}`}>
+                  <div className="why-sh-top">
+                    <span className="why-sh-rel">{rel}</span>
+                    <Link className="why-sh-ref" to={readPathOf(loc)}>{arName(loc)}</Link>
+                  </div>
+                  <div className="quran why-sh-text">{texts ? (texts.get(loc)?.textClean ?? loc) : "…"}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
       <div className="why-foot">
         {ar
-          ? "كلّية: قاعدةٌ تلتقي عندَها المحاور (مفصِّلاتٌ ≥٨ واتساعٌ ≥٥) · جامعة: مفصِّلاتٌ ≥٣ أو مثانٍ · تفصيل: ما سوى ذلك. العتباتُ عُويرت على نصفِ الضبطِ المجمَّد وحدَه، وامتحانُ العيّنةِ المصونةِ منشورٌ بنتيجتِه قبل التعميق."
+          ? "كلّية: قاعدةٌ تلتقي عندَها المحاور (مفصِّلاتٌ ≥٨ واتساعٌ ≥٥) · جامعة: مفصِّلاتٌ ≥٣ أو مثانٍ · تفصيل: ما سوى ذلك. العتباتُ عُيِّرت على نصفِ الضبطِ المجمَّد وحدَه، وامتحانُ العيّنةِ المصونةِ منشورٌ بنتيجتِه قبل التعميق."
           : "kulliyya: axes meet at it (m≥8, spread≥5) · jāmiʿa: m≥3 or mutual · tafṣīl: otherwise. Thresholds tuned on the frozen tune half only; the held-out exam is published with its pre-deepening result."}
       </div>
     </div>

@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generated": "2026-07-18",
+ "generated": "2026-07-19",
  "books": [
   {
    "id": "muyassar",
@@ -39,6 +39,190 @@
    "author": "أبو بكر الجزائري",
    "embedded": false,
    "entries": 1290
+  },
+  {
+   "id": "tabari",
+   "label": "جامع البيان",
+   "genre": "tafsir",
+   "author": "الطبري",
+   "remote": true,
+   "embedded": false,
+   "entries": 3636
+  },
+  {
+   "id": "ibnkathir",
+   "label": "تفسير القرآن العظيم",
+   "genre": "tafsir",
+   "author": "ابن كثير",
+   "remote": true,
+   "embedded": false,
+   "entries": 1911
+  },
+  {
+   "id": "qurtubi",
+   "label": "الجامع لأحكام القرآن",
+   "genre": "tafsir",
+   "author": "القرطبي",
+   "remote": true,
+   "embedded": false,
+   "entries": 3259
+  },
+  {
+   "id": "razi",
+   "label": "مفاتيح الغيب",
+   "genre": "tafsir",
+   "author": "الرازي",
+   "remote": true,
+   "embedded": false,
+   "entries": 2969
+  },
+  {
+   "id": "kashshaf",
+   "label": "الكشّاف",
+   "genre": "tafsir",
+   "author": "الزمخشري",
+   "remote": true,
+   "embedded": false,
+   "entries": 2984
+  },
+  {
+   "id": "ibnatiyyah",
+   "label": "المحرَّر الوجيز",
+   "genre": "tafsir",
+   "author": "ابن عطية",
+   "remote": true,
+   "embedded": false,
+   "entries": 1672
+  },
+  {
+   "id": "baghawi",
+   "label": "معالم التنزيل",
+   "genre": "tafsir",
+   "author": "البغوي",
+   "remote": true,
+   "embedded": false,
+   "entries": 2152
+  },
+  {
+   "id": "ibnashur",
+   "label": "التحرير والتنوير",
+   "genre": "tafsir",
+   "author": "ابن عاشور",
+   "remote": true,
+   "embedded": false,
+   "entries": 3923
+  },
+  {
+   "id": "shawkani",
+   "label": "فتح القدير",
+   "genre": "tafsir",
+   "author": "الشوكاني",
+   "remote": true,
+   "embedded": false,
+   "entries": 861
+  },
+  {
+   "id": "alusi",
+   "label": "روح المعاني",
+   "genre": "tafsir",
+   "author": "الألوسي",
+   "remote": true,
+   "embedded": false,
+   "entries": 5629
+  },
+  {
+   "id": "abusuud",
+   "label": "إرشاد العقل السليم",
+   "genre": "tafsir",
+   "author": "أبو السعود",
+   "remote": true,
+   "embedded": false,
+   "entries": 6105
+  },
+  {
+   "id": "durrmanthur",
+   "label": "الدر المنثور",
+   "genre": "tafsir",
+   "author": "السيوطي",
+   "remote": true,
+   "embedded": false,
+   "entries": 2568
+  },
+  {
+   "id": "adwaalbayan",
+   "label": "أضواء البيان",
+   "genre": "tafsir",
+   "author": "الشنقيطي",
+   "remote": true,
+   "embedded": false,
+   "entries": 2320
+  },
+  {
+   "id": "bahrmuhit",
+   "label": "البحر المحيط",
+   "genre": "tafsir",
+   "author": "أبو حيان",
+   "remote": true,
+   "embedded": false,
+   "entries": 1427
+  },
+  {
+   "id": "nasafi",
+   "label": "مدارك التنزيل",
+   "genre": "tafsir",
+   "author": "النسفي",
+   "remote": true,
+   "embedded": false,
+   "entries": 6050
+  },
+  {
+   "id": "qasimi",
+   "label": "محاسن التأويل",
+   "genre": "tafsir",
+   "author": "القاسمي",
+   "remote": true,
+   "embedded": false,
+   "entries": 3989
+  },
+  {
+   "id": "baydawi",
+   "label": "أنوار التنزيل",
+   "genre": "tafsir",
+   "author": "البيضاوي",
+   "remote": true,
+   "note": "نسخة جزئية",
+   "embedded": false,
+   "entries": 2382
+  },
+  {
+   "id": "ibnabihatim",
+   "label": "التفسير بالمأثور",
+   "genre": "tafsir",
+   "author": "ابن أبي حاتم",
+   "remote": true,
+   "note": "نسخة جزئية",
+   "embedded": false,
+   "entries": 2211
+  },
+  {
+   "id": "uthaymeen",
+   "label": "تفسير العثيمين",
+   "genre": "tafsir",
+   "author": "ابن عثيمين",
+   "remote": true,
+   "note": "نسخة جزئية",
+   "embedded": false,
+   "entries": 1668
+  },
+  {
+   "id": "tadabbur",
+   "label": "الوقفات التدبرية",
+   "genre": "tafsir",
+   "author": "مركز تدبر",
+   "remote": true,
+   "note": "وقفات مختارة",
+   "embedded": false,
+   "entries": 662
   },
   {
    "id": "gharibmuyassar",
@@ -92,6 +276,78 @@
    "author": "المزيني",
    "embedded": true,
    "entries": 198
+  },
+  {
+   "id": "furuqaskari",
+   "label": "الفروق اللغوية",
+   "genre": "bayan",
+   "author": "أبو هلال العسكري",
+   "embedded": false,
+   "entries": 912
+  },
+  {
+   "id": "basair",
+   "label": "بصائر ذوي التمييز",
+   "genre": "bayan",
+   "author": "الفيروزآبادي",
+   "embedded": false,
+   "entries": 1041
+  },
+  {
+   "id": "wujuhaskari",
+   "label": "الوجوه والنظائر",
+   "genre": "bayan",
+   "author": "أبو هلال العسكري",
+   "embedded": false,
+   "entries": 251
+  },
+  {
+   "id": "damghani",
+   "label": "قاموس القرآن (الوجوه والنظائر)",
+   "genre": "bayan",
+   "author": "الدامغاني",
+   "embedded": false,
+   "entries": 174
+  },
+  {
+   "id": "nuzha",
+   "label": "نزهة الأعين النواظر",
+   "genre": "bayan",
+   "author": "ابن الجوزي",
+   "embedded": false,
+   "entries": 314
+  },
+  {
+   "id": "durra",
+   "label": "درة التنزيل وغرة التأويل",
+   "genre": "bayan",
+   "author": "الخطيب الإسكافي",
+   "embedded": false,
+   "entries": 99
+  },
+  {
+   "id": "malak",
+   "label": "ملاك التأويل",
+   "genre": "bayan",
+   "author": "ابن الزبير الغرناطي",
+   "embedded": false,
+   "entries": 312
+  },
+  {
+   "id": "burhan",
+   "label": "البرهان في علوم القرآن",
+   "genre": "bayan",
+   "author": "الزركشي",
+   "embedded": false,
+   "entries": 59
+  },
+  {
+   "id": "itqan",
+   "label": "الإتقان في علوم القرآن",
+   "genre": "bayan",
+   "author": "السيوطي",
+   "embedded": false,
+   "entries": 75
   },
   {
    "id": "mufradat",
@@ -187,7 +443,9 @@
    "evidence": {
     "verses": 2537,
     "units": 3542,
-    "links": 11772
+    "links": 9494,
+    "mutual": 1312,
+    "note": "unified-context-network v3"
    },
    "muhkamat": {
     "count": 129,
@@ -224,6 +482,15 @@
    },
    "totals": {
     "verses": 6236
+   },
+   "topicsComputed": {
+    "babs": 14,
+    "topics": 120,
+    "units": 1325
+   },
+   "axes": {
+    "count": 206,
+    "stability": 99.6
    }
   },
   "morph": {

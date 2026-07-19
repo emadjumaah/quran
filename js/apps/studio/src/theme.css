@@ -1088,6 +1088,16 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .why-val, .why-wt { text-align: end; color: var(--muted); font-variant-numeric: tabular-nums; }
 .why-contrib { text-align: end; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
 .why-foot { margin-top: 8px; font-size: 10px; color: var(--muted); line-height: 1.6; }
+/* الشواهد بنصوصها — منسدلة آيات الأدلة كلها بوصف علاقتها بآية البطاقة */
+.why-shbtn { margin-top: 8px; width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); cursor: pointer; font-weight: 600; }
+.why-shbtn.on, .why-shbtn:hover { border-color: var(--gold); }
+.why-shawahid { margin-top: 8px; display: flex; flex-direction: column; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.why-sh { border-inline-start: 2px solid var(--gold); padding-inline-start: 9px; }
+.why-sh-top { display: flex; gap: 8px; align-items: baseline; font-size: 11px; margin-bottom: 2px; }
+.why-sh-rel { color: var(--gold); font-weight: 700; }
+.why-sh-ref { color: var(--ink-2); text-decoration: none; }
+.why-sh-ref:hover { color: var(--accent); }
+.why-sh-text { font-size: 15px; line-height: 1.95; }
 .kl-sub { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 3px 0 0; padding-inline-start: 38px; font-size: 11.5px; color: var(--muted); }
 .kl-theme { color: var(--accent); }
 .kl-under b { color: var(--ink-2); font-weight: 700; }

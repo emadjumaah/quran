@@ -9,7 +9,7 @@
  */
 import { embedQuery } from "./semantic";
 
-export type Genre = "tafsir" | "asbab" | "gharib" | "i3rab" | "qiraat" | "lexicon";
+export type Genre = "tafsir" | "asbab" | "gharib" | "i3rab" | "qiraat" | "bayan" | "lexicon";
 export interface BookSource { id: string; label: string; genre: Genre; author?: string; embedded?: boolean; remote?: boolean; note?: string }
 
 /**
@@ -51,7 +51,18 @@ export const BOOK_SOURCES: BookSource[] = [
   { id: "baydawi", label: "أنوار التنزيل", genre: "tafsir", author: "البيضاوي", remote: true, note: "نسخة جزئية" },
   { id: "ibnabihatim", label: "التفسير بالمأثور", genre: "tafsir", author: "ابن أبي حاتم", remote: true, note: "نسخة جزئية" },
   { id: "uthaymeen", label: "تفسير العثيمين", genre: "tafsir", author: "ابن عثيمين", remote: true, note: "نسخة جزئية" },
-  // root-keyed معاجم — نِبراس-only (shown in the word card, not the verse-anchored تفاسير section)
+  { id: "tadabbur", label: "الوقفات التدبرية", genre: "tafsir", author: "مركز تدبر", remote: true, note: "وقفات مختارة" },
+  // — كتب البيان: مصطلحيّة (فروق/وجوه/بصائر/متشابه/علوم) — مداخلُها عناوين لا آيات —
+  { id: "furuqaskari", label: "الفروق اللغوية", genre: "bayan", author: "أبو هلال العسكري" },
+  { id: "basair", label: "بصائر ذوي التمييز", genre: "bayan", author: "الفيروزآبادي" },
+  { id: "wujuhaskari", label: "الوجوه والنظائر", genre: "bayan", author: "أبو هلال العسكري" },
+  { id: "damghani", label: "قاموس القرآن (الوجوه والنظائر)", genre: "bayan", author: "الدامغاني" },
+  { id: "nuzha", label: "نزهة الأعين النواظر", genre: "bayan", author: "ابن الجوزي" },
+  { id: "durra", label: "درة التنزيل وغرة التأويل", genre: "bayan", author: "الخطيب الإسكافي" },
+  { id: "malak", label: "ملاك التأويل", genre: "bayan", author: "ابن الزبير الغرناطي" },
+  { id: "burhan", label: "البرهان في علوم القرآن", genre: "bayan", author: "الزركشي" },
+  { id: "itqan", label: "الإتقان في علوم القرآن", genre: "bayan", author: "السيوطي" },
+  // root-keyed معاجم — تُعرض في بطاقة الكلمة وفي المكتبة (عرضًا مصطلحيًّا)
   { id: "mufradat", label: "المفردات في غريب القرآن", genre: "lexicon", author: "الراغب الأصفهاني", embedded: true },
   { id: "maqayis", label: "مقاييس اللغة", genre: "lexicon", author: "ابن فارس", embedded: true },
 ];
@@ -68,10 +79,13 @@ export const bookById = (id: string): BookSource | undefined => BOOK_SOURCES.fin
 export const bookLabel = (id: string): string => bookById(id)?.label ?? id;
 
 export const GENRE_LABELS: Record<Genre, string> = {
-  tafsir: "التفاسير", asbab: "أسباب النزول", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات", lexicon: "المعاجم",
+  tafsir: "التفاسير", asbab: "أسباب النزول", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات", bayan: "كتب البيان", lexicon: "المعاجم",
 };
-// lexicon (root-keyed) is intentionally excluded — the تفاسير section is verse-anchored
-const GENRE_ORDER: Genre[] = ["tafsir", "asbab", "gharib", "i3rab", "qiraat"];
+// «كل كتابٍ مستخدمٍ في مشكاة يجب أن يكون في المكتبة» — الكل يُعرض؛ المصطلحيّة
+// (بيان/معاجم) بعرضِ عناوينَ لا سُوَر (see isTermKeyed)
+const GENRE_ORDER: Genre[] = ["tafsir", "asbab", "gharib", "i3rab", "qiraat", "bayan", "lexicon"];
+/** كتابٌ مداخلُه عناوينُ (فرق/وجه/مادّة…) لا آيات — يُعرض قائمةً مصطلحيّة */
+export const isTermKeyed = (b: BookSource): boolean => b.genre === "bayan" || b.genre === "lexicon";
 /** Books grouped by genre (registry order), for the تفاسير section. */
 export function booksByGenre(): { genre: Genre; label: string; books: BookSource[] }[] {
   return GENRE_ORDER
@@ -199,9 +213,12 @@ export function loadBookEntries(source: string): Promise<BookEntry[] | null> {
       const res = await fetch(`${import.meta.env.BASE_URL}rag-${source}.json?v=${__DATA_VERSION__}`);
       if (!res.ok) { entryLists.set(source, null); return null; }
       const arr = (await res.json()) as { ref: string; refEnd?: string; text: string }[];
-      const list: BookEntry[] = arr.map((x) => ({
-        ref: x.ref, refEnd: x.refEnd, text: x.text, s: refNum(x.ref), e: refNum(x.refEnd ?? x.ref),
-      }));
+      // مرجعٌ غير آية (كتب مصطلحيّة): يُثبَّت ترتيبُ الكتاب نفسِه بدل ترتيب المصحف
+      const list: BookEntry[] = arr.map((x, i) => {
+        const s = refNum(x.ref);
+        const e = refNum(x.refEnd ?? x.ref);
+        return { ref: x.ref, refEnd: x.refEnd, text: x.text, s: Number.isNaN(s) ? i : s, e: Number.isNaN(e) ? i : e };
+      });
       list.sort((a, b) => a.s - b.s);
       entryLists.set(source, list);
       return list;
@@ -240,7 +257,8 @@ export async function bookTextAt(source: string, loc: string): Promise<string | 
 /** All TAFSIR-genre books' text for one āyah, in registry order (for the «تفسير» button). */
 export async function tafsirFor(loc: string): Promise<{ source: string; label: string; text: string }[]> {
   const out: { source: string; label: string; text: string }[] = [];
-  for (const s of TAFSIR_SOURCES) {
+  // زرّ القارئ يقتصر على الميسّرة المحليّة — العريقةُ البعيدة من صفحة كتابها
+  for (const s of TAFSIR_SOURCES.filter((x) => !x.remote)) {
     const text = await bookTextAt(s.id, loc);
     if (text) out.push({ source: s.id, label: s.label, text });
   }
