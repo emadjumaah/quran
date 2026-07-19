@@ -10,7 +10,9 @@
 import { guard } from "./_guard.js";
 
 export const config = { runtime: "edge" };
-const MODEL = process.env.COMPOSE_MODEL || "gemini-2.5-flash";
+// المسودات الكاملة (خطبة/مقالة/محاضرة) تأليفٌ يستحق النموذجَ الأقوى — قرار مالك
+// 2026-07-19؛ وميزانية التفكير ١٠٢٤ لا أكثر: غلافُ برو المجرَّب ضمن مهلة Edge
+const MODEL = process.env.COMPOSE_MODEL || "gemini-2.5-pro";
 
 const TASK = {
   khutba: "خطبةً منبريّةً كاملة، بأسلوبِ الخطابةِ ومخاطبةِ الحاضرين (كنداءِ «عبادَ اللهِ» و«أيّها المسلمون») تبدأُ بحمدِ اللهِ والثناءِ عليه: افتتاحٌ يُمهّد للموضوع، ثمّ محاورُ تُبنى على الآياتِ ويُستشهَدُ فيها بها نصًّا مع وقفاتٍ تدبّريّةٍ وعبرٍ ونظراتٍ نافعة، ثمّ خاتمةٌ جامعةٌ ووصايا ودعاء.",
@@ -92,7 +94,7 @@ export default async function handler(req) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM }] },
         contents: [{ role: "user", parts: [{ text: `اكتب ${TASK[task]}\n\nالموضوع: ${subject || "(يُستخلَص من الآيات)"}\n\nاعتمِدْ على هذه المادّةِ وحدَها، واستشهِدْ بآياتها نصًّا:\n\n${material}${refine}` }] }],
-        generationConfig: { temperature: 0.85, topP: 0.95, maxOutputTokens: lenSpec.max, thinkingConfig: { thinkingBudget: 2048 } },
+        generationConfig: { temperature: 0.85, topP: 0.95, maxOutputTokens: lenSpec.max, thinkingConfig: { thinkingBudget: 1024 } },
       }),
     },
   );
