@@ -56,7 +56,6 @@ function SectionView({ sec, texts }: { sec: number; texts: Map<string, AyahDoc> 
   const ar = getUILang() === "ar";
   const data = useMemo(() => tradSection(sec), [sec]);
   const kReady = useKulliyat();
-  const [open, setOpen] = useState<Set<number>>(() => new Set());
   // BRIDGE: which computed محاور do this باب's verses fall into? (top overlaps)
   const bridge = useMemo(() => {
     if (!kReady || !data) return [];
@@ -73,12 +72,6 @@ function SectionView({ sec, texts }: { sec: number; texts: Map<string, AyahDoc> 
   }, [kReady, data]);
   if (!data) return <p className="muted">{t("notFound")}</p>;
   const totalVerses = data.topics.reduce((n, tp) => n + tp.verses.length, 0);
-  const toggle = (id: number) =>
-    setOpen((cur) => {
-      const next = new Set(cur);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
   return (
     <>
       <nav className="mw-crumb" aria-label="مسار">
@@ -100,31 +93,44 @@ function SectionView({ sec, texts }: { sec: number; texts: Map<string, AyahDoc> 
           ))}
         </div>
       )}
-      <div className="trad-topics">
-        {data.topics.map((tp) => {
-          const isOpen = open.has(tp.id);
-          return (
-            <div key={tp.id} className="trad-topic">
-              <button className="trad-topic-h" onClick={() => toggle(tp.id)} aria-expanded={isOpen}>
-                <span className="trad-topic-name">{tp.title}</span>
-                <span className="trad-topic-count">{ayahsCount(tp.verses.length)} <span aria-hidden>{isOpen ? "▾" : "▸"}</span></span>
-              </button>
-              {isOpen && (
-                <div className="trad-topic-body">
-                  <div className="mw-verses">
-                    {tp.verses.map((loc) => (
-                      <Link key={loc} to={readPathOf(loc)} className="mw-verse" title={ar ? "افتح في المصحف" : "open in the reader"}>
-                        <span className="mw-verse-ref">{arName(loc)}</span>
-                        <TierBadge loc={loc} style={{ flex: "none" }} />
-                        <span className="mw-verse-text quran">{texts.get(loc)?.textUthmani ?? loc}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div className="mw-topics">
+        {data.topics.map((tp) => (
+          <Link key={tp.id} to={`/mawadi/${sec}/${tp.id}`} className="mw-topic-card">
+            <span className="mw-topic-name">{tp.title}</span>
+            <span className="mw-topic-count">{ayahsCount(tp.verses.length)}</span>
+          </Link>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function TradTopicView({ sec, topicId, texts }: { sec: number; topicId: number; texts: Map<string, AyahDoc> }) {
+  const ar = getUILang() === "ar";
+  const data = tradSection(sec);
+  const tp = data?.topics.find((x) => x.id === topicId);
+  if (!data || !tp) return <p className="muted">{t("notFound")}</p>;
+  return (
+    <>
+      <nav className="mw-crumb" aria-label="مسار">
+        <Link to="/mawadi">{ar ? "المواضيع" : "Topics"}</Link>
+        <span className="mw-sep">›</span>
+        <Link to={`/mawadi/${sec}`}>{data.title}</Link>
+        <span className="mw-sep">›</span>
+        <span className="mw-here">{tp.title}</span>
+      </nav>
+      <header className="mw-head">
+        <h1 className="mw-title">{tp.title}</h1>
+        <div className="muted" style={{ fontSize: 13 }}>{ayahsCount(tp.verses.length)}</div>
+      </header>
+      <div className="mw-verses">
+        {tp.verses.map((loc) => (
+          <Link key={loc} to={readPathOf(loc)} className="mw-verse" title={ar ? "افتح في المصحف" : "open in the reader"}>
+            <span className="mw-verse-ref">{arName(loc)}</span>
+            <TierBadge loc={loc} style={{ flex: "none" }} />
+            <span className="mw-verse-text quran">{texts.get(loc)?.textUthmani ?? loc}</span>
+          </Link>
+        ))}
       </div>
     </>
   );
@@ -135,8 +141,9 @@ const MAWADI_LAST = "quran-studio:mawadi-last";
 export default function Mawadi() {
   useUILang();
   const ready = useVerseIndex();
-  const params = useParams<{ sec?: string }>();
+  const params = useParams<{ sec?: string; topic?: string }>();
   const sec = params.sec != null ? Number(params.sec) : null;
+  const topicId = params.topic != null ? Number(params.topic) : null;
   const ar = getUILang() === "ar";
   const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
   useEffect(() => { ayahByLocationMap().then(setTexts); }, []);
@@ -155,7 +162,7 @@ export default function Mawadi() {
             <span aria-hidden="true">{ar ? "→" : "←"}</span> {ar ? "رجوع" : "Back"}
           </Link>
         )}
-        {sec == null ? <Sections /> : <SectionView sec={sec} texts={texts} />}
+        {sec == null ? <Sections /> : topicId == null ? <SectionView sec={sec} texts={texts} /> : <TradTopicView sec={sec} topicId={topicId} texts={texts} />}
       </div>
     </div>
   );

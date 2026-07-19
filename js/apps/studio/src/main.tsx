@@ -448,6 +448,7 @@ function App() {
           <Route path="/tabwib/:bab/:topic" element={<Tabwib />} />
           <Route path="/mawadi" element={<Mawadi />} />
           <Route path="/mawadi/:sec" element={<Mawadi />} />
+          <Route path="/mawadi/:sec/:topic" element={<Mawadi />} />
           <Route path="/tafasir" element={<Tafasir />} />
           <Route path="/tafasir/:id" element={<Tafasir />} />
           <Route path="/aya/:s/:a" element={<AyaCard />} />
