@@ -337,9 +337,9 @@ function NibrasFab() {
   if (loc.pathname.startsWith("/assistant")) return null;
   return (
     <NavLink to="/assistant" className="nibras-fab" title={ar ? "نِبراس: محادثةُ ذكاءٍ اصطناعيّ — بحثٌ بالمعنى وصياغةٌ من بيانات القرآن" : "Nibras: an AI chat — meaning-search & drafting from the Qur'an's data"} aria-label={ar ? "نِبراس — محادثة ذكاء اصطناعي" : "Nibras — AI chat"}>
+      {/* هلالُ المشكاة — لا معيّن (قرار مالك 2026-07-19) */}
       <svg className="nibras-fab-ic" viewBox="0 0 24 24" aria-hidden focusable="false">
-        <path d="M12 1.6c.55 5.9 1.9 9.95 9.9 10.4-8 .45-9.35 4.5-9.9 10.4-.55-5.9-1.9-9.95-9.9-10.4 8-.45 9.35-4.5 9.9-10.4z" fill="currentColor" />
-        <path d="M19.4 2.2c.2 2.1.7 3.55 3.5 3.7-2.8.15-3.3 1.6-3.5 3.7-.2-2.1-.7-3.55-3.5-3.7 2.8-.15 3.3-1.6 3.5-3.7z" fill="currentColor" opacity=".7" />
+        <path transform="rotate(-30 12 12)" d="M8.5 3.5 a9.5 9.5 0 1 0 12 12 a11 11 0 0 1 -12 -12 z" fill="currentColor" />
       </svg>
       <span className="nibras-fab-label">{ar ? "اسأل نِبراس" : "Ask Nibras"}</span>
     </NavLink>
