@@ -124,8 +124,8 @@ function ResultRow({ hit, criterion, query }: { hit: Hit; criterion: string; que
           return c ? (
             <Link to="/kulliyat" className={`kl-badge ${c.tier === "كلّية" ? "k" : c.tier === "جامعة" ? "j" : "t"}`}
               style={{ textDecoration: "none" }}
-              title={ar ? `مؤشّرُ الجامعيّة ${num(Math.round(c.jamiya * 100))}٪ · المرتبة: ${c.tier}` : `jāmiʿiyya ${Math.round(c.jamiya * 100)}% · ${c.tier}`}>
-              ◆ {ar ? "جامعيّة" : ""} {num(Math.round(c.jamiya * 100))}٪
+              title={ar ? `المرتبة: ${c.tier} · مفصِّلات ${num(c.m ?? 0)} · قبل التعميق` : `${c.tier} · m ${c.m ?? 0} · pre-deepening`}>
+              ◆ {c.tier}
             </Link>
           ) : null;
         })()}

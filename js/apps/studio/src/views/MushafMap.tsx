@@ -47,8 +47,8 @@ export default function MushafMap() {
           <h1 className="jw-title">{ar ? "خريطةُ المصحف" : "The mushaf map"}</h1>
           <p className="jw-lead">
             {ar
-              ? "كلُّ آيةٍ في القرآن خليّةٌ ملوّنةٌ بمرتبتها من ترتيبِ الجيل الأوّل الاستكشافيّ، بترتيب المصحف — فترى في نظرةٍ واحدةٍ كيف تتوزّعُ المراتبُ عبر السور. انقُرْ خليّةً لترى آيتَها، وفي بطاقتِها الدليلُ المحسوبُ الأحدث."
-              : "Every verse as a cell coloured by its tier from the first-generation exploratory ordering, in mushaf order — see at a glance how the tiers fall across the sūras. Tap a cell for its verse; its card carries the newer computed evidence."}
+              ? "كلُّ آيةٍ في القرآن خليّةٌ ملوّنةٌ بمرتبتها من وسمِ الشبكةِ الموحّدة (نسخةٌ أولى قبل التعميق)، بترتيب المصحف — فترى في نظرةٍ واحدةٍ كيف تتوزّعُ المراتبُ عبر السور. انقُرْ خليّةً لترى آيتَها وأدلتَها في بطاقتها."
+              : "Every verse as a cell coloured by its unified-network tier (first edition, pre-deepening), in mushaf order — see at a glance how the tiers fall across the sūras. Tap a cell for its verse and evidence."}
           </p>
           <div className="mm-legend">
             <span><i className="mm-lg k" /> {ar ? "كلّيّة" : "kulliyya"} <b>{num(counts.kulliya)}</b></span>

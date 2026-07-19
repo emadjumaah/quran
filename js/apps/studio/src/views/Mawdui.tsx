@@ -74,8 +74,8 @@ function ThemeView({ theme, texts }: { theme: number; texts: Map<string, AyahDoc
       </nav>
       <header className="mw-head">
         <h1 className="mw-title">{name || arName(head)}</h1>
-        <p className="mw-lead" title={ar ? "الآيةُ الأعمقُ جامعيّةً في هذا المحور" : "the most foundational verse of this محور"}>
-          {ar ? "أصلُه: " : "root verse: "}<Link to={readPathOf(head)} style={{ textDecoration: "none" }}>{arName(head)}</Link>
+        <p className="mw-lead" title={ar ? "رأسُ المحور — أوسعُ قواعدِه أدلةً" : "the axis head — its most evidenced rule"}>
+          {ar ? "رأسُه: " : "head verse: "}<Link to={readPathOf(head)} style={{ textDecoration: "none" }}>{arName(head)}</Link>
         </p>
         <div className="muted" style={{ fontSize: 13 }}>{ayahsCount(verses.length)} · {ar ? "محورٌ محسوب" : "computed محور"}</div>
       </header>

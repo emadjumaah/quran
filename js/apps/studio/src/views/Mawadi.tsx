@@ -30,12 +30,12 @@ function Sections() {
         <h1 className="mw-title">{ar ? "مواضيع القرآن" : "Topics of the Qur'an"}</h1>
         <p className="mw-lead">
           {ar
-            ? "فهرسٌ موضوعيٌّ جامع: اثنا عشرَ بابًا كبيرًا تنتظمُ تحتها موضوعاتُ القرآن كلُّها — طريقةُ التصفّح المألوفة. نشأ حسابًا: عُنقدت الآياتُ بالمعنى، وسمّى الموضوعاتِ وتحقّقَ منها سربُ وكلاء، ثم رُتّبت الأبوابُ بمراجعةٍ تحريريةٍ واحدة. وللقسمة التلقائية الخالصة انظُر «المحاور»."
-            : "The full thematic index: twelve chapters holding all the Qur'an's themes — the familiar way to browse. Computed in origin: verses clustered by meaning, topics named and verified by an agent swarm, then the chapters arranged in one editorial pass. For the purely automatic partition see «Axes»."}
+            ? "فهرسُ الجيلِ الأوّل: اثنا عشرَ بابًا تنتظمُ تحتها موضوعاتُ القرآن كلُّها. نشأ حسابًا في أوّل المشروع — عُنقدت الآياتُ آيةً آيةً بتقارب المعنى، وسمّى الموضوعاتِ سربُ وكلاء، ورُتّبت الأبوابُ بمراجعةٍ تحريريةٍ واحدة. أبقيناهُ للمقارنة؛ **والطبعةُ الحاليّة «مواضيعُ مشكاة»**: تبويبٌ أحدثُ يقومُ على وحداتِ السياق المعتمدةِ لا على الآيات المفردة، محسوبٌ وتسميتُه بلا يدٍ تحريرية."
+            : "The first-generation index: twelve chapters holding all the Qur'an's themes. Computed early in the project — verses clustered one by one, topics swarm-named, chapters arranged in one editorial pass. Kept for comparison; the current edition, «Mishkat Topics», builds on the validated context units with no editorial hand."}
         </p>
         <div className="muted" style={{ fontSize: 13 }}>{num(sections.length)} {ar ? "بابًا" : "chapters"} · {ayahsCount(totalVerses)}</div>
         <div className="mw-onenote trad-note" title={ar ? "فهرسٌ محسوبُ النشأة بتسميةٍ مُدقَّقة وترتيبٍ تحريري" : "computed in origin; names verified; one editorial arrangement"}>
-          ◆ {ar ? "فهرسٌ محسوبُ النشأة، سُمّي ودُقّق بسربِ وكلاء، ورُتّبت أبوابُه تحريريًّا — كلُّ آيةٍ في موضعٍ واحد." : "Computed in origin, named and verified by an agent swarm, chapters arranged editorially — every verse in exactly one place."}
+          ◆ {ar ? "الجيلُ الأوّل — على مستوى الآيات المفردة بترتيبٍ تحريري؛ والطبعةُ الحالية في «مواضيع مشكاة» على وحدات السياق بلا يدٍ تحريرية." : "First generation — verse-level with one editorial pass; the current edition in «Mishkat Topics» builds on context units with no editorial hand."}
         </div>
       </header>
       <TopicLayerToggle />

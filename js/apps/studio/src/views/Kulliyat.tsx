@@ -130,8 +130,8 @@ export default function Kulliyat() {
               this first-generation page stays browsable until the rules explorer replaces it */}
           <p className="kl-disclaimer kl-review">
             {ar
-              ? "اكتملتِ المراجعةُ: بواباتُ العمومِ وشبكةُ التفرُّع تعملان اليومَ في بطاقات الآيات. وتبقى هذه الصفحةُ من الجيل الأوّل كما هي — شفافيةً وتوثيقًا — حتى يحلَّ محلَّها «مستكشفُ القواعد». اقرأِ المراتبَ ترتيبًا استكشافيًّا لا حكمًا."
-              : "The review is complete: the generality gates and the elaboration network now live in the verse cards. This first-generation page stays as it is — for transparency and record — until the rules explorer replaces it. Read the tiers as exploration, not verdicts."}
+              ? "المراتبُ هنا من الشبكة الموحّدة (نسخةٌ أولى قبل موجات التعميق): عتباتُها من نصفِ الضبطِ المجمَّد وحدَه، وامتحانُ عيّنتِها المصونةِ منشورٌ بنتيجتِه القاعدية، وتُحدَّثُ بعد الموجات ويُعادُ الامتحانُ ويُسجَّلُ الفرق. اقرأها وصفًا محسوبًا يعرضُ أدلتَه — لا حكمًا على الآيات."
+              : "The tiers here come from the unified network (first edition, pre-deepening): thresholds tuned on the frozen tune half only, the held-out exam published with its baseline, updated after the waves with the exam retaken and the delta recorded. Read them as computed description showing its evidence — never as judgment upon the verses."}
           </p>
           <div className="jw-stats">
             <span className="chip"><b>{num(meta?.verses ?? 6236)}</b> {ar ? "آية" : "verses"}</span>
@@ -150,7 +150,7 @@ export default function Kulliyat() {
           </div>
           <div className="jw-chipset">
             <span className="jw-filter-lbl">{ar ? "الترتيب" : "sort"}</span>
-            <button className={sort === "jamiya" ? "on" : ""} onClick={() => setSort("jamiya")}>{ar ? "الأعلى جامعيّةً" : "by weight"}</button>
+            <button className={sort === "jamiya" ? "on" : ""} onClick={() => setSort("jamiya")}>{ar ? "الأوسع جامعيّةً" : "by weight"}</button>
             <button className={sort === "mushaf" ? "on" : ""} onClick={() => setSort("mushaf")}>{ar ? "ترتيب المصحف" : "mushaf order"}</button>
           </div>
         </div>

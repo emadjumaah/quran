@@ -184,7 +184,7 @@ export default function AyaCard() {
             <summary>◈ {ar ? "المحور: الأصل والأخوات" : "The محور: root verse & siblings"} <span className="muted">{themeName(cls.theme)}</span></summary>
             <div className="aya-more-body">
               {themeHead && themeHead !== loc && (
-                <div className="aya-more-lbl">{ar ? "أصلُ المحور (الأعلى جامعيّةً):" : "root verse:"}</div>
+                <div className="aya-more-lbl">{ar ? "رأسُ المحور:" : "root verse:"}</div>
               )}
               {themeHead && themeHead !== loc && <VerseRow loc={themeHead} texts={texts} />}
               {themeSibs.length > 0 && <div className="aya-more-lbl">{ar ? "من أخواتها في المحور:" : "siblings:"}</div>}
