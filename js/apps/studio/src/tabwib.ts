@@ -51,3 +51,19 @@ export function loadAbwab(): Promise<AbwabData | null> {
 }
 export const babsList = (): Bab[] => abwab?.babs ?? [];
 export const babOf = (id: number): Bab | null => abwab?.babs.find((b) => b.id === id) ?? null;
+
+export interface Topic { id: number; name: string; units: number[] }
+export interface TopicBab { id: number; name: string; unitsCount: number; topics: Topic[] }
+interface TopicsData { meta: Record<string, unknown>; babs: TopicBab[] }
+let topics: TopicsData | null = null;
+let topicsLoading: Promise<TopicsData | null> | null = null;
+
+export function loadTopics(): Promise<TopicsData | null> {
+  if (topics) return Promise.resolve(topics);
+  topicsLoading ??= fetch(`${import.meta.env.BASE_URL}topics-v1.json?v=${__DATA_VERSION__}`)
+    .then((r) => (r.ok ? (r.json() as Promise<TopicsData>) : null))
+    .then((d) => (topics = d));
+  return topicsLoading;
+}
+export const topicBabsList = (): TopicBab[] => topics?.babs ?? [];
+export const topicBabOf = (id: number): TopicBab | null => topics?.babs.find((b) => b.id === id) ?? null;

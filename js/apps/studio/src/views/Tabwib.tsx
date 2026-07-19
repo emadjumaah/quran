@@ -1,24 +1,24 @@
 /**
- * مواضيع مشكاة — التبويب الموضوعي المحسوب بالكامل من إصدار مشكاة، على شكل
- * التقليدي وبنياننا: أبوابٌ كبرى (عنقدة حتمية لمراكز المحاور) ← مواضيع (المحاور
- * المنبثقة بأسمائها) ← وحدات السياق المسمّاة (تغطي المصحف كله) ← المصحف.
+ * مواضيع مشكاة — تبويبٌ موضوعيٌّ محسوبٌ بالكامل من منتجات أسراب السياق:
+ * عنقدةُ معاني وحداتِ السياق المسمّاة (١٣٢٥) إلى ~١٢٠ موضوعًا متجانسًا، ثم
+ * ١٤ بابًا كبرى — فالمصحفُ كلُّه مبوَّب وحدةً وحدة، على شكل التقليدي وبحسابنا.
  *   /tabwib        → الأبواب
- *   /tabwib/:bab   → باب ← مواضيعه (أكورديون) ← وحداته
+ *   /tabwib/:bab   → باب ← مواضيعه (أكورديون) ← وحداته بنصوص فواتحها
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { surahNameAr } from "../db";
+import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
-import { themeName, useKulliyat } from "../kulliyat";
 import { loadSiyaq, type SiyaqUnit } from "../siyaq";
-import { loadTabwib, unitsOfAxis, loadAbwab, babsList, babOf, type Bab } from "../tabwib";
+import { loadTopics, topicBabsList, topicBabOf, type TopicBab, type Topic } from "../tabwib";
 import TopicLayerToggle from "../components/TopicLayerToggle";
+import type { AyahDoc } from "../types";
 
-function useTabwibReady(): boolean {
+function useTopicsReady(): boolean {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     let live = true;
-    Promise.all([loadTabwib(), loadAbwab(), loadSiyaq()]).then(() => live && setReady(true));
+    Promise.all([loadTopics(), loadSiyaq()]).then(() => live && setReady(true));
     return () => { live = false; };
   }, []);
   return ready;
@@ -26,24 +26,25 @@ function useTabwibReady(): boolean {
 
 function BabsView() {
   const ar = getUILang() === "ar";
-  const babs = babsList();
+  const babs = topicBabsList();
+  const topicsTotal = useMemo(() => babs.reduce((s, b) => s + b.topics.length, 0), [babs]);
   return (
     <>
       <header className="mw-head">
         <h1 className="mw-title">{ar ? "مواضيع مشكاة" : "Mishkat Topics"}</h1>
         <p className="mw-lead">
           {ar
-            ? "تبويبٌ موضوعيٌّ محسوبٌ بالكامل من إصدار مشكاة: أبوابٌ كبرى انعقدت حسابيًّا من محاور الشبكة الموحّدة، تحتها المواضيعُ (المحاور المنبثقة بأسمائها)، ثم مقاطعُ المصحف كلِّه — وحداتُ السياق المسمّاة وحدةً وحدة. لا قائمةَ موضوعاتٍ جاهزة — حسبنا وعرضنا."
-            : "A fully computed topical index from Mishkat: major chapters clustered from the unified network's axes, then the topics (the named emergent axes), then the whole muṣḥaf's passages — the named context units, one by one. No preset topic list — computed and shown."}
+            ? "تبويبٌ موضوعيٌّ محسوبٌ بالكامل من إصدار مشكاة: مقاطعُ المصحف — وحداتُ السياق المسمّاةُ وحدةً وحدة — تجمّعت بتقارب معانيها مواضيعَ، والمواضيعُ أبوابًا. لا قائمةَ موضوعاتٍ جاهزة: حسبنا وعرضنا، والقارئ يتدبّر."
+            : "A fully computed topical index from Mishkat: the muṣḥaf's passages — the named context units — gathered by meaning into topics, and the topics into chapters. No preset list: computed and shown."}
         </p>
-        <div className="muted" style={{ fontSize: 13 }}>{num(babs.length)} {ar ? "بابًا" : "chapters"} · {num(206)} {ar ? "موضوعًا" : "topics"} · {num(1325)} {ar ? "وحدة تغطي المصحف كله" : "units covering the whole muṣḥaf"}</div>
+        <div className="muted" style={{ fontSize: 13 }}>{num(babs.length)} {ar ? "بابًا" : "chapters"} · {num(topicsTotal)} {ar ? "موضوعًا" : "topics"} · {num(1325)} {ar ? "وحدة تغطي المصحف كله" : "units covering the whole muṣḥaf"}</div>
         <TopicLayerToggle />
       </header>
       <div className="mw-topics mw-topics-lg">
         {babs.map((b) => (
           <Link key={b.id} to={`/tabwib/${b.id}`} className="mw-topic-card">
             <span className="mw-topic-name">{b.name}</span>
-            <span className="mw-topic-count">{num(b.axes.length)} {ar ? "موضوعًا" : "topics"} · {num(b.units)} {ar ? "وحدة" : "units"}</span>
+            <span className="mw-topic-count">{num(b.topics.length)} {ar ? "موضوعًا" : "topics"} · {num(b.unitsCount)} {ar ? "وحدة" : "units"}</span>
           </Link>
         ))}
       </div>
@@ -51,22 +52,23 @@ function BabsView() {
   );
 }
 
-function BabView({ bab }: { bab: Bab }) {
+function BabView({ bab, texts }: { bab: TopicBab; texts: Map<string, AyahDoc> }) {
   const ar = getUILang() === "ar";
-  const [open, setOpen] = useState<number | null>(bab.axes[0] ?? null);
-  const [units, setUnits] = useState<Map<number, { unit: SiyaqUnit; approx: boolean }[]>>(new Map());
+  const [open, setOpen] = useState<Set<number>>(() => new Set(bab.topics.length ? [bab.topics[0].id] : []));
+  const [units, setUnits] = useState<SiyaqUnit[] | null>(null);
   useEffect(() => {
     let live = true;
-    loadSiyaq().then((sy) => {
-      if (!live || !sy) return;
-      const m = new Map<number, { unit: SiyaqUnit; approx: boolean }[]>();
-      for (const ax of bab.axes) {
-        m.set(ax, unitsOfAxis(ax).map(({ u, approx }) => ({ unit: (sy as { units: SiyaqUnit[] }).units[u], approx })).filter((x) => x.unit));
-      }
-      setUnits(m);
-    });
+    loadSiyaq().then((sy) => { if (live && sy) setUnits((sy as { units: SiyaqUnit[] }).units); });
     return () => { live = false; };
-  }, [bab]);
+  }, []);
+  useEffect(() => { setOpen(new Set(bab.topics.length ? [bab.topics[0].id] : [])); }, [bab]);
+  const toggle = (id: number) => setOpen((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const verseCount = (tp: Topic) => tp.units.reduce((n, ui) => { const u = units?.[ui]; return u ? n + (u.a2 - u.a1 + 1) : n; }, 0);
+  if (!units) return <p className="muted">{t("loading")}</p>;
   return (
     <>
       <nav className="mw-crumb" aria-label="مسار">
@@ -76,28 +78,36 @@ function BabView({ bab }: { bab: Bab }) {
       </nav>
       <header className="mw-head">
         <h1 className="mw-title">{bab.name}</h1>
-        <div className="muted" style={{ fontSize: 13 }}>{num(bab.axes.length)} {ar ? "موضوعًا" : "topics"} · {num(bab.units)} {ar ? "وحدة" : "units"}</div>
+        <div className="muted" style={{ fontSize: 13 }}>{num(bab.topics.length)} {ar ? "موضوعًا" : "topics"} · {num(bab.unitsCount)} {ar ? "وحدة" : "units"}</div>
       </header>
       <div className="trad-topics">
-        {bab.axes.map((ax) => {
-          const isOpen = open === ax;
-          const list = units.get(ax) ?? [];
+        {bab.topics.map((tp) => {
+          const isOpen = open.has(tp.id);
           return (
-            <div key={ax} className="trad-topic">
-              <button className="trad-topic-h" onClick={() => setOpen(isOpen ? null : ax)} aria-expanded={isOpen}>
-                <span>{themeName(ax) || `${ar ? "موضوع" : "topic"} ${num(ax)}`}</span>
-                <span className="muted" style={{ fontSize: 12 }}>{num(list.length)} {ar ? "وحدة" : "units"} · <Link to={`/mawdui/${ax}`} onClick={(e) => e.stopPropagation()} style={{ fontSize: 12 }}>{ar ? "المحور ←" : "axis ←"}</Link></span>
+            <div key={tp.id} className="trad-topic">
+              <button className="trad-topic-h" onClick={() => toggle(tp.id)} aria-expanded={isOpen}>
+                <span className="trad-topic-name">{tp.name}</span>
+                <span className="trad-topic-count">{num(tp.units.length)} {ar ? "وحدة" : "units"} · {num(verseCount(tp))} {ar ? "آية" : "verses"} <span aria-hidden>{isOpen ? "▾" : "▸"}</span></span>
               </button>
               {isOpen && (
-                <div className="mw-verses" style={{ padding: "6px 10px 12px" }}>
-                  {list.map(({ unit, approx }) => (
-                    <Link key={unit.i} to={`/read/${unit.s}/${unit.a1}`} className="mw-verse" title={ar ? "افتح في المصحف" : "open in the reader"}>
-                      <span className="mw-verse-ref">{surahNameAr(unit.s)} {num(unit.a1)}–{num(unit.a2)}</span>
-                      {approx && <span className="chip" style={{ flex: "none", fontSize: 11 }}>{ar ? "بتقارب المعنى" : "by proximity"}</span>}
-                      <span className="mw-verse-text">{unit.name}</span>
-                    </Link>
-                  ))}
-                  {list.length === 0 && <div className="muted" style={{ padding: 8 }}>{ar ? "لا وحدات مسندة لهذا الموضوع بعد." : "No units assigned yet."}</div>}
+                <div className="trad-topic-body">
+                  <div className="mw-verses">
+                    {tp.units.flatMap((ui) => {
+                      const u = units[ui];
+                      if (!u) return [];
+                      const rows = [];
+                      for (let a = u.a1; a <= u.a2; a++) {
+                        const loc = `${u.s}:${a}`;
+                        rows.push(
+                          <Link key={loc} to={`/read/${u.s}/${a}`} className="mw-verse" title={u.name}>
+                            <span className="mw-verse-ref">{surahNameAr(u.s)} {num(a)}</span>
+                            <span className="mw-verse-text quran">{texts.get(loc)?.textUthmani ?? texts.get(loc)?.textClean ?? ""}</span>
+                          </Link>,
+                        );
+                      }
+                      return rows;
+                    })}
+                  </div>
                 </div>
               )}
             </div>
@@ -110,18 +120,19 @@ function BabView({ bab }: { bab: Bab }) {
 
 export default function Tabwib() {
   useUILang();
-  const ready = useTabwibReady();
-  const kReady = useKulliyat();
+  const ready = useTopicsReady();
   const params = useParams<{ bab?: string }>();
   const babId = params.bab != null ? Number(params.bab) : null;
-  const bab = useMemo(() => (ready && babId != null ? babOf(babId) : null), [ready, babId]);
-  if (!ready || !kReady) {
+  const [texts, setTexts] = useState<Map<string, AyahDoc>>(new Map());
+  useEffect(() => { ayahByLocationMap().then(setTexts); }, []);
+  const bab = useMemo(() => (ready && babId != null ? topicBabOf(babId) : null), [ready, babId]);
+  if (!ready) {
     return <div className="page page-narrow"><div className="muted" style={{ padding: 40, textAlign: "center" }}>{t("loading")}</div></div>;
   }
   return (
     <div className="page">
       <div className="mw-wrap">
-        {babId == null ? <BabsView /> : bab ? <BabView bab={bab} /> : <p className="muted">{t("notFound")}</p>}
+        {babId == null ? <BabsView /> : bab ? <BabView bab={bab} texts={texts} /> : <p className="muted">{t("notFound")}</p>}
       </div>
     </div>
   );
