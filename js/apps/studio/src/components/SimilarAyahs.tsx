@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAyahByGlobalNo } from "../db";
-import { num, t, useUILang } from "../i18n";
+import { getAyahByGlobalNo, surahNameAr } from "../db";
+import { getUILang, num, t, useUILang } from "../i18n";
+import { nearestUnits, type SiyaqUnit } from "../siyaq";
 import type { AyahDoc } from "../types";
 import { readPathOf } from "../types";
 import { similarOf } from "../similar";
@@ -113,6 +114,14 @@ export function SimilarAyahsPanel({
   useUILang();
   const navigate = useNavigate();
   const [rows, setRows] = useState<Row[] | null>(null);
+  // «مقاطعُ قريبةٌ منها» — جاراتُ مقطعِ الآية من متّجهات وحدات السياق، محسوبةٌ
+  // محليًّا بلا نداء (قرار المالك 2026-07-21). الآيةُ تُشبَّه بالآية، والمقطعُ بالمقطع.
+  const [units, setUnits] = useState<{ unit: SiyaqUnit; score: number }[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    nearestUnits(location, 4).then((u) => live && setUnits(u)).catch(() => live && setUnits([]));
+    return () => { live = false; };
+  }, [location]);
 
   useEffect(() => {
     let live = true;
@@ -167,6 +176,29 @@ export function SimilarAyahsPanel({
             </div>
           </div>
         ))
+      )}
+      {units && units.length > 0 && (
+        <div className="similar-units">
+          <div className="similar-units-h">
+            {getUILang() === "ar" ? "مقاطعُ قريبةٌ منها" : "Passages close to it"}
+            <span className="muted"> · {getUILang() === "ar" ? "من وحدات السياق المحسوبة" : "computed context units"}</span>
+          </div>
+          {units.map((u) => (
+            <button
+              key={u.unit.i}
+              className="similar-unit"
+              onClick={() => {
+                navigate(readPathOf(`${u.unit.s}:${u.unit.a1}`));
+                onNavigate?.();
+              }}
+            >
+              <span className="similar-unit-name">{u.unit.name}</span>
+              <span className="muted similar-unit-span">
+                {surahNameAr(u.unit.s)} {num(u.unit.a1)}–{num(u.unit.a2)} · {num(Math.round(u.score * 100))}٪
+              </span>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

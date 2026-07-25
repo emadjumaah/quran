@@ -68,6 +68,38 @@ export function loadSiyaqVectors(): Promise<void> {
 
 export interface SiyaqHit { unit: SiyaqUnit; score: number }
 
+/** أقربُ المقاطع معنًى إلى مقطعِ هذه الآية — بلا نداءٍ خارجيّ: متّجهُ المقطع
+ *  نفسِه يُستعمل استعلامًا ضدّ متّجهات المقاطع كلِّها (2026-07-21). */
+export async function nearestUnits(loc: string, k = 4): Promise<SiyaqHit[]> {
+  await Promise.all([loadSiyaq(), loadSiyaqVectors()]);
+  if (!data || !vec) return [];
+  const self = unitOf(loc);
+  if (!self) return [];
+  const { dim, count, scales, data: d } = vec;
+  const row = self.i;
+  if (row < 0 || row >= count) return [];
+  // إزالةُ التكميم: صفُّ المقطع متّجهًا عائمًا موحَّدَ الطول تقريبًا
+  const q = new Float32Array(dim);
+  const qoff = row * dim;
+  for (let i = 0; i < dim; i++) q[i] = d[qoff + i] * scales[row];
+  const hits: SiyaqHit[] = [];
+  for (let r = 0; r < count; r++) {
+    if (r === row) continue;
+    let dot = 0;
+    const off = r * dim;
+    for (let i = 0; i < dim; i++) dot += q[i] * d[off + i];
+    const score = dot * scales[r];
+    if (hits.length < k) {
+      hits.push({ unit: data.units[r], score });
+      hits.sort((a, b) => a.score - b.score);
+    } else if (score > hits[0].score) {
+      hits[0] = { unit: data.units[r], score };
+      hits.sort((a, b) => a.score - b.score);
+    }
+  }
+  return hits.reverse();
+}
+
 /** بحثٌ بالمعنى في وحدات السياق — يعيد أفضل k وحداتٍ كاملة */
 export async function searchSiyaq(query: string, k = 6): Promise<SiyaqHit[]> {
   await Promise.all([loadSiyaq(), loadSiyaqVectors()]);
