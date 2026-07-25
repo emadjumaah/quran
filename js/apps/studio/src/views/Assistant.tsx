@@ -699,7 +699,7 @@ export default function Assistant() {
             <div className="mu-hero">
               <div className="mu-empty-mark"><span className="ai-spark" aria-hidden /></div>
               <h1 className="mu-empty-h">{ar ? "تحدَّثْ مع مشكاة" : "Talk to Mishkat"}</h1>
-              <span className="mu-empty-tag">{ar ? "مساعدُ مشكاة الذكيّ — يبحث في بياناتها ويجيب بإسناد" : "مشكاة's AI assistant — searches its data, answers with citations"}</span>
+              <span className="mu-empty-tag">{ar ? "مساعدُ مشكاة الذكيّ — يبحث في بياناتها ويجيب بإسناد" : "Mishkat's AI assistant — searches its data, answers with citations"}</span>
               <p className="mu-hero-sub">
                 {ar
                   ? "يحاورك ويبحث بنفسه أثناء الحديث في القرآن ولغته وكتب المكتبة المسندة: اسألْ عن آيةٍ أو معنًى أو فرقٍ لغوي، وناقشْ ورتّبْ أفكارك، واطلبْ بحثًا أو خطبةً أو مقالة — كلُّ واقعةٍ عنده بمصدرها، والآياتُ من نصّ المصحف."
