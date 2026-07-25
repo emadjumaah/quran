@@ -279,6 +279,8 @@ function MushafPage({
   selected,
   onSelect,
   onAyahMarker,
+  onAyahPick,
+  selectedAyahNo,
   targetAyahNo,
   rubMarks,
   opening = false,
@@ -289,6 +291,8 @@ function MushafPage({
   selected: string | null;
   onSelect: (w: WordDoc) => void;
   onAyahMarker: (a: AyahDoc) => void;
+  onAyahPick: (a: AyahDoc) => void;
+  selectedAyahNo: number | null;
   targetAyahNo: number | null;
   rubMarks: Map<number, string>;
   opening?: boolean;
@@ -324,9 +328,14 @@ function MushafPage({
             <Fragment key={ayah.location}>
               {rub && <div className="mp-mark mp-rub"><span>۞ {num(rub)}</span></div>}
               {ayah.sajdaType && <div className="mp-mark mp-sajda"><span>۩ موضع سجدة</span></div>}
+              {/* النقرُ في فراغِ الآية (لا على كلمة) يحدّدها — قرار المالك 2026-07-21 */}
               <span
                 id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
-                className={targetAyahNo === ayah.ayahNo ? "mp-ayah target" : "mp-ayah"}
+                className={`mp-ayah${targetAyahNo === ayah.ayahNo ? " target" : ""}${selectedAyahNo === ayah.ayahNo ? " sel-ayah" : ""}`}
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest(".w, .ayah-marker")) return;
+                  onAyahPick(ayah);
+                }}
               >
                 {ws.map((w, wi) => (
                   <span key={w.location}>
@@ -406,6 +415,9 @@ export default function Reader() {
       else next[loc] = kind;
       return next;
     });
+  // مودالُ بيانات الآية يفتحه النقرُ على رقمها أو على كلمةٍ منها — أما النقرُ
+  // في فراغها فيحدّدها بالخضرة فقط (قرار المالك 2026-07-21)
+  const [verseSheet, setVerseSheet] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false); // mobile: on-page search is a toggle, so the header stays one compact row
   const mainRef = useRef<HTMLElement>(null); // the scroll container (for page-turn scroll-to-top + the FAB)
   // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
@@ -785,7 +797,9 @@ export default function Reader() {
                   // tap the ﴿n﴾ marker → open the reading bar for this ayah,
                   // staying inside صفحات (a separate «الآيات» button jumps to the
                   // ayah view). Selecting also lets ← → walk ayah-by-ayah.
-                  onAyahMarker={(a: AyahDoc) => setSelectedAyah(a.location)}
+                  onAyahMarker={(a: AyahDoc) => { setSelectedAyah(a.location); setVerseSheet(a.location); }}
+                  onAyahPick={(a: AyahDoc) => setSelectedAyah(a.location)}
+                  selectedAyahNo={selectedLoc && Number(selectedLoc.split(":")[0]) === surahNo ? Number(selectedLoc.split(":")[1]) : null}
                   targetAyahNo={displayTargetAyahNo}
                   rubMarks={rubMarks}
                   opening={pageNo === 1 || pageNo === 2}
@@ -823,11 +837,11 @@ export default function Reader() {
               <article
                 key={ayah.location}
                 id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
-                style={{
-                  padding: "8px 12px 10px",
-                  borderRadius: "var(--radius)",
-                  marginBottom: 20,
-                  background: isTarget ? "var(--accent-soft)" : undefined,
+                className={`ayah-card${selectedLoc ? (selectedLoc === ayah.location ? " sel-ayah" : "") : (isTarget ? " sel-ayah" : "")}`}
+                onClick={(e) => {
+                  const el = e.target as HTMLElement;
+                  if (el.closest(".w, button, a, .ayah-tools, .v-more-menu, input, select")) return;
+                  setSelectedAyah(selectedLoc === ayah.location ? null : ayah.location);
                 }}
               >
                 {unitStart && (
@@ -900,21 +914,21 @@ export default function Reader() {
         }}
       />
 
-      {(selected || selectedLoc) && (
+      {(selected || verseSheet) && (
         <>
-          <div className="sheet-backdrop" onClick={() => { setSelected(null); setSelectedAyah(null); }} />
+          <div className="sheet-backdrop" onClick={() => { setSelected(null); setVerseSheet(null); }} />
           <div className="word-sheet card" role="dialog" aria-modal="true">
             <div className="word-sheet-grip" aria-hidden />
             <button
               className="word-sheet-close"
-              onClick={() => { setSelected(null); setSelectedAyah(null); }}
+              onClick={() => { setSelected(null); setVerseSheet(null); }}
               aria-label={ar ? "إغلاق" : "close"}
             >
               ✕
             </button>
             <div className="word-sheet-body">
-              {selectedLoc && !selected && (() => {
-                const [ss, aa] = selectedLoc.split(":").map(Number);
+              {verseSheet && !selected && (() => {
+                const [ss, aa] = verseSheet.split(":").map(Number);
                 const ay = ayahs.find((a) => a.surahNo === ss && a.ayahNo === aa);
                 return ay ? (
                   <div className="ws-ayah">
@@ -925,8 +939,8 @@ export default function Reader() {
                   </div>
                 ) : null;
               })()}
-              <VerseContext location={selectedLoc} />
-              {selectedLoc && <MuhkamaLine location={selectedLoc} />}
+              <VerseContext location={verseSheet ?? selectedLoc} />
+              {(verseSheet ?? selectedLoc) && <MuhkamaLine location={(verseSheet ?? selectedLoc)!} />}
               {selected && <Inspector word={selected} />}
             </div>
           </div>

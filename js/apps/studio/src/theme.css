@@ -2141,3 +2141,13 @@ table.data tr:hover td { background: var(--panel-2); }
   color: var(--accent);
 }
 .ayah-tools .ai-spark { width: 15px; height: 15px; }
+
+/* تحديدُ الآية بالنقر في فراغها (قرار المالك 2026-07-21): خضرةٌ هادئةٌ تُعلم
+   القارئَ أيَّ آيةٍ تعمل عليها الأدواتُ والمودال — في الوضعين معًا. */
+.ayah-card { padding: 8px 12px 10px; border-radius: var(--radius); margin-bottom: 20px; cursor: default; }
+.ayah-card.sel-ayah, .mp-ayah.sel-ayah {
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 10px;
+}
+.mp-ayah { cursor: pointer; }
