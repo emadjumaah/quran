@@ -29,7 +29,10 @@ function originHost(req) {
 
 const HITS = new Map(); // ip -> timestamps within the window
 const WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 20;
+// رُفع من ٢٠ إلى ٤٠ (2026-07-24): دورُ نبراس الواحد صار يستهلك نداءاتٍ أكثر
+// (جولاتُ أدواتٍ + استدعاءُ الطبقات الحتمي + تصويبُ الحراس) — فدورانِ ثقيلان
+// في دقيقةٍ كانا يصطدمان بحاجزنا نحن. يبقى حاجزًا تقديريًّا لكل مثيل edge.
+const MAX_PER_WINDOW = 40;
 
 function ipOf(req) {
   const xf = req.headers.get("x-forwarded-for") || "";

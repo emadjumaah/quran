@@ -64,10 +64,18 @@ function runTool(name, args) {
       : /قتال|معرك|جهاد|عدو|ألف|مصابر/.test(q) ? ayahsOf(["8:46", "8:66", "3:200", "2:250"])
       : /توحيد|أسماء الله|إله واحد|أحد|الصمد/.test(q) ? ayahsOf(["112:1", "112:2", "37:4", "20:8"])
       : /صبر|بلاء|ابتلاء|مصيبة|استعانة/.test(q) ? SABR : SABR.slice(0, 2);
-    return { ayahs: list };
+    const hints = list.length ? hintsMock("aya", list[0].ref) : [];
+    return { ayahs: list, ...(hints.length ? { "طبقاتٌ_متاحةٌ_عن_أول_موضع": hints } : {}) };
   }
   if (name === "search_root") {
-    return { roots: [{ root: "صبر", occurrences: 103, sense: "المفردات: الصبرُ الإمساكُ في ضيق... حبسُ النفس على ما يقتضيه العقل والشرع" }], ayahs: SABR.slice(0, 3) };
+    const w = bare(String(args.word ?? "صبر"));
+    const root = ["قلب", "صبر", "ظلم", "سمو", "علم"].includes(w) ? w : "صبر";
+    const rootHints = hintsMock("root", root);
+    return {
+      roots: [{ root, occurrences: root === "صبر" ? 103 : 0, sense: `المفردات/المقاييس: مادة ${root}` }],
+      ayahs: SABR.slice(0, 3),
+      ...(rootHints.length ? { "طبقاتٌ_متاحةٌ_عن_هذا_الجذر": rootHints } : {}),
+    };
   }
   if (name === "tafsir_of") {
     const ref = String(args.ref ?? "");
@@ -235,6 +243,7 @@ function layerOfMock(layer, anchor) {
     return entries.length ? { layer: id, entries } : { layer: id, found: false, note: `لا نصَّ عند ${anchor}` };
   }
   if (id === "bayan") return bayanMock(anchor);
+  if (id === "tariq" || id === "matruq") return tariqMock(anchor);
   if (id === "tabwib" || id === "mawadi" || id === "mawdui") return tabwibMock(anchor);
   if (id === "simat") return simatMock(anchor);
   if (id === "mithl") return mithlMock(anchor);
@@ -265,6 +274,54 @@ function bestByTitle(items, titleOf, anchor) {
   let best = null, bestScore = 0;
   for (const x of items) { const sc = termScore(titleOf(x), toks); if (sc >= need && sc > bestScore) { best = x; bestScore = sc; } }
   return best;
+}
+
+/** مرآة tariqLookup: فهرس المطروق بجذر أو آية */
+function tariqMock(anchor) {
+  const d = pubJson("bayan-tariq.json");
+  const labelOf = (id) => manifest.books.find((b) => b.id === id)?.label ?? id;
+  const a = anchor.trim();
+  if (AYA_RE.test(a)) {
+    const hits = d.ayas[a] ?? [];
+    if (!hits.length) return { layer: "tariq", found: false, note: `لا معالجةَ لهذا الموضع في فهرس المطروق` };
+    return { layer: "tariq", entries: [{ source: "فهرس المطروق", ref: a, text: `الموضع ${a} عالجه: ${hits.map(([b]) => labelOf(b)).join("، ")}` }] };
+  }
+  const q = bare(a);
+  const hits = d.roots[q] ?? [];
+  if (!hits.length) return { layer: "tariq", found: false, note: `الجذر «${q}» ليس في فهرس المطروق` };
+  return { layer: "tariq", entries: [{ source: "فهرس المطروق", ref: q, text: `الجذر ${q} طرقه العلماء في: ${hits.map(([b, n]) => `${labelOf(b)} (${n} مدخلًا)`).join("، ")}` }] };
+}
+
+/** مرآة layerHints: ما عندنا محسوبًا عن الجذر/الموضع */
+function hintsMock(kind, key) {
+  const out = [];
+  try {
+    if (kind === "root") {
+      const q = bare(key);
+      const lex = pubJson("lexnet.json");
+      if (lex.roots[q]) out.push(`شبكة الجذور الدلالية عندها هذا الجذر (${lex.roots[q].occ} موضعًا) — layer_of(lisan, ${q})`);
+      const wuj = pubJson("wujuh.json").words.find((x) => x.root === q || bare(x.lemma).includes(q));
+      if (wuj) out.push(`للفظ «${wuj.lemma}» وجوهٌ مؤسَّسة (${wuj.faces.length}) — layer_of(wujuh, ${wuj.lemma})`);
+      const tq = pubJson("bayan-tariq.json").roots[q];
+      const labelOf = (id) => manifest.books.find((b) => b.id === id)?.label ?? id;
+      if (tq?.length) out.push(`طرقه العلماءُ في: ${tq.map(([b, n]) => `${labelOf(b)} (${n})`).join("، ")} — layer_of(tariq, ${q})`);
+      const card = pubJson("bayan.json").cards.find((c) => bare(c.title).includes(q) || bare(c.kashf).includes(q));
+      if (card) out.push(`بطاقةُ بيانٍ محررة «${card.title}» — layer_of(bayan, ${card.title})`);
+    } else {
+      const a = key.trim();
+      const pair = pubJson("furuq.json").furuq.find((p) => p.a === a || p.b === a);
+      if (pair) out.push(`لهذا الموضع نظيرٌ متشابهٌ محسوب (${pair.a} ↔ ${pair.b}) — layer_of(furuq, ${a})`);
+      const u = unitFor(a);
+      if (u) for (const bab of pubJson("topics-v1.json").babs) {
+        const t = bab.topics.find((x) => x.units.includes(u.i));
+        if (t) { out.push(`موضعُه من التبويب: «${bab.name} ← ${t.name}» — layer_of(tabwib, ${a})`); break; }
+      }
+      const ta = pubJson("bayan-tariq.json").ayas[a];
+      const labelOf = (id) => manifest.books.find((b) => b.id === id)?.label ?? id;
+      if (ta?.length) out.push(`عالج هذا الموضعَ: ${ta.map(([b]) => labelOf(b)).join("، ")} — layer_of(tariq, ${a})`);
+    }
+  } catch {}
+  return out.slice(0, 4);
 }
 
 /** مرآة bayanLookup: بطاقة محررة ← آلية ← مداخل الكتب */
@@ -499,8 +556,17 @@ async function chatTurn(messages, label) {
       headers: { "content-type": "application/json", origin: "http://localhost" },
       body: JSON.stringify({ messages, steps, layers: layersDigest() }),
     });
-    const res = await handler(req);
-    const j = await res.json();
+    let res = await handler(req);
+    let j = await res.json();
+    // حاجزُ المعدل حاجزُنا نحن (٢٠/دقيقة) — المسابر تستهلك أكثر، فتُمهل وتُعاد
+    for (let wait = 0; j?.error && /rate limited/.test(String(j.error)) && wait < 3; wait++) {
+      await new Promise((r) => setTimeout(r, 20000));
+      res = await handler(new Request("http://localhost/api/assist", {
+        method: "POST", headers: { "content-type": "application/json", origin: "http://localhost" },
+        body: JSON.stringify({ messages, steps, layers: layersDigest() }),
+      }));
+      j = await res.json();
+    }
     if (j.error) { console.log("خطأ:", JSON.stringify(j)); return { text: "", steps, toolTexts }; }
     if (j.finalize) {
       // كما يفعل المتصفح: نداءٌ مستقل للتأليف النهائي، ونصُّ المرحلة الأولى احتياط
@@ -563,10 +629,13 @@ function checkNumbers(answer, toolTexts) {
     .replace(/[وفبل]?(?:ال)?(?:آية|آيات|آيتين)\s*\d{1,3}/g, " ")
     .replace(/[وفبل]?سورة\s+\d{1,3}/g, " ")
     .replace(/(?:الجزء|الحزب|الصفحة)\s+\d{1,3}/g, " ")
-    .replace(/[وفبل]?(?:ال)?رقم\s*\d{1,3}/g, " ");
+    .replace(/[وفبل]?(?:ال)?رقم\s*\d{1,3}/g, " ")
+    // ترتيبٌ داخل الكلام («المحور ٣»، «أولًا ٢») وترقيمُ الفقرات ليس دعوى عدد
+    .replace(/(?:المحور|النقطة|البند|الوجه|القسم|الفقرة|الفصل|الباب|أولًا|ثانيًا|ثالثًا)\s*\d{1,2}/g, " ")
+    .replace(/^\s*\d{1,2}\s*[-–—.)]/gm, " ");
   const hayNums = new Set((latin(turnToolHay(toolTexts)).match(/\d+/g) ?? []).map(Number));
   const bad = [];
-  for (const m of stripped.matchAll(/\d+/g)) { const n = Number(m[0]); if (n >= 11 && !hayNums.has(n) && !bad.includes(n)) bad.push(n); }
+  for (const m of stripped.matchAll(/\d+/g)) { const n = Number(m[0]); if (n >= 3 && !hayNums.has(n) && !bad.includes(n)) bad.push(n); }
   return bad;
 }
 const turnToolHay = (toolTexts) => toolTexts.join("\n");
@@ -848,6 +917,44 @@ if (want(25)) {
   console.log(`  ${mark(i.noQat)} لا قطعَ في مراد الله`);
   console.log(`  ${mark(/حدود|يُضعف|لو ظهر|يبقى احتمال/.test(t.text))} ختم بجملة حدود الاستنباط`);
   report(t, { attribution: true });
+}
+
+// ——— مسابر ملاحظات المالك (2026-07-24) ———
+
+// ت٢٦ — العدّ من عيّنة البحث: لا حصرَ من نتائج بحثٍ ولا رقمٌ صغير مخترع
+if (want(26)) {
+  const t = await chatTurn([{ role: "user", text: "في كم موضعًا ورد ذكر الصبر مقترنًا بالصلاة في القرآن؟" }], "ت٢٦: العدّ من عيّنة — لا حصرَ ولا رقم مخترع");
+  const usedCounter = t.steps.some((s2) => s2.name === "count_live" || (s2.name === "layer_of" && s2.args?.layer === "stats"));
+  const hedged = /من مواضعه|لا إحصاء|ليس حصرًا|عيّنة|لا أستطيع الحصر|من أبرز/.test(t.text);
+  console.log(`  ${mark(usedCounter || hedged)} عدَّ بأداةٍ أو تحفّظ عن الحصر`);
+  report(t);
+}
+
+// ت٢٧ — استعمال الطبقات في سؤالٍ عامٍّ لا يسمّيها
+if (want(27)) {
+  const t = await chatTurn([{ role: "user", text: "أريد أن أفهم لفظ «القلب» في القرآن فهمًا شاملًا" }], "ت٢٧: سؤال عام — هل يبلغ طبقاته؟");
+  const layers = new Set(t.steps.filter((s2) => s2.name === "layer_of" || s2.name === "search_layer").map((s2) => String(s2.args?.layer)));
+  console.log(`  ${mark(layers.size >= 1)} استدعى طبقةً محسوبةً واحدة على الأقل (${[...layers].join("، ") || "لا شيء"})`);
+  console.log(`  ${mark(t.steps.length >= 3)} تعدّدت أدواته (${t.steps.length})`);
+  report(t, { attribution: true });
+}
+
+// ت٢٨ — التكرار: سؤالٌ ثانٍ قريبٌ من الأول يجب ألا يعيد الجواب نفسه
+if (want(28)) {
+  const q1 = "حدثني عن الصبر في القرآن";
+  const t1 = await chatTurn([{ role: "user", text: q1 }], "ت٢٨/دور١: الصبر");
+  const t2 = await chatTurn([
+    { role: "user", text: q1 }, { role: "assistant", text: t1.text },
+    { role: "user", text: "زدني عن الصبر" },
+  ], "ت٢٨/دور٢: زدني — يجب ألا يكرر");
+  const norm2 = (x) => bare(x).replace(/[^\u0600-\u06FF ]/g, " ").replace(/\s+/g, " ").trim();
+  const sents1 = new Set(norm2(t1.text).split(/[.،؛]/).map((x) => x.trim()).filter((x) => x.length > 40));
+  const sents2 = norm2(t2.text).split(/[.،؛]/).map((x) => x.trim()).filter((x) => x.length > 40);
+  const dup = sents2.filter((x) => sents1.has(x)).length;
+  const ratio = sents2.length ? dup / sents2.length : 0;
+  console.log(`  ${mark(ratio < 0.25)} لا تكرارَ للجُمل (${Math.round(ratio * 100)}٪ مكررة)`);
+  console.log(`  ${mark(t2.steps.length > 0)} بحث عن مادةٍ جديدة في الدور الثاني`);
+  report(t2);
 }
 
 if (!AS_LIB) db.close();

@@ -19,7 +19,7 @@ import { toolRootInfo, toolSearchMeaning } from "../lib/muinTools";
 import { retrieveBooks, hasBooks, bookLabel, BOOK_SOURCES } from "../rag";
 import { asbabFor, tafsirFor } from "../books";
 import { loadSiyaq, searchSiyaq, unitOf, type SiyaqUnit } from "../siyaq";
-import { ensureLayers, layersDigest, layerLookup, layerSearch, countLive } from "../layers";
+import { ensureLayers, layersDigest, layerLookup, layerSearch, countLive, layerHints } from "../layers";
 import { resolveRootReady } from "../searchForms";
 import { ayahByLocationMap, surahNameAr } from "../db";
 
@@ -379,7 +379,12 @@ export default function Assistant() {
           const k = Math.min(Number(args.k) || 8, 14);
           const ayahs = await toolSearchMeaning(String(args.query ?? ""), k);
           addAyahs(ayahs);
-          return { ayahs: ayahs.map((a) => ({ ref: a.ref, surah: refName(a.ref), text: a.text })) };
+          // مرشدُ الطبقات لأبرز موضعٍ — فيرى نبراسُ ما عندنا محسوبًا عنه
+          const hints = ayahs.length ? await layerHints("aya", ayahs[0].ref) : [];
+          return {
+            ayahs: ayahs.map((a) => ({ ref: a.ref, surah: refName(a.ref), text: a.text })),
+            ...(hints.length ? { طبقاتٌ_متاحةٌ_عن_أول_موضع: hints } : {}),
+          };
         }
         if (name === "search_root") {
           const word = String(args.word ?? "");
@@ -391,9 +396,11 @@ export default function Assistant() {
           }
           for (const rt of r.roots) if (!acc.roots.some((x) => x.root === rt.root)) acc.roots.push(rt);
           addAyahs(r.ayahs.slice(0, 6));
+          const rootHints = r.roots.length ? await layerHints("root", r.roots[0].root) : [];
           return {
             roots: r.roots.map((rt) => ({ root: rt.root, occurrences: rt.occ, sense: (rt.gloss || "").slice(0, 400) })),
             ayahs: r.ayahs.slice(0, 6).map((a) => ({ ref: a.ref, surah: refName(a.ref), text: a.text })),
+            ...(rootHints.length ? { طبقاتٌ_متاحةٌ_عن_هذا_الجذر: rootHints } : {}),
           };
         }
         if (name === "count_live") {

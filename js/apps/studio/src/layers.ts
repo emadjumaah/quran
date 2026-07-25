@@ -112,11 +112,17 @@ export function layersDigest(): LayerDigestEntry[] {
       desc: `layer_of(bayan, مصطلح أو زوج مثل «أتى / جاء» أو «الفرق بين الخوف والخشية») يعيد: البطاقةَ المحررة (كشف محسوب + قراءات الأعلام منقولة) ثم الآليةَ التوليد (موسومة بلا تحرير) ثم مداخلَ الكتب (${bayan.map((b) => b.label).join("، ")})${withVec.length ? `؛ وsearch_layer(bayan, وصف غني) بحثٌ دلالي في نصوص المضمنة (${withVec.map((b) => b.id).join("، ")})` : ""}`,
     });
   }
+  // فهرس المطروق — «أين طرق العلماء هذا؟» استعلامًا محسوبًا
+  out.push({
+    id: "tariq", label: "فهرس المطروق في كتب البيان", grade: "mahsub",
+    desc: "بجذرٍ: في أي كتب البيان طُرق وبكم مدخلًا؛ وبآيةٍ: أي الكتب عالج موضعها — layer_of(tariq, جذر أو آية). استعمله قبل أن تقول «لم يطرقه أحد» وقبل استنباطٍ في لفظٍ لعل للعلماء فيه كلامًا",
+  });
   // البحث الدلالي المخصوص: داخل كتابٍ واحد أو عائلةٍ واحدة
   const embedded = manifest.books.filter((b) => b.embedded);
+  const byRef = manifest.books.filter((b) => !b.embedded && !b.remote);
   out.push({
     id: "search", label: "بحثٌ دلالي داخل كتابٍ أو عائلةٍ بعينها", grade: "manqul",
-    desc: `search_layer(المعرف, وصف غني) — معرفات الكتب: ${embedded.map((b) => b.id).join("، ")}؛ أو عائلة: tafsir، asbab، gharib، lexicon، bayan`,
+    desc: `search_layer(المعرف, وصف غني) يمسح **ذواتِ المتجهات** فقط: ${embedded.map((b) => b.label).join("، ")}. وهذه بلا متجهاتٍ فتُستدعى بالمرجع (tafsir_of أو layer_of(المعرف, آية)) لا بالبحث: ${byRef.map((b) => `${b.label}=${b.id}`).join("، ")}`,
   });
   return out;
 }
@@ -422,11 +428,13 @@ async function tabwibLookup(anchor: string): Promise<LayerResult> {
     if (!u) return { layer: "tabwib", entries: [], note: `لا وحدةَ سياقٍ لهذا الموضع` };
     const homes: string[] = [];
     for (const bab of babs) for (const t of bab.topics) if (t.units.includes(u.i)) homes.push(`${bab.name} ← ${t.name}`);
+    const doc = await getAyahByLocation(a);
+    const ayaText = doc ? `\nنص الآية ${a}: ${doc.textUthmani || doc.textClean}` : "";
     return {
       layer: "tabwib",
       entries: [{
         label: "التبويب الموضوعي المحسوب", ref: `${surahNameAr(u.s)} ${u.a1}–${u.a2}`, href: "/tabwib",
-        text: `الآية ${a} في وحدة «${u.name}» (${surahNameAr(u.s)} ${u.a1}–${u.a2})${homes.length ? `؛ موضعها من التبويب: ${homes.slice(0, 3).join(" · ")}` : "؛ لم تُسند وحدتها لموضوعٍ بعد"}`,
+        text: `الآية ${a} في وحدة «${u.name}» (${surahNameAr(u.s)} ${u.a1}–${u.a2})${homes.length ? `؛ موضعها من التبويب: ${homes.slice(0, 3).join(" · ")}` : "؛ لم تُسند وحدتها لموضوعٍ بعد"}${ayaText}`,
       }],
     };
   }
@@ -532,6 +540,86 @@ async function fawasilLookup(anchor: string): Promise<LayerResult> {
   };
 }
 
+// ——— فهرسُ المطروق (قسم البيان): أين طرق العلماءُ هذا الجذر/الموضع ———
+interface TariqIndex { roots: Record<string, [string, number][]>; ayas: Record<string, [string, string][]> }
+const bookLabelOf = (id: string): string => BOOK_SOURCES.find((b) => b.id === id)?.label ?? id;
+async function tariqLookup(anchor: string): Promise<LayerResult> {
+  const data = await loadJson<TariqIndex>("bayan-tariq.json");
+  if (!data) return { layer: "tariq", entries: [], error: "تعذر تحميل فهرس المطروق" };
+  const a = anchor.trim();
+  if (AYA_RE.test(a)) {
+    const hits = data.ayas[a] ?? [];
+    if (!hits.length) return { layer: "tariq", entries: [], note: `لم أجد في فهرس المطروق معالجةً لهذا الموضع (${a}) في كتب البيان — وهذا لا ينفي وجودها خارج فهرسنا` };
+    return {
+      layer: "tariq",
+      entries: [{
+        label: "فهرس المطروق (قسم البيان)", ref: a, href: "/bayan",
+        text: `الموضع ${a} عالجه في كتب البيان: ${hits.map(([b]) => bookLabelOf(b)).join("، ")} — استدعِ نصَّ المعالجة بـlayer_of(bayan, ${a}) أو بعنوانها`,
+      }],
+    };
+  }
+  const q = bare(a);
+  const hits = data.roots[q] ?? [];
+  if (!hits.length) return { layer: "tariq", entries: [], note: `الجذر «${q}» ليس في فهرس المطروق (${Object.keys(data.roots).length} جذرًا) — أي لم نجد له مدخلًا في كتب البيان المفهرسة` };
+  return {
+    layer: "tariq",
+    entries: [{
+      label: "فهرس المطروق (قسم البيان)", ref: q, href: "/bayan",
+      text: `الجذر ${q} طرقه العلماء في: ${hits.map(([b, n]) => `${bookLabelOf(b)} (${n} مدخلًا)`).join("، ")} — خذ نصوصها بـlayer_of(bayan, اللفظ) أو search_layer(bayan, وصف)`,
+    }],
+  };
+}
+
+// ——— مرشدُ الطبقات: ما الذي عندنا محسوبًا عن هذا اللفظ/الموضع؟ ———
+// يُرفَق بنتائج search_root/search_meaning فيرى نبراسُ عُدَّته دون أن يتذكرها —
+// «اكتفاء النتيجة» يغني عن الوصية (علاج ملاحظة المالك: لا يستعمل المحسوبات).
+export async function layerHints(kind: "root" | "aya", key: string): Promise<string[]> {
+  await ensureLayers();
+  const hints: string[] = [];
+  try {
+    if (kind === "root") {
+      const q = bare(key);
+      const lex = await loadJson<Lexnet>("lexnet.json");
+      const rec = lex?.roots[q];
+      if (rec) hints.push(`شبكة الجذور الدلالية عندها هذا الجذر (${rec.occ} موضعًا وأقربُ الجذور إليه) — layer_of(lisan, ${q})`);
+      const wuj = await loadJson<{ words: WujuhWord[] }>("wujuh.json");
+      const w = wuj?.words.find((x) => x.root === q || bare(x.lemma).includes(q));
+      if (w) hints.push(`للفظ «${w.lemma}» وجوهٌ مؤسَّسة (${w.faces.length}) — layer_of(wujuh, ${w.lemma})`);
+      const tariq = await loadJson<TariqIndex>("bayan-tariq.json");
+      const th = tariq?.roots[q];
+      if (th?.length) hints.push(`طرقه العلماءُ في كتب البيان: ${th.map(([b, n]) => `${bookLabelOf(b)} (${n})`).join("، ")} — layer_of(tariq, ${q})`);
+      const edited = await loadJson<{ cards: BayanCard[] }>("bayan.json");
+      const card = edited?.cards.find((c) => bare(c.title).includes(q) || bare(c.kashf).includes(q));
+      if (card) hints.push(`بطاقةُ بيانٍ محررة «${card.title}» بكشفها المحسوب — layer_of(bayan, ${card.title})`);
+      else {
+        const auto = await loadJson<{ cards: AutoCard[] }>("bayan-auto.json");
+        const ac = auto?.cards.find((c) => c.roots.some((r) => bare(r) === q));
+        if (ac) hints.push(`بطاقةُ بيانٍ آلية «${ac.head}» (خريطتا الجذرين) — layer_of(bayan, ${ac.head})`);
+      }
+    } else {
+      const a = key.trim();
+      if (!AYA_RE.test(a)) return hints;
+      const fur = await loadJson<{ furuq: FuruqPair[] }>("furuq.json");
+      const pair = fur?.furuq.find((p) => p.a === a || p.b === a);
+      if (pair) hints.push(`لهذا الموضع نظيرٌ متشابهٌ محسوب (${pair.a} ↔ ${pair.b}) — layer_of(furuq, ${a})`);
+      await Promise.all([loadSiyaq(), loadTopics()]);
+      const u = unitOf(a);
+      if (u) {
+        for (const bab of topicBabsList()) {
+          const t = bab.topics.find((x) => x.units.includes(u.i));
+          if (t) { hints.push(`موضعُه من التبويب: «${bab.name} ← ${t.name}» في وحدة «${u.name}» — layer_of(tabwib, ${a})`); break; }
+        }
+      }
+      const tariqA = await loadJson<TariqIndex>("bayan-tariq.json");
+      const ta = tariqA?.ayas[a];
+      if (ta?.length) hints.push(`عالج هذا الموضعَ في كتب البيان: ${ta.map(([b]) => bookLabelOf(b)).join("، ")} — layer_of(tariq, ${a})`);
+      await loadEvidence();
+      if (evidenceOf(a).length) hints.push(`لهذه الآية شاراتٌ وصلاتٌ في الشبكة المفحوصة — layer_of(simat, ${a})`);
+    }
+  } catch { /* المرشد إثراءٌ لا يُعطّل الأداة */ }
+  return hints.slice(0, 4);
+}
+
 /** الاستدعاء الدقيق بمرسًى — أداة layer_of */
 export async function layerLookup(layer: string, anchor: string): Promise<LayerResult> {
   await ensureLayers();
@@ -545,6 +633,7 @@ export async function layerLookup(layer: string, anchor: string): Promise<LayerR
   if (id === "stats") return statsLookup(a);
   if (id === "qiraat" || id === "i3rab") return genreLookup(id as Genre, a);
   if (id === "bayan") return bayanLookup(a);
+  if (id === "tariq" || id === "matruq") return tariqLookup(a);
   if (id === "tabwib" || id === "mawadi" || id === "mawdui") return tabwibLookup(a);
   if (id === "simat") return simatLookup(a);
   if (id === "mithl") return mithlLookup(a);
