@@ -1929,6 +1929,26 @@ table.data tr:hover td { background: var(--panel-2); }
 .mu-hero .mu-srcs[open] summary { color: var(--ink-2); }
 .mu-hero .mu-srcs-body { margin-top: 8px; display: flex; flex-direction: column; gap: 7px; line-height: 1.85; }
 .mu-hero .mu-srcs b { color: var(--ink-2); }
+/* ⋮ قائمةُ الآية — ما لا يُحتاج في كلِّ نظرة، تحت زرٍّ واحدٍ هادئ */
+.v-more { position: relative; display: inline-flex; }
+.v-more-btn { border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 3px 9px; color: var(--muted); background: transparent; }
+.v-more-btn:hover, .v-more-btn.on { color: var(--ink); background: var(--panel-2); }
+.v-more-menu {
+  position: absolute; top: calc(100% + 5px); inset-inline-end: 0; z-index: 60; min-width: 190px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.16); display: flex; flex-direction: column; gap: 1px;
+}
+.v-more-loc { font-size: 11.5px; color: var(--muted); padding: 4px 9px 7px; border-bottom: 1px solid var(--line); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.v-more-item {
+  border: none; background: transparent; text-align: start; font: inherit; font-size: 13.5px;
+  color: var(--ink); padding: 8px 9px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+}
+.v-more-item:hover { background: var(--panel-2); }
+.v-more-item.on { color: var(--accent); font-weight: 600; }
+.v-more-sep { height: 1px; background: var(--line); margin: 4px 0; }
+.v-more-collect { padding: 2px 5px 1px; }
+/* سببُ ظهور نتيجة البحث (تقريبٌ · جذر · بعضُ الكلمات) */
+.sr-how { background: var(--panel-2); color: var(--muted); font-size: 11.5px; }
 /* مراجع الآيات داخل نثر الجواب — روابطُ قراءةٍ لا نص جامد */
 .mu-ref-lnk { color: var(--accent); text-decoration: none; font-weight: 650; white-space: nowrap; }
 .mu-ref-lnk:hover { text-decoration: underline; }

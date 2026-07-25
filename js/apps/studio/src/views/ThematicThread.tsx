@@ -8,9 +8,10 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { fuzzyRoots, getAyahByGlobalNo, getAyahByLocation, searchAyahs, surahNameAr } from "../db";
+import { fuzzyRoots, getAyahByGlobalNo, getAyahByLocation, surahNameAr } from "../db";
 import { getUILang, num, useUILang } from "../i18n";
 import { loadVectors, meaningSearch, vectorsReady } from "../semantic";
+import { openSearch } from "../lib/openSearch";
 
 const SUGGESTIONS = ["الرحمة", "الآخرة والحساب", "الصبر عند الشدّة", "التوحيد", "العدل والقسط", "الشكر", "الخوف والرجاء", "التوبة والمغفرة", "خلق السماوات والأرض", "الإنفاق في سبيل الله"];
 const mushafKey = (loc: string) => { const [s, a] = loc.split(":").map(Number); return s * 1000 + a; };
@@ -53,12 +54,17 @@ export default function ThematicThread() {
       // without letting the fuzzy cloud back in.
       // v2 (مراجعة 2026-07-14): حارسُ الجذر للاستعلام المفرد فقط — مسافةُ الحروف
       // على عبارةٍ كاملةٍ بلا معنى («الصبر عند الشدة» ليست جذرًا)
+      // v3 (2026-07-21، ملاحظة المالك): كان اللبُّ المعجميُّ مطابقةً نصّيةً تامّة،
+      // فالسؤالُ المركّب («الصبر عند الشدّة») لا يوجد بحروفه في آيةٍ واحدة فيخرج
+      // الخيطُ فارغًا. الآن اللبُّ من المحرّك المفتوح: نصٌّ ثم تقريبٌ ثم جذورُ
+      // كلماتِه كلِّها — فالمركَّبُ يُؤصَّل بجذور كلماته لا برسمِه الحرفي.
       const singleWord = !/\s/.test(query) && query.length >= 2;
-      const [lex, sem, rm] = await Promise.all([
-        searchAyahs(query),
+      const [open, sem, rm] = await Promise.all([
+        openSearch(query, { min: 25, cap: 400 }),
         meaningSearch(query, 200),
         singleWord ? fuzzyRoots(query, 1) : Promise.resolve([]),
       ]);
+      const lex = open.hits.filter((h) => h.how !== "بعض").map((h) => h.ayah);
       if (seq.current !== id) return;
       const semResolved = (await Promise.all(sem.map(async (h) => {
         const a = await getAyahByGlobalNo(h.ayahId);

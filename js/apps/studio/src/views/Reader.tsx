@@ -140,6 +140,91 @@ function SurahSidebar({
   );
 }
 
+/** قائمةُ النقاط الثلاث تحت الآية — ما لا يُحتاج في كلِّ نظرة: موضعُها من الجزء
+ *  والصفحة، والإعرابُ والتفسيرُ وأسبابُ النزول والترجمة، والحفظُ والجمع. */
+function VerseMore({
+  ayah,
+  bookmarked,
+  isOpen,
+  onOpen,
+}: {
+  ayah: AyahDoc;
+  bookmarked: boolean;
+  isOpen: (kind: string) => boolean;
+  onOpen: (kind: string) => void;
+}) {
+  const ar = getUILang() === "ar";
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!boxRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
+  const pick = (kind: string) => {
+    onOpen(kind);
+    setOpen(false);
+  };
+  const ITEMS: { kind: string; ar: string; en: string }[] = [
+    { kind: "tafsir", ar: "التفسير", en: "Tafsir" },
+    { kind: "eraab", ar: "الإعراب", en: "Iʿrāb" },
+    { kind: "asbab", ar: "سبب النزول", en: "Occasion" },
+    { kind: "translate", ar: "الترجمة", en: "Translation" },
+  ];
+  return (
+    <div className="v-more" ref={boxRef}>
+      <button
+        className={`chip v-more-btn${open ? " on" : ""}`}
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        title={ar ? "المزيد: التفسير والإعراب والترجمة وموضعُها" : "more: tafsir, iʿrāb, translation, location"}
+      >
+        ⋮
+      </button>
+      {open && (
+        <div className="v-more-menu" role="menu">
+          <div className="v-more-loc">
+            {t("reader.juz")} {num(ayah.juz)} · {t("reader.page")} {num(ayah.page)}
+          </div>
+          {ITEMS.map((it) => (
+            <button key={it.kind} className={`v-more-item${isOpen(it.kind) ? " on" : ""}`} onClick={() => pick(it.kind)} role="menuitem">
+              {ar ? it.ar : it.en}
+            </button>
+          ))}
+          <div className="v-more-sep" />
+          <button
+            className={`v-more-item${bookmarked ? " on" : ""}`}
+            onClick={() => {
+              toggleBookmark(ayah.location);
+              setOpen(false);
+            }}
+            role="menuitem"
+          >
+            {bookmarked ? "★ " : "☆ "}
+            {ar ? "علامة مرجعيّة" : "Bookmark"}
+          </button>
+          <div className="v-more-collect">
+            <CollectButton
+              locations={[ayah.location]}
+              criterion={{ kind: "manual", value: ayah.location }}
+              label={ar ? "⊕ إلى مجموعة" : "⊕ collect"}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Inspector({ word }: { word: WordDoc | null }) {
   useUILang();
   const { layers } = useSettings();
@@ -748,27 +833,24 @@ export default function Reader() {
                 />
                 {/* ONE tight line UNDER the verse: locate · listen · study tools ·
                     save · and the verse's computed مرتبة — all as small chips */}
+                {/* سطرٌ واحدٌ هادئ: الموضعُ والاستماعُ ومثلُها وتدبّرٌ ووسمُها —
+                    وما سواه (الجزءُ والصفحةُ والإعرابُ والتفسيرُ وأسبابُ النزول
+                    والترجمة) في قائمة النقاط الثلاث (قرار المالك 2026-07-21) */}
                 <div className="ayah-tools">
-                  <button
-                    className={`chip star-chip${bookmarks.includes(ayah.location) ? " on" : ""}`}
-                    onClick={() => toggleBookmark(ayah.location)}
-                    title={getUILang() === "ar" ? "علامة مرجعية" : "bookmark"}
-                  >
-                    {bookmarks.includes(ayah.location) ? "★" : "☆"}
-                  </button>
-                  <span className="ayah-meta">{surahNameAr(ayah.surahNo)} {num(ayah.ayahNo)} · {t("reader.juz")} {num(ayah.juz)} · {t("reader.page")} {num(ayah.page)}</span>
+                  <span className="ayah-meta">{surahNameAr(ayah.surahNo)} {num(ayah.ayahNo)}</span>
                   {ayah.sajdaType && (
                     <span className="chip gold" title={ayah.sajdaType}>۩ {t("reader.sajda")}</span>
                   )}
                   <AudioButton ayahId={ayahIdOf(ayah)} />
-                  <EraabChip open={panelOpen("eraab", ayah.location)} onToggle={() => togglePanel("eraab", ayah.location)} />
-                  <TafsirChip open={panelOpen("tafsir", ayah.location)} onToggle={() => togglePanel("tafsir", ayah.location)} />
-                  <AsbabChip location={ayah.location} open={panelOpen("asbab", ayah.location)} onToggle={() => togglePanel("asbab", ayah.location)} />
-                  <button className={`chip${panelOpen("translate", ayah.location) ? " on" : ""}`} onClick={() => togglePanel("translate", ayah.location)} title={getUILang() === "ar" ? "الترجمة" : "translation"}>{getUILang() === "ar" ? "ترجمة" : "Translation"}</button>
                   <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} open={panelOpen("similar", ayah.location)} onToggle={() => togglePanel("similar", ayah.location)} />
                   <TadabburChip open={panelOpen("tadabbur", ayah.location)} onToggle={() => togglePanel("tadabbur", ayah.location)} />
-                  <CollectButton locations={[ayah.location]} criterion={{ kind: "manual", value: ayah.location }} label="⊕" />
                   <MuhkamaLine location={ayah.location} />
+                  <VerseMore
+                    ayah={ayah}
+                    bookmarked={bookmarks.includes(ayah.location)}
+                    isOpen={(kind) => panelOpen(kind, ayah.location)}
+                    onOpen={(kind) => togglePanel(kind, ayah.location)}
+                  />
                 </div>
                 <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
                 <TafsirPanel location={ayah.location} open={panelOpen("tafsir", ayah.location)} />

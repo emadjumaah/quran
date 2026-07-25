@@ -13,7 +13,6 @@ import {
   getAyahByLocation,
   getRoot,
   listSurahs,
-  searchAyahs,
   searchRoots,
   surahNameAr,
 } from "./db";
@@ -21,6 +20,7 @@ import { num, t } from "./i18n";
 import type { SurahDoc } from "./types";
 import { readPathOf } from "./types";
 import { resolveRootReady } from "./searchForms";
+import { openSearch } from "./lib/openSearch";
 
 export interface OmniItem {
   key: string;
@@ -168,17 +168,18 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
     }
   }
 
-  // text hits (only for queries with an Arabic word)
+  // text hits (only for queries with an Arabic word) — بالمحرّك المفتوح نفسِه
   if (/[ء-ي]{2,}/.test(raw)) {
     try {
-      const hits = await searchAyahs(raw);
-      for (const a of hits.slice(0, 4))
+      const { hits: open } = await openSearch(raw, { cap: 60 });
+      const hits = open.map((h) => h.ayah);
+      for (const h of open.slice(0, 4))
         out.push({
-          key: `t${a.location}`,
+          key: `t${h.ayah.location}`,
           kind: "text",
-          label: a.textClean.length > 60 ? `${a.textClean.slice(0, 60)}…` : a.textClean,
-          sub: `${surahNameAr(a.surahNo)} ${num(a.ayahNo)}`,
-          to: readPathOf(a.location),
+          label: h.ayah.textClean.length > 60 ? `${h.ayah.textClean.slice(0, 60)}…` : h.ayah.textClean,
+          sub: `${surahNameAr(h.ayah.surahNo)} ${num(h.ayah.ayahNo)}${h.how === "جذر" ? ` · ${t("omni.viaRoot") || "من الجذر"} ${h.root}` : ""}`,
+          to: readPathOf(h.ayah.location),
         });
       if (hits.length > 4)
         out.push({

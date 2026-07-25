@@ -18,7 +18,7 @@ import { SimilarAyahsPanel } from "../components/SimilarAyahs";
 import { TadabburPanel } from "../components/TadabburChip";
 import { highlightVerse } from "../highlight";
 import { similarOf } from "../similar";
-import { getAyahByGlobalNo, getAyahByLocation, searchAyahs, searchRoots } from "../db";
+import { getAyahByGlobalNo, getAyahByLocation, searchRoots } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc, RootDoc } from "../types";
 import { readPathOf } from "../types";
@@ -33,6 +33,7 @@ import {
 } from "../semantic";
 import { useOmniResults } from "../omni";
 import { classOf, useKulliyat } from "../kulliyat";
+import { openSearch, howLabel, type MatchHow } from "../lib/openSearch";
 
 const DISPLAY_CAP = 200;
 const TEXT_EXAMPLES = ["الرحمن", '"يا أيها الذين آمنوا"', "صبر*"];
@@ -82,6 +83,9 @@ type Mode = "meaning" | "links" | "tadabbur" | "text";
 interface Hit {
   ayah: AyahDoc;
   score?: number;
+  /** سببُ ظهورِ النتيجة في البحث النصّي المفتوح (نص/تقريب/جذر/بعض) */
+  how?: MatchHow;
+  root?: string;
 }
 
 /** One result row — identical look in both modes (score chip when present).
@@ -92,6 +96,7 @@ function ResultRow({ hit, criterion, query }: { hit: Hit; criterion: string; que
   useUILang();
   const navigate = useNavigate();
   const { ayah, score } = hit;
+  const how = hit.how && hit.how !== "نص" ? howLabel({ ayah, how: hit.how, root: hit.root }, getUILang() === "ar") : "";
   const ar = getUILang() === "ar";
   const gid = ayahIdOf(ayah);
   const [showRelated, setShowRelated] = useState(false);
@@ -119,6 +124,7 @@ function ResultRow({ hit, criterion, query }: { hit: Hit; criterion: string; que
             {t("meaning.closeness")} <b>{num((score * 100).toFixed(1))}٪</b>
           </span>
         )}
+        {how && <span className="chip sr-how" title={ar ? "سببُ ظهور هذه النتيجة" : "why this matched"}>{how}</span>}
         {(() => {
           const c = classOf(ayah.location);
           return c ? (
@@ -335,10 +341,12 @@ export default function Search() {
     }
     setLoading(true);
     setError(null);
-    searchAyahs(q)
-      .then((res: AyahDoc[]) => {
+    // البحث المفتوح: نصٌّ تامّ ← تقريبٌ حرفيّ ← توسيعٌ بالجذر ← بعضُ الكلمات،
+    // كلُّ نتيجةٍ موسومةٌ بسببها (قرار المالك: «مفتوحٌ أكثر قليلًا»)
+    openSearch(q)
+      .then((res) => {
         if (seq.current !== id) return;
-        setHits(res.map((ayah) => ({ ayah })));
+        setHits(res.hits.map((h) => ({ ayah: h.ayah, how: h.how, root: h.root })));
         setLoading(false);
       })
       .catch(() => {
