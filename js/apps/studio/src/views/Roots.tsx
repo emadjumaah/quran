@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import RootJourneyPanel from "../components/RootJourneyPanel";
+import SarfCounts from "../components/SarfCounts";
 import {
   ayahLocationsOfRoot,
   countRoots,
@@ -425,6 +426,9 @@ function RootDetail({ root }: { root: string }) {
             />
           </span>
         </div>
+
+        {/* العدُّ الدقيق: مواضعُ الجذر بالصيغة وبالرسم (سؤال المالك 2026-07-21) */}
+        <div style={{ marginTop: 16 }}><SarfCounts root={rootDoc.root} /></div>
 
         {/* Word meaning — one classical source, kept short */}
         {rootDoc.meanings && rootDoc.meanings.length > 0 && (

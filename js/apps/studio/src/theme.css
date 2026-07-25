@@ -2171,3 +2171,26 @@ table.data tr:hover td { background: var(--panel-2); }
 .reader-sticky .inline-omni, .reader-bar .inline-omni { margin-bottom: 0; }
 .reader-sticky .v-more-btn, .reader-bar .v-more-btn { width: 38px; justify-content: center; padding: 0; }
 .rd-menu { flex: 0 0 auto; margin-inline-start: 2px; }
+
+/* العدُّ الدقيق — تفصيلُ الجذر بالصيغة وبالرسم */
+.sc-card { margin-top: 0; }
+.sc-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.sc-title { margin: 0; font-size: 16px; }
+.sc-tabs { display: inline-flex; gap: 3px; padding: 3px; background: var(--panel-2); border-radius: 999px; }
+.sc-tabs button { border: none; background: transparent; color: var(--muted); font: inherit; font-size: 12.5px; padding: 5px 14px; border-radius: 999px; cursor: pointer; }
+.sc-tabs button.on { background: var(--accent); color: #fff; font-weight: 600; }
+.sc-note { font-size: 12px; line-height: 1.85; margin: 8px 0 10px; }
+.sc-rows { display: flex; flex-direction: column; gap: 4px; }
+.sc-row-head {
+  width: 100%; display: flex; align-items: baseline; gap: 10px; text-align: start;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
+  padding: 8px 12px; cursor: pointer; font: inherit;
+}
+.sc-row-head:hover { border-color: var(--accent); }
+.sc-lemma { font-size: 19px; color: var(--ink); }
+.sc-form { font-size: 12.5px; color: var(--ink-2); }
+.sc-n { margin-inline-start: auto; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+.sc-caret { color: var(--muted); font-size: 11px; }
+.sc-locs { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 4px; }
+.sc-loc { font-size: 12px; color: var(--ink-2); text-decoration: none; border-bottom: 1px dotted var(--line); }
+.sc-loc:hover { color: var(--accent); }
