@@ -2151,3 +2151,23 @@ table.data tr:hover td { background: var(--panel-2); }
   border-radius: 10px;
 }
 .mp-ayah { cursor: pointer; }
+
+/* ترويسةُ المصحف بعد إعادة الترتيب (قرار المالك 2026-07-21): البحثُ صدرَ
+   السطر، والسورةُ في الطرف المقابل، والاستماعُ وطريقةُ العرض تحت ⋮ */
+/* محاذاةٌ واحدة: كلُّ عناصر الترويسة بارتفاعٍ واحدٍ ووسطٍ واحد */
+.reader-bar-search { flex: 1 1 340px; max-width: 460px; }
+.reader-sticky-search { flex: 1 1 auto; min-width: 0; }
+.reader-sticky .reader-surah-pick { flex: 0 0 auto; max-width: 40%; }
+.reader-sticky, .reader-bar { align-items: center; }
+.reader-sticky > *, .reader-bar > * { align-self: center; }
+.reader-sticky .reader-surah-pick,
+.reader-sticky .v-more-btn,
+.reader-sticky .page-search input,
+.reader-bar .page-search input,
+.reader-bar .v-more-btn {
+  height: 38px; box-sizing: border-box; border-radius: 10px;
+}
+.reader-sticky .page-search, .reader-bar .page-search { margin-bottom: 0; }
+.reader-sticky .inline-omni, .reader-bar .inline-omni { margin-bottom: 0; }
+.reader-sticky .v-more-btn, .reader-bar .v-more-btn { width: 38px; justify-content: center; padding: 0; }
+.rd-menu { flex: 0 0 auto; margin-inline-start: 2px; }

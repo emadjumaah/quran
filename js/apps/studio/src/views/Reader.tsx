@@ -418,7 +418,6 @@ export default function Reader() {
   // مودالُ بيانات الآية يفتحه النقرُ على رقمها أو على كلمةٍ منها — أما النقرُ
   // في فراغها فيحدّدها بالخضرة فقط (قرار المالك 2026-07-21)
   const [verseSheet, setVerseSheet] = useState<string | null>(null);
-  const [searchOpen, setSearchOpen] = useState(false); // mobile: on-page search is a toggle, so the header stays one compact row
   const mainRef = useRef<HTMLElement>(null); // the scroll container (for page-turn scroll-to-top + the FAB)
   // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
   const [pageIdx, setPageIdx] = useState(0);
@@ -675,24 +674,44 @@ export default function Reader() {
   const displayTargetAyahNo = isPreviewPlaying() ? targetAyahNo : (playingAyahNo ?? targetAyahNo);
 
   const listenSurah = () => playContinuous((surahBase.get(surahNo) ?? 0) + 1);
-  const modesEl = (
-    <span className="reader-modes">
-      {(["pages", "ayat"] as Mode[]).map((m) => (
-        <button
-          key={m}
-          onClick={() => switchMode(m)}
-          className={mode === m ? "on" : ""}
-          title={
-            getUILang() === "ar"
-              ? m === "pages" ? "عرض الصفحة: تدفّق مستمرّ مجمّعًا بصفحات المصحف" : "عرض الآيات: آيةً آية مع الأدوات والترجمة"
-              : m === "pages" ? "page view: continuous flow by mushaf page" : "ayah view: one by one with tools"
-          }
-        >
-          {m === "pages" ? t("reader.pages") : t("reader.ayat")}
+
+
+  /** قائمةُ الترويسة: الاستماعُ وتبديلُ العرض — تحت زرٍّ واحدٍ كي يبقى الصدرُ
+   *  للبحث والسورة (قرار المالك 2026-07-21). */
+  const HeaderMenu = () => {
+    const [open, setOpen] = useState(false);
+    const box = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+      if (!open) return;
+      const onDoc = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false); };
+      const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+      document.addEventListener("mousedown", onDoc);
+      document.addEventListener("keydown", onEsc);
+      return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onEsc); };
+    }, [open]);
+    return (
+      <div className="v-more rd-menu" ref={box}>
+        <button className={`chip v-more-btn${open ? " on" : ""}`} onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}
+          title={ar ? "الاستماع وطريقة العرض" : "listen & view mode"}>
+          <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden><circle cx="10" cy="4" r="1.9" fill="currentColor" /><circle cx="10" cy="10" r="1.9" fill="currentColor" /><circle cx="10" cy="16" r="1.9" fill="currentColor" /></svg>
         </button>
-      ))}
-    </span>
-  );
+        {open && (
+          <div className="v-more-menu" role="menu">
+            <button className="v-more-item" onClick={() => { listenSurah(); setOpen(false); }} role="menuitem">
+              ▶ {ar ? "استمع للسورة" : "Listen to the sura"}
+            </button>
+            <div className="v-more-sep" />
+            <div className="v-more-loc" style={{ borderBottom: "none", paddingBottom: 2 }}>{ar ? "طريقةُ العرض" : "View"}</div>
+            {(["pages", "ayat"] as Mode[]).map((m) => (
+              <button key={m} className={`v-more-item${mode === m ? " on" : ""}`} onClick={() => { switchMode(m); setOpen(false); }} role="menuitem">
+                {m === "pages" ? t("reader.pages") : t("reader.ayat")}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // mobile: lock the page scroll behind the bottom sheet so it feels like a
   // native modal (the sheet itself scrolls internally).
@@ -716,6 +735,7 @@ export default function Reader() {
         {surah && narrow && (
           <>
             <div className="reader-sticky">
+              <div className="reader-sticky-search"><InlineOmni /></div>
               <select
                 className="reader-surah-pick"
                 value={surahNo}
@@ -728,53 +748,24 @@ export default function Reader() {
                   </option>
                 ))}
               </select>
-              <button
-                className={`reader-icon-btn${searchOpen ? " on" : ""}`}
-                onClick={() => setSearchOpen((v) => !v)}
-                title={ar ? "بحث · اذهب إلى سورة أو آية" : "search · go to surah/ayah"}
-                aria-label={ar ? "بحث" : "search"}
-                aria-expanded={searchOpen}
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" /></svg>
-              </button>
-              <button
-                className="reader-play-icon"
-                onClick={listenSurah}
-                title={ar ? "استمع للسورة كاملة" : "listen to the whole surah"}
-                aria-label={ar ? "استمع للسورة" : "listen"}
-              >
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden><path d="M7 5.5v13a1 1 0 0 0 1.5.87l11-6.5a1 1 0 0 0 0-1.74l-11-6.5A1 1 0 0 0 7 5.5z" /></svg>
-              </button>
-              {modesEl}
+              <HeaderMenu />
             </div>
-            {searchOpen && (
-              <div className="reader-search-row">
-                <InlineOmni autoFocus onNavigate={() => setSearchOpen(false)} />
-              </div>
-            )}
           </>
         )}
 
         {/* Desktop: name · meta · on-page search · listen · modes. */}
         {surah && !narrow && (
           <header className="reader-bar">
+            {/* البحثُ أوّلَ الصدر (يمينًا في العربية)، والسورةُ في الطرف المقابل */}
+            <div className="reader-bar-search"><InlineOmni /></div>
+            <span className="reader-bar-spacer" />
             <span className="reader-bar-name quran">{surah.nameAr}</span>
             <span className="muted reader-bar-meta">
               {surah.revelation === "Meccan" ? t("reader.meccan") : t("reader.medinan")} ·{" "}
               {ayahsCount(surah.ayahCount)}
               {getUILang() !== "ar" ? ` · ${surah.nameTranslit}` : ""}
             </span>
-            <div className="reader-bar-search"><InlineOmni /></div>
-            <span className="reader-bar-spacer" />
-            <button
-              className="chip link"
-              style={{ border: "none" }}
-              onClick={listenSurah}
-              title={getUILang() === "ar" ? "استمع للسورة كاملة" : "listen to the whole surah"}
-            >
-              ▶ {t("reader.listenSurah")}
-            </button>
-            {modesEl}
+            <HeaderMenu />
           </header>
         )}
 

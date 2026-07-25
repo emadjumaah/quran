@@ -20,6 +20,8 @@ export default function InlineOmni({
 }) {
   useUILang();
   const ar = getUILang() === "ar";
+  // الحقلُ على الجوال ضيّق — فالنصُّ الإرشاديُّ يُختصر (قرار المالك 2026-07-21)
+  const narrow = typeof window !== "undefined" && window.matchMedia("(max-width: 760px)").matches;
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [focused, setFocused] = useState(false);
@@ -61,7 +63,7 @@ export default function InlineOmni({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => setFocused(true)}
-          placeholder={placeholder ?? (ar ? "ابحث في القرآن كلّه، أو اذهب إلى سورة أو آية…" : "search the whole Qur'an, or go to a surah/ayah…")}
+          placeholder={placeholder ?? (narrow ? (ar ? "ابحث…" : "search…") : (ar ? "ابحث في القرآن، أو اذهب إلى سورة أو آية…" : "search the Qur'an, or go to a surah/ayah…"))}
           aria-label={ar ? "البحث والانتقال" : "search & jump"}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") {

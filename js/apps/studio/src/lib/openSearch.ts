@@ -190,12 +190,19 @@ export function howLabel(h: OpenHit, ar: boolean): string {
   return ar ? "بعضُ كلمات السؤال" : "some words";
 }
 
-/** بحثٌ سريعٌ للأومني — الطبقاتُ الدقيقةُ وحدَها */
-export async function quickSearch(query: string, k = 6): Promise<{ hits: OpenHit[]; total: number }> {
-  const { hits } = await openSearch(query, { cap: 400, min: 0 });
+/** بحثٌ سريعٌ للأومني: النصُّ وحدَه (عبارةً أو كلماتٍ أو تقريبًا) — والتوسيعُ
+ *  بالجذر خيارٌ مستقلٌّ يُعرض بنفسه، لا يُخلط بنتائج النصّ (قرار المالك). */
+export async function quickSearch(query: string, k = 6): Promise<{ hits: OpenHit[]; total: number; roots: { root: string; count: number }[] }> {
+  const { hits, roots } = await openSearch(query, { cap: 400, min: 0 });
   const precise = hits.filter((h) => h.how === "عبارة" || h.how === "نص" || h.how === "تقريب");
-  const list = precise.length ? precise : hits;
-  return { hits: list.slice(0, k), total: list.length };
+  const byRoot = new Map<string, number>();
+  for (const h of hits) if (h.how === "جذر" && h.root) byRoot.set(h.root, (byRoot.get(h.root) ?? 0) + 1);
+  for (const r of roots) if (!byRoot.has(r)) byRoot.set(r, 0);
+  return {
+    hits: precise.slice(0, k),
+    total: precise.length,
+    roots: [...byRoot].map(([root, count]) => ({ root, count })),
+  };
 }
 
 // searchAyahs يبقى مستعمَلًا في مواضعَ أخرى؛ نُبقيه مستوردًا للتوافق
