@@ -2202,3 +2202,82 @@ table.data tr:hover td { background: var(--panel-2); }
 /* لونُ «الآية الجامعة» في الوسم الموحّد (ذهبيٌّ أعمق من القاعدة الكبرى) */
 .kl-badge.g, .mk-chip.g { background: var(--gold-soft); color: var(--gold); border-color: var(--gold); }
 .mm-lg.g, .mm-cell.g { background: var(--gold); }
+
+/* ═══ توثيقُ المشروع (/docs) — فهرسٌ ملازمٌ ومتنٌ بأقسامٍ ثلاثيّة السؤال ═══ */
+.dc-header { text-align: center; margin-bottom: 26px; }
+.dc-eyebrow {
+  font-size: 11.5px; letter-spacing: 0.14em; color: var(--muted);
+  text-transform: none; margin-bottom: 6px;
+}
+.dc-sanad {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;
+  max-width: 940px; margin: 18px auto 0; text-align: start;
+}
+.dc-sanad-i {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel);
+  padding: 10px 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.dc-sanad-i b { color: var(--accent); font-size: 13.5px; }
+.dc-sanad-i span { color: var(--ink-2); font-size: 12px; line-height: 1.7; }
+
+.dc-body { display: grid; grid-template-columns: 220px 1fr; gap: 28px; align-items: start; }
+.dc-toc { position: sticky; top: 78px; display: flex; flex-direction: column; gap: 1px; }
+.dc-toc-h { font-size: 11.5px; color: var(--muted); letter-spacing: 0.1em; padding: 0 8px 6px; }
+.dc-toc-a {
+  display: flex; align-items: baseline; gap: 8px; text-decoration: none;
+  color: var(--ink-2); font-size: 13px; line-height: 1.5; padding: 6px 8px;
+  border-radius: 8px; border-inline-start: 2px solid transparent;
+}
+.dc-toc-a:hover { background: var(--panel-2); color: var(--ink); }
+.dc-toc-a.on { color: var(--accent); border-inline-start-color: var(--accent); font-weight: 600; }
+.dc-toc-n { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; min-width: 12px; }
+
+.dc-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.dc-sec {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel);
+  padding: 18px 20px; scroll-margin-top: 84px;
+}
+.dc-sec-h { display: flex; align-items: baseline; gap: 10px; }
+.dc-sec-n {
+  font-size: 12px; color: var(--gold); font-variant-numeric: tabular-nums;
+  border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; flex: 0 0 auto;
+}
+.dc-h2 { margin: 0; font-size: 18px; color: var(--ink); font-family: var(--font-quran); }
+.dc-lead { color: var(--ink-2); font-size: 13.5px; line-height: 1.8; margin: 6px 0 0; }
+
+.dc-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+.dc-stat {
+  display: flex; flex-direction: column; gap: 1px; align-items: center;
+  background: var(--panel-2); border-radius: 10px; padding: 7px 13px; min-width: 78px;
+}
+.dc-stat b { color: var(--accent); font-size: 16px; font-variant-numeric: tabular-nums; }
+.dc-stat span { color: var(--muted); font-size: 11.5px; }
+
+.dc-qa { margin-top: 12px; }
+.dc-q {
+  font-size: 11.5px; color: var(--muted); letter-spacing: 0.06em; margin-bottom: 3px;
+}
+.dc-a { margin: 0; font-size: 13.5px; line-height: 1.95; color: var(--ink); }
+.dc-lim { border-inline-start: 2px solid var(--gold); padding-inline-start: 12px; }
+.dc-lim .dc-q { color: var(--gold); }
+.dc-lim .dc-a { color: var(--ink-2); }
+.dc-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.dc-open { margin: 10px 0 0; padding-inline-start: 18px; display: flex; flex-direction: column; gap: 8px; }
+.dc-open li { font-size: 13.5px; line-height: 1.9; color: var(--ink-2); }
+
+@media (max-width: 860px) {
+  .dc-body { grid-template-columns: 1fr; gap: 14px; }
+  .dc-toc {
+    position: static; flex-direction: row; flex-wrap: nowrap; overflow-x: auto;
+    gap: 4px; padding-bottom: 4px; -webkit-overflow-scrolling: touch;
+  }
+  .dc-toc-h { display: none; }
+  .dc-toc-a {
+    flex: 0 0 auto; border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 12px; font-size: 12px; white-space: nowrap;
+  }
+  .dc-toc-a.on { border-color: var(--accent); background: var(--accent-soft); }
+  .dc-toc-n { display: none; }
+  .dc-sec { padding: 15px 14px; }
+  .dc-h2 { font-size: 16.5px; }
+}

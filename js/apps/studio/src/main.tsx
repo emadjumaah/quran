@@ -33,6 +33,7 @@ const Mujam = lazy(() => import("./views/Mujam"));
 const Lisan = lazy(() => import("./views/Lisan"));
 const Sarf = lazy(() => import("./views/Sarf"));
 const About = lazy(() => import("./views/About"));
+const Docs = lazy(() => import("./views/Docs"));
 const Galaxy = lazy(() => import("./views/Galaxy"));
 const MushafMap = lazy(() => import("./views/MushafMap"));
 const ThematicThread = lazy(() => import("./views/ThematicThread"));
@@ -182,6 +183,7 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
       ["/sarf", "الصرف بالأرقام", "Morphology"],
       ["/galaxy", "شبكة الجذور", "Roots network"],
       ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
+      ["/docs", "توثيق المشروع", "Documentation"],
     ],
   },
 ];
@@ -447,6 +449,7 @@ function App() {
           <Route path="/shabaka" element={<MushafMap />} />
           <Route path="/khayt" element={<ThematicThread />} />
           <Route path="/about" element={<About />} />
+          <Route path="/docs" element={<Docs />} />
           <Route path="/lexicon" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />

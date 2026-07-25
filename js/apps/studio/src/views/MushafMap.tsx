@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
-import { classOf, kulliyatMeta, loadKulliyat, themeName, tierCounts, useKulliyat } from "../kulliyat";
+import { classOf, kulliyatMeta, loadKulliyat, themeName, useKulliyat } from "../kulliyat";
 import { loadMarks, markOf } from "../marks";
 
 const HAFS = [7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
@@ -61,14 +61,17 @@ export default function MushafMap() {
 
   const [marksReady, setMarksReady] = useState(false);
   useEffect(() => { void loadMarks().then(() => setMarksReady(true)); }, []);
-  const counts = ready ? tierCounts() : { kulliya: 0, jamia: 0, tafsil: 0 };
-  // عددُ الآيات الجامعة يُقرأ من الوسم نفسِه لا من رقمٍ مكتوب
-  const jamiaCount = useMemo(() => {
-    if (!marksReady) return 0;
-    let n = 0;
-    for (let su = 1; su <= 114; su++) for (let a = 1; a <= HAFS[su - 1]; a++) if (markOf(`${su}:${a}`)?.kind === "جامعة") n++;
-    return n;
-  }, [marksReady]);
+  // الأعدادُ تُحصى من الوسم نفسِه لا من رقمٍ مكتوب — فالآيةُ الجامعةُ تسبق
+  // مرتبتَها في الشبكة، فلو أخذنا عددَ الطبقة لخالف الفهرسُ ما هو مرسومٌ فعلًا.
+  const marked = useMemo(() => {
+    const c = { g: 0, k: 0, j: 0 };
+    if (!ready || !marksReady) return c;
+    for (let su = 1; su <= 114; su++) for (let a = 1; a <= HAFS[su - 1]; a++) {
+      const m = markOf(`${su}:${a}`);
+      if (m) c[m.cls]++;
+    }
+    return c;
+  }, [ready, marksReady]);
   const meta = ready ? kulliyatMeta() : null;
   const selCls = sel ? classOf(sel) : null;
   const selLinks = sel ? linkIndex.get(sel) ?? [] : [];
@@ -87,9 +90,9 @@ export default function MushafMap() {
               : "Every verse as a cell coloured by its unified-network tier (first edition, pre-deepening), in mushaf order — see at a glance how the tiers fall across the sūras. Tap a cell for its verse and evidence."}
           </p>
           <div className="mm-legend">
-            <span><i className="mm-lg g" /> {ar ? "آيةٌ جامعة" : "gathering"} <b>{num(jamiaCount)}</b></span>
-            <span><i className="mm-lg k" /> {ar ? "قاعدةٌ كبرى" : "major rule"} <b>{num(counts.kulliya)}</b></span>
-            <span><i className="mm-lg j" /> {ar ? "قاعدة" : "rule"} <b>{num(counts.jamia)}</b></span>
+            <span><i className="mm-lg g" /> {ar ? "آيةٌ جامعة" : "gathering"} <b>{num(marked.g)}</b></span>
+            <span><i className="mm-lg k" /> {ar ? "قاعدةٌ كبرى" : "major rule"} <b>{num(marked.k)}</b></span>
+            <span><i className="mm-lg j" /> {ar ? "قاعدة" : "rule"} <b>{num(marked.j)}</b></span>
             <span className="muted">{ar ? "وما سواها تفصيلٌ بلا وسم" : "the rest unmarked"}</span>
             <span className="muted">{num(meta?.verses ?? 6236)} {ar ? "آية" : "verses"}</span>
           </div>
