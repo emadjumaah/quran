@@ -20,6 +20,7 @@
     "@monlite/wasm": "^0.2.2",
     "buffer": "^6.0.3",
     "fts5-sql-bundle": "^1.0.2",
+    "minisearch": "^7.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"

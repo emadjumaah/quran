@@ -20,7 +20,7 @@ import { num, t } from "./i18n";
 import type { SurahDoc } from "./types";
 import { readPathOf } from "./types";
 import { resolveRootReady } from "./searchForms";
-import { openSearch } from "./lib/openSearch";
+import { quickSearch } from "./lib/openSearch";
 
 export interface OmniItem {
   key: string;
@@ -171,9 +171,12 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
   // text hits (only for queries with an Arabic word) — بالمحرّك المفتوح نفسِه
   if (/[ء-ي]{2,}/.test(raw)) {
     try {
-      const { hits: open } = await openSearch(raw, { cap: 60 });
-      const hits = open.map((h) => h.ayah);
-      for (const h of open.slice(0, 4))
+      // العددُ المعروضُ حقيقيٌّ لا سقف (رصدُ المالك: كان يقول ٦٠ دائمًا)،
+      // والقائمةُ لا تعرض إلا الطبقاتِ الدقيقة — والموسَّعُ في صفحة البحث بوسمِه.
+      const { hits: open, total } = await quickSearch(raw, 4);
+      const truncated = false;
+      const hits = { length: total } as { length: number };
+      for (const h of open)
         out.push({
           key: `t${h.ayah.location}`,
           kind: "text",
@@ -185,7 +188,7 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
         out.push({
           key: "more-text",
           kind: "text",
-          label: `${raw} (${num(hits.length)})`,
+          label: `${raw} (${num(hits.length)}${truncated ? "+" : ""})`,
           to: `/search?m=text&q=${encodeURIComponent(raw)}`,
         });
     } catch {
