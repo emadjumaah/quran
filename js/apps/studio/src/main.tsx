@@ -26,7 +26,6 @@ const Furuq = lazy(() => import("./views/Furuq"));
 const Bayan = lazy(() => import("./views/Bayan"));
 const Amthal = lazy(() => import("./views/Amthal"));
 const Fawasil = lazy(() => import("./views/Fawasil"));
-const Mawdui = lazy(() => import("./views/Mawdui"));
 const MawadiV2 = lazy(() => import("./views/MawadiV2"));
 const Tafasir = lazy(() => import("./views/Tafasir"));
 const Maalim = lazy(() => import("./views/Maalim"));
@@ -150,7 +149,6 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
     ar: "الموضوعات", en: "Themes",
     items: [
       ["/mawadi", "المواضيع", "Topics"],
-      ["/mawdui", "المحاور", "Axes"],
       ["/khayt", "الخيوط الموضوعية", "Thematic threads"],
       ["/amthal", "الأمثال", "Parables"],
     ],
@@ -370,9 +368,9 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
         <svg viewBox="0 0 24 24" aria-hidden><path d="M12 2 3 7l9 5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
         <span>{ar ? "الكلّيّات" : "Kulliyyāt"}</span>
       </NavLink>
-      <NavLink to="/mawdui" className={`tab${on("/mawdui") ? " active" : ""}`}>
+      <NavLink to="/mawadi" className={`tab${on("/mawadi") ? " active" : ""}`}>
         <svg viewBox="0 0 24 24" aria-hidden><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
-        <span>{ar ? "المحاور" : "Axes"}</span>
+        <span>{ar ? "المواضيع" : "Topics"}</span>
       </NavLink>
       <button className="tab" onClick={onMenu} aria-label={ar ? "القائمة" : "menu"}>
         <svg viewBox="0 0 24 24" aria-hidden><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
@@ -452,8 +450,8 @@ function App() {
           <Route path="/bayan/:id" element={<Bayan />} />
           <Route path="/amthal" element={<Amthal />} />
           <Route path="/fawasil" element={<Fawasil />} />
-          <Route path="/mawdui" element={<Mawdui />} />
-          <Route path="/mawdui/:t" element={<Mawdui />} />
+          <Route path="/mawdui" element={<Navigate to="/qawaid" replace />} />
+          <Route path="/mawdui/*" element={<Navigate to="/qawaid" replace />} />
           <Route path="/tabwib" element={<Navigate to="/mawadi" replace />} />
           <Route path="/tabwib/*" element={<Navigate to="/mawadi" replace />} />
           <Route path="/mawadi" element={<MawadiV2 />} />

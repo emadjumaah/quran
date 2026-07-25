@@ -31,7 +31,7 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
   const tsize = cls ? themeSizeOf(cls.theme) : 0;
   const sub = cls && cls.tier !== "تفصيل" ? subtreeCounts(loc) : null;
   const under: string[] = [];
-  if (sub) { if (sub.jamia) under.push(`${num(sub.jamia)} جامعة`); if (sub.tafsil) under.push(`${num(sub.tafsil)} تفصيلًا`); }
+  if (sub) { if (sub.jamia) under.push(`${num(sub.jamia)} قاعدة`); if (sub.tafsil) under.push(`${num(sub.tafsil)} تفصيلًا`); }
   const [s, a] = loc.split(":");
   const toggle = () => canDrill && setOpen((v) => !v);
   return (
@@ -53,7 +53,7 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
       </div>
       {cls && (tname || under.length > 0) && (
         <div className="kl-sub">
-          {tname && <span className="kl-theme" title={ar ? `محورٌ يضمّ ${num(tsize)} آية` : `theme · ${tsize} verses`}>◇ {tname}</span>}
+          {tname && <span className="kl-theme" title={ar ? `تجميعٌ حسابيٌّ لقواعدَ يشترك تفصيلُها — ${num(tsize)} آية (لا موضوع)` : `computed grouping · ${tsize} verses`}>◇ {tname}</span>}
           {under.length > 0 && <span className="kl-under">{ar ? `تحته ${under.join(" و")}` : `under: ${under.join(", ")}`}</span>}
         </div>
       )}
@@ -112,7 +112,7 @@ export default function Kulliyat() {
           <h1 className="jw-title">{ar ? "القواعدُ وتفصيلُها" : "Rules and their elaboration"}</h1>
           <p className="jw-lead">
             {ar
-              ? "وسمٌ محسوبٌ من الشبكة الموحّدة: قواعدُ المصحف المؤهّلةُ ببواباتِ صيغةِ العموم، فُحصت صلاتُها صلةً صلةً بقارئٍ يرى كلَّ زوجٍ بمقطعَي سياقِه — ٩٬٤٩٤ صلةً موجَّهةً و١٬٣١٢ توكيدًا متبادلًا. القاعدةُ الكبرى أكثرُها تفصيلًا واتساعَ محاور، ثم القاعدة، والتفصيلُ يُبيِّنُهما. اخترِ المرتبة، وابحثْ، وانقرِ المرتبةَ لترى أدلّتَها كاملة."
+              ? "وسمٌ محسوبٌ من الشبكة الموحّدة: قواعدُ المصحف المؤهّلةُ ببواباتِ صيغةِ العموم، فُحصت صلاتُها صلةً صلةً بقارئٍ يرى كلَّ زوجٍ بمقطعَي سياقِه — ٩٬٤٩٤ صلةً موجَّهةً و١٬٣١٢ توكيدًا متبادلًا. القاعدةُ الكبرى: مفصِّلاتٌ ≥٨ واتساعُ محاورَ ≥٥. والقاعدةُ (مراجعةُ ٢١ يوليو): مفصِّلاتٌ ≥٤ وانتشارٌ في ≥٣ سورًا وعلاقتان مختلفتان — فسقط مؤهَّلُ «المثاني وحدها» وصارت المثاني شارةً تُعرض لا رتبةً تُمنح، ونزل العددُ من ١٬١٧٧ إلى ٤٧٨ كلُّها ذاتُ اتساعٍ حقيقيّ."
               : "A computed tiering from the unified network: the gate-qualified rules of the muṣḥaf, every link examined one by one with both passages' context in view — 9,494 directed links and 1,312 mutual affirmations. Pick a tier, search, tap a tier chip to see its full evidence."}
           </p>
           <p className="jw-lead" style={{ marginTop: -6, fontSize: 13.5 }}>
