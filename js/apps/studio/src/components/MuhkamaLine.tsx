@@ -4,37 +4,39 @@
  * chip «جامعة ↑ الفرقان ٥٩» linking to the كلّيّة it belongs under. From
  * kulliyat.json (see docs/kulliyat-algorithm-design.md).
  */
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { surahNameAr } from "../db";
 import { getUILang, num } from "../i18n";
-import { classOf, kulliyaOf, useKulliyat , tierLabel } from "../kulliyat";
+import { kulliyaOf, useKulliyat } from "../kulliyat";
+import { loadMarks, markOf } from "../marks";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
 export default function MuhkamaLine({ location }: { location: string }) {
   const ready = useKulliyat();
+  const [marksReady, setMarksReady] = useState(false);
+  useEffect(() => { void loadMarks().then(() => setMarksReady(true)); }, []);
   const ar = getUILang() === "ar";
-  if (!ready) return null;
-  const cls = classOf(location);
-  if (!cls) return null;
+  void ar;
+  if (!ready || !marksReady) return null;
 
   // every tier opens the verse's own clear classification page — not the general list
   const to = `/aya/${location.split(":")[0]}/${location.split(":")[1]}`;
 
-  // «تفصيل» لا يُوسَم في سطر الآية (قرار المالك 2026-07-21): الوسمُ يُعلن ما
-  // تميّز به الموضع، وأكثرُ المصحف تفصيلٌ فلا فائدة في تكراره تحت كلِّ آية.
-  if (cls.tier === "تفصيل") return null;
-  if (cls.tier === "كلّية") {
+  // الوسمُ من المصدر الواحد (marks.ts): جامعةٌ · كبرى · قاعدة — وما سواه بلا
+  // وسمٍ، فأكثرُ المصحف تفصيلٌ وتكرارُ وسمِه تحت كلِّ آيةٍ لا يفيد.
+  const m = markOf(location);
+  if (!m) return null;
+  if (m.kind === "جامعة") {
     return (
-      <Link to={to} className="chip mk-chip k" title={ar ? "بطاقةُ الآية — قاعدةٌ كبرى بأدلتها المفحوصة" : "this verse's card — a major rule with its examined evidence"}>
-        ◆ {ar ? "قاعدةٌ كبرى" : "major rule"}
-      </Link>
+      <Link to="/kulliyat" className="chip mk-chip g" title={m.why}>◆ {m.label}</Link>
     );
   }
-  const k = kulliyaOf(location);
+  const k = m.kind === "قاعدة" ? kulliyaOf(location) : null;
   return (
-    <Link to={to} className={`chip mk-chip ${cls.tier === "جامعة" ? "j" : "t"}`} title={ar ? "بطاقةُ الآية: مرتبتُها ومحورُها وموضعُها في الشجرة" : "this verse's card: its tier, محور and place in the tree"}>
-      {tierLabel(cls.tier, ar)}{k && <span className="mk-up"> ↑ {arName(k)}</span>}
+    <Link to={to} className={`chip mk-chip ${m.cls}`} title={m.why}>
+      {m.label}{k && <span className="mk-up"> ↑ {arName(k)}</span>}
     </Link>
   );
 }

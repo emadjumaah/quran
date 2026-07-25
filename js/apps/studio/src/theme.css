@@ -2198,3 +2198,7 @@ table.data tr:hover td { background: var(--panel-2); }
 .sc-locs { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 4px; }
 .sc-loc { font-size: 12px; color: var(--ink-2); text-decoration: none; border-bottom: 1px dotted var(--line); }
 .sc-loc:hover { color: var(--accent); }
+
+/* لونُ «الآية الجامعة» في الوسم الموحّد (ذهبيٌّ أعمق من القاعدة الكبرى) */
+.kl-badge.g, .mk-chip.g { background: var(--gold-soft); color: var(--gold); border-color: var(--gold); }
+.mm-lg.g, .mm-cell.g { background: var(--gold); }

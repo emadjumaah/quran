@@ -10,9 +10,11 @@ import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import { classOf, kulliyatMeta, loadKulliyat, themeName, tierCounts, useKulliyat } from "../kulliyat";
+import { loadMarks, markOf } from "../marks";
 
 const HAFS = [7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
-const tierCls = (loc: string) => { const t = classOf(loc)?.tier; return t === "كلّية" ? "k" : t === "جامعة" ? "j" : t === "تفصيل" ? "t" : "n"; };
+// الوسمُ من المصدر الواحد (marks.ts): جامعةٌ · كبرى · قاعدة — وما سواه بلا وسم
+const tierCls = (loc: string) => markOf(loc)?.cls ?? "n";
 
 export default function MushafMap() {
   useUILang();
@@ -57,7 +59,16 @@ export default function MushafMap() {
     return idx;
   }, [ready]);
 
+  const [marksReady, setMarksReady] = useState(false);
+  useEffect(() => { void loadMarks().then(() => setMarksReady(true)); }, []);
   const counts = ready ? tierCounts() : { kulliya: 0, jamia: 0, tafsil: 0 };
+  // عددُ الآيات الجامعة يُقرأ من الوسم نفسِه لا من رقمٍ مكتوب
+  const jamiaCount = useMemo(() => {
+    if (!marksReady) return 0;
+    let n = 0;
+    for (let su = 1; su <= 114; su++) for (let a = 1; a <= HAFS[su - 1]; a++) if (markOf(`${su}:${a}`)?.kind === "جامعة") n++;
+    return n;
+  }, [marksReady]);
   const meta = ready ? kulliyatMeta() : null;
   const selCls = sel ? classOf(sel) : null;
   const selLinks = sel ? linkIndex.get(sel) ?? [] : [];
@@ -72,13 +83,14 @@ export default function MushafMap() {
           <h1 className="jw-title">{ar ? "خريطةُ المصحف" : "The mushaf map"}</h1>
           <p className="jw-lead">
             {ar
-              ? "كلُّ آيةٍ في القرآن خليّةٌ ملوّنةٌ بمرتبتها من وسمِ الشبكةِ الموحّدة (نسخةٌ أولى قبل التعميق)، بترتيب المصحف — فترى في نظرةٍ واحدةٍ كيف تتوزّعُ المراتبُ عبر السور. انقُرْ خليّةً لترى آيتَها وأدلتَها في بطاقتها."
+              ? "كلُّ آيةٍ في القرآن خليّةٌ بترتيب المصحف، ملوّنةٌ بوسمِ مشكاة الواحد: آيةٌ جامعةٌ (اختيارٌ مراجَعٌ بأدلّة)، أو قاعدةٌ كبرى، أو قاعدة — من الشبكة المفحوصة؛ وما سوى ذلك بلا وسمٍ فأكثرُ المصحف تفصيلٌ يُبيّنُ القواعد. انقُرْ خليّةً لترى آيتَها وأدلتَها."
               : "Every verse as a cell coloured by its unified-network tier (first edition, pre-deepening), in mushaf order — see at a glance how the tiers fall across the sūras. Tap a cell for its verse and evidence."}
           </p>
           <div className="mm-legend">
-            <span><i className="mm-lg k" /> {ar ? "كلّيّة" : "kulliyya"} <b>{num(counts.kulliya)}</b></span>
-            <span><i className="mm-lg j" /> {ar ? "جامعة" : "jāmiʿa"} <b>{num(counts.jamia)}</b></span>
-            <span><i className="mm-lg t" /> {ar ? "تفصيل" : "tafṣīl"} <b>{num(counts.tafsil)}</b></span>
+            <span><i className="mm-lg g" /> {ar ? "آيةٌ جامعة" : "gathering"} <b>{num(jamiaCount)}</b></span>
+            <span><i className="mm-lg k" /> {ar ? "قاعدةٌ كبرى" : "major rule"} <b>{num(counts.kulliya)}</b></span>
+            <span><i className="mm-lg j" /> {ar ? "قاعدة" : "rule"} <b>{num(counts.jamia)}</b></span>
+            <span className="muted">{ar ? "وما سواها تفصيلٌ بلا وسم" : "the rest unmarked"}</span>
             <span className="muted">{num(meta?.verses ?? 6236)} {ar ? "آية" : "verses"}</span>
           </div>
         </header>
@@ -89,7 +101,7 @@ export default function MushafMap() {
               <div className="mm-sura-h">{surahNameAr(s)} <span className="muted">{num(locs.length)}</span></div>
               <div className="mm-cells">
                 {locs.map((loc) => (
-                  <span key={loc} data-loc={loc} className={`mm-cell ${tierCls(loc)}${loc === sel ? " on" : ""}${linkedSet.has(loc) ? " lnk" : ""}`} title={`${surahNameAr(s)} ${loc.split(":")[1]}${classOf(loc) ? ` — ${classOf(loc)!.tier}` : ""}`} />
+                  <span key={loc} data-loc={loc} className={`mm-cell ${tierCls(loc)}${loc === sel ? " on" : ""}${linkedSet.has(loc) ? " lnk" : ""}`} title={`${surahNameAr(s)} ${loc.split(":")[1]}${markOf(loc) ? ` — ${markOf(loc)!.label}` : ""}`} />
                 ))}
               </div>
             </div>
@@ -102,7 +114,7 @@ export default function MushafMap() {
             <button className="gx-close" onClick={() => setSel(null)} aria-label="close">✕</button>
             <div className="gx-panel-h">
               <Link to={`/read/${sel.split(":")[0]}/${sel.split(":")[1]}`} className="gx-root" style={{ textDecoration: "none" }}>{surahNameAr(Number(sel.split(":")[0]))} {num(sel.split(":")[1])}</Link>
-              {selCls && <span className={`kl-badge ${tierCls(sel)}`}>{selCls.tier}</span>}
+              {markOf(sel) && <span className={`kl-badge ${markOf(sel)!.cls}`} title={markOf(sel)!.why}>{markOf(sel)!.label}</span>}
               {selLinks.length > 0 && <span className="chip">{num(selLinks.length)} {ar ? "صلة مفحوصة" : "examined links"}</span>}
             </div>
             {texts.get(sel) && <p className="gx-mean quran" dir="rtl">{texts.get(sel)!.textUthmani ?? texts.get(sel)!.textClean}</p>}
