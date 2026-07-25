@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAyahByGlobalNo, surahNameAr } from "../db";
+import { ayahByLocationMap, getAyahByGlobalNo, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { nearestUnits, type SiyaqUnit } from "../siyaq";
 import type { AyahDoc } from "../types";
@@ -117,6 +117,19 @@ export function SimilarAyahsPanel({
   // «مقاطعُ قريبةٌ منها» — جاراتُ مقطعِ الآية من متّجهات وحدات السياق، محسوبةٌ
   // محليًّا بلا نداء (قرار المالك 2026-07-21). الآيةُ تُشبَّه بالآية، والمقطعُ بالمقطع.
   const [units, setUnits] = useState<{ unit: SiyaqUnit; score: number }[] | null>(null);
+  // المقطعُ يُقرأ في مودالٍ مكانَه ولا يُقتلع القارئُ من موضعه (قرار المالك 2026-07-21)
+  const [peek, setPeek] = useState<SiyaqUnit | null>(null);
+  const [peekTexts, setPeekTexts] = useState<Map<string, AyahDoc> | null>(null);
+  useEffect(() => {
+    if (!peek || peekTexts) return;
+    void ayahByLocationMap().then(setPeekTexts).catch(() => {});
+  }, [peek, peekTexts]);
+  useEffect(() => {
+    if (!peek) return;
+    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setPeek(null);
+    document.addEventListener("keydown", onEsc);
+    return () => document.removeEventListener("keydown", onEsc);
+  }, [peek]);
   useEffect(() => {
     let live = true;
     nearestUnits(location, 4).then((u) => live && setUnits(u)).catch(() => live && setUnits([]));
@@ -187,10 +200,8 @@ export function SimilarAyahsPanel({
             <button
               key={u.unit.i}
               className="similar-unit"
-              onClick={() => {
-                navigate(readPathOf(`${u.unit.s}:${u.unit.a1}`));
-                onNavigate?.();
-              }}
+              onClick={() => setPeek(u.unit)}
+              title={getUILang() === "ar" ? "اقرأ المقطع هنا" : "read the passage here"}
             >
               <span className="similar-unit-name">{u.unit.name}</span>
               <span className="muted similar-unit-span">
@@ -199,6 +210,45 @@ export function SimilarAyahsPanel({
             </button>
           ))}
         </div>
+      )}
+      {peek && (
+        <>
+          <div className="sheet-backdrop" onClick={() => setPeek(null)} />
+          <div className="word-sheet card" role="dialog" aria-modal="true" aria-label={peek.name}>
+            <div className="word-sheet-grip" aria-hidden />
+            <button className="word-sheet-close" onClick={() => setPeek(null)} aria-label={getUILang() === "ar" ? "إغلاق" : "close"}>✕</button>
+            <div className="word-sheet-body">
+              <div className="ws-ayah" style={{ textAlign: "start" }}>
+                <div className="ws-ayah-ref muted">
+                  {peek.name} · {surahNameAr(peek.s)} {num(peek.a1)}–{num(peek.a2)}
+                </div>
+              </div>
+              <div className="mv-verses">
+                {Array.from({ length: peek.a2 - peek.a1 + 1 }, (_, k) => `${peek.s}:${peek.a1 + k}`).map((loc) => {
+                  const a = peekTexts?.get(loc);
+                  return (
+                    <div key={loc} className="mv-v">
+                      <span className="mv-v-ref">{surahNameAr(peek.s)} {num(loc.split(":")[1])}</span>
+                      <span className="quran mv-v-text">{a?.textClean ?? "…"}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
+                <button
+                  className="chip"
+                  onClick={() => {
+                    navigate(readPathOf(`${peek.s}:${peek.a1}`));
+                    setPeek(null);
+                    onNavigate?.();
+                  }}
+                >
+                  {getUILang() === "ar" ? "افتحْ في المصحف ←" : "open in the reader →"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
