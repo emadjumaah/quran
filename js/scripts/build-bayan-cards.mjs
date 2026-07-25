@@ -93,10 +93,12 @@ for (const b of LIB_BOOKS) {
     if (b.mode !== "term") {
       if (aya.length) row.aya = aya;
       // السورة: من الموضع إن صرّح بها، وإلا فمن آخر سورةٍ صُرّح بها (كتب المتشابه تسير على ترتيب المصحف)
-      const locSura = /^سورة [^—]+/.exec(e.source?.locus ?? "")?.[0]?.trim();
+      const locSura = clean(/^سورة [^—]+/.exec(e.source?.locus ?? "")?.[0]);
       if (b.mode === "aya") {
         if (locSura) curSura = locSura;
         row.sura = curSura || "مقدمة";
+        // الرأس داخل تصفُّح السورة لا يعيد اسمها
+        row.head = row.head.replace(/^سورة [^—]+—\s*/, "").trim() || row.head;
       }
     }
     entries.push(row);
