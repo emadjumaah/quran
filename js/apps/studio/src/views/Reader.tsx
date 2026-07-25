@@ -188,12 +188,21 @@ function VerseMore({
         aria-expanded={open}
         title={ar ? "المزيد: التفسير والإعراب والترجمة وموضعُها" : "more: tafsir, iʿrāb, translation, location"}
       >
-        ⋮
+        <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden focusable="false">
+          <circle cx="10" cy="4" r="1.9" fill="currentColor" />
+          <circle cx="10" cy="10" r="1.9" fill="currentColor" />
+          <circle cx="10" cy="16" r="1.9" fill="currentColor" />
+        </svg>
+        <span className="v-more-lbl">{ar ? "المزيد" : "More"}</span>
       </button>
       {open && (
         <div className="v-more-menu" role="menu">
           <div className="v-more-loc">
             {t("reader.juz")} {num(ayah.juz)} · {t("reader.page")} {num(ayah.page)}
+          </div>
+          {/* الاستماعُ من هنا (قرار المالك): السطرُ للقراءة، والأدواتُ في القائمة */}
+          <div className="v-more-audio">
+            <AudioButton ayahId={ayahIdOf(ayah)} />
           </div>
           {ITEMS.map((it) => (
             <button key={it.kind} className={`v-more-item${isOpen(it.kind) ? " on" : ""}`} onClick={() => pick(it.kind)} role="menuitem">
@@ -841,7 +850,6 @@ export default function Reader() {
                   {ayah.sajdaType && (
                     <span className="chip gold" title={ayah.sajdaType}>۩ {t("reader.sajda")}</span>
                   )}
-                  <AudioButton ayahId={ayahIdOf(ayah)} />
                   <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} open={panelOpen("similar", ayah.location)} onToggle={() => togglePanel("similar", ayah.location)} />
                   <TadabburChip open={panelOpen("tadabbur", ayah.location)} onToggle={() => togglePanel("tadabbur", ayah.location)} />
                   <MuhkamaLine location={ayah.location} />
@@ -859,6 +867,17 @@ export default function Reader() {
                 <TadabburPanel ayah={ayah} ayahId={ayahIdOf(ayah)} open={panelOpen("tadabbur", ayah.location)} />
                 {panelOpen("similar", ayah.location) && (
                   <SimilarAyahsPanel ayahId={ayahIdOf(ayah)} location={ayah.location} />
+                )}
+                {/* إغلاقٌ ظاهرٌ لأيِّ لوحةٍ مفتوحة (تفسيرٌ/ترجمةٌ/إعرابٌ…) — كان
+                    الإغلاقُ لا يُهتدى إليه إلا بإعادة النقر على مصدره */}
+                {openPanels[ayah.location] && (
+                  <button
+                    className="panel-close"
+                    onClick={() => togglePanel(openPanels[ayah.location], ayah.location)}
+                    title={getUILang() === "ar" ? "إغلاق اللوحة" : "close"}
+                  >
+                    ✕ {getUILang() === "ar" ? "إغلاق" : "Close"}
+                  </button>
                 )}
               </article>
             );

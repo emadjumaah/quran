@@ -5,7 +5,7 @@
  * by-ref lookup — no search, no server. Clearly sourced, never presented as ours.
  */
 import { useEffect, useState } from "react";
-import { TAFSIR_SOURCES, bookTextAt, bookLabel } from "../books";
+import { TAFSIR_SOURCES, bookTextAt, bookById, bookLabel } from "../books";
 import { getUILang, useUILang } from "../i18n";
 import { setSettings, useSettings } from "../settings";
 
@@ -49,16 +49,23 @@ export function TafsirPanel({ location, open }: { location: string; open: boolea
             role="tab"
             aria-selected={sel === s.id}
             onClick={() => setSettings({ tafsir: s.id })}
+            title={s.remote ? (ar ? `${s.author ?? s.label} — يُجلب عند الطلب` : "fetched on demand") : s.author}
           >
             {s.label}
+            {s.remote && <span className="tafsir-tab-rem" aria-hidden> ⇣</span>}
           </button>
         ))}
       </div>
       <div className="tafsir-entry">
-        <div className="tafsir-src">◆ {bookLabel(sel)}</div>
+        <div className="tafsir-src">
+          ◆ {bookLabel(sel)}
+          {bookById(sel)?.author ? <span className="muted"> · {bookById(sel)!.author}</span> : null}
+        </div>
         <div className="tafsir-text">
           {text === undefined
-            ? "…"
+            ? (bookById(sel)?.remote
+                ? (ar ? "يُجلب من مكتبة مشكاة…" : "fetching from the library…")
+                : "…")
             : text ?? (ar ? "لا نصَّ لهذه الآية في هذا المصدر." : "No text for this verse in this source.")}
         </div>
       </div>

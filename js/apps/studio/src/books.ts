@@ -247,9 +247,14 @@ function entryAt(list: BookEntry[], loc: string): BookEntry | null {
   return n <= e.e ? e : null;
 }
 
-/** One book's text at a verse (loc "s:a"), range-aware. null if the book has none. */
+/** One book's text at a verse (loc "s:a"), range-aware. null if the book has none.
+ *  الكتبُ البعيدة («نمط الصوت») تُجلب سورتُها عند الطلب وتُخزَّن — فالتفاسيرُ
+ *  العريقةُ العشرون تعمل عند الآية كالمحليّة (إصلاح 2026-07-21). */
 export async function bookTextAt(source: string, loc: string): Promise<string | null> {
-  const list = await loadBookEntries(source);
+  const src = bookById(source);
+  const list = src?.remote
+    ? await loadBookSura(source, Number(loc.split(":")[0]))
+    : await loadBookEntries(source);
   if (!list) return null;
   return entryAt(list, loc)?.text ?? null;
 }
