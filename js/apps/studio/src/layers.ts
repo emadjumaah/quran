@@ -742,13 +742,58 @@ export async function countLive(expr: string, surah?: number): Promise<LayerResu
   }
   const scope = surah ? `في سورة ${surahNameAr(surah)}` : "في المصحف كله";
   const sample = locs.map((l) => `${l} (${surahNameAr(Number(l.split(":")[0]))} ${l.split(":")[1]})`).join("، ");
+  const entries: LayerEntry[] = [{
+    label: "عدٌّ حتمي مباشر (رسم الكلمة)",
+    ref: expr.trim(),
+    text: `«${q}» ${scope}: ${count} مرةً في ${ayahsN} آية${locs.length ? `؛ من مواضعه: ${sample}${ayahsN > 10 ? "…" : ""}` : ""}`,
+  }];
+
+  // التفصيلُ الصرفيّ للكلمة المفردة (سِفر sarf-counts): للسؤال الواحد ثلاثةُ
+  // أجوبةٍ صحيحةٍ مختلفة — الجذرُ والصيغةُ والرسم — فيُعطى المساعدُ ثلاثتَها
+  // كي لا يجيب برقمٍ مبهمٍ واحد (2026-07-21).
+  if (!surah && !q.includes(" ")) {
+    const sc = await loadSarfCounts();
+    const root = sc ? rootOfWord(sc, q) : null;
+    if (sc && root) {
+      const rc = sc.roots[root];
+      const forms = rc.forms.slice(0, 8).map((f) => `${f.lemma} ${f.form}: ${f.n}`).join(" · ");
+      const rasm = rc.rasm.slice(0, 8).map((r) => `${r.w}: ${r.n}`).join(" · ");
+      entries.push({
+        label: "التفصيلُ الصرفيّ (الوسم الصرفيّ للمدوّنة)",
+        ref: root,
+        text: `الجذر «${root}» ورد ${rc.n} جذعًا في المصحف. بالصيغة — ${forms}. وبالرسم — ${rasm}.`,
+        href: `/roots/${encodeURIComponent(root)}`,
+      });
+    }
+  }
+
   return {
     layer: "count",
-    entries: [{
-      label: "عدٌّ حتمي مباشر (رسم الكلمة)",
-      ref: expr.trim(),
-      text: `«${q}» ${scope}: ${count} مرةً في ${ayahsN} آية${locs.length ? `؛ من مواضعه: ${sample}${ayahsN > 10 ? "…" : ""}` : ""}`,
-    }],
-    note: "عدٌّ حتميٌّ لمطابقة الرسم التام بعد تجريد التشكيل (حُسب الآن من قاعدة مشكاة) — ليس عدَّ جذرٍ ولا يشمل الصيغ الملحقة (كالمسبوقة بحرف جر ملتصق)",
+    entries,
+    note: "ثلاثةُ أعدادٍ لا تُخلَط: عدُّ الرسم (مطابقةُ صورة الكلمة بعد تجريد التشكيل — لا يشمل الملتصقَ بها من حروف)، وعدُّ اللَّـمّة بصيغتها (مفردًا/مثنًّى/جمعًا…)، وعدُّ الجذر بمشتقّاته كلِّها. حُسبت الآن من قاعدة مشكاة ووسمِها الصرفيّ.",
   };
+}
+
+// ── سِفرُ العدّ الصرفيّ — يُحمَّل عند أوّل حاجةٍ ويُخزَّن ──
+interface SarfForm { lemma: string; pos: string; form: string; n: number; locs: string[] }
+interface SarfRoot { n: number; forms: SarfForm[]; rasm: { w: string; n: number; locs: string[] }[] }
+interface SarfCounts { roots: Record<string, SarfRoot> }
+let sarfCache: SarfCounts | null = null;
+let sarfLoading: Promise<SarfCounts | null> | null = null;
+function loadSarfCounts(): Promise<SarfCounts | null> {
+  if (sarfCache) return Promise.resolve(sarfCache);
+  sarfLoading ??= fetch(`${import.meta.env.BASE_URL}sarf-counts.json?v=${__DATA_VERSION__}`)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((j: SarfCounts | null) => (sarfCache = j))
+    .catch(() => null);
+  return sarfLoading;
+}
+/** جذرُ الكلمة من سِفر العدّ: تُطابَق صورةُ الرسم كما وردت في المصحف */
+function rootOfWord(sc: SarfCounts, word: string): string | null {
+  const w = bare(word);
+  for (const [root, rc] of Object.entries(sc.roots)) {
+    if (root === w) return root;
+    for (const r of rc.rasm) if (bare(r.w) === w) return root;
+  }
+  return null;
 }
