@@ -126,7 +126,7 @@ export default function KulliyatMukhtara() {
     <div className="page">
       <div className="jw-wrap">
         <header className="jw-header">
-          <h1 className="jw-title">{ar ? "الكلّيّاتُ المختارة" : "Selected kulliyāt"}</h1>
+          <h1 className="jw-title">{ar ? "الآياتُ الجامعة" : "Gathering verses"}</h1>
           <p className="jw-lead">
             {ar
               ? "آياتٌ جامعةٌ تنضوي تحتها معانٍ كثيرة، مرتَّبةٌ أبوابًا. كلُّ واحدةٍ بنصّها من قاعدتنا وأدلّتِها المحسوبة: صيغةُ القاعدة الصرفيّة، ومقطعُها من المصحف، وصلاتُها المفحوصة في شبكتنا إن وُجدت."
@@ -138,7 +138,7 @@ export default function KulliyatMukhtara() {
               : "Sanad grade: a reviewed selection with computed evidence — nominated by meaning (owner-reviewed); texts, gates, links and passages computed from our data. Not a full automatic computation, and not a judgment on what it omits."}
           </p>
           <div className="jw-stats">
-            <span className="chip"><b>{num(data.meta.count)}</b> {ar ? "كلّيّة" : "kulliyāt"}</span>
+            <span className="chip"><b>{num(data.meta.count)}</b> {ar ? "آيةً جامعة" : "verses"}</span>
             <span className="chip"><b>{num(babs.length)}</b> {ar ? "أبواب" : "chapters"}</span>
             <Link to="/qawaid" className="chip link">{ar ? "الطبقةُ المحسوبة: القواعدُ وتفصيلُها ←" : "computed layer →"}</Link>
           </div>
@@ -153,7 +153,7 @@ export default function KulliyatMukhtara() {
             ))}
           </div>
         </div>
-        <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في الكلّيّات…" : "search…"} />
+        <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في الآيات الجامعة…" : "search…"} />
 
         {grouped.map((g) => (
           <section key={g.bab} className="km-bab">

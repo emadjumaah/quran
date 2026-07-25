@@ -131,7 +131,7 @@ function TopicView({ data, name }: { data: Payload; name: string }) {
                   return (
                     <div key={loc} className={`mv-v${isHit ? " hit" : ""}`}>
                       <Link to={readPathOf(loc)} className="mv-v-ref">{surahNameAr(u.s)} {num(loc.split(":")[1])}</Link>
-                      <span className="quran mv-v-text">{a.textClean}</span>
+                      <span className="quran mv-v-text">{a.textUthmani ?? a.textClean}</span>
                     </div>
                   );
                 })}

@@ -43,7 +43,7 @@ function Node({ loc, texts, depth }: { loc: string; texts: Map<string, AyahDoc>;
         <Link to={`/read/${s}/${a}`} className="kl-verse-ref">{arName(loc)}</Link>
         {cls && <TierBadge loc={loc} />}
         <span className="quran kl-verse-text" onClick={toggle} style={{ cursor: canDrill ? "pointer" : "default" }}>
-          {texts.get(loc)?.textClean ?? loc}
+          {texts.get(loc)?.textUthmani ?? texts.get(loc)?.textClean ?? loc}
         </span>
         {cls && (
           <button className={`kl-jam${why ? " on" : ""}`} onClick={() => setWhy((v) => !v)} title={ar ? "لماذا هذه المرتبة؟ (العوامل المحسوبة)" : "why this tier?"}>

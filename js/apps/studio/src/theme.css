@@ -2172,6 +2172,10 @@ table.data tr:hover td { background: var(--panel-2); }
 .reader-sticky .v-more-btn, .reader-bar .v-more-btn { width: 38px; justify-content: center; padding: 0; }
 .rd-menu { flex: 0 0 auto; margin-inline-start: 2px; }
 
+/* شبكةُ الجذور وحدَها تأخذ عرضَ الشاشة كاملًا — الرسمُ يحتاج المساحة
+   (استثناءٌ معلنٌ من توحيد العرض، أمر المالك 2026-07-26) */
+.page.gx-page { max-width: none; }
+
 /* العدُّ الدقيق — تفصيلُ الجذر بالصيغة وبالرسم */
 .sc-card { margin-top: 0; }
 .sc-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }

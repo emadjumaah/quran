@@ -51,7 +51,7 @@ function Face({ face, idx, texts, wide }: { face: WFace; idx: number; texts: Map
       {shown.map((loc) => (
         <Link key={loc} to={readPathOf(loc)} className="jw-verse">
           <span className="jw-verse-ref">{arName(loc)}</span>
-          <span className="jw-verse-text quran">{texts.get(loc)?.textClean ?? loc}</span>
+          <span className="jw-verse-text quran">{texts.get(loc)?.textUthmani ?? texts.get(loc)?.textClean ?? loc}</span>
         </Link>
       ))}
       {face.verses.length > 5 && (

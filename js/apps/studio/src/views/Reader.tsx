@@ -718,10 +718,12 @@ export default function Reader() {
   useEffect(() => {
     if (!narrow) return;
     const el = mainRef.current;
-    const open = !!(selected || selectedLoc);
+    // القفلُ للمودال وحدَه — لا لتحديد الآية (علّةٌ رصدها المالك: التمريرُ توقّف
+    // على الجوال لأن التحديدَ كان يقفل التمرير 2026-07-26)
+    const open = !!(selected || verseSheet);
     if (el) el.style.overflowY = open ? "hidden" : "";
     return () => { if (el) el.style.overflowY = ""; };
-  }, [narrow, selected, selectedLoc]);
+  }, [narrow, selected, verseSheet]);
 
   return (
     <div style={{ display: "flex", height: "100%", minHeight: 0, overflow: "hidden" }}>

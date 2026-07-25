@@ -95,7 +95,8 @@ const BATCH1 = [
 
 const db = new DatabaseSync(path.join(ROOT, "quran-kg.db"), { readOnly: true });
 const NAME = new Map(db.prepare("SELECT surah_no, name_ar FROM surah").all().map((r) => [r.surah_no, r.name_ar]));
-const AY = new Map(db.prepare("SELECT location, text_clean, word_count FROM ayah").all().map((r) => [r.location, r]));
+// الاستشهادُ بآيةٍ يكون برسم المصحف (أمر المالك 2026-07-26) — والإملائيُّ للبحث
+const AY = new Map(db.prepare("SELECT location, text_uthmani, text_clean, word_count FROM ayah").all().map((r) => [r.location, r]));
 const gates = JSON.parse(fs.readFileSync(path.join(ROOT, "findings/kulliyat-v2/gates-v1.json"), "utf8"));
 const ev = JSON.parse(fs.readFileSync(path.join(PUB, "v3-evidence.json"), "utf8"));
 const ranks = JSON.parse(fs.readFileSync(path.join(PUB, "ranks-v1.json"), "utf8")).ranks;
@@ -119,7 +120,7 @@ for (const item of BATCH1) {
   out.push({
     loc: item.loc, bab: item.bab, title: item.title,
     ref: `${NAME.get(Number(item.loc.split(":")[0]))} ${item.loc.split(":")[1]}`,
-    text: ay.text_clean,
+    text: ay.text_uthmani ?? ay.text_clean,
     gates: gs,                       // بوّاباتُ صيغة القاعدة (محسوبة)
     m: Object.values(rels).flat().length,
     T: rk?.T ?? 0,

@@ -105,7 +105,7 @@ export default function MushafMap() {
               {selCls && <span className={`kl-badge ${tierCls(sel)}`}>{selCls.tier}</span>}
               {selLinks.length > 0 && <span className="chip">{num(selLinks.length)} {ar ? "صلة مفحوصة" : "examined links"}</span>}
             </div>
-            {texts.get(sel) && <p className="gx-mean quran" dir="rtl">{texts.get(sel)!.textClean}</p>}
+            {texts.get(sel) && <p className="gx-mean quran" dir="rtl">{texts.get(sel)!.textUthmani ?? texts.get(sel)!.textClean}</p>}
             {selCls && themeName(selCls.theme) && <div className="muted gx-nb-h">◇ {themeName(selCls.theme)}</div>}
             {selLinks.length > 0 && (
               <div className="gx-links" style={{ flexWrap: "wrap", gap: 6 }}>

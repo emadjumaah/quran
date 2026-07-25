@@ -229,7 +229,7 @@ export function SimilarAyahsPanel({
                   return (
                     <div key={loc} className="mv-v">
                       <span className="mv-v-ref">{surahNameAr(peek.s)} {num(loc.split(":")[1])}</span>
-                      <span className="quran mv-v-text">{a?.textClean ?? "…"}</span>
+                      <span className="quran mv-v-text">{a?.textUthmani ?? a?.textClean ?? "…"}</span>
                     </div>
                   );
                 })}

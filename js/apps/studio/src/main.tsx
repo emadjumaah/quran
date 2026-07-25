@@ -144,6 +144,9 @@ function LangToggle() {
 // GROUPS, so the bar stays tidy instead of one long scattered row. The mobile
 // drawer reuses the same groups as labelled sections.
 type NavItem = [to: string, ar: string, en: string];
+// أربعُ وجهاتٍ لا تُشتّت (إعادةُ تنظيمٍ بأمر المالك 2026-07-26): «البيان» صار
+// وجهةً مستقلّةً برأسها، والمتشابهُ جُمع — ألفاظُ التنزيل تضمُّ فروقَ التنزيل
+// والفروقَ اللغويّة والوجوهَ والنظائر، والإحصاءُ يضمُّ الصرفَ وشبكةَ الجذور.
 const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
     ar: "الموضوعات", en: "Themes",
@@ -156,29 +159,28 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
     ar: "بناء المصحف", en: "Composition",
     items: [
-      ["/kulliyat", "الكلّيّات المختارة", "Selected kulliyāt"],
+      ["/kulliyat", "الآيات الجامعة", "Gathering verses"],
       ["/qawaid", "القواعد وتفصيلها", "Rules & elaboration"],
       ["/shabaka", "خريطة المصحف", "Mushaf map"],
+    ],
+  },
+  {
+    ar: "ألفاظ التنزيل", en: "The wording",
+    items: [
       ["/furuq", "فروق التنزيل", "Furūq"],
-    ],
-  },
-  {
-    ar: "الجذور واللغة", en: "Roots & language",
-    items: [
-      ["/roots", "الجذور", "Roots"],
-      ["/galaxy", "شبكة الجذور", "Roots network"],
       ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
-      ["/bayan", "البيان", "Bayān"],
       ["/wujuh", "الوجوه والنظائر", "Polysemy"],
-      ["/sarf", "الصرف بالأرقام", "Morphology"],
+      ["/roots", "الجذور ومعانيها", "Roots"],
+      ["/mujam", "معجم القرآن", "Dictionary"],
     ],
   },
   {
-    ar: "مصادر وأدوات", en: "Sources & tools",
+    ar: "مصادر وإحصاء", en: "Sources & stats",
     items: [
-      ["/mujam", "معجم القرآن", "Dictionary"],
       ["/tafasir", "التفاسير والمصادر", "Tafsir & sources"],
       ["/maalim", "إحصاءات القرآن", "Qur'an stats"],
+      ["/sarf", "الصرف بالأرقام", "Morphology"],
+      ["/galaxy", "شبكة الجذور", "Roots network"],
       ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
     ],
   },
@@ -234,6 +236,8 @@ function Nav() {
   return (
     <nav>
       <NavLink to="/read" title={ar ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
+      {/* «البيان» وجهةٌ برأسها لا بندٌ في قائمة (أمر المالك 2026-07-26) */}
+      <NavLink to="/bayan" title={ar ? "البيان — تدبّر لغة القرآن" : "Bayān — the Qur'an's diction"}>{ar ? "البيان" : "Bayān"}</NavLink>
       {groups.map((g) => (
         <NavGroup key={g.ar} label={ar ? g.ar : g.en} items={g.items} />
       ))}

@@ -99,7 +99,7 @@ export default function WhyRank({ location }: { location: string }) {
                     <span className="why-sh-rel">{rel}</span>
                     <Link className="why-sh-ref" to={readPathOf(loc)}>{arName(loc)}</Link>
                   </div>
-                  <div className="quran why-sh-text">{texts ? (texts.get(loc)?.textClean ?? loc) : "…"}</div>
+                  <div className="quran why-sh-text">{texts ? (texts.get(loc)?.textUthmani ?? texts.get(loc)?.textClean ?? loc) : "…"}</div>
                 </div>
               ))}
             </div>
