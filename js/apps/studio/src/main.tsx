@@ -328,7 +328,7 @@ function RouteBoundary({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** نِبراس — a floating AI-chat button on every page (mobile + web), pinned bottom-
+/** نِبراس (اسمُنا الداخلي؛ وللمستخدم «اسأل مشكاة») — a floating AI-chat button
  *  right; the single entry to research + meaning-search chat. A speech bubble with
  *  a sparkle marks it as an AI chat. Hidden while نِبراس itself is open. */
 function NibrasFab() {
@@ -336,12 +336,12 @@ function NibrasFab() {
   const ar = getUILang() === "ar";
   if (loc.pathname.startsWith("/assistant")) return null;
   return (
-    <NavLink to="/assistant" className="nibras-fab" title={ar ? "نِبراس: محادثةُ ذكاءٍ اصطناعيّ — بحثٌ بالمعنى وصياغةٌ من بيانات القرآن" : "Nibras: an AI chat — meaning-search & drafting from the Qur'an's data"} aria-label={ar ? "نِبراس — محادثة ذكاء اصطناعي" : "Nibras — AI chat"}>
+    <NavLink to="/assistant" className="nibras-fab" title={ar ? "اسأل مشكاة: محادثةُ ذكاءٍ اصطناعيّ — بحثٌ بالمعنى وصياغةٌ من بيانات القرآن" : "Ask Mishkat: an AI chat — meaning-search & drafting from the Qur'an's data"} aria-label={ar ? "اسأل مشكاة — محادثة ذكاء اصطناعي" : "Ask Mishkat — AI chat"}>
       {/* هلالُ المشكاة — لا معيّن (قرار مالك 2026-07-19) */}
       <svg className="nibras-fab-ic" viewBox="0 0 24 24" aria-hidden focusable="false">
         <path transform="rotate(-30 12 12)" d="M8.5 3.5 a9.5 9.5 0 1 0 12 12 a11 11 0 0 1 -12 -12 z" fill="currentColor" />
       </svg>
-      <span className="nibras-fab-label">{ar ? "اسأل نِبراس" : "Ask Nibras"}</span>
+      <span className="nibras-fab-label">{ar ? "اسأل مشكاة" : "Ask Mishkat"}</span>
     </NavLink>
   );
 }

@@ -691,14 +691,14 @@ export default function Assistant() {
       <main className="mu-main">
         <div className="mu-topbar">
           <button className="mu-list-btn" onClick={() => setListOpen((v) => !v)} aria-label={ar ? "المحادثات" : "chats"}>☰</button>
-          <span className="mu-title">{chat?.title || (ar ? "نِبراس" : "Nibras")}</span>
+          <span className="mu-title">{chat?.title || (ar ? "مشكاة" : "Mishkat")}</span>
         </div>
 
         <div className={`mu-thread${empty ? " empty" : ""}`}>
           {empty ? (
             <div className="mu-hero">
               <div className="mu-empty-mark"><span className="ai-spark" aria-hidden /></div>
-              <h1 className="mu-empty-h">{ar ? "تحدَّثْ مع نِبراس" : "Talk to Nibras"}</h1>
+              <h1 className="mu-empty-h">{ar ? "تحدَّثْ مع مشكاة" : "Talk to Mishkat"}</h1>
               <span className="mu-empty-tag">{ar ? "مساعدُ مشكاة الذكيّ — يبحث في بياناتها ويجيب بإسناد" : "مشكاة's AI assistant — searches its data, answers with citations"}</span>
               <p className="mu-hero-sub">
                 {ar
@@ -708,7 +708,7 @@ export default function Assistant() {
               {composer}
               {srcsReady && (
                 <details className="mu-srcs">
-                  <summary>{ar ? "ما مصادرُ نبراس وأدواتُه؟" : "What does Nibras search?"}</summary>
+                  <summary>{ar ? "ما المصادرُ والأدوات؟" : "What does Mishkat search?"}</summary>
                   <div className="mu-srcs-body">
                     <div><b>{ar ? "المصحفُ أولًا: " : "The muṣḥaf first: "}</b>{ar ? "بحثٌ بالمعنى في الآيات، واستقصاءُ الجذور وصيغِها، ووحداتُ السياق، وعدٌّ حتميٌّ للرسم — والآياتُ تُنقل من نصّ المصحف." : "meaning-search over the verses, root inquiry, context units, deterministic counting — verses come from the muṣḥaf's text."}</div>
                     <div><b>{ar ? `طبقاتُ مشكاة (${num(layersDigest().filter((l) => l.id !== "search").length)}): ` : "Layers: "}</b>{layersDigest().filter((l) => l.id !== "search").map((l) => l.label.split(" (")[0]).join("، ")} — {ar ? "بدرجتي سندٍ معلنتين: محسوبٌ من حساباتنا، ومنقولٌ يُقتبس منسوبًا لمصدره." : "each labeled محسوب (computed) or منقول (quoted)."}</div>
@@ -725,7 +725,7 @@ export default function Assistant() {
                     <div className="muted">
                       {ar ? "أما التفاسيرُ العريقةُ العشرون فللاستعراض في " : "The twenty classical tafsirs are browsable in "}
                       <Link to="/tafasir">{ar ? "قسم التفاسير والمصادر" : "the sources section"}</Link>
-                      {ar ? " — خارجَ أدوات نبراس عمدًا (حتى لا يمتلئ سياقُه من كتابٍ واحد)." : " — deliberately outside Nibras's tools."}
+                      {ar ? " — خارجَ أدوات المحادثة عمدًا (حتى لا يمتلئ سياقُها من كتابٍ واحد)." : " — deliberately outside the chat's tools."}
                     </div>
                   </div>
                 </details>
@@ -742,7 +742,7 @@ export default function Assistant() {
         {!empty && (
           <div className="mu-inputbar">
             {composer}
-            <div className="mu-foot muted">{ar ? "نِبراس يبحث في بياناتنا ويؤلّف منها بإسناد — عونٌ للباحث لا فتوى، والعبرةُ بمراجعة أهل العلم." : "Nibras searches our data and composes from it with citations — research aid, not fatwa."}</div>
+            <div className="mu-foot muted">{ar ? "مشكاة تبحث في بياناتها وتؤلّف منها بإسناد — عونٌ للباحث لا فتوى، والعبرةُ بمراجعة أهل العلم." : "Mishkat searches its own data and composes from it with citations — a research aid, not fatwa."}</div>
           </div>
         )}
       </main>
