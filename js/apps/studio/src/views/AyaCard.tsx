@@ -16,6 +16,7 @@ import EvidencePanel from "../components/EvidencePanel";
 import { ayahIdOf } from "../components/AudioButton";
 import { similarOf } from "../similar";
 import { loadFuruq, catLabel } from "../furuq";
+import { BOOK_LABEL, VERSE_BOOKS, useTariq } from "../lib/tariq";
 import {
   childrenOf, classOf, kulliyaOf, subtreeCounts, themeHeadOf, themeName, themeSizeOf, themeVerses, useKulliyat,
 } from "../kulliyat";
@@ -33,6 +34,59 @@ function VerseRow({ loc, texts, extra }: { loc: string; texts: Map<string, AyahD
       <span className="quran aya-kid-text">{texts.get(loc)?.textClean ?? loc}</span>
       {extra}
     </Link>
+  );
+}
+
+/** في كتب البيان — مظانُّ هذا الموضع وجذوره في مكتبة البيان التسعة (فهرس المطروق §٦) */
+function BayanPanel({ loc, roots }: { loc: string; roots: string[] }) {
+  const ar = getUILang() === "ar";
+  const tariq = useTariq();
+  const verse = useMemo(() => {
+    const seen = new Set<string>();
+    return (tariq?.ayas[loc] ?? []).filter(([b]) => VERSE_BOOKS.has(b) && !seen.has(b) && seen.add(b));
+  }, [tariq, loc]);
+  const byRoot = useMemo(
+    () => roots.map((r) => ({ root: r, books: tariq?.roots[r] ?? [] })).filter((x) => x.books.length),
+    [tariq, roots]);
+  const total = verse.length + byRoot.length;   // معالجاتُ الموضع + جذورٌ لها مداخل
+  if (!tariq || !total) return null;
+  return (
+    <details className="card aya-more">
+      <summary>
+        ◈ {ar ? "في كتب البيان" : "in the Bayān books"} <span className="muted">{num(total)}</span>
+      </summary>
+      <div className="aya-more-body">
+        {verse.length > 0 && (
+          <>
+            <div className="aya-more-lbl">{ar ? "عُرض لهذا الموضع بعينه:" : "this verse is treated in:"}</div>
+            <div className="by-seg">
+              {verse.map(([b, id]) => (
+                <Link key={b} to={`/bayan?book=${b}&entry=${id}`} className="chip link">{BOOK_LABEL[b] ?? b}</Link>
+              ))}
+            </div>
+          </>
+        )}
+        {byRoot.length > 0 && (
+          <>
+            <div className="aya-more-lbl">{ar ? "ولجذورها مداخلُ في:" : "its roots have entries in:"}</div>
+            {byRoot.length > 8 && (
+              <div className="muted" style={{ fontSize: 12.5 }}>{ar ? `عُرضت ثمانيةُ جذورٍ من ${num(byRoot.length)}` : `8 of ${byRoot.length} roots`}</div>
+            )}
+            {byRoot.slice(0, 8).map(({ root, books }) => (
+              <div key={root} className="by-seg">
+                <span className="chip gold quran">{root}</span>
+                {books.map(([b, n]) => (
+                  <Link key={b} to={`/bayan?root=${encodeURIComponent(root)}&book=${b}`} className="chip link">
+                    {BOOK_LABEL[b] ?? b} <b>{num(n)}</b>
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </>
+        )}
+        <Link to="/bayan" className="chip link" style={{ marginTop: 6 }}>{ar ? "قسم البيان ←" : "the Bayān section ←"}</Link>
+      </div>
+    </details>
   );
 }
 
@@ -208,6 +262,8 @@ export default function AyaCard() {
             <div className="muted" style={{ fontSize: 12, padding: "0 16px 6px" }}>{ar ? "↝ يتتبّعُ اللفظَ عبر المصحف (خيطٌ موضوعيّ)" : "↝ traces the word across the mushaf"}</div>
           </details>
         )}
+
+        <BayanPanel loc={loc} roots={roots} />
 
         {kids.length > 0 && (
           <div className="card aya-kids">
