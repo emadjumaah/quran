@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 import { surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { readPathOf } from "../types";
-import { CAT_INFO, CAT_ORDER, catLabel, sides, useFuruq, type Furq } from "../furuq";
+import { CAT_INFO, KIND_INFO, KIND_ORDER, kindsOf, pairLabel, sides, useFuruq, type Furq, type Kind } from "../furuq";
 import PageSearch from "../components/PageSearch";
 import { fuzzyMatch } from "../lib/fuzzy";
 
@@ -54,9 +54,7 @@ function PairCard({ f }: { f: Furq }) {
         <span className="fr-vs">↔</span>
         <Link to={readPathOf(f.b)} className="fr-ref">{arName(f.b)}</Link>
         <span className="spacer" style={{ flex: 1 }} />
-        {f.taq === 1 && <span className="chip" title={ar ? "فيه لفظٌ تقدّم في إحداهما وتأخّر في الأخرى" : "contains a moved phrase"}>{ar ? "فيه تقديم" : "reorder"}</span>}
-        {f.morph === 1 && <span className="chip" title={ar ? "فيه فرقُ صيغةٍ صرفية" : "contains a morphological form difference"}>{ar ? "صيغة" : "form"}</span>}
-        <span className="chip gold" title={CAT_INFO[f.cat]?.note}>{catLabel(f.cat)}</span>
+        <span className="chip gold" title={kindsOf(f).map((k) => `${k}: ${KIND_INFO[k].note}`).join(" · ") || CAT_INFO[f.cat]?.note}>{pairLabel(f)}</span>
       </div>
       <VerseLine segs={a} side="a" fold={f.win?.s === "a" ? f.win : undefined} />
       <VerseLine segs={b} side="b" fold={f.win?.s === "b" ? f.win : undefined} />
@@ -92,10 +90,14 @@ function FamilyCard({ fam }: { fam: Family }) {
   );
 }
 
+/** أبوابُ الطلب: البنيويّان ثم الفروقُ الأوّليّة — ولا سلّةَ «مركّبة» بينها */
+const FILTERS: string[] = ["تطابق", "اشتمال", ...KIND_ORDER];
+const noteOf = (c: string) => CAT_INFO[c]?.note ?? KIND_INFO[c as Kind]?.note ?? "";
+
 export default function Furuq() {
   useUILang();
   const data = useFuruq();
-  const [cat, setCat] = useState<string>("");
+  const [cat, setCat] = useState<string>(""); // «تطابق» · «اشتمال» · أو فرقٌ أوّليّ
   const [q, setQ] = useState("");
   const [limit, setLimit] = useState(40);
   const ar = getUILang() === "ar";
@@ -130,19 +132,19 @@ export default function Furuq() {
     return out.sort((x, y) => itemPos(x) - itemPos(y));
   }, [base, locText]);
 
+  /** بطاقةٌ تُطلب بكلِّ فرقٍ فيها — فالزوجُ ذو الفرقين يُعدّ في البابين */
+  const tagsOf = (it: Item): string[] =>
+    it.kind === "family" ? ["تطابق"] : it.f.cat === "اشتمال" ? ["اشتمال"] : kindsOf(it.f);
+
   const catCounts = useMemo(() => {
     const c: Record<string, number> = {};
-    for (const it of items) {
-      const k = it.kind === "family" ? it.cat : it.f.cat;
-      c[k] = (c[k] ?? 0) + 1;
-    }
+    for (const it of items) for (const k of tagsOf(it)) c[k] = (c[k] ?? 0) + 1;
     return c;
   }, [items]);
 
   const rows = useMemo(() => {
     return items.filter((it) => {
-      const k = it.kind === "family" ? it.cat : it.f.cat;
-      if (cat && k !== cat) return false;
+      if (cat && !tagsOf(it).includes(cat)) return false;
       const locs = it.kind === "family" ? it.verses : [it.f.a, it.f.b];
       return fuzzyMatch(q, ...locs.map(arName), ...locs.map((l) => locText.get(l) ?? ""));
     });
@@ -165,13 +167,13 @@ export default function Furuq() {
           <h1 className="jw-title">{ar ? "فروق التنزيل" : "Furūq al-Tanzīl"}</h1>
           <p className="jw-lead">
             {ar
-              ? "المتشابهات اللفظية في القرآن: المتطابقةُ تُجمع في موضعٍ واحد، والمختلفةُ تُحاذى آيتين كلمةً بكلمة — على أصل الكلمة لا رسمِها، فيظهر فرقُ الصيغة صيغتين لكلمةٍ واحدة، ويظهر اللفظُ المنتقلُ من موضعٍ إلى موضع. من نصّ القرآن وصرفه وحدهما."
+              ? "المتشابهات اللفظية في القرآن: المتطابقةُ تُجمع في موضعٍ واحد، والمختلفةُ تُحاذى آيتين كلمةً بكلمة — على أصل الكلمة لا رسمِها، فيظهر فرقُ الصيغة صيغتين لكلمةٍ واحدة، ويظهر اللفظُ المنتقلُ من موضعٍ إلى موضع. وكلُّ زوجٍ يُسمّى بما فيه من فروق: «إبدالٌ وزيادة»، «صيغةٌ وإبدالٌ وزيادة» — ويُطلب بأيِّ فرقٍ منها. من نصّ القرآن وصرفه وحدهما."
               : "The Qur'an's near-identical verses: identical phrases gathered into one place, differing ones aligned two-by-two on the lemma — form changes appear as one word in two forms, moved phrases are flagged. From the text and its morphology alone."}
           </p>
           <div className="jw-stats">
             <span className="chip"><b>{num(items.length)}</b> {ar ? "بطاقة" : "cards"}</span>
             <span className="chip"><b>{num(base.length)}</b> {ar ? "زوجًا" : "pairs"}</span>
-            <span className="chip"><b>{num(CAT_ORDER.filter((c) => (catCounts[c] ?? 0) > 0).length)}</b> {ar ? "أنواع فروق" : "difference types"}</span>
+            <span className="chip"><b>{num(FILTERS.filter((c) => (catCounts[c] ?? 0) > 0).length)}</b> {ar ? "أنواع فروق" : "difference types"}</span>
           </div>
         </header>
 
@@ -185,14 +187,14 @@ export default function Furuq() {
             <button className={cat === "" ? "on" : ""} onClick={() => setCat("")} title={ar ? "كل الأنواع" : "all"}>
               {ar ? "الكل" : "all"} <span className="muted">{num(items.length)}</span>
             </button>
-            {CAT_ORDER.filter((c) => (catCounts[c] ?? 0) > 0).map((c) => (
+            {FILTERS.filter((c) => (catCounts[c] ?? 0) > 0).map((c) => (
               <button
                 key={c}
                 className={cat === c ? "on" : ""}
                 onClick={() => setCat(cat === c ? "" : c)}
-                title={CAT_INFO[c]?.note}
+                title={noteOf(c)}
               >
-                {c === "تطابق" ? (ar ? "متطابقة" : "identical") : catLabel(c)} <span className="muted">{num(catCounts[c] ?? 0)}</span>
+                {c === "تطابق" ? (ar ? "متطابقة" : "identical") : c} <span className="muted">{num(catCounts[c] ?? 0)}</span>
               </button>
             ))}
           </div>
@@ -200,7 +202,8 @@ export default function Furuq() {
 
         <div className="muted jw-resultcount">
           {num(rows.length)} {ar ? "بطاقة" : "cards"}
-          {cat && CAT_INFO[cat] && <span> · {ar ? CAT_INFO[cat].note : CAT_INFO[cat].en}</span>}
+          {cat && <span> · {noteOf(cat)}</span>}
+          {!cat && ar && <span> · الزوجُ ذو الفرقين يُطلب من بابَيه، فمجموعُ الأبواب فوق عدد البطاقات</span>}
         </div>
 
         <div className="fr-list">

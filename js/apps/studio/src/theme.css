@@ -2281,3 +2281,32 @@ table.data tr:hover td { background: var(--panel-2); }
   .dc-sec { padding: 15px 14px; }
   .dc-h2 { font-size: 16.5px; }
 }
+
+/* ═══ البيان: عرضٌ يُقرأ — بطاقةُ صدارة، وأطرافٌ بأسمائها، ودرجةٌ ظاهرة ═══ */
+.by-hero {
+  display: flex; flex-direction: column; gap: 7px; text-decoration: none; color: inherit;
+  border: 1px solid var(--gold); border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--gold-soft), var(--panel) 70%);
+  padding: 16px 18px; margin: 14px 0 16px;
+}
+.by-hero:hover { box-shadow: var(--shadow); }
+.by-hero-eyebrow { font-size: 11.5px; color: var(--gold); letter-spacing: 0.08em; }
+.by-hero-title { font-family: var(--font-quran); font-size: 24px; color: var(--ink); }
+.by-hero-kashf { font-size: 13.5px; line-height: 1.9; color: var(--ink-2); max-width: 70ch; }
+.by-hero-go { font-size: 12.5px; color: var(--accent); margin-top: 2px; }
+
+/* الطرفان باسمَيهما وعددَيهما — بدل رقمين متجاورين بلا اسم */
+.by-sides { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin-top: 2px; }
+.by-sd { display: inline-grid; grid-template-columns: auto auto; align-items: baseline; gap: 2px 6px; min-width: 96px; }
+.by-sd-n { font-size: 13.5px; color: var(--ink); font-family: var(--font-quran); }
+.by-sd-v { font-size: 12px; color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 700; }
+.by-sd-bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: var(--panel-2); overflow: hidden; }
+.by-sd-bar i { display: block; height: 100%; background: var(--accent); opacity: 0.55; }
+
+/* درجةُ البطاقة ظاهرةٌ على وجهها: محرَّرةٌ بمراجعة أو مولَّدةٌ بلا تحرير */
+.by-grade {
+  align-self: flex-start; font-size: 11px; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px;
+}
+.by-grade.g { color: var(--gold); border-color: var(--gold); background: var(--gold-soft); }
+.by-tile-ed b { color: var(--ink); }

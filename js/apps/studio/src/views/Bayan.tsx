@@ -542,6 +542,23 @@ function BayanLib({ q, root, book, entry, onPick }:
   );
 }
 
+/** طرفا البطاقة باسمَيهما وعددَيهما — «خوف ٤٨ ↔ خشية ١٢٤».
+ *  كان العرضُ أرقامًا متجاورةً بلا أسماء («٤٨ · ١٢٤ موضعًا») فلا يُقرأ. */
+function SidesBar({ sides }: { sides: { name: string; total: number }[] }) {
+  const max = Math.max(1, ...sides.map((s) => s.total));
+  return (
+    <span className="by-sides">
+      {sides.slice(0, 3).map((s, i) => (
+        <span className="by-sd" key={i} title={`${s.name}: ${num(s.total)} موضعًا`}>
+          <span className="by-sd-n">{s.name}</span>
+          <span className="by-sd-v">{num(s.total)}</span>
+          <span className="by-sd-bar"><i style={{ width: `${Math.round((s.total / max) * 100)}%` }} /></span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
 export default function Bayan() {
   useUILang();
   const ar = getUILang() === "ar";
@@ -612,9 +629,26 @@ export default function Bayan() {
       <h2>{ar ? "البيان — تدبر لغة القرآن" : "Bayān — the Qur'an's own diction"}</h2>
       <p className="by-intro">
         {ar
-          ? "لكل كلمةٍ في التنزيل موضعُها. بطاقاتٌ تجمع خريطةَ استعمالٍ محسوبةً من المصحف كله مع قراءاتِ أعلام اللغة منسوبةً، ومكتبةُ تسعةِ كتبٍ مهيكلةً للبحث، وكل بطاقةٍ تدلّك على مظانّها من الكتب — نحسب ونعرض، والقارئ يتدبر."
+          ? "لكل كلمةٍ في التنزيل موضعُها. تفتحُ البطاقةَ فترى: أين وردت كلُّ كلمةٍ من الطرفين، وبأيِّ صيغة، ومع أيِّ ألفاظٍ تُصاحبها، وأين افترقتا — محسوبًا من المصحف كلِّه؛ ثم ما قاله أعلامُ اللغة فيهما منقولًا منسوبًا، ثم مظانُّها من كتب البيان التسعة."
           : "Computed usage maps with attributed classical readings, a nine-book structured library, and a bridge from every card to where the scholars treated it."}
       </p>
+      {!searching && !root && !entry && seg === "cards" && data.cards.length > 0 && (() => {
+        // بطاقةُ اليوم من المحرَّرة — مدخلٌ واحدٌ مقروء بدل جدارِ عناوين.
+        // تُنتقى ذاتُ الطرفين فصاعدًا: المقارنةُ هي فائدةُ البطاقة، والمفردةُ لا تصلح صدرًا.
+        const pool = data.cards.filter((x) => x.sides.length >= 2 && x.kashf);
+        const list = pool.length ? pool : data.cards;
+        const day = Math.floor(Date.now() / 864e5);
+        const c = list[day % list.length];
+        return (
+          <Link to={`/bayan/${c.id}`} className="by-hero">
+            <span className="by-hero-eyebrow">{ar ? `بطاقةٌ من البيان · ${data.types[c.type] ?? ""}` : "a card from Bayān"}</span>
+            <b className="by-hero-title">{c.title}</b>
+            <span className="by-hero-kashf">{c.kashf}</span>
+            <SidesBar sides={c.sides} />
+            <span className="by-hero-go">{ar ? "افتحِ البطاقة — خريطةُ الاستعمال وقراءاتُ الأعلام ←" : "open the card ←"}</span>
+          </Link>
+        );
+      })()}
       <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في البطاقات والمكتبة (كلمة، جذرًا، مصطلحًا)…" : "search cards & library…"} />
       {!searching && (
         <p className="by-tabs">
@@ -636,10 +670,11 @@ export default function Bayan() {
             <h3>{data.types[ty]}</h3>
             <div className="by-grid">
               {cards.map((c) => (
-                <Link key={c.id} to={`/bayan/${c.id}`} className="fr-card by-tile">
+                <Link key={c.id} to={`/bayan/${c.id}`} className="fr-card by-tile by-tile-ed">
                   <b>{c.title}</b>
                   <span className="by-tile-kashf">{c.kashf}</span>
-                  <span className="chip">{c.sides.map((s) => num(s.total)).join(" · ")} موضعًا</span>
+                  <SidesBar sides={c.sides} />
+                  <span className="by-grade g" title="بطاقةٌ محرَّرةٌ بمراجعة">محرَّرة</span>
                 </Link>
               ))}
             </div>
@@ -660,8 +695,8 @@ export default function Bayan() {
         const tile = (c: AutoCard) => (
           <Link key={c.id} to={`/bayan/${c.id}`} className="fr-card by-tile">
             <b>{c.head}</b>
-            <span className="by-tile-kashf">{c.roots.join(" · ")}</span>
-            <span className="chip">{c.sides.map((s) => num(s.total)).join(" · ")} موضعًا</span>
+            <SidesBar sides={c.sides.map((s) => ({ name: s.root, total: s.total }))} />
+            <span className="by-grade" title="ولّدها الحساب: الخريطةُ حتميّةٌ والنصُّ منقول، بلا تحريرٍ ولا تعليل">مولَّدة</span>
           </Link>
         );
         return (

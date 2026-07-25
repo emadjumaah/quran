@@ -30,6 +30,60 @@ export interface FuruqData {
   furuq: Furq[];
 }
 
+/**
+ * الفروقُ الأوّليّة — تُقرأ من المحاذاة نفسِها لا من سلّةٍ مسبقة.
+ *
+ * كانت أكثرُ من نصف الأزواج (١٬١٢٢ من ٢٬٠١٩) تقع تحت «فروق مركّبة»، وهي ليست
+ * نوعَ فرقٍ بل بقيّةُ ما زاد على نوعٍ واحد — فاسمٌ لا يخبر القارئ بشيء. فحُلَّت
+ * السلّةُ إلى أنواعها: كلُّ زوجٍ يُسمّى بما فيه من فروقٍ مسمّاة («إبدالٌ
+ * وزيادة»)، ويُطلب بأيِّ واحدٍ منها. الأزواجُ كما هي — التسميةُ وحدَها تغيّرت.
+ */
+export type Kind = "تقديم" | "صيغة" | "إبدال" | "زيادة";
+export const KIND_ORDER: Kind[] = ["تقديم", "صيغة", "إبدال", "زيادة"];
+export const KIND_INFO: Record<Kind, { note: string; en: string }> = {
+  "تقديم": { note: "لفظٌ تقدّم في إحداهما وتأخّر في الأخرى", en: "a moved word" },
+  "صيغة": { note: "الكلمةُ نفسها بصيغةٍ صرفيةٍ أخرى", en: "same word, other form" },
+  "إبدال": { note: "كلمةٌ مكان أخرى في الموضع نفسه", en: "one word in another's place" },
+  "زيادة": { note: "زيادةٌ في إحداهما وإيجازٌ في الأخرى", en: "addition / concision" },
+};
+
+/** الفروقُ الحاضرةُ في زوجٍ بعينه، مقروءةً من محاذاته */
+export function kindsOf(f: Furq): Kind[] {
+  const has = new Set<Kind>();
+  if (f.taq === 1) has.add("تقديم");
+  const ops = f.ops;
+  for (let i = 0; i < ops.length; i++) {
+    const o = ops[i];
+    if (typeof o === "string") continue;
+    if (o[0] === "~") { has.add("صيغة"); continue; }
+    if (o[0] === "-") {
+      // كتلةُ حذفٍ تعقبها كتلةُ زيادةٍ = إبدالٌ بقدر الأقصر، وما فضل زيادةٌ أو إيجاز
+      let d = 0;
+      while (ops[i + d] && (ops[i + d] as string[])[0] === "-") d++;
+      let g = 0;
+      while (ops[i + d + g] && (ops[i + d + g] as string[])[0] === "+") g++;
+      if (g > 0) has.add("إبدال");
+      if (d !== g) has.add("زيادة");
+      i += d + g - 1;
+      continue;
+    }
+    has.add("زيادة"); // زيادةٌ لا حذفَ قبلها
+  }
+  return KIND_ORDER.filter((k) => has.has(k));
+}
+
+/** «إبدالٌ وزيادة» — اسمُ الزوج من فروقه، لا من سلّةٍ عامّة */
+export function kindsLabel(kinds: Kind[]): string {
+  if (!kinds.length) return "";
+  return kinds.map((k, i) => (i < kinds.length - 1 ? `${k}ٌ` : k)).join(" و");
+}
+
+/** الاسمُ المعروضُ للزوج: البنيويّان باسمهما، وما سواهما بفروقه */
+export function pairLabel(f: Furq): string {
+  if (f.cat === "تطابق" || f.cat === "اشتمال") return catLabel(f.cat);
+  return kindsLabel(kindsOf(f)) || catLabel(f.cat);
+}
+
 /** display order + a short note for each category. */
 export const CAT_INFO: Record<string, { note: string; en: string; label?: string }> = {
   "تطابق": { note: "الآيتان متطابقتان لفظًا", en: "word-identical" },
