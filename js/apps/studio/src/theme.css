@@ -1855,6 +1855,10 @@ table.data tr:hover td { background: var(--panel-2); }
 .mu-books-h { font-size: 12px; }
 .mu-book { border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); border-radius: 8px; padding: 8px 11px; background: var(--panel); }
 .mu-book-src { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 3px; }
+/* مؤشر الكتابة أثناء البثّ التدريجي — نبضةٌ خفيفة في آخر النص */
+.mu-reply.streaming::after { content: "▍"; color: var(--accent); margin-inline-start: 2px; animation: mu-caret 1s steps(2) infinite; }
+@keyframes mu-caret { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .mu-reply.streaming::after { animation: none; } }
 .mu-book-ln { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
 .mu-book-ln:hover { border-bottom-style: solid; }
 /* شريط أسفل الجواب: وسم الاستنباط المولد + نسخ */

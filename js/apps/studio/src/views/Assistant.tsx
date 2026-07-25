@@ -19,9 +19,44 @@ import { toolRootInfo, toolSearchMeaning } from "../lib/muinTools";
 import { retrieveBooks, hasBooks, bookLabel, BOOK_SOURCES } from "../rag";
 import { asbabFor, tafsirFor } from "../books";
 import { loadSiyaq, searchSiyaq, unitOf, type SiyaqUnit } from "../siyaq";
-import { ensureLayers, layersDigest, layerLookup, layerSearch, countLive, layerHints } from "../layers";
+import { ensureLayers, layersDigest, layerLookup, layerSearch, countLive, layerHints, rootUsage } from "../layers";
 import { resolveRootReady } from "../searchForms";
 import { ayahByLocationMap, surahNameAr } from "../db";
+
+/** بثُّ التأليف النهائي: يُظهر الجوابَ كلمةً كلمة، ثم يستقرّ على النص
+ *  المتحقَّق منه (الخادمُ يفحصه بعد اكتماله ويستبدله إن خالف). عند أي عطبٍ
+ *  في البثّ يرجع النداءُ العادي — فلا يفقد القارئُ جوابَه. */
+async function postStream(
+  url: string,
+  body: unknown,
+  onChunk: (soFar: string) => void,
+): Promise<string> {
+  const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  let shown = "";
+  let final = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split("\n");
+    buf = lines.pop() ?? "";
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      try {
+        const j = JSON.parse(line.slice(6));
+        if (j.t) { shown += j.t; onChunk(shown); }
+        else if (j.replace) { shown = j.replace; onChunk(shown); }
+        else if (j.done) final = j.text ?? shown;
+        else if (j.error) throw new Error(j.error);
+      } catch { /* سطرٌ غيرُ مكتمل */ }
+    }
+  }
+  return final || shown;
+}
 
 async function postJson(url: string, body: unknown): Promise<any> {
   const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -238,8 +273,8 @@ function Bubble({ m }: { m: ChatMsg }) {
             </>
           ) : (
             <>
-              {m.text && <div className={`mu-reply${m.error ? " err" : ""}`}>{renderReply(shownText || "", m.ayahs)}</div>}
-              {m.text && !m.error && revealed === null && (
+              {m.text && <div className={`mu-reply${m.error ? " err" : ""}${m.streaming ? " streaming" : ""}`}>{renderReply(shownText || "", m.ayahs)}</div>}
+              {m.text && !m.error && !m.streaming && revealed === null && (
                 <div className="mu-reply-bar">
                   {hasIstinbat && <span className="mu-ist-tag">{ar ? "يتضمن استنباطًا مولَّدًا بمقدماته — ليس نقلًا" : "includes a generated inference"}</span>}
                   <button className="mu-copy-sm" onClick={copyReply} title={ar ? "نسخ الجواب بمقدماته" : "copy answer"}>⧉</button>
@@ -397,7 +432,9 @@ export default function Assistant() {
           for (const rt of r.roots) if (!acc.roots.some((x) => x.root === rt.root)) acc.roots.push(rt);
           addAyahs(r.ayahs.slice(0, 6));
           const rootHints = r.roots.length ? await layerHints("root", r.roots[0].root) : [];
+          const usage = r.roots.length ? await rootUsage(r.roots[0].root) : null;
           return {
+            ...(usage ? { خريطةُ_الاستعمال: usage } : {}),
             roots: r.roots.map((rt) => ({ root: rt.root, occurrences: rt.occ, sense: (rt.gloss || "").slice(0, 400) })),
             ayahs: r.ayahs.slice(0, 6).map((a) => ({ ref: a.ref, surah: refName(a.ref), text: a.text })),
             ...(rootHints.length ? { طبقاتٌ_متاحةٌ_عن_هذا_الجذر: rootHints } : {}),
@@ -492,6 +529,32 @@ export default function Assistant() {
         return { error: `أداة غير معروفة: ${name}` };
       };
 
+      // ميزانيةُ السياق («الزيادة مثل النقص» — قيد المالك 2026-07-24): لكل
+      // نتيجةِ أداةٍ سقفٌ، وللدور كلِّه سقفٌ جامع؛ فإذا امتلأ قُصَّت النتائج
+      // التالية إلى موجزٍ يحفظ إسنادَها — فالمادةُ الغزيرةُ بلا هضمٍ تُضعف
+      // الجواب كما يُضعفه شحُّها.
+      const RESULT_CAP = 4000;
+      const TURN_CAP = 24000;
+      let spent = 0;
+      const budgeted = (result: unknown): unknown => {
+        const raw = JSON.stringify(result ?? null);
+        spent += raw.length;
+        if (raw.length <= RESULT_CAP && spent <= TURN_CAP) return result;
+        const trim = (v: unknown): unknown => {
+          if (typeof v === "string") return v.length > 600 ? `${v.slice(0, 600)}… [قُصَّ حفظًا لميزانية السياق]` : v;
+          if (Array.isArray(v)) return v.slice(0, 6).map(trim);
+          if (v && typeof v === "object") {
+            const o: Record<string, unknown> = {};
+            for (const [k, val] of Object.entries(v as Record<string, unknown>)) o[k] = trim(val);
+            return o;
+          }
+          return v;
+        };
+        return spent > TURN_CAP
+          ? { note: "بلغتَ ميزانيةَ مادةِ هذا الدور — اكتب الجوابَ مما جمعتَ ولا تستزد", موجز: trim(result) }
+          : trim(result);
+      };
+
       // حلقة الوكيل: النموذج يطلب أدواتٍ فنُنفّذها ونعيد النداء، حتى نصٍّ نهائي
       // موجزُ طبقات مشكاة (من المانيفست) يُرسل مع كل نداء ليعرف النموذجُ عُدّته
       await ensureLayers();
@@ -506,10 +569,17 @@ export default function Assistant() {
           // ونصُّ المرحلة الأولى احتياطٌ إن أخفق
           patchMessage(cid, aid, { pending: true, text: ar ? "ينسج الجوابَ من المادة…" : "weaving the answer…" });
           try {
-            const fin = await postJson("/api/assist", { messages: history, steps, layers, finalize: true });
-            finalText = fin.text || res.text || "";
+            // بثٌّ تدريجي: يظهر الجوابُ وهو يُكتب (والحارسُ يفحصه عند اكتماله)
+            finalText = await postStream("/api/assist", { messages: history, steps, layers, finalize: true, stream: true }, (soFar) => {
+              patchMessage(cid, aid, { pending: false, streaming: true, text: soFar });
+            });
           } catch {
-            finalText = res.text || "";
+            try {
+              const fin = await postJson("/api/assist", { messages: history, steps, layers, finalize: true });
+              finalText = fin.text || res.text || "";
+            } catch {
+              finalText = res.text || "";
+            }
           }
           break;
         }
@@ -525,9 +595,9 @@ export default function Assistant() {
             continue;
           }
           patchMessage(cid, aid, { pending: true, text: TOOL_STATUS[c.name]?.(c.args) ?? c.name });
-          const result = await runTool(c.name, c.args ?? {});
-          collectToolTexts(result, toolTexts);
-          steps.push({ name: c.name, args: c.args ?? {}, result });
+          const full = await runTool(c.name, c.args ?? {});
+          collectToolTexts(full, toolTexts); // السندُ من النص الكامل لا المقصوص
+          steps.push({ name: c.name, args: c.args ?? {}, result: budgeted(full) });
         }
       }
       if (!finalText && steps.length) {
@@ -544,6 +614,7 @@ export default function Assistant() {
 
       patchMessage(cid, aid, {
         pending: false,
+        streaming: false,
         text: finalText,
         ...(acc.ayahs.length ? { ayahs: acc.ayahs.slice(0, 12) } : {}),
         ...(acc.roots.length ? { roots: acc.roots.slice(0, 8) } : {}),

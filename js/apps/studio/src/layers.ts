@@ -540,6 +540,36 @@ async function fawasilLookup(anchor: string): Promise<LayerResult> {
   };
 }
 
+// ——— خريطةُ استعمال الجذر (إثراءٌ منضبط): سطرٌ واحدٌ مضغوط من الخرائط
+// المحسوبة في البطاقات الآلية — المواضعُ والمكي/المدني وأبرزُ المصاحبات
+// وأقربُ الجذور. **بميزانيةٍ صارمة** (≤٢٤٠ حرفًا): الزيادةُ كالنقص.
+let usageIdx: Map<string, AutoSide> | null = null;
+async function rootUsage(root: string): Promise<string | null> {
+  const q = bare(root);
+  if (!usageIdx) {
+    const auto = await loadJson<{ cards: AutoCard[] }>("bayan-auto.json");
+    usageIdx = new Map();
+    for (const c of auto?.cards ?? []) {
+      for (const side of c.sides ?? []) {
+        const k = bare(side.root);
+        const prev = usageIdx.get(k);
+        // نُبقي الأغنى مصاحباتٍ لكل جذر
+        if (!prev || (side.colloc?.length ?? 0) > (prev.colloc?.length ?? 0)) usageIdx.set(k, side);
+      }
+    }
+  }
+  const u = usageIdx.get(q);
+  const lex = await loadJson<Lexnet>("lexnet.json");
+  const near = lex?.roots[q]?.near?.slice(0, 4).map((n) => n.r).join("، ");
+  if (!u && !near) return null;
+  const parts: string[] = [];
+  if (u) parts.push(`${u.total} موضعًا (مكي ${u.makki}/مدني ${u.madani})`);
+  if (u?.colloc?.length) parts.push(`أبرز مصاحباته: ${u.colloc.slice(0, 5).map(([w]) => bare(w)).join("، ")}`);
+  if (near) parts.push(`أقرب الجذور دلالةً: ${near}`);
+  return `خريطةُ استعمال «${q}» (محسوبة): ${parts.join(" · ")}`.slice(0, 240);
+}
+export { rootUsage };
+
 // ——— فهرسُ المطروق (قسم البيان): أين طرق العلماءُ هذا الجذر/الموضع ———
 interface TariqIndex { roots: Record<string, [string, number][]>; ayas: Record<string, [string, string][]> }
 const bookLabelOf = (id: string): string => BOOK_SOURCES.find((b) => b.id === id)?.label ?? id;

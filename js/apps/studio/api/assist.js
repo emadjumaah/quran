@@ -354,7 +354,16 @@ export default async function handler(req) {
   try { body = await req.json(); } catch { return json({ error: "bad json" }, 400); }
   const messages = Array.isArray(body?.messages) ? body.messages.slice(-14) : [];
   if (!messages.length) return json({ error: "no messages" }, 400);
-  const steps = Array.isArray(body?.steps) ? body.steps.slice(0, 20) : [];
+  // ميزانيةُ السياق دفاعيًّا في الخادم أيضًا (العميلُ يقصّ أولًا): مجموعُ
+  // نتائج الدور محدودٌ — الزيادةُ كالنقص، والسياقُ المتخم يُضعف الجواب.
+  const SERVER_TURN_CAP = 30000;
+  let used = 0;
+  const steps = (Array.isArray(body?.steps) ? body.steps.slice(0, 20) : []).map((st) => {
+    const raw = JSON.stringify(st?.result ?? null);
+    used += raw.length;
+    if (used <= SERVER_TURN_CAP) return st;
+    return { ...st, result: { note: "نتيجةٌ حُذفت لتجاوز ميزانية سياق الدور — اعتمد ما سبقها" } };
+  });
 
   // موجز طبقات مشكاة يرسله العميل من rag-manifest.json — يُحقَن قسمًا في
   // الدستور، فتظهر الطبقاتُ والكتبُ الجديدة لنبراس بمجرد قيد مانيفست
@@ -423,30 +432,74 @@ export default async function handler(req) {
 
   // نداء التأليف النهائي: النموذجُ الأقوى وحده، بميزانية تفكيرٍ وسقفٍ أعلى،
   // والأدواتُ مقفلةٌ كي لا يفتح جولةً جديدة. أي إخفاقٍ يعيد العميلَ لنص الاحتياط.
+  // البثُّ التدريجي (قرار المالك 2026-07-24): يُبَثّ الجوابُ كلمةً كلمة، ثم
+  // **يُتحقَّق** عند اكتماله بحرّاس السند نفسِها — فإن ظهرت مخالفةٌ أُعيد
+  // التأليفُ مرةً واستُبدل النصُّ المعروض. فالعقيدةُ محفوظة: ما يستقرّ أمام
+  // القارئ محروسٌ دائمًا، والانتظارُ الصامت وحدَه هو ما زال.
+  if (body?.finalize && body?.stream) {
+    const up = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${FINAL_MODEL}:streamGenerateContent?alt=sse&key=${key}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents, tools: [{ functionDeclarations: TOOLS }], ...finalCfg }),
+    });
+    if (!up.ok || !up.body) return json({ error: `upstream ${up.status}` }, 502);
+    const enc = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (obj) => controller.enqueue(enc.encode(`data: ${JSON.stringify(obj)}\n\n`));
+        const reader = up.body.getReader();
+        const dec = new TextDecoder();
+        let buf = "";
+        let full = "";
+        try {
+          for (;;) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buf += dec.decode(value, { stream: true });
+            const lines = buf.split("\n");
+            buf = lines.pop() ?? "";
+            for (const line of lines) {
+              if (!line.startsWith("data: ")) continue;
+              try {
+                const j = JSON.parse(line.slice(6));
+                const t = (j?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text || "").join("");
+                if (t) { full += t; send({ t }); }
+              } catch { /* سطرٌ غيرُ مكتمل */ }
+            }
+          }
+          let finalText = stripMeta(full.trim());
+          // التحققُ بعد الاكتمال — وإن خالف أُعيد التأليفُ مرةً واستُبدل
+          const viol = finalText ? (unbackedQuote(finalText, hay) ?? istinbatViolation(finalText)) : null;
+          if (viol) {
+            send({ verifying: true });
+            contents.push({ role: "model", parts: [{ text: finalText }] });
+            contents.push({ role: "user", parts: [{ text: `${NUDGE}\nالموضع المعني: ${viol}\nأعد كتابة الجواب كاملًا الآن (الأدوات مقفلة) نقيًّا بلا اعتذارٍ ولا ذكرِ تصحيح.` }] });
+            const fix = await generate(FINAL_MODEL, finalCfg);
+            if (fix.ok) {
+              const t2 = ((await fix.json())?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text || "").join("").trim();
+              if (t2) finalText = stripMeta(t2);
+            }
+            send({ replace: finalText });
+          }
+          send({ done: true, text: finalText });
+        } catch (e) {
+          send({ error: "stream failed" });
+        } finally {
+          controller.close();
+        }
+      },
+    });
+    return new Response(stream, {
+      headers: { "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-cache, no-transform", connection: "keep-alive" },
+    });
+  }
+
   if (body?.finalize) {
     const fin = await generate(FINAL_MODEL, finalCfg);
     if (!fin.ok) return json({ error: `upstream ${fin.status}`, detail: (await fin.text()).slice(0, 300) }, 502);
     const fdata = await fin.json();
     let ftext = (fdata?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text || "").join("").trim();
     // حارس القاعدة الذهبية: اقتباسٌ بلا سندٍ في التأليف النهائي → محاولةُ تصويبٍ واحدة
-    // «استفد من المحسوبات» حتمًا لا وصيةً: إن عرض المرشدُ طبقاتٍ ولم يستدعِها
-  // النموذجُ ومضى إلى الجواب، يستدعيها الخادمُ نيابةً عنه (نداءان كحد أقصى)
-  // فتصل المادةُ المحسوبة إلى الجواب بدل العموميات.
-  {
-    const offered0 = [];
-    for (const st of steps) {
-      const j = JSON.stringify(st?.result ?? "");
-      for (const m of j.matchAll(/layer_of\((\w+),\s*([^)"\\]{1,40})\)/g)) {
-        if (!offered0.some((o) => o.layer === m[1])) offered0.push({ layer: m[1], anchor: m[2].trim() });
-      }
-    }
-    const used0 = new Set(steps.filter((st) => st.name === "layer_of" || st.name === "search_layer").map((st) => String(st.args?.layer)));
-    const force = offered0.filter((o) => !used0.has(o.layer)).slice(0, 2);
-    if (!body?.finalize && force.length && steps.length < 6) {
-      return json({ calls: force.map((o) => ({ name: "layer_of", args: { layer: o.layer, anchor: o.anchor } })) });
-    }
-  }
-
   for (let attempt = 0; attempt < 2; attempt++) {
       const fviol = ftext ? (unbackedQuote(ftext, hay) ?? istinbatViolation(ftext)) : null;
       if (!fviol) break;

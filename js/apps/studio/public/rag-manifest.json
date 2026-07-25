@@ -243,7 +243,7 @@
    "id": "i3rabmuyassar",
    "label": "الإعراب الميسّر",
    "genre": "i3rab",
-   "embedded": false,
+   "embedded": true,
    "entries": 6236
   },
   {
@@ -251,14 +251,14 @@
    "label": "النشر في القراءات العشر",
    "genre": "qiraat",
    "author": "ابن الجزري",
-   "embedded": false,
+   "embedded": true,
    "entries": 1404
   },
   {
    "id": "qiraat",
    "label": "الموسوعة القرآنية للقراءات",
    "genre": "qiraat",
-   "embedded": false,
+   "embedded": true,
    "entries": 2329
   },
   {

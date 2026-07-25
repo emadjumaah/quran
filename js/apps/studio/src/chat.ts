@@ -21,6 +21,7 @@ export type ChatMsg = {
   draft?: string; // a generated draft (خطبة/منشور/…), shown in a distinct block
   composed?: boolean;
   pending?: boolean; // placeholder while the assistant is working
+  streaming?: boolean; // نصٌّ يُبَثّ الآن (يُعرض بمؤشر كتابة حتى يستقر)
   error?: boolean;
 };
 export type Chat = {
