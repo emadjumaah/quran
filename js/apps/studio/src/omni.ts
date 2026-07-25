@@ -173,11 +173,11 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
     try {
       // العددُ المعروضُ حقيقيٌّ لا سقف (رصدُ المالك: كان يقول ٦٠ دائمًا)،
       // والقائمةُ لا تعرض إلا الطبقاتِ الدقيقة — والموسَّعُ في صفحة البحث بوسمِه.
-      const { hits: open, total, roots: expandedRoots } = await quickSearch(raw, 3);
+      const { hits: open, total } = await quickSearch(raw, 3);
       // العددُ الكلّي أوّلَ النتائج لا قبل آخرها — فيعرف الباحثُ سعةَ ما وجد
       // قبل أن يقرأ العيّنة (قرار المالك 2026-07-21).
       if (total > 0)
-        out.push({
+        out.unshift({
           key: "all-text",
           kind: "text",
           label: `«${raw}» — ${num(total)}${total >= 400 ? "+" : ""}`,
@@ -193,15 +193,6 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
           to: readPathOf(h.ayah.location),
         });
 
-      // خيارُ التوسيع بالجذر — مستقلٌّ عن النصّ، يذهب إلى صفحة الجذر بمواضعه
-      for (const r of expandedRoots.slice(0, 2))
-        out.push({
-          key: `rx${r.root}`,
-          kind: "root",
-          label: `الجذر ${r.root}${r.count ? ` — ${num(r.count)}` : ""}`,
-          sub: "كلُّ مشتقّاته ومواضعه",
-          to: `/roots/${encodeURIComponent(r.root)}`,
-        });
     } catch {
       /* fts syntax errors are fine here */
     }
