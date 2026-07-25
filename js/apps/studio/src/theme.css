@@ -10,6 +10,7 @@
 
 :root {
   --bg: #f7f4ee;
+  --page-w: 1120px;
   --panel: #fffdf9;
   --panel-2: #f1ede4;
   --ink: #241f18;
@@ -226,7 +227,9 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 }
 
 .page { overflow-y: auto; padding: 16px 24px 24px; }
-.page-narrow { max-width: 900px; margin: 0 auto; }
+.page-narrow { max-width: var(--page-w); margin: 0 auto; }
+/* عرضُ الحاوية واحدٌ في المشروع كلِّه (قرار المالك 2026-07-21): عريضٌ مريحٌ
+   لا كاملُ الشاشة — تُطبّقه كلُّ الصفحات بما فيها المصحف. */
 @media (max-width: 600px) {
   .page { padding: 16px 12px; }
   .card { padding: 14px; }
@@ -322,6 +325,8 @@ mark.hl { background: var(--gold-soft); color: inherit; border-radius: 3px; padd
 /* the reader drops the page's top padding on mobile so its sticky header sits
    flush under the app header (a sticky element ignores negative margin, so the
    padding is what has to go). */
+/* المصحفُ يلتزم عرضَ الحاوية نفسَه — لا يتمدّد بكامل الشاشة (توحيدُ العرض) */
+.reader-main { max-width: var(--page-w); margin-inline: auto; width: 100%; }
 @media (max-width: 760px) { .reader-main { padding-top: 0; } }
 .reader-icon-btn, .reader-play-icon {
   flex: none; width: 34px; height: 34px; border-radius: 999px; padding: 0;
@@ -441,6 +446,19 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes sheet-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .word-sheet, .sheet-backdrop { animation: none; } }
+/* على الشاشات الواسعة: مودالٌ مركزيٌّ بدل الجانب الملغى (قرار المالك) */
+@media (min-width: 761px) {
+  .word-sheet {
+    inset-inline: auto; inset-block: 50% auto; left: 50%; bottom: auto;
+    transform: translate(-50%, -50%);
+    width: min(620px, 92vw); min-height: 0; max-height: 82vh;
+    border-radius: 18px; border: 1px solid var(--line);
+    padding: 0 20px 16px; box-shadow: 0 18px 60px rgb(0 0 0 / 0.28);
+    animation: sheet-pop 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .word-sheet-grip { display: none; }
+}
+@keyframes sheet-pop { from { opacity: 0; transform: translate(-50%, -46%) scale(0.98); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
 
 /* reading dock — declutter on phones: repeat & continue hide; the core
    transport (prev · play · next · close) and «مثلها» stay. */
@@ -597,10 +615,10 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 
 
 /* الجوامع — محكم→تفصيل network view */
-.jw-wrap { max-width: 900px; margin: 0 auto; }
+.jw-wrap { max-width: var(--page-w); margin: 0 auto; }
 
 /* فروق التنزيل — verse-pair diff viewer */
-.fr-wrap { max-width: 900px; margin: 0 auto; }
+.fr-wrap { max-width: var(--page-w); margin: 0 auto; }
 .fr-list { display: flex; flex-direction: column; gap: 12px; }
 .fr-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }
 .fr-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -1043,7 +1061,7 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .kl-aboutlink:hover { text-decoration: underline; }
 
 /* ── الآيةُ في الميزان (AyaCard) — the single-verse classification page ─────── */
-.aya-wrap { max-width: 720px; }
+.aya-wrap { max-width: var(--page-w); margin: 0 auto; }
 .aya-crumb { display: flex; align-items: center; gap: 6px; font-size: 12.5px; margin-bottom: 6px; }
 .aya-crumb a { color: var(--accent); text-decoration: none; }
 .aya-crumb .mw-here { color: var(--muted); }
@@ -1212,7 +1230,7 @@ a.lx-root:hover { border-color: var(--gold); text-decoration: none; }
 .set-row input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
 
 /* المواضيع — thematic browse (progressive disclosure, calm & clear) */
-.mw-wrap { max-width: 940px; margin: 0 auto; }
+.mw-wrap { max-width: var(--page-w); margin: 0 auto; }
 
 /* المحاور ⇄ المواضيع — the shared topic-layer toggle */
 .layer-toggle { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); margin: 0 0 20px; }

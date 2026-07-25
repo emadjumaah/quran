@@ -5,8 +5,9 @@
  *   «صفحات» (default) — continuous mushaf flow, grouped by Madani page.
  *   «آيات»            — ayah-by-ayah list with tools and translation.
  *
- * Three columns: surah sidebar (250px) · text · word inspector (360px).
- * Under 900px the sidebars collapse and a surah <select> takes over.
+ * عمودان: قائمةُ السور (٢٥٠ بكسل) والنصّ — وبياناتُ الكلمة والآية في مودالٍ
+ * يُفتح بالنقر (أُلغي الجانبُ الأيمن بقرار المالك 2026-07-21). ودون ٩٠٠ بكسل
+ * تنطوي قائمةُ السور ويحلّ محلَّها مُنتقٍ.
  */
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
@@ -887,24 +888,6 @@ export default function Reader() {
 
       {narrow && <ScrollTopFab scrollerRef={mainRef} />}
 
-      {!narrow && (
-        <aside
-          style={{
-            width: 360,
-            flexShrink: 0,
-            overflowY: "auto",
-            borderInlineStart: "1px solid var(--line)",
-            background: "var(--panel)",
-            padding: 16,
-            minHeight: 0,
-          }}
-        >
-          <VerseContext location={selectedLoc} />
-          {selectedLoc && <MuhkamaLine location={selectedLoc} />}
-          <Inspector word={selected} />
-        </aside>
-      )}
-
       <ReadingBar
         surahBase={surahBase}
         onNavigate={navigateAyah}
@@ -916,7 +899,7 @@ export default function Reader() {
         }}
       />
 
-      {narrow && (selected || selectedLoc) && (
+      {(selected || selectedLoc) && (
         <>
           <div className="sheet-backdrop" onClick={() => { setSelected(null); setSelectedAyah(null); }} />
           <div className="word-sheet card" role="dialog" aria-modal="true">
