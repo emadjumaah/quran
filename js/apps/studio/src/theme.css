@@ -1960,6 +1960,24 @@ table.data tr:hover td { background: var(--panel-2); }
 .v-more-sep { height: 1px; background: var(--line); margin: 4px 0; }
 .v-more-collect { padding: 2px 5px 1px; }
 .v-more-audio { padding: 3px 5px 5px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+/* الكلّيّاتُ المختارة — بطاقاتٌ في أبواب */
+.km-bab { margin-top: 26px; }
+.km-bab-h { font-size: 17px; color: var(--accent); margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.km-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.km-card { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.km-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.km-title { font-size: 15px; margin: 0; color: var(--ink); font-weight: 700; line-height: 1.6; }
+.km-ref { font-size: 12.5px; color: var(--accent); text-decoration: none; white-space: nowrap; }
+.km-ref:hover { text-decoration: underline; }
+.km-text { font-size: 19px; line-height: 2.1; margin: 0; color: var(--ink); }
+.km-why { align-self: flex-start; border: 1px dashed var(--line); background: transparent; color: var(--muted); font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 999px; cursor: pointer; }
+.km-why:hover, .km-why.on { color: var(--ink-2); border-style: solid; }
+.km-ev { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; border-top: 1px solid var(--line); padding-top: 8px; }
+.km-ev-row { display: flex; gap: 8px; align-items: baseline; line-height: 1.8; }
+.km-ev-k { color: var(--muted); min-width: 92px; flex: none; }
+.km-ev-locs { display: flex; flex-wrap: wrap; gap: 6px; }
+.km-loc { color: var(--ink-2); text-decoration: none; border-bottom: 1px dotted var(--line); }
+.km-loc:hover { color: var(--accent); }
 /* «مقاطعُ قريبةٌ منها» — جاراتُ المقطع أسفل جارات الآية */
 .similar-units { margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 5px; }
 .similar-units-h { font-size: 12px; font-weight: 700; color: var(--ink-2); margin-bottom: 2px; }

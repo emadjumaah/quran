@@ -19,6 +19,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Goto from "./views/Goto";
 const Today = lazy(() => import("./views/Today"));
 const Kulliyat = lazy(() => import("./views/Kulliyat"));
+const KulliyatMukhtara = lazy(() => import("./views/KulliyatMukhtara"));
 const AyaCard = lazy(() => import("./views/AyaCard"));
 const Wujuh = lazy(() => import("./views/Wujuh"));
 const Furuq = lazy(() => import("./views/Furuq"));
@@ -158,7 +159,8 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
     ar: "بناء المصحف", en: "Composition",
     items: [
-      ["/kulliyat", "القواعد وتفصيلها", "Rules & elaboration"],
+      ["/kulliyat", "الكلّيّات المختارة", "Selected kulliyāt"],
+      ["/qawaid", "القواعد وتفصيلها", "Rules & elaboration"],
       ["/shabaka", "خريطة المصحف", "Mushaf map"],
       ["/furuq", "فروق التنزيل", "Furūq"],
     ],
@@ -429,7 +431,8 @@ function App() {
           <Route path="/gaps" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/muhkamat" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/muhkamat/:k" element={<Navigate to="/kulliyat" replace />} />
-          <Route path="/kulliyat" element={<Kulliyat />} />
+          <Route path="/kulliyat" element={<KulliyatMukhtara />} />
+          <Route path="/qawaid" element={<Kulliyat />} />
           <Route path="/graph" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/graph/:s/:a" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/fabric" element={<ToRootRedirect />} />

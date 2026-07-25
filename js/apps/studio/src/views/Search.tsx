@@ -128,7 +128,7 @@ function ResultRow({ hit, criterion, query }: { hit: Hit; criterion: string; que
         {(() => {
           const c = classOf(ayah.location);
           return c ? (
-            <Link to="/kulliyat" className={`kl-badge ${c.tier === "كلّية" ? "k" : c.tier === "جامعة" ? "j" : "t"}`}
+            <Link to="/qawaid" className={`kl-badge ${c.tier === "كلّية" ? "k" : c.tier === "جامعة" ? "j" : "t"}`}
               style={{ textDecoration: "none" }}
               title={ar ? `المرتبة: ${c.tier} · مفصِّلات ${num(c.m ?? 0)} · قبل التعميق` : `${c.tier} · m ${c.m ?? 0} · pre-deepening`}>
               ◆ {tierLabel(c.tier, ar)}
