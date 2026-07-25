@@ -21,10 +21,13 @@ export default function MuhkamaLine({ location }: { location: string }) {
   // every tier opens the verse's own clear classification page — not the general list
   const to = `/aya/${location.split(":")[0]}/${location.split(":")[1]}`;
 
+  // «تفصيل» لا يُوسَم في سطر الآية (قرار المالك 2026-07-21): الوسمُ يُعلن ما
+  // تميّز به الموضع، وأكثرُ المصحف تفصيلٌ فلا فائدة في تكراره تحت كلِّ آية.
+  if (cls.tier === "تفصيل") return null;
   if (cls.tier === "كلّية") {
     return (
-      <Link to={to} className="chip mk-chip k" title={ar ? "بطاقةُ الآية — كلّيّةٌ بأدلتها المفحوصة" : "this verse's card — a kulliyya with its examined evidence"}>
-        ◆ {ar ? "كلّيّة" : "kulliyya"}
+      <Link to={to} className="chip mk-chip k" title={ar ? "بطاقةُ الآية — قاعدةٌ كبرى بأدلتها المفحوصة" : "this verse's card — a major rule with its examined evidence"}>
+        ◆ {ar ? "قاعدةٌ كبرى" : "major rule"}
       </Link>
     );
   }

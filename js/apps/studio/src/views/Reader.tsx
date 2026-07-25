@@ -854,6 +854,7 @@ export default function Reader() {
                   <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} open={panelOpen("similar", ayah.location)} onToggle={() => togglePanel("similar", ayah.location)} />
                   <TadabburChip open={panelOpen("tadabbur", ayah.location)} onToggle={() => togglePanel("tadabbur", ayah.location)} />
                   <MuhkamaLine location={ayah.location} />
+                  <span style={{ flex: 1 }} />
                   <VerseMore
                     ayah={ayah}
                     bookmarked={bookmarks.includes(ayah.location)}
