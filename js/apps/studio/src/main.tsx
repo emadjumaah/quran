@@ -158,7 +158,7 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
     ar: "بناء المصحف", en: "Composition",
     items: [
-      ["/kulliyat", "الكلّيّات والجوامع", "Kulliyyāt"],
+      ["/kulliyat", "القواعد وتفصيلها", "Rules & elaboration"],
       ["/shabaka", "خريطة المصحف", "Mushaf map"],
       ["/furuq", "فروق التنزيل", "Furūq"],
     ],

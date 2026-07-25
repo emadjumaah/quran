@@ -171,6 +171,17 @@ export function useKulliyat(): boolean {
   return ready;
 }
 
+/**
+ * التسميةُ المعروضة للمرتبة — تصحيحُ 2026-07-21 بعد الجرد المنشور
+ * (findings/unified/KULLIYAT-CEILING-2026-07-21.md): هذه الطبقةُ تقيس «القواعدَ
+ * وما يفصّلها» في الشبكة المفحوصة، لا «جوامعَ الكلم». فسُمّيت بما هي: قاعدةٌ
+ * كبرى / قاعدة / تفصيل. والقيمُ الداخليّةُ لم تتغيّر (لا هجرةَ بيانات).
+ */
+export function tierLabel(tier: Tier, ar = true): string {
+  if (!ar) return tier === "كلّية" ? "major rule" : tier === "جامعة" ? "rule" : "elaboration";
+  return tier === "كلّية" ? "قاعدةٌ كبرى" : tier === "جامعة" ? "قاعدة" : "تفصيل";
+}
+
 export const classOf = (loc: string): VerseClass | null => data?.verses[loc] ?? null;
 export const kulliyaOfTheme = (theme: number): string | null => heads?.get(theme) ?? null;
 export const childrenOf = (loc: string): string[] => children?.get(loc) ?? [];

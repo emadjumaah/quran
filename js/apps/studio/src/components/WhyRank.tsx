@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { classOf } from "../kulliyat";
+import { classOf, tierLabel } from "../kulliyat";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num } from "../i18n";
 import { readPathOf, type AyahDoc } from "../types";
@@ -47,7 +47,7 @@ export default function WhyRank({ location }: { location: string }) {
     <div className="why">
       <div className="why-head">
         <span>{ar ? "لماذا هذه المرتبة؟" : "Why this tier?"}</span>
-        <span className="why-score">{cls.tier}</span>
+        <span className="why-score">{tierLabel(cls.tier, ar)}</span>
       </div>
       <p className="why-note">
         {ar
@@ -108,7 +108,7 @@ export default function WhyRank({ location }: { location: string }) {
       )}
       <div className="why-foot">
         {ar
-          ? "كلّية: قاعدةٌ تلتقي عندَها المحاور (مفصِّلاتٌ ≥٨ واتساعٌ ≥٥) · جامعة: مفصِّلاتٌ ≥٣ أو مثانٍ · تفصيل: ما سوى ذلك. العتباتُ عُيِّرت على نصفِ الضبطِ المجمَّد وحدَه، وامتحانُ العيّنةِ المصونةِ منشورٌ بنتيجتِه قبل التعميق."
+          ? "قاعدةٌ كبرى: مفصِّلاتٌ ≥٨ واتساعُ محاورَ ≥٥ · قاعدة: مفصِّلاتٌ ≥٣ أو مثانٍ · تفصيل: ما سوى ذلك. وهذه مراتبُ «القواعدِ وتفصيلِها» في شبكتنا المفحوصة — لا تقيس جوامعَ الكلم (الجردُ منشورٌ في findings/unified). العتباتُ عُيِّرت على نصفِ الضبطِ المجمَّد وحدَه، وامتحانُ العيّنةِ المصونةِ منشورٌ بنتيجتِه قبل التعميق."
           : "kulliyya: axes meet at it (m≥8, spread≥5) · jāmiʿa: m≥3 or mutual · tafṣīl: otherwise. Thresholds tuned on the frozen tune half only; the held-out exam is published with its pre-deepening result."}
       </div>
     </div>

@@ -5,7 +5,7 @@
  */
 import type { CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
-import { classOf } from "../kulliyat";
+import { classOf, tierLabel } from "../kulliyat";
 import { getUILang } from "../i18n";
 
 const tierCls = (t?: string) => (t === "كلّية" ? "k" : t === "جامعة" ? "j" : "t");
@@ -26,7 +26,7 @@ export default function TierBadge({ loc, style }: { loc: string; style?: CSSProp
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); go(); }}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }}
     >
-      {cls.tier}
+      {tierLabel(cls.tier, ar)}
     </span>
   );
 }

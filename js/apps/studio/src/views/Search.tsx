@@ -32,7 +32,7 @@ import {
   vectorsReady,
 } from "../semantic";
 import { useOmniResults } from "../omni";
-import { classOf, useKulliyat } from "../kulliyat";
+import { classOf, tierLabel, useKulliyat } from "../kulliyat";
 import { openSearch, howLabel, type MatchHow } from "../lib/openSearch";
 
 const DISPLAY_CAP = 200;
@@ -131,7 +131,7 @@ function ResultRow({ hit, criterion, query }: { hit: Hit; criterion: string; que
             <Link to="/kulliyat" className={`kl-badge ${c.tier === "كلّية" ? "k" : c.tier === "جامعة" ? "j" : "t"}`}
               style={{ textDecoration: "none" }}
               title={ar ? `المرتبة: ${c.tier} · مفصِّلات ${num(c.m ?? 0)} · قبل التعميق` : `${c.tier} · m ${c.m ?? 0} · pre-deepening`}>
-              ◆ {c.tier}
+              ◆ {tierLabel(c.tier, ar)}
             </Link>
           ) : null;
         })()}

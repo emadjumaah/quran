@@ -7,7 +7,7 @@
 import { Link } from "react-router-dom";
 import { surahNameAr } from "../db";
 import { getUILang, num } from "../i18n";
-import { classOf, kulliyaOf, useKulliyat } from "../kulliyat";
+import { classOf, kulliyaOf, useKulliyat , tierLabel } from "../kulliyat";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
@@ -31,7 +31,7 @@ export default function MuhkamaLine({ location }: { location: string }) {
   const k = kulliyaOf(location);
   return (
     <Link to={to} className={`chip mk-chip ${cls.tier === "جامعة" ? "j" : "t"}`} title={ar ? "بطاقةُ الآية: مرتبتُها ومحورُها وموضعُها في الشجرة" : "this verse's card: its tier, محور and place in the tree"}>
-      {cls.tier}{k && <span className="mk-up"> ↑ {arName(k)}</span>}
+      {tierLabel(cls.tier, ar)}{k && <span className="mk-up"> ↑ {arName(k)}</span>}
     </Link>
   );
 }
