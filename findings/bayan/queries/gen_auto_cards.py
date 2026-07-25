@@ -16,6 +16,15 @@ FUNCTION_POS = {"P","DET","CONJ","SUB","ACC","AMD","ANS","ATT","AVR","CAUS","CER
 OCC_CAP = 40
 
 
+def clean_ar(s):
+    """تنظيف علامات الرقمنة من رؤوس المداخل ونصوصها (msNNN وPageVxxPyyy ورموز التقطيع)."""
+    import re
+    s = re.sub(r"ms\d{2,}", " ", s or "")
+    s = re.sub(r"PageV\d+P\d+", " ", s)
+    s = re.sub(r"[$#*^~]+", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
 def main():
     db, units_path, furuq_path, out_path = sys.argv[1:5]
     cx = sqlite3.connect(db)
@@ -83,6 +92,7 @@ def main():
         curated_pairs.add(cid)
 
     cards = []
+    seen_cards = set()
     for line in open(furuq_path, encoding="utf-8"):
         e = json.loads(line)
         if e.get("kind") in ("front-matter", "defective"):
@@ -102,14 +112,20 @@ def main():
         only_b = [(l, n) for l, n in b["_coll_full"].most_common() if n >= 2 and l not in a["_coll_full"]][:6]
         for s in sides:
             s.pop("_coll_full")
-        head = (e["anchor"].get("term") or "").replace("$", " ").strip()
+        head = clean_ar(e["anchor"].get("term"))
+        if not head:
+            continue
+        key = (head, tuple(roots[:3]))     # مدخلان بالرأس نفسه وجذوره نفسها = بطاقة واحدة
+        if key in seen_cards:
+            continue
+        seen_cards.add(key)
         group = next((field_of[r] for r in roots if r in field_of), "متفرقات")
         cards.append({
             "group": group,
             "id": "auto-" + e["id"], "head": head, "roots": roots[:3], "sides": sides,
             "contrast": {a["root"]: only_a, b["root"]: only_b},
             "reading": {"src": "الفروق اللغوية — أبو هلال العسكري",
-                        "quote": " ".join(e["text"].split())},
+                        "quote": clean_ar(e["text"])},
         })
     json.dump({"note": "بطاقات آلية التوليد: حسابها حتمي ونصها منقول منسوب — بلا تحرير بشري ولا تعليل آلي", "cards": cards},
               open(out_path, "w", encoding="utf-8"), ensure_ascii=False)

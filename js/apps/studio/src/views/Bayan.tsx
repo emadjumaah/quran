@@ -1,14 +1,15 @@
 /**
- * البيان — تدبر لغة القرآن الخاصة، على طبقتين:
- *  · بطاقات محرَّرة (bayan.json): خريطة استعمالٍ محسوبة حتميًّا (usage_map.py)
- *    جنبًا إلى جنب مع قراءاتٍ منقولة منسوبة — لا تعليل آليًّا.
- *  · مكتبة البيان (bayan-lib-*.json): الكتب المدخلية الخمسة مهيكلةً مجذّرةً
- *    (إسناد سرب ب١ المعتمد بعينة مصونة) — كتابٌ يُجلب عند طلبه، وفهرس أبجدي،
- *    وكل جذرٍ يفتح خريطته الحية في المعجم.
- * Routes: /bayan + /bayan/:id — البناء: scripts/build-bayan-cards.mjs.
+ * البيان — تدبر لغة القرآن الخاصة، على ثلاث طبقات:
+ *  · بطاقات محرَّرة (bayan.json) وبطاقات آلية (bayan-auto.json): خريطة استعمالٍ
+ *    محسوبة حتميًّا (usage_map.py) جنبًا إلى جنب مع قراءاتٍ منقولة منسوبة.
+ *  · مكتبة البيان (bayan-lib-*.json): تسعة كتبٍ مهيكلة بثلاث عائلات —
+ *    المداخل بالحرف، والمتشابه بالسورة، وعلوم القرآن بالأنواع؛ كتابٌ يُجلب عند طلبه.
+ *  · فهرس المطروق (bayan-tariq.json): أين طرق العلماءُ هذا الجذر/الموضع في متوننا
+ *    المفهرسة — يصل البطاقة المحسوبة بمظانّها من الكتب (منهجية البيان §٦).
+ * Routes: /bayan + /bayan/:id (و?root= لتصفية المكتبة) — البناء: scripts/build-bayan-cards.mjs.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { surahNameAr } from "../db";
 import { getUILang, num, useUILang } from "../i18n";
 import { readPathOf } from "../types";
@@ -22,20 +23,25 @@ interface Side {
 }
 interface Reading { src: string; quote: string }
 interface Card {
-  id: string; title: string; type: string; kashf: string;
+  id: string; title: string; type: string; kashf: string; roots?: string[];
   readings: Reading[]; sides: Side[]; contrast: Record<string, [string, number][]> | null;
 }
 interface BayanData { types: Record<string, string>; cards: Card[] }
-interface LibEntry { id: string; head: string; roots: string[]; text: string }
-interface LibBookMeta { id: string; label: string; count: number }
+interface LibEntry { id: string; head: string; roots: string[]; text: string; aya?: string[]; sura?: string }
+interface LibBookMeta { id: string; label: string; mode: LibMode; count: number; groups: number }
+interface LibHit { b: string; i: string; h: string; r: string[] }
+type LibMode = "term" | "aya" | "naw";
+interface Tariq { roots: Record<string, [string, number][]>; ayas: Record<string, [string, string][]> }
 
 interface AutoSide { root: string; total: number; makki: number; madani: number; colloc: [string, number][]; occ: { loc: string; form: string; unit: string }[]; capped: boolean }
 interface AutoCard { id: string; head: string; group?: string; roots: string[]; sides: AutoSide[]; contrast: Record<string, [string, number][]>; reading: Reading }
 
 let cache: BayanData | null = null;
 let libIndexCache: LibBookMeta[] | null = null;
+let libHitsCache: LibHit[] | null = null;
 const libBookCache = new Map<string, LibEntry[]>();
 let autoCache: AutoCard[] | null = null;
+let tariqCache: Tariq | null = null;
 const autoWaiters: (() => void)[] = [];
 function loadAuto(done: () => void) {
   if (autoCache) { done(); return; }
@@ -59,7 +65,61 @@ function useBayan(): BayanData | null {
   return data;
 }
 
+/** فهرس المطروق — يُجلب مرةً عند أول بطاقة تُفتح */
+function useTariq(): Tariq | null {
+  const [t, setT] = useState<Tariq | null>(tariqCache);
+  useEffect(() => {
+    if (tariqCache) return;
+    fetch(`${import.meta.env.BASE_URL}bayan-tariq.json?v=${__DATA_VERSION__}`)
+      .then((r) => r.json())
+      .then((d: Tariq) => { tariqCache = d; setT(d); })
+      .catch(() => setT(null));
+  }, []);
+  return t;
+}
+
+const BOOK_LABEL: Record<string, string> = {
+  furuqaskari: "الفروق اللغوية", basair: "بصائر ذوي التمييز", wujuhaskari: "الوجوه والنظائر",
+  nuzha: "نزهة الأعين النواظر", damghani: "قاموس القرآن", durra: "درة التنزيل",
+  malak: "ملاك التأويل", burhan: "البرهان", itqan: "الإتقان",
+};
+const FAMILY: Record<LibMode, string> = {
+  term: "كتب المداخل والفروق — دخولها بالحرف",
+  aya: "كتب المتشابه — دخولها بالسورة",
+  naw: "كتب علوم القرآن — دخولها بالأنواع",
+};
+
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
+
+/** «أين طُرق هذا عند العلماء» — جسر البطاقة المحسوبة إلى مظانّها في المكتبة (§٦) */
+function TariqPanel({ roots }: { roots: string[] }) {
+  const t = useTariq();
+  if (!t || !roots.length) return null;
+  const hits = roots
+    .map((r) => ({ root: r, books: t.roots[r] ?? [] }))
+    .filter((x) => x.books.length);
+  if (!hits.length) {
+    return (
+      <p className="by-intro">
+        لم نجد لهذه الجذور مدخلًا في متوننا المفهرسة التسعة — وهذا وصفٌ لفهرسنا لا حكمٌ على العلم كله.
+      </p>
+    );
+  }
+  return (
+    <div className="by-tariq">
+      {hits.map(({ root, books }) => (
+        <p key={root} className="by-seg">
+          <Link to={`/mujam/${root}`} className="chip gold" title="خريطة الجذر في المعجم">{root}</Link>
+          {books.map(([bid, n]) => (
+            <Link key={bid} to={`/bayan?root=${encodeURIComponent(root)}&book=${bid}`} className="chip link">
+              {BOOK_LABEL[bid] ?? bid} <b>{num(n)}</b>
+            </Link>
+          ))}
+        </p>
+      ))}
+    </div>
+  );
+}
 
 /** لوحة طرفٍ واحد: العدّادان ثم المصاحبات ثم المواضع كلها قابلة للطي */
 function SidePanel({ s }: { s: Side }) {
@@ -121,6 +181,13 @@ function CardPage({ card, types }: { card: Card; types: Record<string, string> }
           <footer>— {r.src}</footer>
         </blockquote>
       ))}
+      {card.roots && card.roots.length > 0 && (
+        <>
+          <h3>أين طُرق هذا عند العلماء</h3>
+          <p className="by-intro">مظانُّ هذه الجذور في كتب المكتبة التسعة — اضغط الكتاب لتقرأ مدخله بنصه.</p>
+          <TariqPanel roots={card.roots} />
+        </>
+      )}
       <details className="by-side">
         <summary><b>منهج البطاقة</b></summary>
         <p className="by-method">
@@ -167,6 +234,7 @@ function AutoCardPage({ card }: { card: AutoCard }) {
       <p>
         <Link to="/bayan" className="chip">← البيان</Link>{" "}
         <span className="chip" title="ولّدها الحساب من الفهرس المسند — بلا تحرير بشري ولا تعليل آلي">بطاقة آلية التوليد</span>
+        {card.group && card.group !== "متفرقات" && <span className="chip gold">{card.group}</span>}
       </p>
       <h2>{card.head}</h2>
       <p className="by-kashf">خريطتا الجذرين محسوبتان حتميًّا من المصحف، والنص المنقول من مدخل الكتاب — بلا تحريرٍ بشري: الحساب يصف، والمنقول يفسر، والقارئ يتدبر.</p>
@@ -185,77 +253,136 @@ function AutoCardPage({ card }: { card: AutoCard }) {
         <p>«{card.reading.quote}»</p>
         <footer>— {card.reading.src}</footer>
       </blockquote>
+      <h3>أين طُرق هذا عند العلماء</h3>
+      <TariqPanel roots={card.roots} />
     </div>
   );
 }
 
-/** مدخل المكتبة: الرأس والجذور (كلٌّ يفتح خريطته في المعجم) ثم النص المنقول */
-function LibItem({ e, src }: { e: LibEntry; src: string }) {
+/** نصٌّ طويل يُعرض على دفعات — كتب الأنواع فصولٌ كاملة، فلا تُصبّ دفعةً واحدة */
+function LongText({ text }: { text: string }) {
+  const STEP = 2600;
+  const [shown, setShown] = useState(STEP);
+  const cut = useMemo(() => {
+    if (text.length <= shown) return text;
+    const w = text.slice(0, shown);
+    const stop = Math.max(w.lastIndexOf("."), w.lastIndexOf("؟"), w.lastIndexOf("!"));
+    return stop > shown * 0.6 ? w.slice(0, stop + 1) : w;
+  }, [text, shown]);
   return (
-    <details className="by-lib-item">
+    <>
+      <p className="by-lib-text">{cut}{cut.length < text.length ? "…" : ""}</p>
+      {cut.length < text.length && (
+        <p className="by-seg">
+          <button className="chip" onClick={() => setShown((n) => n + STEP * 2)}>تابع القراءة</button>
+          <span className="by-unit">عُرض {num(Math.round((cut.length / text.length) * 100))}٪ من المدخل</span>
+        </p>
+      )}
+    </>
+  );
+}
+
+/** مدخل المكتبة: الرأس والجذور والآيات المسندة، ثم النص المنقول (يُجلب كتابُه عند الفتح) */
+function LibItem({ head, roots, src, entry, open, onOpen }:
+  { head: string; roots: string[]; src: string; entry?: LibEntry; open?: boolean; onOpen?: () => void }) {
+  return (
+    <details className="by-lib-item" open={open} onToggle={(ev) => { if ((ev.target as HTMLDetailsElement).open) onOpen?.(); }}>
       <summary>
-        <b>{e.head}</b>
-        {e.roots.map((r) => (
-          <Link key={r} to={`/mujam/${r}`} className="chip" title="خريطة الجذر في المعجم">{r}</Link>
+        <b>{head}</b>
+        {roots.slice(0, 6).map((r) => (
+          <Link key={r} to={`/mujam/${r}`} className="chip" title="خريطة الجذر في المعجم" onClick={(e) => e.stopPropagation()}>{r}</Link>
         ))}
+        {src && <span className="by-unit">— {src}</span>}
       </summary>
-      <p className="by-lib-text">{e.text} <span className="by-unit">— {src}</span></p>
+      {entry?.aya && entry.aya.length > 0 && (
+        <p className="by-seg">
+          {entry.aya.slice(0, 12).map((a) => (
+            <Link key={a} to={readPathOf(a)} className="chip link" title="اقرأ الموضع في المصحف">{arName(a)}</Link>
+          ))}
+        </p>
+      )}
+      {entry ? <LongText text={entry.text} /> : <p className="by-intro">…</p>}
     </details>
   );
 }
 
-/** مكتبة البيان: كتب خمسة تُجلب عند الطلب، فهرس أبجدي، وبحث عابر للكتب */
-function BayanLib({ q }: { q: string }) {
+/** مكتبة البيان: تسعة كتبٍ بثلاث عائلات، كلٌّ بباب دخوله؛ وبحثٌ عابر للكتب */
+function BayanLib({ q, root, book, onPick }: { q: string; root: string; book: string; onPick: (b: string, r: string) => void }) {
   const ar = getUILang() === "ar";
   const [index, setIndex] = useState<LibBookMeta[] | null>(libIndexCache);
-  const [bookId, setBookId] = useState("");
+  const [hits, setHits] = useState<LibHit[] | null>(libHitsCache);
   const [letter, setLetter] = useState("");
+  const [sura, setSura] = useState("");
+  const [deep, setDeep] = useState(false);
   const [, force] = useState(0);
+  const bookId = book;
 
   useEffect(() => {
     if (libIndexCache) return;
     fetch(`${import.meta.env.BASE_URL}bayan-lib.json?v=${__DATA_VERSION__}`)
       .then((r) => r.json())
-      .then((d: { books: LibBookMeta[] }) => { libIndexCache = d.books; setIndex(d.books); })
+      .then((d: { books: LibBookMeta[]; hits: LibHit[] }) => {
+        libIndexCache = d.books; libHitsCache = d.hits ?? [];
+        setIndex(d.books); setHits(libHitsCache);
+      })
       .catch(() => setIndex(null));
   }, []);
 
   const load = (id: string) => {
     if (libBookCache.has(id)) return;
+    libBookCache.set(id, []);   // حجزٌ يمنع الجلب مرتين
     fetch(`${import.meta.env.BASE_URL}bayan-lib-${id}.json?v=${__DATA_VERSION__}`)
       .then((r) => r.json())
       .then((d: { entries: LibEntry[] }) => { libBookCache.set(id, d.entries); force((n) => n + 1); })
-      .catch(() => { libBookCache.set(id, []); force((n) => n + 1); });
+      .catch(() => force((n) => n + 1));
   };
-  useEffect(() => { if (bookId) load(bookId); }, [bookId]);
-  // البحث يعبر الكتب الخمسة — تُجلب كلها عند أول بحث
-  useEffect(() => { if (q.trim() && index) index.forEach((b) => load(b.id)); }, [q, index]);
+  useEffect(() => { if (bookId) load(bookId); setLetter(""); setSura(""); }, [bookId]);
+  // البحث في المتون (اختياري): يجلب الكتب التسعة كاملةً
+  useEffect(() => { if (deep && index) index.forEach((b) => load(b.id)); }, [deep, index]);
+  useEffect(() => { setDeep(false); }, [q]);
 
   const firstTerm = (h: string) =>
     h.replace(/^و?الفرق بين\s+/, "").replace(/^بصيرة ف[ىي]\.*\s*/, "")
       .replace(/^\(?\s*\d+\s*[-–]\s*باب\s+/, "").replace(/^باب\s+/, "")
       .replace(/^ال/, "").replace(/\s+/g, " ").trim();
 
+  const meta = (index ?? []).find((x) => x.id === bookId);
+  const mode: LibMode = meta?.mode ?? "term";
   const loadedLen = libBookCache.get(bookId)?.length ?? -1;
-  const entries = useMemo(() => {
-    if (q.trim()) {
-      const all: { e: LibEntry; src: string }[] = [];
-      for (const b of index ?? []) {
-        for (const e of libBookCache.get(b.id) ?? []) {
-          if (fuzzyMatch(q, e.head) || e.roots.some((r) => fuzzyMatch(q, r)) || fuzzyMatch(q, e.text))
-            all.push({ e, src: b.label });
-        }
+  const totalLoaded = (index ?? []).reduce((n, b) => n + (libBookCache.get(b.id)?.length ?? 0), 0);
+  const labelOf = (id: string) => (index ?? []).find((b) => b.id === id)?.label ?? id;
+  const entryOf = (bid: string, eid: string) => (libBookCache.get(bid) ?? []).find((e) => e.id === eid);
+
+  /** البحث والتصفية بالجذر يجريان على دليل الرؤوس الخفيف — والنص يُجلب عند فتح المدخل */
+  const found = useMemo(() => {
+    if (!hits) return [] as LibHit[];
+    if (root) return hits.filter((h) => h.r.includes(root) && (!bookId || h.b === bookId));
+    if (!q.trim()) return [];
+    const shallow = hits.filter((h) => fuzzyMatch(q, h.h) || h.r.some((r) => fuzzyMatch(q, r)));
+    if (!deep) return shallow;
+    const seen = new Set(shallow.map((h) => h.b + h.i));
+    const deepHits: LibHit[] = [];
+    for (const b of index ?? []) {
+      for (const e of libBookCache.get(b.id) ?? []) {
+        if (!seen.has(b.id + e.id) && fuzzyMatch(q, e.text))
+          deepHits.push({ b: b.id, i: e.id, h: e.head, r: e.roots });
       }
-      return all;
     }
-    const b = (index ?? []).find((x) => x.id === bookId);
-    let es = libBookCache.get(bookId) ?? [];
-    if (letter) es = es.filter((e) => firstTerm(e.head).startsWith(letter));
-    return es.map((e) => ({ e, src: b?.label ?? "" }));
+    return [...shallow, ...deepHits];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, index, bookId, letter, loadedLen]);
+  }, [hits, q, root, bookId, deep, totalLoaded]);
+
+  const entries = useMemo(() => {
+    let es = libBookCache.get(bookId) ?? [];
+    if (mode === "term" && letter) es = es.filter((e) => firstTerm(e.head).startsWith(letter));
+    else if (mode === "aya" && sura) es = es.filter((e) => e.sura === sura);
+    else if (mode === "term" || mode === "aya") es = [];
+    return es;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookId, letter, sura, mode, loadedLen]);
 
   const letters = useMemo(() => {
+    if (mode !== "term") return [];
     const c = new Map<string, number>();
     for (const e of libBookCache.get(bookId) ?? []) {
       const l = firstTerm(e.head).charAt(0);
@@ -264,51 +391,120 @@ function BayanLib({ q }: { q: string }) {
     const ORDER = "ءأإآابتثجحخدذرزسشصضطظعغفقكلمنهوي";
     return [...c.entries()].sort((a, b2) => ORDER.indexOf(a[0]) - ORDER.indexOf(b2[0]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookId, loadedLen]);
+  }, [bookId, mode, loadedLen]);
 
-  const shown = entries.slice(0, 150);
+  const suras = useMemo(() => {
+    if (mode !== "aya") return [];
+    const c = new Map<string, number>();
+    for (const e of libBookCache.get(bookId) ?? []) if (e.sura) c.set(e.sura, (c.get(e.sura) ?? 0) + 1);
+    return [...c.entries()];   // ترتيب ورودها في الكتاب = ترتيب المصحف
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookId, mode, loadedLen]);
+
+  const shown = entries.slice(0, 120);
+  const foundShown = found.slice(0, 120);
+  const browsing = !q.trim() && !root;
   return (
     <section>
       <p className="by-intro">
         {ar
-          ? "كتب البيان المدخلية الخمسة مهيكلةً: كل مدخلٍ نصٌّ منقول منسوب، وجذورُه مسندة إلى جذور المصحف — اختر الكتاب ثم الحرف، أو ابحث في الكتب كلها؛ والجذرُ يفتح خريطته الحية في المعجم."
-          : "Five structured entry-books, root-anchored; pick a book and letter, or search across all; tap a root for its live map."}
+          ? "تسعةُ كتبٍ من كتب البيان وعلوم القرآن، مهيكلةً مدخلًا مدخلًا: النصُّ منقولٌ منسوبٌ بنصه، والجذورُ مسندةٌ إلى جذور المصحف، والآياتُ موصولةٌ بمواضعها — اختر الكتاب، أو ابحث في الكتب كلها."
+          : "Nine structured books; attributed text, anchored roots and verses. Pick a book or search across all."}
       </p>
-      {!q.trim() && !bookId && (
-        <div className="by-grid">
-          {(index ?? []).map((b) => {
-            const [title, author] = b.label.split("—").map((x) => x.trim());
-            return (
-              <button key={b.id} className="fr-card by-tile by-book" onClick={() => { setBookId(b.id); setLetter(""); }}>
-                <b>{title}</b>
-                <span className="by-tile-kashf">{author}</span>
-                <span className="chip">{num(b.count)} مدخلًا</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-      {!q.trim() && bookId && (
+
+      {browsing && !bookId && (["term", "aya", "naw"] as LibMode[]).map((m) => {
+        const books = (index ?? []).filter((b) => b.mode === m);
+        if (!books.length) return null;
+        return (
+          <div key={m}>
+            <h4 className="by-group">{FAMILY[m]}</h4>
+            <div className="by-grid">
+              {books.map((b) => {
+                const [title, author] = b.label.split("—").map((x) => x.trim());
+                return (
+                  <button key={b.id} className="fr-card by-tile by-book" onClick={() => onPick(b.id, "")}>
+                    <b>{title}</b>
+                    <span className="by-tile-kashf">{author}</span>
+                    <span className="chip">{num(b.count)} مدخلًا</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      {browsing && bookId && (
         <>
           <p className="by-seg">
-            <button className="chip" onClick={() => { setBookId(""); setLetter(""); }}>← {ar ? "كل الكتب" : "all books"}</button>
-            <b>{(index ?? []).find((x) => x.id === bookId)?.label}</b>
+            <button className="chip" onClick={() => onPick("", "")}>← {ar ? "كل الكتب" : "all books"}</button>
+            <b>{meta?.label}</b>
           </p>
-          <p className="by-letters">
-            {letters.map(([l, n]) => (
-              <button key={l} className={"chip" + (letter === l ? " gold" : "")}
-                title={num(n)} onClick={() => setLetter(letter === l ? "" : l)}>{l}</button>
-            ))}
-          </p>
+          {mode === "term" && (
+            <p className="by-letters">
+              {letters.map(([l, n]) => (
+                <button key={l} className={"chip" + (letter === l ? " gold" : "")}
+                  title={num(n)} onClick={() => setLetter(letter === l ? "" : l)}>{l}</button>
+              ))}
+            </p>
+          )}
+          {mode === "aya" && (
+            <p className="by-letters">
+              {suras.map(([s, n]) => (
+                <button key={s} className={"chip" + (sura === s ? " gold" : "")}
+                  onClick={() => setSura(sura === s ? "" : s)}>{s} <b>{num(n)}</b></button>
+              ))}
+            </p>
+          )}
           {!libBookCache.has(bookId) && <p>…</p>}
-          {!letter && libBookCache.has(bookId) && (
+          {libBookCache.has(bookId) && mode === "term" && !letter && (
             <p className="by-intro">{ar ? "اختر حرفًا من الفهرس، أو اكتب في البحث أعلى الصفحة." : "Pick a letter or search above."}</p>
+          )}
+          {libBookCache.has(bookId) && mode === "aya" && !sura && (
+            <p className="by-intro">{ar ? "اختر سورةً من الفهرس أعلاه — الكتاب يسير على ترتيب المصحف." : "Pick a sura above."}</p>
           )}
         </>
       )}
-      {(q.trim() || letter) && shown.map(({ e, src }) => <LibItem key={e.id} e={e} src={src} />)}
-      {(q.trim() || letter) && entries.length > shown.length && (
-        <p className="by-intro">{ar ? `و${num(entries.length - shown.length)} مدخلًا آخر — ضيّق البحث.` : "narrow your search for more"}</p>
+
+      {root && (
+        <p className="by-seg">
+          <button className="chip" onClick={() => onPick("", "")}>← {ar ? "كل الكتب" : "all books"}</button>
+          <span className="chip gold">الجذر {root}</span>
+          <span className="by-unit">{num(found.length)} مدخلًا مطروقًا في متوننا</span>
+        </p>
+      )}
+
+      {/* التصفح داخل كتابٍ مفتوح — المدخلات كاملةً بنصوصها (والكتاب معلومٌ فلا يُعاد اسمه) */}
+      {browsing && shown.map((e) => (
+        <LibItem key={e.id} head={e.head} roots={e.roots} src="" entry={e} open={shown.length <= 3} />
+      ))}
+      {browsing && entries.length > shown.length && (
+        <p className="by-intro">{ar ? `و${num(entries.length - shown.length)} مدخلًا آخر — ضيّق باختيارٍ آخر.` : "narrow your selection"}</p>
+      )}
+
+      {/* البحث/الجذر — من دليل الرؤوس، ونصُّ المدخل يُجلب عند فتحه */}
+      {!browsing && (
+        <>
+          {q.trim() !== "" && (
+            <p className="by-seg">
+              <span className="by-unit">{num(foundShown.length)} من {num(found.length)} مدخلًا مطابقًا</span>
+              {!deep && (
+                <button className="chip link" onClick={() => setDeep(true)}>
+                  {ar ? "ابحث في نصوص الكتب أيضًا" : "search full texts"}
+                </button>
+              )}
+              {deep && <span className="chip">شمل البحثُ نصوصَ الكتب</span>}
+            </p>
+          )}
+          {foundShown.map((h) => (
+            <LibItem key={h.b + h.i} head={h.h} roots={h.r} src={labelOf(h.b)}
+              entry={entryOf(h.b, h.i)} onOpen={() => load(h.b)} />
+          ))}
+          {found.length > foundShown.length && (
+            <p className="by-intro">{ar ? `و${num(found.length - foundShown.length)} مدخلًا آخر — ضيّق البحث.` : "narrow your search for more"}</p>
+          )}
+          {!found.length && <p className="by-intro">{ar ? "لا مدخل مطابقًا في الكتب التسعة." : "no match"}</p>}
+        </>
       )}
     </section>
   );
@@ -319,12 +515,24 @@ export default function Bayan() {
   const ar = getUILang() === "ar";
   const data = useBayan();
   const { id } = useParams();
+  const [params, setParams] = useSearchParams();
+  const root = params.get("root") ?? "";
+  const book = params.get("book") ?? "";
   const [q, setQ] = useState("");
-  const [seg, setSeg] = useState<"cards" | "lib">("cards");
+  const [seg, setSeg] = useState<"cards" | "lib">(root || book ? "lib" : "cards");
+  const [group, setGroup] = useState("");
   const [, forceAuto] = useState(0);
   useEffect(() => {
     if (seg === "cards" || (id && id.startsWith("auto-"))) loadAuto(() => forceAuto((n) => n + 1));
   }, [seg, id]);
+  useEffect(() => { if (root || book) setSeg("lib"); }, [root, book]);
+
+  const pickBook = (b: string, r: string) => {
+    const p = new URLSearchParams();
+    if (r) p.set("root", r);
+    if (b) p.set("book", b);
+    setParams(p, { replace: true });
+  };
 
   const cardHits = useMemo(() => {
     if (!data) return [];
@@ -349,27 +557,44 @@ export default function Bayan() {
   }
 
   const order = ["farq", "sigha", "mushtarak", "istimal"];
-  const showCards = seg === "cards" || q.trim() !== "";
+  const searching = q.trim() !== "";
+  const showCards = (seg === "cards" || searching) && !root;
+
+  // زمر البطاقات الآلية: الحقول الدلالية المحسوبة (lexnet) — الكبيرة أقسامًا مسماة والباقي «متفرقات»
+  const autoGroups = (() => {
+    if (!autoCache) return [] as [string, number][];
+    const c = new Map<string, number>();
+    for (const a of autoCache) {
+      const g = a.group && a.group !== "متفرقات" ? a.group : "متفرقات";
+      c.set(g, (c.get(g) ?? 0) + 1);
+    }
+    const big = [...c.entries()].filter(([g, n]) => g !== "متفرقات" && n >= 4).sort((x, y) => y[1] - x[1]);
+    const misc = [...c.entries()].filter(([g, n]) => g === "متفرقات" || n < 4).reduce((n, [, v]) => n + v, 0);
+    return misc ? [...big, ["متفرقات", misc] as [string, number]] : big;
+  })();
+
   return (
     <div className="page" dir="rtl">
     <div className="bayan-page">
       <h2>{ar ? "البيان — تدبر لغة القرآن" : "Bayān — the Qur'an's own diction"}</h2>
       <p className="by-intro">
         {ar
-          ? "لكل كلمةٍ في التنزيل موضعُها. بطاقاتٌ محرَّرة تجمع خريطةَ استعمالٍ محسوبةً من المصحف كله مع قراءاتِ أعلام اللغة منسوبةً، ومكتبةُ كتبِ البيان مهيكلةً للبحث — نحسب ونعرض، والقارئ يتدبر."
-          : "Computed usage maps with attributed classical readings, plus the structured Bayān library."}
+          ? "لكل كلمةٍ في التنزيل موضعُها. بطاقاتٌ تجمع خريطةَ استعمالٍ محسوبةً من المصحف كله مع قراءاتِ أعلام اللغة منسوبةً، ومكتبةُ تسعةِ كتبٍ مهيكلةً للبحث، وكل بطاقةٍ تدلّك على مظانّها من الكتب — نحسب ونعرض، والقارئ يتدبر."
+          : "Computed usage maps with attributed classical readings, a nine-book structured library, and a bridge from every card to where the scholars treated it."}
       </p>
       <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في البطاقات والمكتبة (كلمة، جذرًا، مصطلحًا)…" : "search cards & library…"} />
-      {!q.trim() && (
+      {!searching && (
         <p className="by-tabs">
-          <button className={"by-tab" + (seg === "cards" ? " on" : "")} onClick={() => setSeg("cards")}>
+          <button className={"by-tab" + (seg === "cards" && !root ? " on" : "")}
+            onClick={() => { setSeg("cards"); if (root || book) pickBook("", ""); }}>
             {ar ? "البطاقات" : "Cards"} ({autoCache ? num(data.cards.length + autoCache.length) : num(data.cards.length) + "+"})
           </button>
-          <button className={"by-tab" + (seg === "lib" ? " on" : "")} onClick={() => setSeg("lib")}>
-            {ar ? "مكتبة البيان — خمسة كتب" : "Bayān library"}
+          <button className={"by-tab" + (seg === "lib" || root ? " on" : "")} onClick={() => setSeg("lib")}>
+            {ar ? "المكتبة — تسعة كتب" : "Library — nine books"}
           </button>
         </p>
       )}
+
       {showCards && order.map((ty) => {
         const cards = cardHits.filter((c) => c.type === ty);
         if (!cards.length) return null;
@@ -388,22 +613,17 @@ export default function Bayan() {
           </section>
         );
       })}
-      {(seg === "cards" || q.trim() !== "") && autoCache && (() => {
-        const hits = q.trim()
+
+      {showCards && autoCache && (() => {
+        const hits = searching
           ? autoCache.filter((c) => fuzzyMatch(q, c.head) || c.roots.some((r) => fuzzyMatch(q, r)))
-          : autoCache;
-        const lim = hits.slice(0, q.trim() ? 60 : 434);
+          : group
+            ? autoCache.filter((c) => (group === "متفرقات"
+                ? !c.group || c.group === "متفرقات" || (autoGroups.find(([g]) => g === c.group)?.[1] ?? 0) < 4
+                : c.group === group))
+            : autoCache;
         if (!hits.length) return null;
-        // زمر الحقول الدلالية المحسوبة: الكبيرة أقسامًا مسماة والصغيرة «متفرقات»
-        const byGroup = new Map<string, AutoCard[]>();
-        for (const c of lim) {
-          const g = c.group && c.group !== "متفرقات" ? c.group : "متفرقات";
-          byGroup.set(g, [...(byGroup.get(g) ?? []), c]);
-        }
-        const bigs: [string, AutoCard[]][] = [];
-        const rest: AutoCard[] = [];
-        for (const [g, cs] of byGroup) (g !== "متفرقات" && cs.length >= 4 ? bigs : rest).push(...(g !== "متفرقات" && cs.length >= 4 ? ([[g, cs]] as [string, AutoCard[]][]) : cs) as never[]);
-        bigs.sort((x, y) => y[1].length - x[1].length);
+        const lim = hits.slice(0, searching ? 60 : group ? 400 : 90);
         const tile = (c: AutoCard) => (
           <Link key={c.id} to={`/bayan/${c.id}`} className="fr-card by-tile">
             <b>{c.head}</b>
@@ -413,26 +633,39 @@ export default function Bayan() {
         );
         return (
           <section>
-            <h3>{ar ? "البطاقات الآلية" : "Generated cards"} <span className="chip" title="ولّدها الحساب من فهرس الفروق المسند — الخريطة حتمية والنص منقول، بلا تحرير بشري">{num(hits.length)}</span></h3>
-            {bigs.map(([g, cs]) => (
-              <div key={g}>
-                <h4 className="by-group">{ar ? `الحقل الدلالي: ${g}` : g} ({num(cs.length)})</h4>
-                <div className="by-grid">{cs.map(tile)}</div>
-              </div>
-            ))}
-            {rest.length > 0 && (
-              <div>
-                <h4 className="by-group">{ar ? "متفرقات" : "misc"} ({num(rest.length)})</h4>
-                <div className="by-grid">{rest.map(tile)}</div>
-              </div>
+            <h3>
+              {ar ? "البطاقات الآلية" : "Generated cards"}{" "}
+              <span className="chip" title="ولّدها الحساب من فهرس الفروق المسند — الخريطة حتمية والنص منقول، بلا تحرير بشري">{num(hits.length)}</span>
+            </h3>
+            {!searching && (
+              <>
+                <p className="by-intro">
+                  {ar ? "مصنّفةٌ بالحقول الدلالية المحسوبة — اختر حقلًا لتقرأ بطاقاته." : "grouped by computed semantic fields"}
+                </p>
+                <p className="by-letters">
+                  <button className={"chip" + (group === "" ? " gold" : "")} onClick={() => setGroup("")}>الكل <b>{num(autoCache.length)}</b></button>
+                  {autoGroups.map(([g, n]) => (
+                    <button key={g} className={"chip" + (group === g ? " gold" : "")} onClick={() => setGroup(group === g ? "" : g)}>
+                      {g} <b>{num(n)}</b>
+                    </button>
+                  ))}
+                </p>
+              </>
+            )}
+            <div className="by-grid">{lim.map(tile)}</div>
+            {lim.length < hits.length && (
+              <p className="by-intro">
+                {ar ? `عُرضت ${num(lim.length)} من ${num(hits.length)} — اختر حقلًا دلاليًّا أعلاه أو ابحث لتصل إلى بقيتها.` : "pick a field or search for more"}
+              </p>
             )}
           </section>
         );
       })()}
-      {(seg === "lib" || q.trim() !== "") && (
+
+      {(seg === "lib" || searching || root) && (
         <>
           <h3>{ar ? "مكتبة البيان" : "Bayān library"}</h3>
-          <BayanLib q={q} />
+          <BayanLib q={q} root={root} book={book} onPick={pickBook} />
         </>
       )}
     </div>
