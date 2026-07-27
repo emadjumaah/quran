@@ -34,6 +34,7 @@ const Lisan = lazy(() => import("./views/Lisan"));
 const Sarf = lazy(() => import("./views/Sarf"));
 const About = lazy(() => import("./views/About"));
 const Docs = lazy(() => import("./views/Docs"));
+import ShareButton from "./components/ShareButton";
 const Galaxy = lazy(() => import("./views/Galaxy"));
 const MushafMap = lazy(() => import("./views/MushafMap"));
 const ThematicThread = lazy(() => import("./views/ThematicThread"));
@@ -298,6 +299,7 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
           <span className="ar" style={{ fontFamily: "var(--font-quran)", color: "var(--accent)", fontSize: 22, fontWeight: 700 }}>مشكاة</span>
           <button onClick={onClose} aria-label={ar ? "إغلاق" : "close"}>✕</button>
         </div>
+        <div className="drawer-share"><ShareButton compact /></div>
         <nav className="drawer-nav" onClick={onClose}>
           <NavLink to="/read">{ar ? "المصحف" : "Reader"}</NavLink>
           {groups.map((g) => (
@@ -406,11 +408,13 @@ function App() {
           <span className="spacer" />
           {mobile ? (
             <>
+              <ShareButton />
               <BookmarksPanel />
               <SettingsPanel />
             </>
           ) : (
             <>
+              <ShareButton />
               <BookmarksPanel />
               <SourcesPanel />
               <LangToggle />

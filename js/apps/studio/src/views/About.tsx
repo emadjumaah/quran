@@ -9,6 +9,7 @@
 import type { JSX } from "react";
 import { getUILang, useUILang } from "../i18n";
 import { ABOUT_SECTIONS } from "../aboutContent";
+import ShareButton from "../components/ShareButton";
 
 /** inline **bold** → <strong> */
 function inline(text: string): JSX.Element[] {
@@ -110,6 +111,11 @@ export default function About() {
 
         {/* 6 — honest closing */}
         <Section id="closing" />
+
+        {/* المشاركة — من رأى فيه خيرًا دلَّ عليه */}
+        <div style={{ display: "flex", justifyContent: "center", margin: "18px 0 4px" }}>
+          <ShareButton compact />
+        </div>
 
         <p className="muted" style={{ textAlign: "center", margin: "22px 0 8px", fontSize: 12.5, lineHeight: 1.9 }}>
           {ar
