@@ -262,7 +262,7 @@ function Brand() {
       style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}
     >
       <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={35} height={35} />
-      <span className="ar" style={{ fontSize: 24, marginInlineStart: 0 }}>
+      <span className="ar brand-word" style={{ marginInlineStart: 0 }}>
         مشكاة
       </span>
     </NavLink>

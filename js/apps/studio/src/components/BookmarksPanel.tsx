@@ -32,7 +32,7 @@ export default function BookmarksPanel() {
 
   return (
     <div className="set-wrap" ref={ref}>
-      <button onClick={() => setOpen(!open)} title={ar ? "العلامات المرجعية" : "Bookmarks"} aria-label="bookmarks">
+      <button className="bm-trigger" onClick={() => setOpen(!open)} title={ar ? "العلامات المرجعية" : "Bookmarks"} aria-label="bookmarks">
         <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M6 3.5h12v17l-6-4.4-6 4.4z" /></svg>{marks.length > 0 && <sup style={{ fontSize: 9 }}> {num(marks.length)}</sup>}
       </button>
       {open && (
