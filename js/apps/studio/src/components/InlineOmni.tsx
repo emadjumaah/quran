@@ -97,17 +97,23 @@ export default function InlineOmni({
               onMouseEnter={() => setActive(i)}
               className={`inline-omni-row${i === active ? " active" : ""}`}
             >
-              <span className="chip inline-omni-kind">{t(`omni.${item.kind}`)}</span>
-              <span
-                className={item.kind === "text" || item.kind === "root" ? "quran inline-omni-label" : "inline-omni-label"}
+              {/* لا وسومَ («نص/معنى» حشوٌ — رصد المالك): الموضعُ وحدَه رأسًا
+                  صغيرًا، والآيةُ تحته كاملةَ العرض تلتفّ ولا تُبتر */}
+              {item.sub && <div className="inline-omni-sub">{item.sub}</div>}
+              <div
+                className={
+                  (item.kind === "text" || item.kind === "root" ? "quran " : "") +
+                  "inline-omni-label" +
+                  (item.key === "all-text" || item.kind === "meaning" ? " inline-omni-cta" : "")
+                }
+                dir={item.kind === "text" || item.kind === "root" ? "rtl" : undefined}
               >
                 {item.segs
                   ? item.segs.map((g, gi) => (
                       <span key={gi} className={g.hit ? "omni-hit" : undefined}>{g.text}{" "}</span>
                     ))
                   : item.label}
-              </span>
-              {item.sub && <span className="muted inline-omni-sub">{item.sub}</span>}
+              </div>
             </div>
           ))}
         </div>

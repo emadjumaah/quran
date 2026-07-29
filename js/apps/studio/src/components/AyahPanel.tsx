@@ -118,7 +118,9 @@ export default function AyahPanel({
             </svg>
           )}
         </button>
-        <button className={`ap-ic${bookmarked ? " on" : ""}`} onClick={() => toggleBookmark(loc)} title={ar ? "علامة مرجعية" : "bookmark"}>{bookmarked ? "★" : "☆"}</button>
+        <button className={`ap-ic${bookmarked ? " on" : ""}`} onClick={() => toggleBookmark(loc)} title={ar ? "علامة مرجعية — تُحفظ في قائمة العلامات أعلى الصفحة" : "bookmark — saved to the list in the header"}>
+          {bookmarked ? <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M6 3.5h12v17l-6-4.4-6 4.4z" /></svg> : <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M6 3.5h12v17l-6-4.4-6 4.4z" /></svg>}
+        </button>
         <button className="ap-ic" onClick={onClose} title={ar ? "إزالة التعليم" : "clear"}>✕</button>
       </div>
 

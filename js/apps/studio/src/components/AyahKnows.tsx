@@ -15,11 +15,13 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { surahNameUI } from "../db";
+import { ayahByLocationMap, surahNameUI } from "../db";
 import { getUILang, num } from "../i18n";
 import { readPathOf } from "../types";
 import { loadFuruq, sides, type Furq } from "../furuq";
 import { EnQuoteLine } from "./EnVerse";
+import AudioButton, { ayahIdOf } from "./AudioButton";
+import type { AyahDoc } from "../types";
 import { allVerseLocs, classOf, loadKulliyat, useKulliyat } from "../kulliyat";
 
 const arName = (loc: string) => `${surahNameUI(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
@@ -134,18 +136,45 @@ export function TwinPanel({ loc, pairs }: { loc: string; pairs: Furq[] }) {
   );
 }
 
+/** الصلاتُ المفحوصةُ بنصوصها الكاملة — كعرض «مثلها» و«شبيهها» سواءً بسواء
+ *  (أمر المالك 2026-07-29: «لما لا نعرض صلاتها مثلما نعرض مثلها؟») —
+ *  كانت رقاعَ إحالاتٍ تُجبر على النقر، فصارت صفوفًا: العلاقةُ والموضعُ
+ *  والاستماعُ ثم الآيةُ بنصّها (وترجمتُها لغير العربيّ). */
 export function LinksPanel({ loc, links }: { loc: string; links: { loc: string; rel: string }[] }) {
   const ar = getUILang() === "ar";
+  const [texts, setTexts] = useState<Map<string, AyahDoc> | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  useEffect(() => {
+    let live = true;
+    ayahByLocationMap().then((m) => live && setTexts(m));
+    return () => { live = false; };
+  }, []);
+  const shown = showAll ? links : links.slice(0, 6);
   return (
     <div className="ak-panel">
-      <div className="ak-links">
-        {links.slice(0, 10).map((x) => (
-          <Link key={x.loc + x.rel} to={readPathOf(x.loc)} className="chip" title={relLabel(x.rel, ar)}>
-            {relLabel(x.rel, ar)} · {arName(x.loc)}
-          </Link>
-        ))}
-        {links.length > 10 && <span className="chip">+{num(links.length - 10)}</span>}
-      </div>
+      {shown.map((x) => {
+        const d = texts?.get(x.loc);
+        return (
+          <div key={x.loc + x.rel} className="ak-link-row">
+            <div className="ak-link-h">
+              <span className="chip gold" title={ar ? "علاقةٌ فحصها قارئٌ مستقلٌّ بمقطعَي سياقها" : "examined by an independent reader in context"}>{relLabel(x.rel, ar)}</span>
+              <Link to={readPathOf(x.loc)} className="chip link">{arName(x.loc)}</Link>
+              {d && <AudioButton ayahId={ayahIdOf(d)} preview />}
+            </div>
+            {d && (
+              <Link to={readPathOf(x.loc)} className="quran ak-link-text" dir="rtl">
+                {d.textUthmani ?? d.textClean}
+              </Link>
+            )}
+            {d && <EnQuoteLine doc={d} />}
+          </div>
+        );
+      })}
+      {links.length > 6 && !showAll && (
+        <button className="chip ak-showall" onClick={() => setShowAll(true)}>
+          {ar ? `أظهر بقيّةَ الصلات (${num(links.length - 6)})` : `show all links (+${links.length - 6})`}
+        </button>
+      )}
       <div className="ak-more">
         <span className="muted ak-note">{ar ? "كلُّ صلةٍ فحصها قارئٌ مستقلٌّ بمقطعَي سياقها · " : "every link was examined by an independent reader in its context · "}</span>
         <Link to={`/aya/${loc.split(":")[0]}/${loc.split(":")[1]}`} className="chip link">{ar ? "بطاقةُ الآية ←" : "Verse card ←"}</Link>

@@ -132,7 +132,9 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
     }
   }
 
-  // Arabic token → root (resolve the typed WORD to its root first)
+  // Arabic token → root — تُجمع جانبًا وتُلحق آخرَ القائمة (الترتيبُ المنطقيّ
+  // بأمر المالك 2026-07-29: الآياتُ أولًا، ثم كلُّ المواضع، ثم الجذرُ، ثم المعنى)
+  const rootItems: OmniItem[] = [];
   if (/^[ء-ي]{2,}$/.test(raw)) {
     const seenRoots = new Set<string>();
     try {
@@ -141,7 +143,7 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
         const rd = await getRoot(resolved).catch(() => null);
         if (rd) {
           seenRoots.add(resolved);
-          out.push({
+          rootItems.push({
             key: `rr${resolved}`,
             kind: "root",
             label: resolved,
@@ -157,7 +159,7 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
       const roots = await searchRoots(raw, 3);
       for (const r of roots) {
         if (seenRoots.has(r.root)) continue;
-        out.push({
+        rootItems.push({
           key: `r${r.root}`,
           kind: "root",
           label: r.root,
@@ -178,14 +180,6 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
       const { hits: open, total } = await quickSearch(raw, 3);
       // العددُ الكلّي أوّلَ النتائج لا قبل آخرها — فيعرف الباحثُ سعةَ ما وجد
       // قبل أن يقرأ العيّنة (قرار المالك 2026-07-21).
-      if (total > 0)
-        out.unshift({
-          key: "all-text",
-          kind: "text",
-          label: `«${raw}» — ${num(total)}${total >= 400 ? "+" : ""}`,
-          sub: "بالنصّ · كلُّ المواضع",
-          to: `/search?m=text&q=${encodeURIComponent(raw)}`,
-        });
       for (const h of open)
         out.push({
           key: `t${h.ayah.location}`,
@@ -197,11 +191,21 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
           sub: `${surahNameAr(h.ayah.surahNo)} ${num(h.ayah.ayahNo)}${h.how === "جذر" ? ` · ${t("omni.viaRoot") || "من الجذر"} ${h.root}` : ""}`,
           to: readPathOf(h.ayah.location),
         });
-
+      // «كلُّ المواضع» بعد العيّنة — امتدادٌ طبيعيّ لها لا متصدّرٌ يضيّع السطر الأول
+      if (total > 0)
+        out.push({
+          key: "all-text",
+          kind: "text",
+          label: `كلُّ المواضع «${raw}» — ${num(total)}${total >= 400 ? "+" : ""} ←`,
+          to: `/search?m=text&q=${encodeURIComponent(raw)}`,
+        });
     } catch {
       /* fts syntax errors are fine here */
     }
   }
+
+  // الجذرُ بعد الآيات وكلِّ المواضع، وقبل المعنى
+  out.push(...rootItems);
 
   // meaning search, always last
   out.push({

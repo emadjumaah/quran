@@ -33,14 +33,14 @@ export default function BookmarksPanel() {
   return (
     <div className="set-wrap" ref={ref}>
       <button onClick={() => setOpen(!open)} title={ar ? "العلامات المرجعية" : "Bookmarks"} aria-label="bookmarks">
-        ★{marks.length > 0 && <sup style={{ fontSize: 9 }}> {num(marks.length)}</sup>}
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M6 3.5h12v17l-6-4.4-6 4.4z" /></svg>{marks.length > 0 && <sup style={{ fontSize: 9 }}> {num(marks.length)}</sup>}
       </button>
       {open && (
         <div className="set-panel card">
           <div className="set-head">{ar ? "العلامات المرجعية" : "Bookmarks"}</div>
           {marks.length === 0 ? (
             <div className="muted" style={{ padding: "6px 0" }}>
-              {ar ? "اضغط ☆ بجانب أي آية لحفظها هنا" : "tap ☆ on any ayah to save it here"}
+              {ar ? "علِّم آيةً ثم اضغط شارةَ الحفظ في لوحتها لتُحفظ هنا" : "mark a verse, then tap the bookmark ribbon in its panel"}
             </div>
           ) : (
             <div className="bm-list">
