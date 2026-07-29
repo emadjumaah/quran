@@ -11,7 +11,7 @@
  */
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getWord, listAyahs, listSurahs, listWords, surahNameAr } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
 import { ayahsCount, getUILang, num, t, useUILang } from "../i18n";
@@ -40,6 +40,7 @@ import Translations from "../components/Translations";
 import { useWordPress, type WordPressHandlers } from "../lib/pressWord";
 import { shareAyah } from "../components/ShareButton";
 import AyahKnows from "../components/AyahKnows";
+import WelcomeQuestions from "../components/WelcomeQuestions";
 
 const MODE_KEY = "quran-studio:reader-mode";
 type Mode = "pages" | "ayat";
@@ -411,6 +412,9 @@ export default function Reader() {
   // مفتاحُ كلِّ انتقال — به يُعاد التمريرُ إلى الآية حتى لو كان الرابطُ نفسَه
   // (رصدُ المالك: البحثُ عن الآية ثانيةً لم يعد يحرّك إليها)
   const navKey = useLocation().key;
+  // ?know=twin|links|wujuh — سؤالُ الاستقبال يفتح جوابَه: الآيةُ تُعلَّم ولوحتُها تُفتح
+  const [searchParams] = useSearchParams();
+  const knowParam = searchParams.get("know") as "twin" | "links" | "wujuh" | null;
   const surahNo = Number(params.surahNo);
   const targetAyahNo = params.ayahNo != null ? Number(params.ayahNo) : null;
   const narrow = useNarrow();
@@ -519,6 +523,11 @@ export default function Reader() {
       if (base != null) recordProgress(base + (targetAyahNo ?? 1));
     }
   }, [surahNo, targetAyahNo, surahBase]);
+
+  // وصولٌ من سؤال استقبال: علِّم الآيةَ الهدف كي يظهر سطرُ معارفها مفتوحًا
+  useEffect(() => {
+    if (knowParam && targetAyahNo != null) setSelectedAyah(`${surahNo}:${targetAyahNo}`);
+  }, [knowParam, surahNo, targetAyahNo]);
 
   // Scroll the :ayahNo target into view once the surah has rendered — keyed
   // by navKey too, so repeating the SAME search result still scrolls to it.
@@ -810,6 +819,7 @@ export default function Reader() {
           </header>
         )}
 
+        {!loading && <WelcomeQuestions />}
         {loading ? (
           <p className="muted">{t("loading")}</p>
         ) : ayahs.length === 0 ? (
@@ -916,7 +926,7 @@ export default function Reader() {
                 </div>
                 )}
                 {/* «مشكاةُ تعرف عنها» — معارفُ الآية الخاصة تظهر مع تعليمها (الرؤية 2026-07-29) */}
-                {marked && <AyahKnows loc={ayah.location} />}
+                {marked && <AyahKnows loc={ayah.location} initialOpen={knowParam && isTarget ? knowParam : undefined} />}
                 <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
                 <TafsirPanel location={ayah.location} open={panelOpen("tafsir", ayah.location)} />
                 <AsbabPanel location={ayah.location} open={panelOpen("asbab", ayah.location)} />

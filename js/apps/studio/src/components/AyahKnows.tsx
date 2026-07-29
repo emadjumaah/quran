@@ -13,7 +13,7 @@
  * كلُّ زرٍّ يفتح لوحتَه في المكان، ويصل بقسمه الكامل. البياناتُ تُجلب كسولةً
  * عند أول تعليمٍ وتبقى في الذاكرة (فروق ٦٨٢ك · وجوه ١٥ك · الشبكةُ محمَّلةٌ أصلًا).
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { surahNameAr } from "../db";
 import { num } from "../i18n";
@@ -153,16 +153,18 @@ function WujuhPanel({ hits }: { hits: WajhHit[] }) {
 }
 
 // ─── السطرُ نفسُه ────────────────────────────────────────────────────────────
-export default function AyahKnows({ loc }: { loc: string }) {
+export default function AyahKnows({ loc, initialOpen }: { loc: string; initialOpen?: "twin" | "links" | "wujuh" }) {
   const kullReady = useKulliyat();
   const [twins, setTwins] = useState<Furq[] | null>(null);
   const [wujuh, setWujuh] = useState<WajhHit[] | null>(null);
   const [links, setLinks] = useState<{ loc: string; rel: string }[] | null>(null);
-  const [open, setOpen] = useState<"twin" | "links" | "wujuh" | null>(null);
+  // سؤالُ الاستقبال يصل بـ?know= فيفتح لوحتَه فورَ وصول بياناتها
+  const [open, setOpen] = useState<"twin" | "links" | "wujuh" | null>(initialOpen ?? null);
+  const prevLoc = useRef(loc);
 
   useEffect(() => {
     let live = true;
-    setOpen(null);
+    if (prevLoc.current !== loc) { setOpen(null); prevLoc.current = loc; }
     loadFuruqIndex().then((m) => live && setTwins(m.get(loc) ?? []));
     loadWujuhIndex().then((m) => live && setWujuh(m.get(loc) ?? []));
     loadInbound().then((rev) => {
