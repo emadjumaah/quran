@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter, Link, NavLink, Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { initDb, listSurahs } from "./db";
@@ -292,7 +292,8 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
       <div className="drawer-backdrop" onClick={onClose} />
       <aside className="drawer" role="dialog" aria-label={ar ? "القائمة" : "menu"}>
         <div className="drawer-head">
-          <span className="ar" style={{ fontFamily: "var(--font-quran)", color: "var(--accent)", fontSize: 22, fontWeight: 700 }}>مشكاة</span>
+          {/* الشعارُ فعّالٌ كالحاسوب: يفتح الرئيسيةَ ويغلق الدُّرج (أمر المالك 2026-07-29) */}
+          <NavLink to="/" onClick={onClose} className="ar" style={{ fontFamily: "var(--font-quran)", color: "var(--accent)", fontSize: 22, fontWeight: 700, textDecoration: "none" }}>مشكاة</NavLink>
           <button onClick={onClose} aria-label={ar ? "إغلاق" : "close"}>✕</button>
         </div>
         <div className="drawer-share"><ShareButton compact /></div>
@@ -336,9 +337,55 @@ function RouteBoundary({ children }: { children: React.ReactNode }) {
 function NibrasFab() {
   const loc = useLocation();
   const ar = getUILang() === "ar";
+  // الجوال: الزرُّ قابلٌ للسحب ويلتصق بإحدى الحافّتين ويُحفظ جانبُه وارتفاعُه
+  // (سؤال المالك 2026-07-29: «هل يمكن عمله متحركًا كما في تطبيقات الجوال؟» — نعم)
+  const [pos, setPos] = useState<{ side: "l" | "r"; y: number }>(() => {
+    try { return JSON.parse(localStorage.getItem("mishkat:fab-pos") || "x"); } catch { return { side: "r", y: 0 }; }
+  });
+  const drag = useRef<{ startX: number; startY: number; baseY: number; moved: boolean; id: number } | null>(null);
+  const fabRef = useRef<HTMLAnchorElement>(null);
+  const onDown = (e: React.PointerEvent) => {
+    if (e.pointerType !== "touch") return; // السحبُ للمس — الحاسوبُ ثابت
+    drag.current = { startX: e.clientX, startY: e.clientY, baseY: pos.y, moved: false, id: e.pointerId };
+    fabRef.current?.setPointerCapture(e.pointerId);
+  };
+  const onMove = (e: React.PointerEvent) => {
+    const d = drag.current;
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.startX, dy = e.clientY - d.startY;
+    if (!d.moved && Math.hypot(dx, dy) < 10) return;
+    d.moved = true;
+    const half = window.innerWidth / 2;
+    const side: "l" | "r" = e.clientX < half ? "l" : "r";
+    const y = Math.min(0, Math.max(-(window.innerHeight - 260), d.baseY - dy));
+    setPos({ side, y });
+  };
+  const onUp = (e: React.PointerEvent) => {
+    const d = drag.current;
+    if (!d || e.pointerId !== d.id) return;
+    drag.current = null;
+    if (d.moved) {
+      e.preventDefault();
+      localStorage.setItem("mishkat:fab-pos", JSON.stringify(pos));
+    }
+  };
+  const onClick = (e: React.MouseEvent) => {
+    // نقرةٌ تلت سحبًا لا تفتح المساعد
+    if (drag.current?.moved) e.preventDefault();
+  };
   if (loc.pathname.startsWith("/assistant")) return null;
   return (
-    <NavLink to="/assistant" className="nibras-fab" title={ar ? "اسأل مشكاة: محادثةُ ذكاءٍ اصطناعيّ — بحثٌ بالمعنى وصياغةٌ من بيانات القرآن" : "Ask Mishkat: an AI chat — meaning-search & drafting from the Qur'an's data"} aria-label={ar ? "اسأل مشكاة — محادثة ذكاء اصطناعي" : "Ask Mishkat — AI chat"}>
+    <NavLink
+      ref={fabRef}
+      to="/assistant"
+      className={`nibras-fab${pos.side === "l" ? " fab-left" : " fab-right"}`}
+      style={{ transform: `translateY(${pos.y}px)` }}
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+      onClick={onClick}
+      title={ar ? "اسأل مشكاة: محادثةُ ذكاءٍ اصطناعيّ — بحثٌ بالمعنى وصياغةٌ من بيانات القرآن" : "Ask Mishkat: an AI chat — meaning-search & drafting from the Qur'an's data"} aria-label={ar ? "اسأل مشكاة — محادثة ذكاء اصطناعي" : "Ask Mishkat — AI chat"}>
       {/* هلالُ المشكاة — لا معيّن (قرار مالك 2026-07-19) */}
       {/* شكلُ الهلال من public/hilal.svg — هويّةُ مشكاة الواحدة */}
       <svg className="nibras-fab-ic" viewBox="0 0 1049 1280" aria-hidden focusable="false">

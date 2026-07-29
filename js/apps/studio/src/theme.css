@@ -1849,6 +1849,7 @@ table.data tr:hover td { background: var(--panel-2); }
 /* ── نِبراس FAB — floating AI-chat button (labelled pill on web, round on mobile) */
 .nibras-fab {
   position: fixed; right: 20px; bottom: 20px; z-index: 60;
+  touch-action: none; /* السحبُ على اللمس دون تمرير الصفحة */
   display: inline-flex; align-items: center; gap: 7px;
   padding: 8px 15px 8px 13px; border-radius: 999px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; text-decoration: none;
@@ -2623,3 +2624,16 @@ table.data tr:hover td { background: var(--panel-2); }
 }
 .ak-link-text:hover { color: var(--accent); }
 .ak-showall { cursor: pointer; align-self: center; margin-top: 4px; }
+
+/* الجوال: مبدّلُ العرض المصغّر بأيقونتين + ▶ داخل الصفّ اللاصق نفسِه */
+.rd-ctrl-m { gap: 4px; }
+.rd-seg-m button { padding: 5px 8px; }
+.rd-seg-m button svg { display: block; }
+@media (max-width: 900px) {
+  .reader-sticky .reader-surah-pick { max-width: 30vw; }
+  .rd-ctrl-m .rd-listen { width: 30px; height: 32px; font-size: 10px; }
+}
+
+/* جانبُ الفاب المسحوب — يلتصق بالحافة المختارة ويُحفظ */
+.nibras-fab.fab-left { right: auto; left: 14px; }
+.nibras-fab.fab-right { left: auto; right: 14px; }

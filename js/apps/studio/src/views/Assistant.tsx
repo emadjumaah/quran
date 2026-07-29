@@ -373,7 +373,19 @@ export default function Assistant() {
     setListW(clamped);
   };
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chat?.messages.length, busy]);
+  // بعد الإرسال: مرِّر إلى رأس آخر سؤالٍ لا إلى ذيل القائمة — كان التمريرُ
+  // للذيل يرفع المحادثةَ فتبدو الصفحةُ فارغةً حتى يعود المستخدمُ بالسكرول
+  // (رصد المالك على الجوال 2026-07-29)
+  useEffect(() => {
+    const msgs = chat?.messages ?? [];
+    const last = msgs[msgs.length - 1];
+    if (last?.role === "user") {
+      // سؤالٌ أُرسل للتوّ: اجعل رأسه أعلى النافذة فيُرى هو وبدايةُ الجواب تحته
+      document.getElementById(`mu-msg-${msgs.length - 1}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      endRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chat?.messages.length, busy]);
 
   // المؤشر في حقل الكتابة فورَ فتح نبراس أو تبديل المحادثة — الحقل هو المدخل الرئيس
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -733,7 +745,7 @@ export default function Assistant() {
             </div>
           ) : (
             <>
-              {chat.messages.map((m) => <Bubble key={m.id} m={m} />)}
+              {chat.messages.map((m, mi) => <div key={m.id} id={`mu-msg-${mi}`}><Bubble m={m} /></div>)}
               <div ref={endRef} />
             </>
           )}
