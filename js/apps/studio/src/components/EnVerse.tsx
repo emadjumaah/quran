@@ -9,7 +9,9 @@
  * EnTransBar — شريطُ تقليب الترجمات: اسمُ كلِّ ترجمةٍ زرًّا، والتبديلُ فوريٌّ
  * على الصفحة كلِّها (الملفُّ يُجلب عند أول اختيارٍ ويبقى).
  */
+import { useEffect, useState } from "react";
 import type { AyahDoc } from "../types";
+import { ayahByLocationMap } from "../db";
 import { getUILang } from "../i18n";
 import { EN_TRANSLATIONS, activeTranslationId, setActiveTranslation, translationOf, useEnTranslation } from "../lib/enTranslations";
 
@@ -43,4 +45,24 @@ export function EnVerseLine({ ayah }: { ayah: AyahDoc }) {
   if (!text) return null;
   // بلا ذيل اسم المترجم — الشريطُ المثبَّت يحمله (أمر المالك 2026-07-29)
   return <p className="en-verse" dir="ltr">{text}</p>;
+}
+
+/** سطرُ ترجمةٍ لآيةٍ مقتبسةٍ داخل اللوحات (مثلها · الشبيه · بطاقة الآية) —
+ *  يستقي وثيقتَها من خريطة المواضع، ولا يظهر إلا لغير العربيّ
+ *  (رصد المالك 2026-07-29: «all open area is mostly arabic»). */
+export function EnQuoteLine({ loc, doc }: { loc?: string; doc?: AyahDoc }) {
+  useEnTranslation();
+  const [d, setD] = useState<AyahDoc | null>(doc ?? null);
+  const en = getUILang() !== "ar";
+  useEffect(() => {
+    if (doc) { setD(doc); return; }
+    if (!en || !loc) return;
+    let live = true;
+    ayahByLocationMap().then((m) => live && setD(m.get(loc) ?? null));
+    return () => { live = false; };
+  }, [loc, doc, en]);
+  if (!en || !d) return null;
+  const { text } = translationOf(d);
+  if (!text) return null;
+  return <p className="en-quote" dir="ltr">{text}</p>;
 }

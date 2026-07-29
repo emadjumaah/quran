@@ -85,13 +85,17 @@ async function fetchWithProgress(
 
 let surahCache: SurahDoc[] | null = null;
 const surahNames = new Map<number, string>();
+const surahNamesTr = new Map<number, string>();
 
 export async function listSurahs(): Promise<SurahDoc[]> {
   if (!surahCache) {
     surahCache = (await coll("surahs").findMany({
       orderBy: { surahNo: "asc" },
     })) as SurahDoc[];
-    for (const s of surahCache) surahNames.set(s.surahNo, s.nameAr);
+    for (const s of surahCache) {
+      surahNames.set(s.surahNo, s.nameAr);
+      surahNamesTr.set(s.surahNo, s.nameTranslit);
+    }
   }
   return surahCache;
 }
@@ -99,6 +103,15 @@ export async function listSurahs(): Promise<SurahDoc[]> {
 /** Synchronous Arabic surah name (primed by the boot sequence). */
 export const surahNameAr = (no: number): string =>
   surahNames.get(no) ?? String(no);
+
+/** اسمُ السورة بلغة الواجهة: عربيًّا كما هو، وبالنقحرة لغيره — الإحالاتُ
+ *  في كل اللوحات تمرُّ من هنا فلا يقرأ الإنجليزيُّ «السجدة» بحروفٍ لا يفكّها
+ *  (رصد المالك 2026-07-29). التعديلُ لا يمسُّ العربيةَ في شيء. */
+export const surahNameUI = (no: number): string => {
+  let ar = true;
+  try { ar = (localStorage.getItem("quran-studio:ui-lang") ?? "ar") === "ar"; } catch { /* SSR/امتناع التخزين */ }
+  return ar ? (surahNames.get(no) ?? String(no)) : (surahNamesTr.get(no) ?? String(no));
+};
 
 export async function getSurah(surahNo: number): Promise<SurahDoc | undefined> {
   return (await listSurahs()).find((s) => s.surahNo === surahNo);

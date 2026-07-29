@@ -68,12 +68,12 @@ export default function ThematicThread() {
       if (seq.current !== id) return;
       const semResolved = (await Promise.all(sem.map(async (h) => {
         const a = await getAyahByGlobalNo(h.ayahId);
-        return a ? { loc: a.location, text: a.textClean || a.textUthmani, surah: a.surahNo, score: h.score } : null;
+        return a ? { loc: a.location, text: a.textUthmani || a.textClean, surah: a.surahNo, score: h.score } : null;
       }))).filter((x): x is { loc: string; text: string; surah: number; score: number } => !!x);
       if (seq.current !== id) return;
       const semScore = new Map(semResolved.map((x) => [x.loc, x.score]));
       const map = new Map<string, TV>();
-      for (const a of lex) map.set(a.location, { loc: a.location, text: a.textClean || a.textUthmani, surah: a.surahNo, p: semScore.get(a.location) ?? 0, src: "lex" });
+      for (const a of lex) map.set(a.location, { loc: a.location, text: a.textUthmani || a.textClean, surah: a.surahNo, p: semScore.get(a.location) ?? 0, src: "lex" });
       // v2: التأصيلُ الجذري يُضمَّن دائمًا — كان جرفُ «≤50» يُسقط أيَّ معنًى شائع
       // (الصبر ~100 موضعًا كانت تسقط كلُّها). العرضُ يرقّم، لا نبتر البيانات.
       const rd = rm[0]?.doc;
@@ -82,7 +82,7 @@ export default function ThematicThread() {
       for (const loc of rootLocs) {
         if (map.has(loc)) continue;
         const a = await getAyahByLocation(loc);
-        if (a) map.set(loc, { loc, text: a.textClean || a.textUthmani, surah: a.surahNo, p: semScore.get(loc) ?? 0, src: "root" });
+        if (a) map.set(loc, { loc, text: a.textUthmani || a.textClean, surah: a.surahNo, p: semScore.get(loc) ?? 0, src: "root" });
       }
       // v2: هالةٌ متكيّفة — القطع عند أكبر هبوطٍ في منحنى الدرجات (المرفق) بدل
       // فجوة 0.05 الثابتة؛ بسقفٍ معلن 16 وأرضيةِ أمانٍ top-0.10

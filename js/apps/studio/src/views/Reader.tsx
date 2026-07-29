@@ -124,13 +124,15 @@ function SurahSidebar({
               <span className="muted" style={{ width: 26, textAlign: "end" }}>
                 {num(s.surahNo)}
               </span>
-              <span className="quran" style={{ fontSize: 19, lineHeight: 1.4 }}>
-                {s.nameAr}
-              </span>
-              {getUILang() !== "ar" && (
-                <span className="muted" style={{ marginInlineStart: "auto", fontSize: 11 }}>
-                  {s.nameTranslit}
-                </span>
+              {getUILang() === "ar" ? (
+                <span className="quran" style={{ fontSize: 19, lineHeight: 1.4 }}>{s.nameAr}</span>
+              ) : (
+                <>
+                  {/* الإنجليزيةُ أولًا وبلونها الكامل، والعربيُّ عونًا خافتًا في الطرف
+                      (أمر المالك 2026-07-29: English concentrated, Arabic as helper) */}
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink)" }}>{s.nameTranslit}</span>
+                  <span className="quran" style={{ marginInlineStart: "auto", fontSize: 16, opacity: 0.45 }}>{s.nameAr}</span>
+                </>
               )}
             </div>
           );
@@ -680,7 +682,7 @@ export default function Reader() {
               >
                 {surahs.map((s) => (
                   <option key={s.surahNo} value={s.surahNo}>
-                    {s.surahNo}. {s.nameAr}{getUILang() !== "ar" ? ` — ${s.nameTranslit}` : ""}
+                    {getUILang() === "ar" ? `${s.surahNo}. ${s.nameAr}` : `${s.surahNo}. ${s.nameTranslit}`}
                   </option>
                 ))}
               </select>
@@ -696,11 +698,16 @@ export default function Reader() {
               {/* البحثُ أوّلَ الصدر (يمينًا في العربية)، والسورةُ في الطرف المقابل */}
               <div className="reader-bar-search"><InlineOmni /></div>
               <span className="reader-bar-spacer" />
-              <span className="reader-bar-name quran">{surah.nameAr}</span>
+              {getUILang() === "ar" ? (
+                <span className="reader-bar-name quran">{surah.nameAr}</span>
+              ) : (
+                <span className="reader-bar-name" style={{ fontWeight: 700 }}>
+                  {surah.nameTranslit} <span className="quran" style={{ opacity: 0.45, fontWeight: 400 }}>{surah.nameAr}</span>
+                </span>
+              )}
               <span className="muted reader-bar-meta">
                 {surah.revelation === "Meccan" ? t("reader.meccan") : t("reader.medinan")} ·{" "}
                 {ayahsCount(surah.ayahCount)}
-                {getUILang() !== "ar" ? ` · ${surah.nameTranslit}` : ""}
               </span>
               <HeaderControls />
             </header>

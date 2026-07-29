@@ -15,13 +15,14 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { surahNameAr } from "../db";
+import { surahNameUI } from "../db";
 import { getUILang, num } from "../i18n";
 import { readPathOf } from "../types";
 import { loadFuruq, sides, type Furq } from "../furuq";
+import { EnQuoteLine } from "./EnVerse";
 import { allVerseLocs, classOf, loadKulliyat, useKulliyat } from "../kulliyat";
 
-const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
+const arName = (loc: string) => `${surahNameUI(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
 // ─── فهارسُ الموضع الواحد (تُبنى مرةً في الجلسة) ─────────────────────────────
 let furuqByLoc: Map<string, Furq[]> | null = null;
@@ -112,11 +113,14 @@ export function TwinPanel({ loc, pairs }: { loc: string; pairs: Furq[] }) {
               <span className="muted ak-note">{ar ? "الفرقُ مميَّزٌ بلونه" : "the difference is highlighted"}</span>
             </div>
             {[{ segs: a, side: "a" as const, ref: f.a }, { segs: b, side: "b" as const, ref: f.b }].map((row) => (
-              <div key={row.side} className="ak-line quran" dir="rtl">
-                <span className="ak-ref">{arName(row.ref)}</span>{" "}
-                {row.segs.map((g, gi) => (
-                  <span key={gi} className={g.diff ? (g.form ? "fr-diff fr-form" : `fr-diff fr-diff-${row.side}`) : undefined}>{g.text} </span>
-                ))}
+              <div key={row.side}>
+                <div className="ak-line quran" dir="rtl">
+                  <span className="ak-ref">{arName(row.ref)}</span>{" "}
+                  {row.segs.map((g, gi) => (
+                    <span key={gi} className={g.diff ? (g.form ? "fr-diff fr-form" : `fr-diff fr-diff-${row.side}`) : undefined}>{g.text} </span>
+                  ))}
+                </div>
+                <EnQuoteLine loc={row.ref} />
               </div>
             ))}
           </div>

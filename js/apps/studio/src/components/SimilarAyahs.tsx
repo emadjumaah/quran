@@ -11,6 +11,7 @@ import { useSettings } from "../settings";
 import AyahRef from "./AyahRef";
 import TierBadge from "./TierBadge";
 import CollectButton from "./CollectButton";
+import { EnQuoteLine } from "./EnVerse";
 import AudioButton, { ayahIdOf } from "./AudioButton";
 
 interface Row {
@@ -187,6 +188,7 @@ export function SimilarAyahsPanel({
             >
               {r.ayah.textUthmani}
             </div>
+            <EnQuoteLine doc={r.ayah} />
           </div>
         ))
       )}

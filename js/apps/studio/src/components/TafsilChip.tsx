@@ -80,7 +80,7 @@ function VerseLine({
           onClick={canDrill ? () => setOpen((v) => !v) : undefined}
           style={{ cursor: canDrill ? "pointer" : "default" }}
         >
-          {texts.get(loc)?.textClean ?? loc}
+          {texts.get(loc)?.textUthmani ?? texts.get(loc)?.textClean ?? loc}
         </span>
         {canDrill && (
           <button

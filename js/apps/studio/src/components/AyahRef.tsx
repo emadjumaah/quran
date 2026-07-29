@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { surahNameAr } from "../db";
+import { surahNameUI } from "../db";
 import { num, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 
@@ -17,7 +17,7 @@ export default function AyahRef({
   const [s, a] = location.split(":").map(Number);
   return (
     <Link className={className ?? "chip link"} to={readPathOf(`${s}:${a}`)}>
-      {surahNameAr(s)} {num(a)}
+      {surahNameUI(s)} {num(a)}
     </Link>
   );
 }

@@ -35,7 +35,7 @@ function Verse({ loc, texts, rel, showRole }: { loc: string; texts: Map<string, 
       {showRole && (isRoot
         ? <span className="jw-roottag" title={ar ? "أصلٌ محكمة — لا أصلَ فوقه" : "muḥkam root — nothing above it"}>★ {ar ? "محكمة" : "root"}</span>
         : <span className="jw-uptag" title={ar ? "فوقها أصلٌ آخر — انقُرْها لتصعد" : "has an أصل above — tap to go up"}>↑ {ar ? "متفرّع" : "branch"}</span>)}
-      <span className="jw-verse-text quran">{texts.get(loc)?.textClean ?? loc}</span>
+      <span className="jw-verse-text quran">{texts.get(loc)?.textUthmani ?? texts.get(loc)?.textClean ?? loc}</span>
     </Link>
   );
 }

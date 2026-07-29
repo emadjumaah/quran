@@ -8,20 +8,21 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ayahByLocationMap, surahNameAr, wordsOfAyah } from "../db";
+import { ayahByLocationMap, surahNameAr, surahNameUI, wordsOfAyah } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import WhyRank from "../components/WhyRank";
+import { EnQuoteLine } from "../components/EnVerse";
 import EvidencePanel from "../components/EvidencePanel";
 import { ayahIdOf } from "../components/AudioButton";
 import { similarOf } from "../similar";
 import { loadFuruq, catLabel } from "../furuq";
 import { BOOK_LABEL, VERSE_BOOKS, useTariq } from "../lib/tariq";
 import {
-  childrenOf, classOf, kulliyaOf, subtreeCounts, themeHeadOf, themeName, themeSizeOf, themeVerses, useKulliyat,
+  childrenOf, classOf, kulliyaOf, subtreeCounts, themeHeadOf, themeName, themeSizeOf, themeVerses, tierLabel, useKulliyat,
 } from "../kulliyat";
 
-const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
+const arName = (loc: string) => `${surahNameUI(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 const tierCls = (t?: string) => (t === "كلّية" ? "k" : t === "جامعة" ? "j" : "t");
 const ayaPath = (loc: string) => `/aya/${loc.split(":")[0]}/${loc.split(":")[1]}`;
 
@@ -31,8 +32,9 @@ function VerseRow({ loc, texts, extra }: { loc: string; texts: Map<string, AyahD
     <Link to={ayaPath(loc)} className="aya-kid">
       <span className="kl-verse-ref">{arName(loc)}</span>
       {classOf(loc) && <span className={`kl-badge ${tierCls(classOf(loc)?.tier)}`} style={{ flex: "none" }}>{classOf(loc)?.tier}</span>}
-      <span className="quran aya-kid-text">{texts.get(loc)?.textClean ?? loc}</span>
+      <span className="quran aya-kid-text">{texts.get(loc)?.textUthmani ?? texts.get(loc)?.textClean ?? loc}</span>
       {extra}
+      <EnQuoteLine doc={texts.get(loc)} />
     </Link>
   );
 }
@@ -173,20 +175,21 @@ export default function AyaCard() {
           <h1 className="jw-title" style={{ marginBottom: 6 }}>{ar ? "بطاقةُ الآية" : "Verse card"}</h1>
           <div className="aya-head-badges">
             <Link to={`/read/${s}/${a}`} className="kl-verse-ref" style={{ fontSize: 15 }}>{arName(loc)}</Link>
-            {cls && <span className={`kl-badge ${tierCls(cls.tier)}`}>{cls.tier}</span>}
+            {cls && <span className={`kl-badge ${tierCls(cls.tier)}`}>{tierLabel(cls.tier, ar)}</span>}
             {cls && <span className="chip">{ar ? "مفصِّلات" : "elaborators"} {num(cls.m ?? 0)}{(cls.mu ?? 0) > 0 ? (ar ? ` · مثانٍ ${num(cls.mu ?? 0)}` : ` · mutual ${num(cls.mu ?? 0)}`) : ""}</span>}
           </div>
         </header>
 
         <div className="card aya-verse">
           <p className="quran aya-verse-text" dir="rtl">{texts.get(loc)?.textUthmani ?? texts.get(loc)?.textClean ?? loc}</p>
+          <EnQuoteLine doc={texts.get(loc)} />
         </div>
 
         {cls && (
         <div className="card aya-facts">
           <div className="aya-fact" title={ar ? "وسمُ الشبكة الموحّدة — نسخةٌ أولى قبل موجاتِ التعميق، تُحدَّث بعدها" : "unified-network tier — first edition before the deepening waves; updates after"}>
             <span className="aya-fact-l">{ar ? "المرتبة" : "tier"}</span>
-            <span className="aya-fact-v"><span className={`kl-badge ${tierCls(cls.tier)}`}>{cls.tier}</span>
+            <span className="aya-fact-v"><span className={`kl-badge ${tierCls(cls.tier)}`}>{tierLabel(cls.tier, ar)}</span>
               <span className="muted" style={{ marginInlineStart: 8 }}>{ar ? `مفصِّلات ${num(cls.m ?? 0)} · محاور ${num(cls.T ?? 0)} · قبل التعميق` : `m ${num(cls.m ?? 0)} · axes ${num(cls.T ?? 0)} · pre-deepening`}</span>
             </span>
           </div>

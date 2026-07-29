@@ -161,7 +161,7 @@ export default function Maalim() {
             <ol className="maalim-list">
               {m.repeated.map((g) => (
                 <li key={g[0].surahNo + ":" + g[0].ayahNo}>
-                  <Link to={readPathOf(`${g[0].surahNo}:${g[0].ayahNo}`)} className="maalim-ref quran" style={{ fontSize: 17 }}>{g[0].textClean}</Link>
+                  <Link to={readPathOf(`${g[0].surahNo}:${g[0].ayahNo}`)} className="maalim-ref quran" style={{ fontSize: 17 }}>{g[0].textUthmani ?? g[0].textClean}</Link>
                   <span className="maalim-val">{num(g.length)}× · {surahNameAr(g[0].surahNo)}…</span>
                 </li>
               ))}

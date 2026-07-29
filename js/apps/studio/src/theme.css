@@ -310,12 +310,20 @@ mark.hl { background: var(--gold-soft); color: inherit; border-radius: 3px; padd
 
 .inline-omni .page-search input { padding-block: 8px; }
 
-/* compact surah picker (carries the surah name in the mobile header) */
+/* compact surah picker (carries the surah name in the mobile header).
+   appearance:none لأن سفاري iOS يقصُّ نصَّ select ذي الارتفاع الثابت مع خطٍّ
+   عالي القامة (رصد المالك 2026-07-29 على جهازٍ حقيقيّ) — فنملك الضبطَ كاملًا:
+   خطُّ الواجهة، وتوسيطٌ صريح، وسهمٌ مرسوم. */
 .reader-surah-pick {
-  font-family: var(--font-quran); font-size: 16px; font-weight: 700; color: var(--accent);
+  -webkit-appearance: none; appearance: none;
+  font-family: var(--font-ui); font-size: 14.5px; font-weight: 700; color: var(--accent);
   border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
-  padding: 4px 6px; flex: 1 1 auto; min-width: 0;
+  padding: 0 10px; flex: 1 1 auto; min-width: 0; line-height: 36px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%230b6e56' stroke-width='1.6' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat; background-position: left 8px center; background-size: 10px;
+  padding-inline-start: 24px;
 }
+[dir="ltr"] .reader-surah-pick, html[lang="en"] .reader-surah-pick { background-position: right 8px center; padding-inline-start: 10px; padding-inline-end: 24px; }
 
 /* Reader — ONE compact sticky ROW on mobile (picker · ⌕ · ▶ · modes). The
    on-page search opens as a row beneath on demand, so the header is one line. */
@@ -2524,8 +2532,11 @@ table.data tr:hover td { background: var(--panel-2); }
   text-align: left;
 }
 .en-verse-src { font-size: 11.5px; color: var(--muted); font-family: var(--font-ui); white-space: nowrap; }
-/* العربيُّ حاضرٌ دائمًا فوق الترجمة — أرفعُ قليلًا لا غائبًا */
-.ayah-card.en-first .quran { font-size: calc(21px * var(--quran-scale, 1)); opacity: 0.92; }
+/* الإنجليزيةُ سوداءُ متصدّرة، والعربيُّ عونٌ رماديٌّ إلى جانبها
+   (أمر المالك 2026-07-29: English black, Arabic gray as helper) */
+.ayah-card.en-first .quran { font-size: calc(21px * var(--quran-scale, 1)); color: var(--ink-2); opacity: 0.8; }
+.ayah-card.en-first .en-verse { color: var(--ink); }
+.ayah-card.en-first.sel-ayah .quran { color: var(--ink); opacity: 1; } /* المعلَّمةُ تعود بكاملها */
 
 /* «الكلمةُ الجسر» — نقحرةُ الكلمة ومعناها أولَ لوحتها للقارئ غير العربيّ */
 .wbw-bridge {
@@ -2536,3 +2547,10 @@ table.data tr:hover td { background: var(--panel-2); }
 }
 .wbw-tr { font-style: italic; font-size: 15px; color: var(--accent); }
 .wbw-gl { font-size: 16.5px; font-weight: 650; color: var(--ink); font-family: Georgia, serif; }
+
+/* ترجمةُ الآية المقتبسة داخل اللوحات — سطرٌ إنجليزيٌّ هادئ تحت كل اقتباس */
+.en-quote {
+  margin: 4px 0 0; font-size: 14.5px; line-height: 1.7; color: var(--ink-2);
+  font-family: Charter, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  text-align: left;
+}
