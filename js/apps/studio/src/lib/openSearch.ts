@@ -16,7 +16,7 @@
 import MiniSearch from "minisearch";
 import { allAyahs, ayahLocationsOfRoot, fuzzyRoots, searchAyahs } from "../db";
 import type { AyahDoc } from "../types";
-import { normalizeAr, stemAr, variantsAr } from "./arabicSearch";
+import { dePrefixAr, normalizeAr, stemAr, variantsAr } from "./arabicSearch";
 
 export type MatchHow = "عبارة" | "نص" | "تقريب" | "جذر" | "بعض";
 export interface OpenHit {
@@ -34,26 +34,55 @@ const mushafKey = (loc: string): number => {
   return s * 1000 + a;
 };
 
-interface Row { ayah: AyahDoc; norm: string }
+interface Row {
+  ayah: AyahDoc;
+  norm: string;
+  /** لبابُ كلماتها (بلا السوابق الموسومة في QAC) موازيًا لكلمات norm — إن اختلف */
+  cores?: string[];
+  coreText?: string;
+}
 let rows: Row[] | null = null;
+let rowByLoc: Map<string, Row> | null = null;
 let mini: MiniSearch<{ id: string; text: string }> | null = null;
 let building: Promise<void> | null = null;
 
-/** فهرسُ البحث — يُبنى مرّةً واحدةً في الجلسة (٦٢٣٦ آيةً، أجزاءُ ثانية). */
+/** فهرسُ البحث — يُبنى مرّةً واحدةً في الجلسة (٦٢٣٦ آيةً، أجزاءُ ثانية).
+ *  منهجُ السوابق (2026-07-29): جهةُ النصِّ يقينيّةٌ من الوسم الصرفيّ — لبابُ
+ *  كلِّ كلمةٍ بعد نزع سوابقها الموسومة (search-cores.json) يُطابَق ويُفهرَس
+ *  بجانب صورتها الكاملة؛ وجهةُ السؤال ظنّيّةٌ محروسة (dePrefixAr). */
 async function ensureIndex(): Promise<void> {
   if (mini && rows) return;
   building ??= (async () => {
-    const list = await allAyahs();
-    rows = list.map((ayah) => ({ ayah, norm: normalizeAr(ayah.textClean || ayah.textUthmani) }));
+    const [list, coresDoc] = await Promise.all([
+      allAyahs(),
+      fetch(`${import.meta.env.BASE_URL}search-cores.json?v=${__DATA_VERSION__}`)
+        .then((r) => (r.ok ? r.json() : { ayahs: {} }))
+        .catch(() => ({ ayahs: {} })) as Promise<{ ayahs: Record<string, string> }>,
+    ]);
+    rows = list.map((ayah) => {
+      const norm = normalizeAr(ayah.textClean || ayah.textUthmani);
+      const row: Row = { ayah, norm };
+      const c = coresDoc.ayahs[ayah.location];
+      if (c) {
+        const cores = c.split(" ");
+        // ضمانةُ المحاذاة: عددُ اللباب يساوي عددَ كلمات النص وإلا أُهمل
+        if (cores.length === norm.split(" ").length) {
+          row.cores = cores;
+          row.coreText = c;
+        }
+      }
+      return row;
+    });
+    rowByLoc = new Map(rows.map((r) => [r.ayah.location, r]));
     const ms = new MiniSearch<{ id: string; text: string }>({
       fields: ["text"],
       storeFields: [],
-      // كلُّ كلمةٍ تُفهرَس بصورها الثلاث: المطبَّعةُ وجذعُها وهيكلُها
+      // كلُّ كلمةٍ تُفهرَس بصورها: المطبَّعةُ وجذعُها وهيكلُها — ولبابُها كذلك
       tokenize: (text) => text.split(" ").filter(Boolean).flatMap((t) => variantsAr(t)),
       processTerm: (term) => term || null,
       searchOptions: { prefix: true, fuzzy: 0.2, combineWith: "AND" },
     });
-    ms.addAll(rows.map((r) => ({ id: r.ayah.location, text: r.norm })));
+    ms.addAll(rows.map((r) => ({ id: r.ayah.location, text: r.coreText ? `${r.norm} ${r.coreText}` : r.norm })));
     mini = ms;
   })().catch((e) => {
     building = null;
@@ -94,8 +123,14 @@ export async function openSearch(query: string, opts?: { min?: number; cap?: num
     counts[how]++;
   };
 
-  // ٠ — العبارةُ متّصلةً بحروفها
-  if (nq.includes(" ")) for (const r of all) if (r.norm.includes(nq)) add(r.ayah, "عبارة");
+  // ٠ — العبارةُ متّصلةً بحروفها: في النصِّ أو في لبابه بلا سوابق —
+  //     «خلق منها زوجها» تُدرك ﴿وَخَلَقَ مِنْهَا زَوْجَهَا﴾ عبارةً تامّة.
+  //     الترتيب: نصُّ ما كتبه الباحثُ بعينه أولًا، ثم المطابقُ بعد عزل السوابق
+  //     (أمر المالك 2026-07-29: الأقربُ صورةً يتصدّر)
+  if (nq.includes(" ")) for (const r of all) {
+    if (r.norm.includes(nq)) add(r.ayah, "عبارة", { rank: 2 });
+    else if (r.coreText?.includes(nq)) add(r.ayah, "عبارة", { rank: 1 });
+  }
 
   // ١ — كلُّ كلمات السؤال حاضرةٌ في الآية: مطابقةٌ على حدود الكلمات (الكلمةُ
   //     نفسُها أو كلمةٌ تبدأ بها أو بجذعها) — لا احتواءٌ في وسط الكلمة، فذاك
@@ -114,9 +149,17 @@ export async function openSearch(query: string, opts?: { min?: number; cap?: num
       const ok = toks.every((t, i) => {
         const st = stems[i];
         let best = 0;
-        for (const w of words) {
-          if (w === t || w.startsWith(t) || (st.length >= 3 && (w === st || w.startsWith(st)))) {
-            const c = closeness(t, w);
+        for (let wi = 0; wi < words.length; wi++) {
+          const w = words[wi];
+          const core = r.cores?.[wi];
+          if (wordMatches(w, t, st) || (core != null && core !== w && wordMatches(core, t, st))) {
+            // القربُ على أقرب صور الكلمة — وصورةُ النصِّ بعينها تعلو قليلًا على
+            // المعزولة السوابق، فيتصدّر الأقربُ لما كُتب حرفيًّا ثم أخواتُه
+            const c = Math.max(
+              closeness(t, w),
+              0.95 * (core != null ? closeness(t, core) : 0),
+              0.95 * Math.max(0, ...dePrefixAr(w).map((x) => closeness(t, x))),
+            );
             if (c > best) best = c;
           }
         }
@@ -184,9 +227,14 @@ export async function openSearch(query: string, opts?: { min?: number; cap?: num
 
 export interface SnippetSeg { text: string; hit: boolean }
 
-/** هل تُطابق كلمةُ الآية (مطبَّعةً) كلمةَ السؤال؟ — قواعدُ الطبقة «نص» نفسُها */
+/** هل تُطابق كلمةُ الآية (مطبَّعةً) كلمةَ السؤال؟ — على الكلمة وعلى صورها
+ *  المجرّدة من السوابق معًا، فيلتقي «خلق» بـ«وخلق» كما يلتقي «فأكثرهم»
+ *  بـ«أكثرهم» (الاتجاهان — رصد المالك 2026-07-29). */
 function wordMatches(w: string, t: string, st: string): boolean {
-  return w === t || w.startsWith(t) || (st.length >= 3 && (w === st || w.startsWith(st)));
+  const one = (x: string) => x === t || x.startsWith(t) || (st.length >= 3 && (x === st || x.startsWith(st)));
+  if (one(w)) return true;
+  for (const alt of dePrefixAr(w)) if (one(alt)) return true;
+  return false;
 }
 
 /**
@@ -197,9 +245,11 @@ function wordMatches(w: string, t: string, st: string): boolean {
 export function snippetOf(ayah: AyahDoc, query: string, span = 10): SnippetSeg[] {
   const display = (ayah.textClean || ayah.textUthmani).split(" ").filter(Boolean);
   const norm = display.map((w) => normalizeAr(w));
+  const cores = rowByLoc?.get(ayah.location)?.cores;
   const toks = normalizeAr(query).split(" ").filter((t) => t.length >= 2);
   const stems = toks.map((t) => stemAr(t));
-  const hitAt = norm.map((w) => toks.some((t, i) => wordMatches(w, t, stems[i])));
+  const hitAt = norm.map((w, wi) => toks.some((t, i) =>
+    wordMatches(w, t, stems[i]) || (cores?.[wi] != null && cores[wi] !== w && wordMatches(cores[wi], t, stems[i]))));
 
   let first = hitAt.indexOf(true);
   if (first < 0) first = 0; // تقريبٌ لم يُصِب كلمةً بعينها — نبدأ من الصدر

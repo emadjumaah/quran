@@ -10,6 +10,7 @@ import type { JSX } from "react";
 import { getUILang, useUILang } from "../i18n";
 import { ABOUT_SECTIONS } from "../aboutContent";
 import ShareButton from "../components/ShareButton";
+import { SOURCES } from "../components/SourcesPanel";
 
 /** inline **bold** → <strong> */
 function inline(text: string): JSX.Element[] {
@@ -117,11 +118,23 @@ export default function About() {
           <ShareButton compact />
         </div>
 
-        <p className="muted" style={{ textAlign: "center", margin: "22px 0 8px", fontSize: 12.5, lineHeight: 1.9 }}>
-          {ar
-            ? "المصادر: نصّ مصحف المدينة وخطّ KFGQPC (مجمع الملك فهد) · «المفردات» للراغب و«مقاييس اللغة» لابن فارس · الوسم الصرفيّ QAC · «المجتبى من مشكل إعراب القرآن» للخراط · نماذج Gemini للمتّجهات والتوليد المقيَّد."
-            : "Sources: Madina muṣḥaf text + KFGQPC font (King Fahd Complex) · al-Rāghib's Mufradāt & Ibn Fāris's Maqāyīs · QAC morphology · al-Kharrāṭ's iʿrāb · Gemini models for vectors & grounded generation."}
-        </p>
+        {/* المصادرُ كاملةً — كانت نافذةً منبثقةً من الشريط (ⓘ) فنُقلت هنا
+            وأُزيلت الأيقونة (أمر المالك 2026-07-29) */}
+        <section className="ab-prose">
+          <h2 className="ab-h2 ab-section-h">{ar ? "المصادر" : "Sources"}</h2>
+          <ul className="ab-sources">
+            {SOURCES.map((x) => (
+              <li key={x.url}>
+                <a href={x.url} target="_blank" rel="noreferrer">{ar ? x.ar : x.en}</a>
+              </li>
+            ))}
+          </ul>
+          <p className="muted" style={{ fontSize: 12.5, lineHeight: 1.9 }}>
+            {ar
+              ? "كلُّ طبقة بيانات موثّقةٌ داخل قاعدة البيانات (جدول provenance) — مُدقَّقةٌ بالكامل."
+              : "Every data layer is provenance-tracked inside the database — fully auditable."}
+          </p>
+        </section>
 
         {/* التواصل — باهتٌ لكنه واضح، في ذيل الصفحة */}
         <p className="muted" style={{ textAlign: "center", margin: "0 0 26px", fontSize: 12.5, lineHeight: 2 }}>

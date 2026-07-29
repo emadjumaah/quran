@@ -42,7 +42,6 @@ const Learn = lazy(() => import("./views/Learn"));
 const EraabDrill = lazy(() => import("./views/EraabDrill"));
 const Assistant = lazy(() => import("./views/Assistant"));
 import SettingsPanel from "./components/SettingsPanel";
-import SourcesPanel from "./components/SourcesPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
 import FocusExit from "./components/FocusExit";
 import { applySettings, setSettings, useSettings } from "./settings";
@@ -310,7 +309,6 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
           <NavLink to="/about">{ar ? "عن المشروع" : "About"}</NavLink>
         </nav>
         <div className="drawer-controls">
-          <SourcesPanel />
           <LangToggle />
           <ThemeToggle />
         </div>
@@ -413,7 +411,6 @@ function App() {
             <>
               <ShareButton />
               <BookmarksPanel />
-              <SourcesPanel />
               <LangToggle />
               <ThemeToggle />
               <SettingsPanel />

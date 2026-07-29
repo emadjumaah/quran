@@ -2490,3 +2490,9 @@ table.data tr:hover td { background: var(--panel-2); }
 
 /* آيةُ الرابط «هدفٌ» بتظليلٍ خفيفٍ — لا تعليمَ ولا لوحةَ إلا بيد القارئ */
 .ayah-card.target-ayah { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); }
+
+/* مصادرُ «عن المشروع» — قائمةٌ هادئةٌ محلَّ نافذة ⓘ المنبثقة */
+.ab-sources { margin: 8px 0 10px; padding-inline-start: 18px; display: flex; flex-direction: column; gap: 6px; }
+.ab-sources li { font-size: 13px; line-height: 1.85; }
+.ab-sources a { color: var(--ink-2); text-decoration: none; border-bottom: 1px dotted var(--line); }
+.ab-sources a:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
