@@ -154,7 +154,7 @@ type NavItem = [to: string, ar: string, en: string];
  *  وما يوجد عند غيرنا (مواضيعُ وإحصاءاتٌ ومصادر) يُطوى تحت «المزيد». */
 const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
-    ar: "لماذا هذا اللفظ؟", en: "Why this word?",
+    ar: "ألفاظ التنزيل", en: "The wording",
     items: [
       ["/furuq", "فروق التنزيل — المتشابهاتُ محاذاةً", "Furūq — aligned twins"],
       ["/bayan", "البيان — تدبّر لغة القرآن", "Bayān — the diction"],

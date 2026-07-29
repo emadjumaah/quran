@@ -334,9 +334,6 @@ export default function Reader() {
   // في فراغها فيحدّدها بالخضرة فقط (قرار المالك 2026-07-21)
   const [verseSheet, setVerseSheet] = useState<string | null>(null);
   const mainRef = useRef<HTMLElement>(null); // the scroll container (for page-turn scroll-to-top + the FAB)
-  // صفحات mode shows ONE mushaf page at a time; pageIdx indexes into `pages`.
-  const [pageIdx, setPageIdx] = useState(0);
-  const wantLastPage = useRef<number | null>(null); // surah we back-flipped INTO → show its last page
   const bookmarks = useBookmarks();
 
   useEffect(() => {
@@ -420,7 +417,7 @@ export default function Reader() {
   useEffect(() => {
     if (loading || targetAyahNo != null) return;
     mainRef.current?.scrollTo({ top: 0 });
-  }, [loading, surahNo, pageIdx, targetAyahNo]);
+  }, [loading, surahNo, targetAyahNo]);
 
   const surah = useMemo(() => surahs.find((s) => s.surahNo === surahNo), [surahs, surahNo]);
 
@@ -482,43 +479,10 @@ export default function Reader() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ayahs]);
 
-  // Pick which single page to show when the surah / target ayah changes:
-  // the target's page, or the last page when we arrived by flipping backwards.
-  useEffect(() => {
-    if (pages.length === 0) return;
-    if (targetAyahNo != null) {
-      const i = pages.findIndex(([, pa]) => pa.some((a) => a.ayahNo === targetAyahNo));
-      setPageIdx(i >= 0 ? i : 0);
-    } else if (wantLastPage.current === surahNo) {
-      // only honour a back-flip that resolved to the surah it was meant for —
-      // guards against an intervening navigation superseding the fetch
-      setPageIdx(pages.length - 1);
-      wantLastPage.current = null;
-    } else {
-      wantLastPage.current = null;
-      setPageIdx(0);
-    }
-  }, [pages, targetAyahNo, surahNo]);
-
-  // keep the shown page in step with continuous recitation (but not previews)
-  useEffect(() => {
-    if (mode !== "pages" || playingAyahNo == null || pages.length === 0 || isPreviewPlaying()) return;
-    const i = pages.findIndex(([, pa]) => pa.some((a) => a.ayahNo === playingAyahNo));
-    if (i >= 0) setPageIdx(i);
-  }, [playingAyahNo, mode, pages]);
-
-  // Turn the page. dir +1 = forward (next page, then next surah); -1 = back.
+  /* الصفحاتُ سيلٌ متصلٌ الآن — الأسهمُ تنتقل بين السور لا بين صفحاتٍ مقصوصة */
   const flipPage = (dir: -1 | 1) => {
-    const next = pageIdx + dir;
-    if (next >= 0 && next < pages.length) {
-      setPageIdx(next);
-      mainRef.current?.scrollTo({ top: 0 }); // continue reading from the top of the new page
-    } else if (dir === 1 && surahNo < 114) {
-      navigate(`/read/${surahNo + 1}`);
-    } else if (dir === -1 && surahNo > 1) {
-      wantLastPage.current = surahNo - 1;
-      navigate(`/read/${surahNo - 1}`);
-    }
+    if (dir === 1 && surahNo < 114) navigate(`/read/${surahNo + 1}`);
+    else if (dir === -1 && surahNo > 1) navigate(`/read/${surahNo - 1}`);
   };
 
   const goTo = (n: number) => navigate(`/read/${n}`);
@@ -602,42 +566,20 @@ export default function Reader() {
   const listenSurah = () => playContinuous((surahBase.get(surahNo) ?? 0) + 1);
 
 
-  /** قائمةُ الترويسة: الاستماعُ وتبديلُ العرض — تحت زرٍّ واحدٍ كي يبقى الصدرُ
-   *  للبحث والسورة (قرار المالك 2026-07-21). */
-  const HeaderMenu = () => {
-    const [open, setOpen] = useState(false);
-    const box = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-      if (!open) return;
-      const onDoc = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false); };
-      const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-      document.addEventListener("mousedown", onDoc);
-      document.addEventListener("keydown", onEsc);
-      return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onEsc); };
-    }, [open]);
-    return (
-      <div className="v-more rd-menu" ref={box}>
-        <button className={`chip v-more-btn${open ? " on" : ""}`} onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}
-          title={ar ? "الاستماع وطريقة العرض" : "listen & view mode"}>
-          <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden><circle cx="10" cy="4" r="1.9" fill="currentColor" /><circle cx="10" cy="10" r="1.9" fill="currentColor" /><circle cx="10" cy="16" r="1.9" fill="currentColor" /></svg>
-        </button>
-        {open && (
-          <div className="v-more-menu" role="menu">
-            <button className="v-more-item" onClick={() => { listenSurah(); setOpen(false); }} role="menuitem">
-              ▶ {ar ? "استمع للسورة" : "Listen to the sura"}
-            </button>
-            <div className="v-more-sep" />
-            <div className="v-more-loc" style={{ borderBottom: "none", paddingBottom: 2 }}>{ar ? "طريقةُ العرض" : "View"}</div>
-            {(["pages", "ayat"] as Mode[]).map((m) => (
-              <button key={m} className={`v-more-item${mode === m ? " on" : ""}`} onClick={() => { switchMode(m); setOpen(false); }} role="menuitem">
-                {m === "pages" ? t("reader.pages") : t("reader.ayat")}
-              </button>
-            ))}
-          </div>
-        )}
+  /** ضوابطُ الترويسة ظاهرةً: ▶ استمع + مبدّل «صفحات | آيات» — لا قائمةَ نقاطٍ
+   *  تُخفيها (رصد المالك 2026-07-29: «المنيو ٣ نقاط في رأس السورة غير مفيد»). */
+  const HeaderControls = () => (
+    <div className="rd-ctrl">
+      <button className="rd-listen" onClick={listenSurah} title={ar ? "استمع للسورة كاملةً" : "listen to the sura"}>▶</button>
+      <div className="rd-seg" role="tablist" aria-label={ar ? "طريقة العرض" : "view mode"}>
+        {(["pages", "ayat"] as Mode[]).map((m) => (
+          <button key={m} role="tab" aria-selected={mode === m} className={mode === m ? "on" : ""} onClick={() => switchMode(m)}>
+            {m === "pages" ? t("reader.pages") : t("reader.ayat")}
+          </button>
+        ))}
       </div>
-    );
-  };
+    </div>
+  );
 
   // mobile: lock the page scroll behind the bottom sheet so it feels like a
   // native modal (the sheet itself scrolls internally).
@@ -651,8 +593,17 @@ export default function Reader() {
     return () => { if (el) el.style.overflowY = ""; };
   }, [narrow, selected, verseSheet]);
 
+  /** النقرُ خارج الآية يزيل تعليمَها (أمر المالك 2026-07-29) — ما لم تقع
+   *  النقرةُ على آيةٍ أو لوحتها أو أداةٍ تفاعلية. */
+  const clearOnOutside = (e: React.MouseEvent) => {
+    if (!selectedLoc) return;
+    const el = e.target as HTMLElement;
+    if (el.closest(".ayah-card, .mp-ayah, .ayah-panel, .word-sheet, .sheet-backdrop, .wq-overlay, button, a, input, select, .v-more-menu")) return;
+    setSelectedAyah(null);
+  };
+
   return (
-    <div style={{ display: "flex", height: "100%", minHeight: 0, overflow: "hidden" }}>
+    <div style={{ display: "flex", height: "100%", minHeight: 0, overflow: "hidden" }} onClick={clearOnOutside}>
       {!narrow && <SurahSidebar surahs={surahs} activeNo={surahNo} onPick={goTo} />}
 
       <main ref={mainRef} className="page reader-main" style={{ flex: 1, minWidth: 0 }}>
@@ -676,7 +627,7 @@ export default function Reader() {
                   </option>
                 ))}
               </select>
-              <HeaderMenu />
+              <HeaderControls />
             </div>
           </>
         )}
@@ -693,7 +644,7 @@ export default function Reader() {
               {ayahsCount(surah.ayahCount)}
               {getUILang() !== "ar" ? ` · ${surah.nameTranslit}` : ""}
             </span>
-            <HeaderMenu />
+            <HeaderControls />
           </header>
         )}
 
@@ -703,64 +654,40 @@ export default function Reader() {
         ) : ayahs.length === 0 ? (
           <p className="muted">{t("notFound")}</p>
         ) : mode === "pages" ? (
-          (() => {
-            const idx = Math.min(Math.max(pageIdx, 0), pages.length - 1);
-            const [pageNo, pageAyahs] = pages[idx];
-            return (
-              <div className="mushaf-stage">
-                <MushafPage
-                  page={pageNo}
-                  ayahs={pageAyahs}
-                  wordsByAyah={wordsByAyah}
-                  selected={selected?.location ?? null}
-                  press={wordPress}
-                  selectedExtras={(() => {
-                    if (!selectedLoc) return undefined;
-                    const selAyah = ayahs.find((a) => a.location === selectedLoc);
-                    if (!selAyah) return undefined;
-                    return (
-                      <AyahPanel
-                        ayah={selAyah}
-                        words={wordsByAyah.get(selAyah.ayahNo) ?? []}
-                        onClose={() => setSelectedAyah(null)}
-                        onOpenAyat={() => { switchMode("ayat"); navigate(`/read/${selAyah.surahNo}/${selAyah.ayahNo}`); }}
-                      />
-                    );
-                  })()}
-                  // tap the ﴿n﴾ marker → open the reading bar for this ayah,
-                  // staying inside صفحات (a separate «الآيات» button jumps to the
-                  // ayah view). Selecting also lets ← → walk ayah-by-ayah.
-                  onAyahMarker={(a: AyahDoc) => { setSelectedAyah(a.location); setVerseSheet(a.location); }}
-                  onAyahPick={(a: AyahDoc) => setSelectedAyah(selectedLoc === a.location ? null : a.location)}
-                  selectedAyahNo={selectedLoc && Number(selectedLoc.split(":")[0]) === surahNo ? Number(selectedLoc.split(":")[1]) : null}
-                  targetAyahNo={displayTargetAyahNo}
-                  rubMarks={rubMarks}
-                  opening={pageNo === 1 || pageNo === 2}
-                />
-                <nav className="mushaf-pager" aria-label={ar ? "تصفّح الصفحات" : "page navigation"}>
-                  <button
-                    className="mp-nav"
-                    onClick={() => flipPage(-1)}
-                    disabled={surahNo === 1 && idx === 0}
-                    title={ar ? "الصفحة السابقة (سهم →)" : "previous page (→)"}
-                  >
-                    {ar ? "السابقة ›" : "‹ Prev"}
-                  </button>
-                  <span className="mp-pageinfo" title={ar ? "رقم صفحة المصحف" : "mushaf page number"}>
-                    {ar ? "صفحة" : "page"} {num(pageNo)}
-                  </span>
-                  <button
-                    className="mp-nav"
-                    onClick={() => flipPage(1)}
-                    disabled={surahNo === 114 && idx === pages.length - 1}
-                    title={ar ? "الصفحة التالية (سهم ←)" : "next page (←)"}
-                  >
-                    {ar ? "‹ التالية" : "Next ›"}
-                  </button>
-                </nav>
-              </div>
-            );
-          })()
+          /* سيلُ المصحف المتصل: كلُّ صفحات السورة تتوالى بالتمرير الطبيعيّ —
+             أُلغي التنقّلُ صفحةً صفحةً بزرّ (رصد المالك 2026-07-29: «في كل صفحة
+             يلزمه سكرول ثم النقر على التالي — تجربة غير جيدة») */
+          <div className="mushaf-stage">
+            {pages.map(([pageNo, pageAyahs]) => (
+              <MushafPage
+                key={pageNo}
+                page={pageNo}
+                ayahs={pageAyahs}
+                wordsByAyah={wordsByAyah}
+                selected={selected?.location ?? null}
+                press={wordPress}
+                selectedExtras={(() => {
+                  if (!selectedLoc) return undefined;
+                  const selAyah = pageAyahs.find((a) => a.location === selectedLoc);
+                  if (!selAyah) return undefined;
+                  return (
+                    <AyahPanel
+                      ayah={selAyah}
+                      words={wordsByAyah.get(selAyah.ayahNo) ?? []}
+                      onClose={() => setSelectedAyah(null)}
+                      onOpenAyat={() => { switchMode("ayat"); navigate(`/read/${selAyah.surahNo}/${selAyah.ayahNo}`); }}
+                    />
+                  );
+                })()}
+                onAyahMarker={(a: AyahDoc) => { setSelectedAyah(a.location); setVerseSheet(a.location); }}
+                onAyahPick={(a: AyahDoc) => setSelectedAyah(selectedLoc === a.location ? null : a.location)}
+                selectedAyahNo={selectedLoc && Number(selectedLoc.split(":")[0]) === surahNo ? Number(selectedLoc.split(":")[1]) : null}
+                targetAyahNo={displayTargetAyahNo}
+                rubMarks={rubMarks}
+                opening={pageNo === 1 || pageNo === 2}
+              />
+            ))}
+          </div>
         ) : (
           ayahs.map((ayah: AyahDoc) => {
             const isTarget = displayTargetAyahNo === ayah.ayahNo;
