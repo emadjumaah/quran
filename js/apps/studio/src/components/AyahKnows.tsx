@@ -16,7 +16,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { surahNameAr } from "../db";
-import { num } from "../i18n";
+import { getUILang, num } from "../i18n";
 import { readPathOf } from "../types";
 import { loadFuruq, sides, type Furq } from "../furuq";
 import { allVerseLocs, classOf, loadKulliyat, useKulliyat } from "../kulliyat";
@@ -41,23 +41,26 @@ async function loadFuruqIndex(): Promise<Map<string, Furq[]>> {
   return (furuqByLoc = m);
 }
 
-export interface WajhHit { lemma: string; sense: string; othersN: number }
+export interface WajhHit { lemma: string; sense: string; senseEn?: string; othersN: number }
 let wujuhByLoc: Map<string, WajhHit[]> | null = null;
 let wujuhLoading: Promise<Map<string, WajhHit[]>> | null = null;
 function loadWujuhIndex(): Promise<Map<string, WajhHit[]>> {
   if (wujuhByLoc) return Promise.resolve(wujuhByLoc);
-  wujuhLoading ??= fetch(`${import.meta.env.BASE_URL}wujuh.json?v=${__DATA_VERSION__}`)
-    .then((r) => r.json())
-    .then((d: { words: { lemma: string; faces: { verses: string[]; sense: string }[] }[] }) => {
+  wujuhLoading ??= Promise.all([
+    fetch(`${import.meta.env.BASE_URL}wujuh.json?v=${__DATA_VERSION__}`).then((r) => r.json()),
+    // معاني الوجوه بالإنجليزية — «ليرى الإنجليزيُّ جمالَ عربية القرآن»
+    fetch(`${import.meta.env.BASE_URL}wujuh-en.json?v=${__DATA_VERSION__}`).then((r) => (r.ok ? r.json() : { senses: {} })).catch(() => ({ senses: {} })),
+  ])
+    .then(([d, en]: [{ words: { lemma: string; faces: { verses: string[]; sense: string }[] }[] }, { senses: Record<string, string> }]) => {
       const m = new Map<string, WajhHit[]>();
       for (const w of d.words ?? []) {
-        for (const face of w.faces) {
+        w.faces.forEach((face, fi) => {
           for (const v of face.verses) {
             const l = m.get(v) ?? [];
-            l.push({ lemma: w.lemma, sense: face.sense, othersN: w.faces.length - 1 });
+            l.push({ lemma: w.lemma, sense: face.sense, senseEn: en.senses?.[`${w.lemma}|${fi}`], othersN: w.faces.length - 1 });
             m.set(v, l);
           }
-        }
+        });
       }
       return (wujuhByLoc = m);
     })
@@ -88,7 +91,15 @@ async function loadInbound(): Promise<Map<string, { loc: string; rel: string }[]
 
 // ─── لوحاتُ العرض ────────────────────────────────────────────────────────────
 /** محاذاةُ التوأم: سطران كلمةً بكلمة والفرقُ مميَّز (عرضٌ مصغّرٌ من فروق التنزيل) */
+/** أسماءُ العلاقات كما تُعرض لغير العربيّ */
+const REL_EN: Record<string, string> = {
+  "بيان": "clarifies", "مثال": "example", "جزاء": "recompense", "توكيد": "affirms", "مثانٍ": "mutual",
+};
+const relLabel = (rel: string, ar: boolean): string =>
+  ar ? rel : rel.replace(/[ء-ي]+/g, (w) => REL_EN[w] ?? w);
+
 export function TwinPanel({ loc, pairs }: { loc: string; pairs: Furq[] }) {
+  const ar = getUILang() === "ar";
   return (
     <div className="ak-panel">
       {pairs.slice(0, 2).map((f, i) => {
@@ -98,7 +109,7 @@ export function TwinPanel({ loc, pairs }: { loc: string; pairs: Furq[] }) {
           <div key={i} className="ak-twin">
             <div className="ak-twin-h">
               <Link to={readPathOf(other)} className="chip link">{arName(other)}</Link>
-              <span className="muted ak-note">الفرقُ مميَّزٌ بلونه</span>
+              <span className="muted ak-note">{ar ? "الفرقُ مميَّزٌ بلونه" : "the difference is highlighted"}</span>
             </div>
             {[{ segs: a, side: "a" as const, ref: f.a }, { segs: b, side: "b" as const, ref: f.b }].map((row) => (
               <div key={row.side} className="ak-line quran" dir="rtl">
@@ -112,42 +123,44 @@ export function TwinPanel({ loc, pairs }: { loc: string; pairs: Furq[] }) {
         );
       })}
       <div className="ak-more">
-        {pairs.length > 2 && <span className="muted">وغيرُها {num(pairs.length - 2)} · </span>}
-        <Link to="/furuq" className="chip link">قسمُ فروق التنزيل ←</Link>
+        {pairs.length > 2 && <span className="muted">{ar ? `وغيرُها ${num(pairs.length - 2)} · ` : `+${pairs.length - 2} more · `}</span>}
+        <Link to="/furuq" className="chip link">{ar ? "قسمُ فروق التنزيل ←" : "Furūq section ←"}</Link>
       </div>
     </div>
   );
 }
 
 export function LinksPanel({ loc, links }: { loc: string; links: { loc: string; rel: string }[] }) {
+  const ar = getUILang() === "ar";
   return (
     <div className="ak-panel">
       <div className="ak-links">
         {links.slice(0, 10).map((x) => (
-          <Link key={x.loc + x.rel} to={readPathOf(x.loc)} className="chip" title={x.rel}>
-            {x.rel} · {arName(x.loc)}
+          <Link key={x.loc + x.rel} to={readPathOf(x.loc)} className="chip" title={relLabel(x.rel, ar)}>
+            {relLabel(x.rel, ar)} · {arName(x.loc)}
           </Link>
         ))}
         {links.length > 10 && <span className="chip">+{num(links.length - 10)}</span>}
       </div>
       <div className="ak-more">
-        <span className="muted ak-note">كلُّ صلةٍ فحصها قارئٌ مستقلٌّ بمقطعَي سياقها · </span>
-        <Link to={`/aya/${loc.split(":")[0]}/${loc.split(":")[1]}`} className="chip link">بطاقةُ الآية ←</Link>
+        <span className="muted ak-note">{ar ? "كلُّ صلةٍ فحصها قارئٌ مستقلٌّ بمقطعَي سياقها · " : "every link was examined by an independent reader in its context · "}</span>
+        <Link to={`/aya/${loc.split(":")[0]}/${loc.split(":")[1]}`} className="chip link">{ar ? "بطاقةُ الآية ←" : "Verse card ←"}</Link>
       </div>
     </div>
   );
 }
 
 export function WujuhPanel({ hits }: { hits: WajhHit[] }) {
+  const ar = getUILang() === "ar";
   return (
     <div className="ak-panel">
       {hits.slice(0, 2).map((h, i) => (
         <p key={i} className="ak-wajh">
-          <b className="quran">{h.lemma}</b> — معناها في هذا الموضع: {h.sense}
-          {h.othersN > 0 && <span className="muted"> · ولها {num(h.othersN)} {h.othersN === 1 ? "وجهٌ آخر" : "أوجهٌ أخرى"} في التنزيل</span>}
+          <b className="quran">{h.lemma}</b> — {ar ? `معناها في هذا الموضع: ${h.sense}` : `here, this Arabic word means: ${h.senseEn ?? h.sense}`}
+          {h.othersN > 0 && <span className="muted">{ar ? ` · ولها ${num(h.othersN)} ${h.othersN === 1 ? "وجهٌ آخر" : "أوجهٌ أخرى"} في التنزيل` : ` · it carries ${h.othersN} other sense${h.othersN === 1 ? "" : "s"} elsewhere in the Quran`}</span>}
         </p>
       ))}
-      <div className="ak-more"><Link to="/wujuh" className="chip link">الوجوهُ والنظائر ←</Link></div>
+      <div className="ak-more"><Link to="/wujuh" className="chip link">{ar ? "الوجوهُ والنظائر ←" : "Polysemy section ←"}</Link></div>
     </div>
   );
 }

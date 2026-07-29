@@ -2503,6 +2503,12 @@ table.data tr:hover td { background: var(--panel-2); }
   margin: 2px 0 14px; padding: 8px 12px;
   border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
 }
+/* الحاسوب: كتلةُ رأسٍ لاصقةٌ واحدة — رأسُ السورة وشريطُ الترجمات صفّين متراصّين */
+.reader-head-wrap { position: sticky; top: -16px; z-index: 30; background: var(--bg); padding-top: 20px; margin-top: -16px; }
+.reader-head-wrap .reader-bar { margin-bottom: 6px; }
+.reader-head-wrap .entr-bar { margin: 0 0 10px; position: static; box-shadow: none; }
+/* الجوال: الشريطُ يلصق تحت صفِّ البحث والسورة */
+@media (max-width: 900px) { .entr-bar { position: sticky; top: 58px; z-index: 29; box-shadow: var(--shadow); } }
 .entr-lbl { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-inline-end: 4px; }
 .entr-pill {
   border: 1px solid var(--line); border-radius: 999px; background: var(--panel-2);
@@ -2512,8 +2518,10 @@ table.data tr:hover td { background: var(--panel-2); }
 .entr-pill.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
 
 .en-verse {
-  margin: 10px 0 2px; font-size: 16.5px; line-height: 1.85; color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif; text-align: left;
+  margin: 10px 0 2px; font-size: 18px; line-height: 1.8; color: var(--ink);
+  /* خطُّ قراءةٍ كتابيٌّ مميّزٌ للترجمة — سلاسلُ نظامٍ لا تحميلَ فيها */
+  font-family: Charter, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  text-align: left;
 }
 .en-verse-src { font-size: 11.5px; color: var(--muted); font-family: var(--font-ui); white-space: nowrap; }
 /* العربيُّ حاضرٌ دائمًا فوق الترجمة — أرفعُ قليلًا لا غائبًا */

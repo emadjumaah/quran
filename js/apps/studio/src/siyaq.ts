@@ -122,3 +122,19 @@ export async function searchSiyaq(query: string, k = 6): Promise<SiyaqHit[]> {
   }
   return hits.reverse();
 }
+
+// ─── أسماءُ الوحدات بالإنجليزية (مولَّدةٌ بمراجعةِ عددٍ وترتيبٍ آليّة) ─────────
+let enNames: Record<string, string> | null = null;
+let enLoading: Promise<void> | null = null;
+export function loadSiyaqEn(): Promise<void> {
+  if (enNames) return Promise.resolve();
+  enLoading ??= fetch(`${import.meta.env.BASE_URL}siyaq-units-en.json?v=${__DATA_VERSION__}`)
+    .then((r) => (r.ok ? r.json() : { names: {} }))
+    .then((d: { names: Record<string, string> }) => { enNames = d.names ?? {}; })
+    .catch(() => { enNames = {}; });
+  return enLoading;
+}
+/** الاسمُ الإنجليزيُّ للوحدة — أو null فيُخفى الفاصل بدل عرض العربيّ لغير قارئه */
+export function siyaqNameEn(u: SiyaqUnit): string | null {
+  return enNames?.[`${u.s}:${u.a1}:${u.a2}`] ?? null;
+}

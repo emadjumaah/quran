@@ -39,12 +39,8 @@ export function EnTransBar() {
 export function EnVerseLine({ ayah }: { ayah: AyahDoc }) {
   useEnTranslation();
   if (getUILang() === "ar") return null;
-  const { text, meta } = translationOf(ayah);
+  const { text } = translationOf(ayah);
   if (!text) return null;
-  return (
-    <p className="en-verse" dir="ltr">
-      {text}
-      <span className="en-verse-src"> — {meta.label}</span>
-    </p>
-  );
+  // بلا ذيل اسم المترجم — الشريطُ المثبَّت يحمله (أمر المالك 2026-07-29)
+  return <p className="en-verse" dir="ltr">{text}</p>;
 }

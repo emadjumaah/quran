@@ -34,7 +34,7 @@ import InlineOmni from "../components/InlineOmni";
 import ScrollTopFab from "../components/ScrollTopFab";
 import VerseContext from "../components/VerseContext";
 import { classOf, useKulliyat } from "../kulliyat";
-import { loadSiyaq, unitOf } from "../siyaq";
+import { loadSiyaq, loadSiyaqEn, siyaqNameEn, unitOf } from "../siyaq";
 import Translations from "../components/Translations";
 import { useWordPress, type WordPressHandlers } from "../lib/pressWord";
 import AyahPanel from "../components/AyahPanel";
@@ -343,7 +343,10 @@ export default function Reader() {
   const [selected, setSelected] = useState<WordDoc | null>(null);
   // فواصلُ وحدات السياق المحسوبة (نمط الآيات فقط — صفحات المصحف تبقى بلا إقحام)
   const [siyaqReady, setSiyaqReady] = useState(false);
-  useEffect(() => { loadSiyaq().then(() => setSiyaqReady(true)); }, []);
+  useEffect(() => {
+    // الأسماءُ الإنجليزيةُ تُجلب مع الوحدات — فالفاصلُ يُعرض بلغة القارئ
+    Promise.all([loadSiyaq(), loadSiyaqEn()]).then(() => setSiyaqReady(true));
+  }, []);
   // which ayah's محكم→تفصيل panel is open (آيات mode); one at a time keeps the
   // page short and the panel renders beneath the verse, not above it.
   // ONE study panel open at a time (إعراب · تفصيل · مثلها · تدبّر) — no wall of
@@ -688,23 +691,27 @@ export default function Reader() {
 
         {/* Desktop: name · meta · on-page search · listen · modes. */}
         {surah && !narrow && (
-          <header className="reader-bar">
-            {/* البحثُ أوّلَ الصدر (يمينًا في العربية)، والسورةُ في الطرف المقابل */}
-            <div className="reader-bar-search"><InlineOmni /></div>
-            <span className="reader-bar-spacer" />
-            <span className="reader-bar-name quran">{surah.nameAr}</span>
-            <span className="muted reader-bar-meta">
-              {surah.revelation === "Meccan" ? t("reader.meccan") : t("reader.medinan")} ·{" "}
-              {ayahsCount(surah.ayahCount)}
-              {getUILang() !== "ar" ? ` · ${surah.nameTranslit}` : ""}
-            </span>
-            <HeaderControls />
-          </header>
+          <div className="reader-head-wrap">
+            <header className="reader-bar">
+              {/* البحثُ أوّلَ الصدر (يمينًا في العربية)، والسورةُ في الطرف المقابل */}
+              <div className="reader-bar-search"><InlineOmni /></div>
+              <span className="reader-bar-spacer" />
+              <span className="reader-bar-name quran">{surah.nameAr}</span>
+              <span className="muted reader-bar-meta">
+                {surah.revelation === "Meccan" ? t("reader.meccan") : t("reader.medinan")} ·{" "}
+                {ayahsCount(surah.ayahCount)}
+                {getUILang() !== "ar" ? ` · ${surah.nameTranslit}` : ""}
+              </span>
+              <HeaderControls />
+            </header>
+            {/* شريطُ الترجمات صفًّا ثانيًا في الكتلة اللاصقة نفسِها — لا تراكبَ عند التمرير */}
+            {mode === "ayat" && <EnTransBar />}
+          </div>
         )}
 
         {!loading && <WelcomeQuestions />}
-        {/* غيرُ العربيّ: شريطُ تقليب الترجمات — التبديلُ فوريٌّ على الصفحة كلها */}
-        {!loading && mode === "ayat" && <EnTransBar />}
+        {/* الجوال: شريطُ الترجمات تحت الصفّ اللاصق (الحاسوبُ يحمله في كتلة الرأس) */}
+        {!loading && narrow && mode === "ayat" && <EnTransBar />}
         {loading ? (
           <p className="muted">{t("loading")}</p>
         ) : ayahs.length === 0 ? (
@@ -756,8 +763,21 @@ export default function Reader() {
             const marked = selectedLoc === ayah.location;
             const showTools = marked;
             return (
+              <Fragment key={ayah.location}>
+              {/* فاصلُ السياق قبل بطاقة الآية لا داخلَها — كان يصطبغ بتعليمها
+                  فيُظنُّ اسمُه جزءًا منها (رصد المالك 2026-07-29) */}
+              {unitStart && (() => {
+                // بلغة القارئ: العربيُّ باسمها، وغيرُه بالاسم الإنجليزيّ المولَّد —
+                // وإن غاب أُخفي الفاصلُ (أمر المالك: أخفِ ما لا إنجليزيَّ فيه)
+                const nm = getUILang() === "ar" ? unitStart.name : siyaqNameEn(unitStart);
+                if (!nm) return null;
+                return (
+                  <div className="sq-sep" title={`${surahNameAr(unitStart.s)} ${num(unitStart.a1)}–${num(unitStart.a2)}`}>
+                    <span className="sq-sep-name">{nm}</span>
+                  </div>
+                );
+              })()}
               <article
-                key={ayah.location}
                 id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
                 className={`ayah-card${getUILang() !== "ar" ? " en-first" : ""}${marked ? " sel-ayah" : isTarget && !selectedLoc ? " target-ayah" : ""}`}
                 onClick={(e) => {
@@ -766,11 +786,6 @@ export default function Reader() {
                   setSelectedAyah(selectedLoc === ayah.location ? null : ayah.location);
                 }}
               >
-                {unitStart && (
-                  <div className="sq-sep" title={`وحدة سياق محسوبة: ${surahNameAr(unitStart.s)} ${num(unitStart.a1)}–${num(unitStart.a2)}`}>
-                    <span className="sq-sep-name">{unitStart.name}</span>
-                  </div>
-                )}
                 <AyahText
                   words={wordsByAyah.get(ayah.ayahNo) ?? []}
                   ayahNo={ayah.ayahNo}
@@ -790,6 +805,7 @@ export default function Reader() {
                   />
                 )}
               </article>
+              </Fragment>
             );
           })
         )}
