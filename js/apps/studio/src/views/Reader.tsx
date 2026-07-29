@@ -11,7 +11,7 @@
  */
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getWord, listAyahs, listSurahs, listWords, surahNameAr } from "../db";
 import type { AyahDoc, SurahDoc, WordDoc } from "../types";
 import { ayahsCount, getUILang, num, t, useUILang } from "../i18n";
@@ -39,6 +39,7 @@ import { loadSiyaq, unitOf } from "../siyaq";
 import Translations from "../components/Translations";
 import { useWordPress, type WordPressHandlers } from "../lib/pressWord";
 import { shareAyah } from "../components/ShareButton";
+import AyahKnows from "../components/AyahKnows";
 
 const MODE_KEY = "quran-studio:reader-mode";
 type Mode = "pages" | "ayat";
@@ -407,6 +408,9 @@ export default function Reader() {
   useUILang();
   const params = useParams<{ surahNo: string; ayahNo?: string }>();
   const navigate = useNavigate();
+  // مفتاحُ كلِّ انتقال — به يُعاد التمريرُ إلى الآية حتى لو كان الرابطُ نفسَه
+  // (رصدُ المالك: البحثُ عن الآية ثانيةً لم يعد يحرّك إليها)
+  const navKey = useLocation().key;
   const surahNo = Number(params.surahNo);
   const targetAyahNo = params.ayahNo != null ? Number(params.ayahNo) : null;
   const narrow = useNarrow();
@@ -516,12 +520,13 @@ export default function Reader() {
     }
   }, [surahNo, targetAyahNo, surahBase]);
 
-  // Scroll the :ayahNo target into view once the surah has rendered.
+  // Scroll the :ayahNo target into view once the surah has rendered — keyed
+  // by navKey too, so repeating the SAME search result still scrolls to it.
   useEffect(() => {
     if (loading || targetAyahNo == null) return;
     const el = document.getElementById(`ayah-${surahNo}-${targetAyahNo}`);
     el?.scrollIntoView({ block: "center" });
-  }, [loading, surahNo, targetAyahNo, mode]);
+  }, [loading, surahNo, targetAyahNo, mode, navKey]);
 
   // Landing on a new surah (no specific ayah) starts at the top so reading
   // continues naturally — especially on mobile where the page is one column.
@@ -910,6 +915,8 @@ export default function Reader() {
                   />
                 </div>
                 )}
+                {/* «مشكاةُ تعرف عنها» — معارفُ الآية الخاصة تظهر مع تعليمها (الرؤية 2026-07-29) */}
+                {marked && <AyahKnows loc={ayah.location} />}
                 <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
                 <TafsirPanel location={ayah.location} open={panelOpen("tafsir", ayah.location)} />
                 <AsbabPanel location={ayah.location} open={panelOpen("asbab", ayah.location)} />

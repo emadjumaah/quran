@@ -2350,3 +2350,24 @@ table.data tr:hover td { background: var(--panel-2); }
 
 /* الكلمةُ المطابِقةُ في مقتطف البحث — تمييزٌ هادئٌ لا يقطع القراءة */
 .omni-hit { color: var(--accent); font-weight: 700; }
+
+/* ═══ «مشكاةُ تعرف عن هذه الآية» — سطرُ معارف الآية المعلَّمة ولوحاتُه ═══ */
+.ak-wrap { margin-top: 6px; }
+.ak-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ak-label { font-size: 11.5px; color: var(--gold); letter-spacing: 0.03em; flex: none; }
+.ak-chip { cursor: pointer; border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.ak-chip.on { background: var(--gold-soft); color: var(--gold); border-color: var(--gold); }
+.ak-panel {
+  margin-top: 8px; border: 1px solid var(--line); border-inline-start: 2px solid var(--gold);
+  border-radius: 10px; background: var(--panel); padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.ak-twin { display: flex; flex-direction: column; gap: 5px; }
+.ak-twin-h { display: flex; align-items: center; gap: 8px; }
+.ak-note { font-size: 11.5px; }
+.ak-line { font-size: 17px; line-height: 2.1; }
+.ak-ref { font-family: var(--font-ui); font-size: 11px; color: var(--muted); margin-inline-end: 4px; }
+.ak-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.ak-more { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.ak-wajh { margin: 0; font-size: 13.5px; line-height: 1.95; color: var(--ink); }
+.ak-wajh .quran { font-size: 16px; }
