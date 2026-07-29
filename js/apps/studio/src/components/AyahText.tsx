@@ -2,20 +2,23 @@ import { num } from "../i18n";
 import { useSettings } from "../settings";
 import type { WordDoc } from "../types";
 import { TAJWID, tajwidWords } from "../tajwid";
+import type { WordPressHandlers } from "../lib/pressWord";
 
-/** One ayah rendered word-by-word; clicking a word selects it. Honours the
- *  script setting (Uthmani ⇄ simple/imlaa'i). With tajwīd on, each word is
- *  colour-coded IN PLACE — same layout, still clickable. */
+/** One ayah rendered word-by-word. «القراءةُ أولًا» (قرار المالك 2026-07-29):
+ *  النقرُ فوق الكلمة يسري إلى الآية فيعلّمها؛ وبياناتُ الكلمة بقصدٍ ظاهرٍ
+ *  وحدَه — نقرٌ طويلٌ على الجوال، أو نقرةٌ بعد تعليم الآية على الحاسوب
+ *  (المساكاتُ من useWordPress تُمرَّر عبر `press`). Honours the script setting
+ *  (Uthmani ⇄ imlaa'i); with tajwīd on, each word is colour-coded in place. */
 export default function AyahText({
   words,
   ayahNo,
   selected,
-  onSelect,
+  press,
 }: {
   words: WordDoc[];
   ayahNo?: number;
   selected?: string | null;
-  onSelect?: (w: WordDoc) => void;
+  press?: WordPressHandlers<WordDoc>;
 }) {
   const { script, tajwid } = useSettings();
   // tajwīd needs the fully-vowelled Uthmani text; compute per-word colours once
@@ -26,7 +29,12 @@ export default function AyahText({
         <span key={w.location}>
           <span
             className={`w${selected === w.location ? " sel" : ""}`}
-            onClick={() => onSelect?.(w)}
+            onPointerDown={press ? (e) => press.onPointerDown(e, w) : undefined}
+            onPointerMove={press?.onPointerMove}
+            onPointerUp={press?.onPointerUp}
+            onPointerCancel={press?.onPointerCancel}
+            onClick={press ? (e) => press.onClick(e, w) : undefined}
+            onContextMenu={press ? (e) => e.preventDefault() : undefined}
           >
             {colored
               ? colored[wi].map((s, i) =>

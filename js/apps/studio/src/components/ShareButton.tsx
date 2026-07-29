@@ -20,6 +20,35 @@ export function shareUrl(): string {
   return SITE + hash;
 }
 
+/**
+ * مشاركةُ آيةٍ بعينها — النصُّ نفسُه هو المُشارَك لا الرابطُ وحدَه:
+ * ﴿…﴾ ثم اسمُ السورة ورقمُ الآية، ثم رابطُها في مشكاة. فمن وصلته على
+ * واتساب قرأ الآيةَ كاملةً في الرسالة، والرابطُ يفتحها في موضعها.
+ * تُرجع "copied" إن نُسخت للحافظة (فيُعلم القارئ)، و"shared" إن فُتحت
+ * اللوحةُ الأصليّة، و"failed" إن امتنع كلاهما.
+ */
+export async function shareAyah(a: { text: string; surahName: string; ayahNo: string; loc: string }): Promise<"shared" | "copied" | "failed"> {
+  const url = `${SITE}#/read/${a.loc.split(":")[0]}/${a.loc.split(":")[1]}`;
+  const body = `﴿${a.text}﴾
+[${a.surahName} ${a.ayahNo}]`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ text: `${body}
+${url}` });
+      return "shared";
+    } catch (e) {
+      if ((e as DOMException)?.name === "AbortError") return "shared"; // إلغاءُ القارئ ليس فشلًا
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(`${body}
+${url}`);
+    return "copied";
+  } catch {
+    return "failed";
+  }
+}
+
 type State = "idle" | "copied" | "manual";
 
 export default function ShareButton({ compact = false }: { compact?: boolean }) {

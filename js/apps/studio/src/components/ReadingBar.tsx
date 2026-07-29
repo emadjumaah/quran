@@ -4,12 +4,13 @@
  * continue or stop. Keyboard: ← → move ayah · space play/pause · Esc clear.
  */
 import { useEffect, useRef, useState } from "react";
-import { surahNameAr } from "../db";
+import { surahNameAr, wordsOfAyah } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { setContinueAfter, setRepeat, setSelectedAyah, useReading } from "../reading";
 import { useSettings } from "../settings";
 import { similarOf } from "../similar";
 import { SimilarAyahsPanel } from "./SimilarAyahs";
+import { shareAyah } from "./ShareButton";
 import {
   currentPlayingId,
   playFrom,
@@ -39,6 +40,7 @@ export default function ReadingBar({
   const { selected, repeat, continueAfter } = useReading();
   const playingId = usePlayingId();
   const [popupOpen, setPopupOpen] = useState(false);
+  const [justShared, setJustShared] = useState(false);
   const [simCount, setSimCount] = useState<number | null>(null);
   const simBtnRef = useRef<HTMLButtonElement | null>(null);
   const simPopRef = useRef<HTMLDivElement | null>(null);
@@ -95,6 +97,22 @@ export default function ReadingBar({
   const [s, a] = selected.split(":").map(Number);
   const gid = globalIdOf(selected, surahBase);
   const isPlaying = playingId === gid;
+
+  // مشاركةُ الآية المعلَّمة: نصُّها بالرسم العثمانيّ + موضعُها + رابطُها
+  const shareHere = async () => {
+    const ws = await wordsOfAyah(s, a).catch(() => []);
+    if (!ws.length) return;
+    const r = await shareAyah({
+      text: ws.map((w) => w.textUthmani).join(" "),
+      surahName: surahNameAr(s),
+      ayahNo: num(a),
+      loc: selected!,
+    });
+    if (r === "copied") {
+      setJustShared(true);
+      window.setTimeout(() => setJustShared(false), 1800);
+    }
+  };
 
   const playHere = () => {
     if (isPlaying) stopAudio();
@@ -169,6 +187,14 @@ export default function ReadingBar({
           <span className="ai-spark" aria-hidden /> {t("similar.chip")}
         </button>
       )}
+      <button
+        className="chip"
+        onClick={shareHere}
+        title={rtl ? "مشاركة الآية: نصُّها وموضعُها ورابطُها" : "share this āya (text + reference + link)"}
+        style={{ border: "none", cursor: "pointer", fontSize: 14 }}
+      >
+        {justShared ? (rtl ? "✓ نُسخت" : "✓ copied") : "↗"}
+      </button>
       <span style={{ flex: 1 }} />
       {btn(prevArrow, () => onNavigate(-1), t("read.prevAyah"))}
       {btn(isPlaying ? `◼ ${t("stop")}` : `▶ ${t("read.playHere")}`, playHere, t("read.playHere"), true)}

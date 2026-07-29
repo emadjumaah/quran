@@ -37,6 +37,8 @@ import VerseContext from "../components/VerseContext";
 import { classOf, useKulliyat } from "../kulliyat";
 import { loadSiyaq, unitOf } from "../siyaq";
 import Translations from "../components/Translations";
+import { useWordPress, type WordPressHandlers } from "../lib/pressWord";
+import { shareAyah } from "../components/ShareButton";
 
 const MODE_KEY = "quran-studio:reader-mode";
 type Mode = "pages" | "ayat";
@@ -145,17 +147,20 @@ function SurahSidebar({
  *  والصفحة، والإعرابُ والتفسيرُ وأسبابُ النزول والترجمة، والحفظُ والجمع. */
 function VerseMore({
   ayah,
+  words,
   bookmarked,
   isOpen,
   onOpen,
 }: {
   ayah: AyahDoc;
+  words: WordDoc[];
   bookmarked: boolean;
   isOpen: (kind: string) => boolean;
   onOpen: (kind: string) => void;
 }) {
   const ar = getUILang() === "ar";
   const [open, setOpen] = useState(false);
+  const [shared, setShared] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -211,6 +216,23 @@ function VerseMore({
             </button>
           ))}
           <div className="v-more-sep" />
+          <button
+            className="v-more-item"
+            onClick={async () => {
+              const r = await shareAyah({
+                text: words.map((w) => w.textUthmani).join(" "),
+                surahName: surahNameAr(ayah.surahNo),
+                ayahNo: num(ayah.ayahNo),
+                loc: ayah.location,
+              });
+              setShared(r === "copied");
+              if (r !== "copied") setOpen(false);
+              else window.setTimeout(() => { setShared(false); setOpen(false); }, 1400);
+            }}
+            role="menuitem"
+          >
+            {shared ? (ar ? "✓ نُسخت الآية" : "✓ copied") : (ar ? "↗ مشاركة الآية" : "↗ Share the āya")}
+          </button>
           <button
             className={`v-more-item${bookmarked ? " on" : ""}`}
             onClick={() => {
@@ -277,7 +299,7 @@ function MushafPage({
   ayahs,
   wordsByAyah,
   selected,
-  onSelect,
+  press,
   onAyahMarker,
   onAyahPick,
   selectedAyahNo,
@@ -289,7 +311,7 @@ function MushafPage({
   ayahs: AyahDoc[];
   wordsByAyah: Map<number, WordDoc[]>;
   selected: string | null;
-  onSelect: (w: WordDoc) => void;
+  press: WordPressHandlers<WordDoc>;
   onAyahMarker: (a: AyahDoc) => void;
   onAyahPick: (a: AyahDoc) => void;
   selectedAyahNo: number | null;
@@ -328,12 +350,14 @@ function MushafPage({
             <Fragment key={ayah.location}>
               {rub && <div className="mp-mark mp-rub"><span>۞ {num(rub)}</span></div>}
               {ayah.sajdaType && <div className="mp-mark mp-sajda"><span>۩ موضع سجدة</span></div>}
-              {/* النقرُ في فراغِ الآية (لا على كلمة) يحدّدها — قرار المالك 2026-07-21 */}
+              {/* «القراءةُ أولًا»: النقرُ في أيِّ مكانٍ من الآية — حتى فوق كلماتها —
+                  يعلّمها؛ وبياناتُ الكلمة بنقرٍ طويلٍ (جوال) أو بنقرةٍ بعد التعليم
+                  (حاسوب) — قرار المالك 2026-07-29 */}
               <span
                 id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
                 className={`mp-ayah${targetAyahNo === ayah.ayahNo ? " target" : ""}${selectedAyahNo === ayah.ayahNo ? " sel-ayah" : ""}`}
                 onClick={(e) => {
-                  if ((e.target as HTMLElement).closest(".w, .ayah-marker")) return;
+                  if ((e.target as HTMLElement).closest(".ayah-marker")) return;
                   onAyahPick(ayah);
                 }}
               >
@@ -341,7 +365,12 @@ function MushafPage({
                   <span key={w.location}>
                     <span
                       className={`w${selected === w.location ? " sel" : ""}`}
-                      onClick={() => onSelect(w)}
+                      onPointerDown={(e) => press.onPointerDown(e, w)}
+                      onPointerMove={press.onPointerMove}
+                      onPointerUp={press.onPointerUp}
+                      onPointerCancel={press.onPointerCancel}
+                      onClick={(e) => press.onClick(e, w)}
+                      onContextMenu={(e) => e.preventDefault()}
                     >
                       {colored
                         ? colored[wi].map((s, i) =>
@@ -609,6 +638,11 @@ export default function Reader() {
     setSelectedAyah(loc);
     document.getElementById(`ayah-${loc.split(":")[0]}-${loc.split(":")[1]}`)?.scrollIntoView({ block: "center" });
   };
+  // مساكاتُ الكلمة الموحّدة (صفحاتٍ وآيات): طويلًا على الجوال، وبعد التعليم على الحاسوب
+  const wordPress = useWordPress<WordDoc>({
+    isAyahSelected: (w) => selectedLoc === `${w.surahNo}:${w.ayahNo}`,
+    onOpenWord: (w) => setSelected(w),
+  });
   const navigateAyah = (dir: -1 | 1) => {
     if (!selectedLoc) return;
     const [ss, aa] = selectedLoc.split(":").map(Number);
@@ -786,12 +820,12 @@ export default function Reader() {
                   ayahs={pageAyahs}
                   wordsByAyah={wordsByAyah}
                   selected={selected?.location ?? null}
-                  onSelect={(w: WordDoc) => setSelected(w)}
+                  press={wordPress}
                   // tap the ﴿n﴾ marker → open the reading bar for this ayah,
                   // staying inside صفحات (a separate «الآيات» button jumps to the
                   // ayah view). Selecting also lets ← → walk ayah-by-ayah.
                   onAyahMarker={(a: AyahDoc) => { setSelectedAyah(a.location); setVerseSheet(a.location); }}
-                  onAyahPick={(a: AyahDoc) => setSelectedAyah(a.location)}
+                  onAyahPick={(a: AyahDoc) => setSelectedAyah(selectedLoc === a.location ? null : a.location)}
                   selectedAyahNo={selectedLoc && Number(selectedLoc.split(":")[0]) === surahNo ? Number(selectedLoc.split(":")[1]) : null}
                   targetAyahNo={displayTargetAyahNo}
                   rubMarks={rubMarks}
@@ -826,14 +860,18 @@ export default function Reader() {
             const isTarget = displayTargetAyahNo === ayah.ayahNo;
             const su = siyaqReady ? unitOf(ayah.location) : null;
             const unitStart = su && su.a1 === ayah.ayahNo && su.a1 !== 1 ? su : null;
+            // «القراءةُ أولًا»: أدواتُ الآية لا تظهر إلا حين تُعلَّم (أو للوحةٍ
+            // مفتوحةٍ من قبل) — فيبقى سيلُ الآيات نصًّا صافيًا (قرار المالك 2026-07-29)
+            const marked = selectedLoc ? selectedLoc === ayah.location : isTarget;
+            const showTools = marked || !!openPanels[ayah.location];
             return (
               <article
                 key={ayah.location}
                 id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
-                className={`ayah-card${selectedLoc ? (selectedLoc === ayah.location ? " sel-ayah" : "") : (isTarget ? " sel-ayah" : "")}`}
+                className={`ayah-card${marked ? " sel-ayah" : ""}`}
                 onClick={(e) => {
                   const el = e.target as HTMLElement;
-                  if (el.closest(".w, button, a, .ayah-tools, .v-more-menu, input, select")) return;
+                  if (el.closest("button, a, .ayah-tools, .v-more-menu, input, select")) return;
                   setSelectedAyah(selectedLoc === ayah.location ? null : ayah.location);
                 }}
               >
@@ -846,13 +884,14 @@ export default function Reader() {
                   words={wordsByAyah.get(ayah.ayahNo) ?? []}
                   ayahNo={ayah.ayahNo}
                   selected={selected?.location ?? null}
-                  onSelect={(w: WordDoc) => setSelected(w)}
+                  press={wordPress}
                 />
                 {/* ONE tight line UNDER the verse: locate · listen · study tools ·
                     save · and the verse's computed مرتبة — all as small chips */}
                 {/* سطرٌ واحدٌ هادئ: الموضعُ والاستماعُ ومثلُها وتدبّرٌ ووسمُها —
                     وما سواه (الجزءُ والصفحةُ والإعرابُ والتفسيرُ وأسبابُ النزول
                     والترجمة) في قائمة النقاط الثلاث (قرار المالك 2026-07-21) */}
+                {showTools && (
                 <div className="ayah-tools">
                   <span className="ayah-meta">{surahNameAr(ayah.surahNo)} {num(ayah.ayahNo)}</span>
                   {ayah.sajdaType && (
@@ -864,11 +903,13 @@ export default function Reader() {
                   <span style={{ flex: 1 }} />
                   <VerseMore
                     ayah={ayah}
+                    words={wordsByAyah.get(ayah.ayahNo) ?? []}
                     bookmarked={bookmarks.includes(ayah.location)}
                     isOpen={(kind) => panelOpen(kind, ayah.location)}
                     onOpen={(kind) => togglePanel(kind, ayah.location)}
                   />
                 </div>
+                )}
                 <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
                 <TafsirPanel location={ayah.location} open={panelOpen("tafsir", ayah.location)} />
                 <AsbabPanel location={ayah.location} open={panelOpen("asbab", ayah.location)} />

@@ -182,6 +182,39 @@ export async function openSearch(query: string, opts?: { min?: number; cap?: num
   return { hits, counts, roots: [...new Set(usedRoots)], truncated: seen.size >= cap };
 }
 
+export interface SnippetSeg { text: string; hit: boolean }
+
+/** هل تُطابق كلمةُ الآية (مطبَّعةً) كلمةَ السؤال؟ — قواعدُ الطبقة «نص» نفسُها */
+function wordMatches(w: string, t: string, st: string): boolean {
+  return w === t || w.startsWith(t) || (st.length >= 3 && (w === st || w.startsWith(st)));
+}
+
+/**
+ * مقتطفُ النتيجة: نافذةُ كلماتٍ حولَ أوّل موضعِ مطابقةٍ، والكلماتُ المطابِقةُ
+ * موسومةٌ لتُميَّز. كان المقتطفُ أوّلَ الآية مبتورًا فلا يرى الباحثُ كلمتَه
+ * (رصدُ المالك)؛ الآن يراها وسطَ سياقها أينما وقعت.
+ */
+export function snippetOf(ayah: AyahDoc, query: string, span = 10): SnippetSeg[] {
+  const display = (ayah.textClean || ayah.textUthmani).split(" ").filter(Boolean);
+  const norm = display.map((w) => normalizeAr(w));
+  const toks = normalizeAr(query).split(" ").filter((t) => t.length >= 2);
+  const stems = toks.map((t) => stemAr(t));
+  const hitAt = norm.map((w) => toks.some((t, i) => wordMatches(w, t, stems[i])));
+
+  let first = hitAt.indexOf(true);
+  if (first < 0) first = 0; // تقريبٌ لم يُصِب كلمةً بعينها — نبدأ من الصدر
+  // النافذةُ تتوسّط المطابقةَ الأولى وتضمُّ ما وسعت من أخواتها
+  let from = Math.max(0, first - Math.floor(span / 3));
+  let to = Math.min(display.length, from + span);
+  from = Math.max(0, to - span);
+
+  const segs: SnippetSeg[] = [];
+  if (from > 0) segs.push({ text: "…", hit: false });
+  for (let i = from; i < to; i++) segs.push({ text: display[i], hit: hitAt[i] });
+  if (to < display.length) segs.push({ text: "…", hit: false });
+  return segs;
+}
+
 /** وسمُ سببِ الظهور كما يُعرض للقارئ */
 export function howLabel(h: OpenHit, ar: boolean): string {
   if (h.how === "عبارة" || h.how === "نص") return "";

@@ -2347,3 +2347,6 @@ table.data tr:hover td { background: var(--panel-2); }
 @media (max-width: 760px) {
   .topbar .sh-btn { width: 36px; height: 36px; min-width: 36px; padding: 0; }
 }
+
+/* الكلمةُ المطابِقةُ في مقتطف البحث — تمييزٌ هادئٌ لا يقطع القراءة */
+.omni-hit { color: var(--accent); font-weight: 700; }

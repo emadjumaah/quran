@@ -101,7 +101,11 @@ export default function InlineOmni({
               <span
                 className={item.kind === "text" || item.kind === "root" ? "quran inline-omni-label" : "inline-omni-label"}
               >
-                {item.label}
+                {item.segs
+                  ? item.segs.map((g, gi) => (
+                      <span key={gi} className={g.hit ? "omni-hit" : undefined}>{g.text}{" "}</span>
+                    ))
+                  : item.label}
               </span>
               {item.sub && <span className="muted inline-omni-sub">{item.sub}</span>}
             </div>

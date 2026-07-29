@@ -133,7 +133,11 @@ export default function Omnibox() {
                     className={item.kind === "text" || item.kind === "root" ? "quran" : undefined}
                     style={{ fontSize: item.kind === "text" ? 17 : 15, lineHeight: 1.6, flex: 1, minWidth: 0 }}
                   >
-                    {item.label}
+                    {item.segs
+                      ? item.segs.map((g, gi) => (
+                          <span key={gi} className={g.hit ? "omni-hit" : undefined}>{g.text}{" "}</span>
+                        ))
+                      : item.label}
                   </span>
                   {item.sub && <span className="muted">{item.sub}</span>}
                 </div>

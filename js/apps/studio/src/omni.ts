@@ -20,7 +20,7 @@ import { num, t } from "./i18n";
 import type { SurahDoc } from "./types";
 import { readPathOf } from "./types";
 import { resolveRootReady } from "./searchForms";
-import { quickSearch } from "./lib/openSearch";
+import { quickSearch, snippetOf, type SnippetSeg } from "./lib/openSearch";
 
 export interface OmniItem {
   key: string;
@@ -28,6 +28,8 @@ export interface OmniItem {
   label: string;
   sub?: string;
   to: string;
+  /** مقتطفُ النتيجة النصّية: نافذةٌ حول الكلمة المطابِقة، موسومةً للتمييز */
+  segs?: SnippetSeg[];
 }
 
 /** well-known ayah names */
@@ -188,7 +190,10 @@ export async function resolveOmni(raw0: string, surahIndex: SurahIndexEntry[]): 
         out.push({
           key: `t${h.ayah.location}`,
           kind: "text",
-          label: h.ayah.textClean.length > 60 ? `${h.ayah.textClean.slice(0, 60)}…` : h.ayah.textClean,
+          // المقتطفُ نافذةٌ حول الكلمة المطابِقة لا بدايةُ الآية المبتورة —
+          // فيرى الباحثُ كلمتَه بعينها وسطَ سياقها (رصدُ المالك)
+          label: h.ayah.textClean,
+          segs: snippetOf(h.ayah, raw),
           sub: `${surahNameAr(h.ayah.surahNo)} ${num(h.ayah.ayahNo)}${h.how === "جذر" ? ` · ${t("omni.viaRoot") || "من الجذر"} ${h.root}` : ""}`,
           to: readPathOf(h.ayah.location),
         });
