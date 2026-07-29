@@ -587,8 +587,12 @@ export default function Bayan() {
   const cardHits = useMemo(() => {
     if (!data) return [];
     if (!q.trim()) return data.cards;
-    return data.cards.filter((c) =>
-      fuzzyMatch(q, c.title) || fuzzyMatch(q, c.kashf) || c.sides.some((s) => fuzzyMatch(q, s.name)));
+    // «سؤالُ اللفظ»: كلمتان متقاربتان تجدان بطاقتَهما ولو اختلف ترتيبُهما —
+    // كلُّ كلمةٍ من السؤال يجب أن تصيب البطاقةَ في عنوانها أو كشفها أو طرفيها
+    const toks = q.trim().split(/\s+/).filter(Boolean);
+    const hitCard = (c: Card, t: string) =>
+      fuzzyMatch(t, c.title) || fuzzyMatch(t, c.kashf) || c.sides.some((sd) => fuzzyMatch(t, sd.name));
+    return data.cards.filter((c) => toks.every((t) => hitCard(c, t)));
   }, [data, q]);
 
   if (!data) return <div className="page"><p style={{ padding: 40, textAlign: "center" }}>…</p></div>;
@@ -626,11 +630,11 @@ export default function Bayan() {
   return (
     <div className="page" dir="rtl">
     <div className="bayan-page">
-      <h2>{ar ? "البيان — تدبر لغة القرآن" : "Bayān — the Qur'an's own diction"}</h2>
+      <h2>{ar ? "البيان — لماذا هذه الكلمةُ لا أختُها؟" : "Bayān — why this word, not its sister?"}</h2>
       <p className="by-intro">
         {ar
-          ? "لكل كلمةٍ في التنزيل موضعُها. تفتحُ البطاقةَ فترى: أين وردت كلُّ كلمةٍ من الطرفين، وبأيِّ صيغة، ومع أيِّ ألفاظٍ تُصاحبها، وأين افترقتا — محسوبًا من المصحف كلِّه؛ ثم ما قاله أعلامُ اللغة فيهما منقولًا منسوبًا، ثم مظانُّها من كتب البيان التسعة."
-          : "Computed usage maps with attributed classical readings, a nine-book structured library, and a bridge from every card to where the scholars treated it."}
+          ? "لكل كلمةٍ في التنزيل موضعُها: لِمَ ﴿خشية﴾ هنا و﴿خوف﴾ هناك؟ اكتب كلمتين متقاربتين في البحث — أو افتح بطاقةً — فترى أين وردت كلٌّ منهما وبأيِّ صيغةٍ ومع أيِّ ألفاظٍ وأين افترقتا، محسوبًا من المصحف كلِّه؛ ثم ما قاله أعلامُ اللغة منقولًا منسوبًا، ثم مظانَّها من كتب البيان التسعة."
+          : "Why this word and not its sister? Type two close words — computed usage maps, attributed classical readings, and a nine-book structured library."}
       </p>
       {!searching && !root && !entry && seg === "cards" && data.cards.length > 0 && (() => {
         // بطاقةُ اليوم من المحرَّرة — مدخلٌ واحدٌ مقروء بدل جدارِ عناوين.
@@ -649,7 +653,7 @@ export default function Bayan() {
           </Link>
         );
       })()}
-      <PageSearch value={q} onChange={setQ} placeholder={ar ? "ابحث في البطاقات والمكتبة (كلمة، جذرًا، مصطلحًا)…" : "search cards & library…"} />
+      <PageSearch value={q} onChange={setQ} placeholder={ar ? "اكتب كلمتين متقاربتين: خوف خشية · بخل شح — أو كلمةً أو جذرًا…" : "two close words: e.g. khawf khashya…"} />
       {!searching && (
         <p className="by-tabs">
           <button className={"by-tab" + (seg === "cards" && !root && !entry ? " on" : "")}

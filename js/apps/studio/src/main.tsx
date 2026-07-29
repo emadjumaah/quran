@@ -149,13 +149,19 @@ type NavItem = [to: string, ar: string, en: string];
 // أربعُ وجهاتٍ لا تُشتّت (إعادةُ تنظيمٍ بأمر المالك 2026-07-26): «البيان» صار
 // وجهةً مستقلّةً برأسها، والمتشابهُ جُمع — ألفاظُ التنزيل تضمُّ فروقَ التنزيل
 // والفروقَ اللغويّة والوجوهَ والنظائر، والإحصاءُ يضمُّ الصرفَ وشبكةَ الجذور.
+/** ثلاثُ وجهاتٍ لا تشتيت (الرؤية 2026-07-29، وافق المالك): ما يميّز مشكاةَ
+ *  يتصدّر — «لماذا هذا اللفظ؟» جوهرةُ المشروع، و«بناء المصحف» شبكتُه المفحوصة —
+ *  وما يوجد عند غيرنا (مواضيعُ وإحصاءاتٌ ومصادر) يُطوى تحت «المزيد». */
 const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
   {
-    ar: "الموضوعات", en: "Themes",
+    ar: "لماذا هذا اللفظ؟", en: "Why this word?",
     items: [
-      ["/mawadi", "المواضيع", "Topics"],
-      ["/khayt", "الخيوط الموضوعية", "Thematic threads"],
-      ["/amthal", "الأمثال", "Parables"],
+      ["/furuq", "فروق التنزيل — المتشابهاتُ محاذاةً", "Furūq — aligned twins"],
+      ["/bayan", "البيان — تدبّر لغة القرآن", "Bayān — the diction"],
+      ["/wujuh", "الوجوه والنظائر", "Polysemy"],
+      ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
+      ["/roots", "الجذور والعدّ الدقيق", "Roots & exact counts"],
+      ["/mujam", "معجم القرآن", "Dictionary"],
     ],
   },
   {
@@ -167,18 +173,11 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
     ],
   },
   {
-    ar: "ألفاظ التنزيل", en: "The wording",
+    ar: "المزيد", en: "More",
     items: [
-      ["/furuq", "فروق التنزيل", "Furūq"],
-      ["/lisan", "الفروق اللغوية", "Lexical distinctions"],
-      ["/wujuh", "الوجوه والنظائر", "Polysemy"],
-      ["/roots", "الجذور ومعانيها", "Roots"],
-      ["/mujam", "معجم القرآن", "Dictionary"],
-    ],
-  },
-  {
-    ar: "مصادر وإحصاء", en: "Sources & stats",
-    items: [
+      ["/mawadi", "المواضيع", "Topics"],
+      ["/khayt", "الخيوط الموضوعية", "Thematic threads"],
+      ["/amthal", "الأمثال", "Parables"],
       ["/tafasir", "التفاسير والمصادر", "Tafsir & sources"],
       ["/maalim", "إحصاءات القرآن", "Qur'an stats"],
       ["/sarf", "الصرف بالأرقام", "Morphology"],
@@ -239,8 +238,6 @@ function Nav() {
   return (
     <nav>
       <NavLink to="/read" title={ar ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
-      {/* «البيان» وجهةٌ برأسها لا بندٌ في قائمة (أمر المالك 2026-07-26) */}
-      <NavLink to="/bayan" title={ar ? "البيان — تدبّر لغة القرآن" : "Bayān — the Qur'an's diction"}>{ar ? "البيان" : "Bayān"}</NavLink>
       {groups.map((g) => (
         <NavGroup key={g.ar} label={ar ? g.ar : g.en} items={g.items} />
       ))}
