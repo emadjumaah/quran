@@ -40,6 +40,7 @@ import { useWordPress, type WordPressHandlers } from "../lib/pressWord";
 import AyahPanel from "../components/AyahPanel";
 import WelcomeQuestions from "../components/WelcomeQuestions";
 import { EnTransBar, EnVerseLine } from "../components/EnVerse";
+import { wbwOf, type WbwEntry } from "../lib/wbw";
 
 const MODE_KEY = "quran-studio:reader-mode";
 type Mode = "pages" | "ayat";
@@ -147,6 +148,16 @@ function SurahSidebar({
 function Inspector({ word }: { word: WordDoc | null }) {
   useUILang();
   const { layers } = useSettings();
+  // «الكلمةُ الجسر» لغير العربيّ: النقحرةُ والمعنى الإنجليزيّ أولَ اللوحة —
+  // فيبني القارئُ معجمَه القرآنيَّ كلمةً كلمةً وهو يقرأ (رؤية 2026-07-29)
+  const [wbw, setWbw] = useState<WbwEntry | null>(null);
+  const en = getUILang() !== "ar";
+  useEffect(() => {
+    let live = true;
+    setWbw(null);
+    if (word && en) wbwOf(word.location).then((d) => live && setWbw(d));
+    return () => { live = false; };
+  }, [word?.location, en]);
   if (!word) {
     return (
       <div className="muted" style={{ padding: 8, lineHeight: 1.8 }}>
@@ -157,6 +168,12 @@ function Inspector({ word }: { word: WordDoc | null }) {
   const ayahLoc = `${word.surahNo}:${word.ayahNo}`;
   return (
     <div>
+      {en && wbw && (
+        <div className="wbw-bridge" dir="ltr">
+          <span className="wbw-tr">{wbw.translit}</span>
+          <span className="wbw-gl">{wbw.gloss}</span>
+        </div>
+      )}
       <MorphologyCard word={word} />
       {word.root && layers.roots && <RootMeaning root={word.root} />}
       <div

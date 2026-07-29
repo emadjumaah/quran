@@ -17,16 +17,25 @@ import { getUILang } from "../i18n";
 
 const KEY = "mishkat:welcomed-v1";
 
-const QUESTIONS: { q: string; to: string }[] = [
+const QUESTIONS_AR: { q: string; to: string }[] = [
   { q: "لماذا قال هنا ﴿خَشْيَةَ إِمْلَاقٍ﴾ وهناك ﴿مِنْ إِمْلَاقٍ﴾؟", to: "/read/17/31?know=twin" },
   { q: "ما صلاتُ آية الكرسيّ التي فُحصت واحدةً واحدة؟", to: "/read/2/255?know=links" },
   { q: "كم مرةً وردت «شهر» مفردةً — لا «أشهر» ولا «شهور»؟", to: "/roots/شهر" },
   { q: "أين يفترق الخوفُ عن الخشية في التنزيل؟", to: "/bayan/khawf-khashya" },
 ];
+/** الزائرُ الإنجليزيّ يُستقبل بما بُني له: الترجماتُ والجسرُ إلى العربية */
+const QUESTIONS_EN: { q: string; to: string }[] = [
+  { q: "Read with six famous translations — switched in place, instantly", to: "/read/2/255" },
+  { q: "Two nearly identical verses differ by one word — see it highlighted", to: "/read/17/31?know=twin" },
+  { q: "Tap and hold any word: its sound, meaning, and Arabic root", to: "/read/1" },
+  { q: "Ask about the Quran in English — answers cited from the text itself", to: "/assistant" },
+];
 
 export default function WelcomeQuestions() {
-  const [gone, setGone] = useState(() => localStorage.getItem(KEY) === "1" || getUILang() !== "ar");
+  const ar = getUILang() === "ar";
+  const [gone, setGone] = useState(() => localStorage.getItem(KEY) === "1");
   if (gone) return null;
+  const QUESTIONS = ar ? QUESTIONS_AR : QUESTIONS_EN;
   const dismiss = () => {
     localStorage.setItem(KEY, "1");
     setGone(true);
@@ -34,9 +43,9 @@ export default function WelcomeQuestions() {
   // نافذةٌ منبثقةٌ مرّةً واحدةً عند أول فتح — لا لافتةٌ فوق الفاتحة (أمر المالك)
   return (
     <div className="wq-overlay" onClick={(e) => { if (e.target === e.currentTarget) dismiss(); }} role="dialog" aria-modal="true" aria-label="أسئلة مشكاة">
-      <div className="wq card">
-        <button className="wq-x" onClick={dismiss} aria-label="إغلاق">✕</button>
-        <div className="wq-head">أسئلةٌ تجيبك عنها مشكاةُ — ولا تجدها في غيرها</div>
+      <div className="wq card" dir={ar ? "rtl" : "ltr"}>
+        <button className="wq-x" onClick={dismiss} aria-label={ar ? "إغلاق" : "close"}>✕</button>
+        <div className="wq-head">{ar ? "أسئلةٌ تجيبك عنها مشكاةُ — ولا تجدها في غيرها" : "What Mishkāt gives you — and others don't"}</div>
         <div className="wq-list">
           {QUESTIONS.map((x) => (
             <Link key={x.to} to={x.to} className="wq-q" onClick={dismiss}>
@@ -44,7 +53,7 @@ export default function WelcomeQuestions() {
             </Link>
           ))}
         </div>
-        <div className="wq-foot muted">كلُّ جوابٍ محسوبٌ من نصِّ المصحف وصرفِه — بسندٍ معلن. هذه النافذةُ لن تعود.</div>
+        <div className="wq-foot muted">{ar ? "كلُّ جوابٍ محسوبٌ من نصِّ المصحف وصرفِه — بسندٍ معلن. هذه النافذةُ لن تعود." : "Everything is computed from the Quranic text itself, with its sources declared. This window won't return."}</div>
       </div>
     </div>
   );
