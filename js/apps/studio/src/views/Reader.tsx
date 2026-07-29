@@ -729,15 +729,17 @@ export default function Reader() {
             const isTarget = displayTargetAyahNo === ayah.ayahNo;
             const su = siyaqReady ? unitOf(ayah.location) : null;
             const unitStart = su && su.a1 === ayah.ayahNo && su.a1 !== 1 ? su : null;
-            // «القراءةُ أولًا»: أدواتُ الآية لا تظهر إلا حين تُعلَّم (أو للوحةٍ
-            // مفتوحةٍ من قبل) — فيبقى سيلُ الآيات نصًّا صافيًا (قرار المالك 2026-07-29)
-            const marked = selectedLoc ? selectedLoc === ayah.location : isTarget;
+            // «القراءةُ أولًا»: التعليمُ (الخضرةُ ولوحةُ الآية) لما علَّمه القارئُ
+            // بيده وحدَه — وآيةُ الرابط «هدفٌ» بتظليلٍ خفيفٍ بلا لوحة، فلا تُعلَّم
+            // الأولى قسرًا كلّما خلا الاختيار (رصد المالك 2026-07-29: استئنافُ
+            // القراءة يفتح /read/س/١ فكانت الأولى تخطف التعليم)
+            const marked = selectedLoc === ayah.location;
             const showTools = marked;
             return (
               <article
                 key={ayah.location}
                 id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
-                className={`ayah-card${marked ? " sel-ayah" : ""}`}
+                className={`ayah-card${marked ? " sel-ayah" : isTarget && !selectedLoc ? " target-ayah" : ""}`}
                 onClick={(e) => {
                   const el = e.target as HTMLElement;
                   if (el.closest("button, a, .ayah-tools, .v-more-menu, input, select")) return;

@@ -2487,3 +2487,6 @@ table.data tr:hover td { background: var(--panel-2); }
   .rd-seg button { padding: 5px 8px; font-size: 11.5px; }
   .rd-listen { width: 32px; height: 32px; }
 }
+
+/* آيةُ الرابط «هدفٌ» بتظليلٍ خفيفٍ — لا تعليمَ ولا لوحةَ إلا بيد القارئ */
+.ayah-card.target-ayah { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); }
