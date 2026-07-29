@@ -514,13 +514,21 @@ function collectTexts(v, into) {
   }
 }
 /** القاعدة الذهبية: كل مقتبسٍ بين ﴿…﴾ حرفيٌّ من نصٍّ أعادته أداةٌ في هذا الدور */
+/** طيُّ صور الهمزة والتاء والمقصورة للمقارنة وحدَها — كتطبيع البحث سواء.
+ *  علّةُ الإنذار الكاذب القديم (رُصد 2026-07-21): آيتان صحيحتان وُسمتا «غير
+ *  مسندتين» لاختلاف رسم الهمزة/الألف بين اقتباس الجواب ونصِّ الأداة بعد
+ *  التجريد — فالمقارنةُ الآن على الصور المطويّة، والعرضُ يبقى حرفيًّا. */
+const fold = (x) => x
+  .replace(/[أإآٱ]/g, "ا").replace(/ؤ/g, "و").replace(/ئ/g, "ي")
+  .replace(/ء/g, "").replace(/ى/g, "ي").replace(/ة/g, "ه");
+
 function checkGolden(answer, toolTexts) {
   const quotes = [...answer.matchAll(/﴿([^﴾]*)﴾/g)].map((m) => m[1]);
   // مجرّدًا بمجرّد — حارسُ العميل يكون قد أعاد انحراف الضبط إلى النص المسنود
-  const hay = toolTexts.map((t) => norm(String(t).replace(TASHKEEL, "").replace(/\u0671/g, "ا").replace(/آ/g, "ءا"))).join("\n");
+  const hay = fold(toolTexts.map((t) => norm(String(t).replace(TASHKEEL, ""))).join("\n"));
   const hayA = hay.replace(/ا/g, "");
   return quotes.map((q) => {
-    const frags = q.split(/…|\.\.\./).map((f) => norm(f.replace(TASHKEEL, "").replace(/\u0671/g, "ا").replace(/آ/g, "ءا"))).filter((f) => f.length >= 8);
+    const frags = q.split(/…|\.\.\./).map((f) => fold(norm(f.replace(TASHKEEL, "")))).filter((f) => f.length >= 8);
     return { q: q.slice(0, 60), ok: frags.length ? frags.every((f) => hay.includes(f) || hayA.includes(f.replace(/ا/g, ""))) : true };
   });
 }

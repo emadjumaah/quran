@@ -175,6 +175,23 @@ function SidePanel({ s }: { s: Side }) {
   );
 }
 
+/** أسماءُ مصادر القراءات بحروفٍ لاتينية لغير العربيّ (البقايا الصغيرة 2026-07-29) */
+const SRC_EN: Record<string, string> = {
+  "الراغب الأصفهاني — المفردات": "al-Rāghib al-Iṣfahānī — al-Mufradāt",
+  "الراغب — المفردات": "al-Rāghib — al-Mufradāt",
+  "أبو هلال العسكري — الفروق اللغوية": "Abū Hilāl al-ʿAskarī — al-Furūq al-Lughawiyya",
+  "أبو هلال العسكري — الفروق": "Abū Hilāl al-ʿAskarī — al-Furūq",
+  "ابن عاشور — التحرير والتنوير (الكهف ٩٧)": "Ibn ʿĀshūr — al-Taḥrīr wa-l-Tanwīr (18:97)",
+  "ابن عاشور — التحرير والتنوير (الأنعام ١٠٤)": "Ibn ʿĀshūr — al-Taḥrīr wa-l-Tanwīr (6:104)",
+  "السمين الحلبي — الدر المصون": "al-Samīn al-Ḥalabī — al-Durr al-Maṣūn",
+  "الفيروزآبادي — بصائر ذوي التمييز": "al-Fīrūzābādī — Baṣāʾir Dhawī al-Tamyīz",
+  "البقاعي — نظم الدرر": "al-Biqāʿī — Naẓm al-Durar",
+  "ابن الجوزي — نزهة الأعين النواظر": "Ibn al-Jawzī — Nuzhat al-Aʿyun al-Nawāẓir",
+  "ابن الجوزي — نزهة الأعين": "Ibn al-Jawzī — Nuzhat al-Aʿyun",
+  "الدامغاني — قاموس القرآن": "al-Dāmaghānī — Qāmūs al-Qurʾān",
+  "فاضل السامرائي — لمسات بيانية (الحلقة ٢١١، اقتباس وجيز)": "Fāḍil al-Sāmarrāʾī — Lamasāt Bayāniyya (ep. 211, brief quote)",
+};
+
 function CardPage({ card, types }: { card: Card; types: Record<string, string> }) {
   const ar = getUILang() === "ar";
   const [, forceEn] = useState(0);
@@ -205,7 +222,7 @@ function CardPage({ card, types }: { card: Card; types: Record<string, string> }
         <blockquote key={i} className="by-reading">
           <p>«{r.quote}»</p>
           {!ar && en?.readings[i] && <p className="by-reading-en">{en.readings[i]}</p>}
-          <footer>— {r.src}</footer>
+          <footer dir={ar ? "rtl" : "ltr"}>— {ar ? r.src : (SRC_EN[r.src] ?? r.src)}</footer>
         </blockquote>
       ))}
       {ar && <>

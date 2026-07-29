@@ -27,6 +27,10 @@ const SYSTEM = `أنت مُعينٌ على تدبّر القرآن ضمن ماد
 
 الأسلوب: عربيّةٌ رصينةٌ موجزة (٣–٤ فقراتٍ قصيرة أو نقاط)، متواضعة، لا تَقطع بما ليس في النصّ، وابدأ بلا تصدير. لا تختم بأسئلةٍ عامّة إنشائيّة؛ اجعل الخاتمة لفتةً موجزةً نافعةً مستخلَصةً من المادّة نفسها. لا تدّعِ أن هذا تفسير.`;
 
+/** بالإنجليزية للقارئ غير العربيّ — التقييداتُ نفسُها، والأسلوبُ بلغته
+ *  (البقايا الصغيرة 2026-07-29): الحرّاسُ لا يتغيّرون، الأسلوبُ وحدَه. */
+const STYLE_EN = `Write in dignified, concise English (3–4 short paragraphs or bullets). The Quranic verse and any quoted Arabic stay in Arabic with a brief English gloss. Stay humble, never assert what the material does not say, start without any preamble, and do not claim this is tafsir.`;
+
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), { status, headers: { "content-type": "application/json" } });
 }
@@ -87,7 +91,7 @@ export default async function handler(req) {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM }] },
+        systemInstruction: { parts: [{ text: body.lang === "en" ? `${SYSTEM}\n\n${STYLE_EN}` : SYSTEM }] },
         contents: [{ role: "user", parts: [{ text: `تدبَّرْ هذه الآية معتمدًا على ما يلي فقط:\n\n${ctx}` }] }],
         generationConfig: { temperature: 0.6, topP: 0.9, maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } },
       }),

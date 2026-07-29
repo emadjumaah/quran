@@ -1,6 +1,6 @@
 /**
  * كلمةً كلمةً — جسرُ القارئ غير العربيّ إلى ألفاظ التنزيل (2026-07-29):
- * لكلِّ كلمةٍ نقحرتُها (transliteration) ومعناها الإنجليزيّ، ملفًّا لكلِّ سورةٍ
+ * لكلِّ كلمةٍ رسمُها بحروفٍ لاتينية (transliteration) ومعناها الإنجليزيّ، ملفًّا لكلِّ سورةٍ
  * (public/wbw/{s}.json) يُجلب عند أول حاجةٍ ويبقى — نمطُ الصوت نفسُه.
  * المصدر: Quran.com (بيانات QUL/مجمع الملك فهد) — منسوبٌ في «عن المشروع».
  */
@@ -28,7 +28,7 @@ function loadSura(s: number): Promise<SuraWbw | null> {
   return p;
 }
 
-/** نقحرةُ كلمةٍ ومعناها — من موضعها "s:a:w" */
+/** رسمُ الكلمة بحروفٍ لاتينية ومعناها — من موضعها "s:a:w" */
 export async function wbwOf(location: string): Promise<WbwEntry | null> {
   const [s, a, w] = location.split(":").map(Number);
   if (!s || !a || !w) return null;

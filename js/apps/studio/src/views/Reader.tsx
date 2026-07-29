@@ -147,10 +147,19 @@ function SurahSidebar({
   );
 }
 
+/** نطقُ الكلمة المفردة — تلاوةُ كلِّ كلمةٍ متاحةٌ برابطٍ قياسيٍّ يُبنى من
+ *  موضعها (audio.qurancdn.com/wbw) — معينٌ لمتعلّمي التلاوة خاصّة. */
+function playWord(location: string) {
+  const [s, a, w] = location.split(":").map(Number);
+  const pad = (n: number) => String(n).padStart(3, "0");
+  const audio = new Audio(`https://audio.qurancdn.com/wbw/${pad(s)}_${pad(a)}_${pad(w)}.mp3`);
+  void audio.play().catch(() => {});
+}
+
 function Inspector({ word }: { word: WordDoc | null }) {
   useUILang();
   const { layers } = useSettings();
-  // «الكلمةُ الجسر» لغير العربيّ: النقحرةُ والمعنى الإنجليزيّ أولَ اللوحة —
+  // «الكلمةُ الجسر» لغير العربيّ: رسمُ اللفظ لاتينيًّا ومعناه الإنجليزيّ أولَ اللوحة —
   // فيبني القارئُ معجمَه القرآنيَّ كلمةً كلمةً وهو يقرأ (رؤية 2026-07-29)
   const [wbw, setWbw] = useState<WbwEntry | null>(null);
   const en = getUILang() !== "ar";
@@ -172,9 +181,15 @@ function Inspector({ word }: { word: WordDoc | null }) {
     <div>
       {en && wbw && (
         <div className="wbw-bridge" dir="ltr">
+          <button className="wbw-play" onClick={() => playWord(word.location)} title="hear this word">▶</button>
           <span className="wbw-tr">{wbw.translit}</span>
           <span className="wbw-gl">{wbw.gloss}</span>
         </div>
+      )}
+      {!en && (
+        <button className="chip wbw-play-ar" onClick={() => playWord(word.location)} title="استمع لنطق هذه الكلمة وحدها">
+          ▶ نُطقُ الكلمة
+        </button>
       )}
       <MorphologyCard word={word} />
       {word.root && layers.roots && <RootMeaning root={word.root} />}

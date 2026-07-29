@@ -5,6 +5,7 @@
  * knowledge is sent; the server prompt forbids adding any. «إعانة، لا تفسير».
  */
 import type { AyahDoc } from "./types";
+import { getUILang } from "./i18n";
 import { loadEraab, type EraabEntry } from "./eraab";
 import { similarOf } from "./similar";
 import { ayahByLocationMap, getAyahByGlobalNo, getRoot, surahNameAr, wordsOfAyah } from "./db";
@@ -88,6 +89,7 @@ export async function askTadabbur(ayah: AyahDoc, ayahId: number): Promise<string
       siyaq,
       links,
       tier: cls?.tier,
+      lang: getUILang() === "ar" ? "ar" : "en",
     }),
   });
   if (!res.ok) {

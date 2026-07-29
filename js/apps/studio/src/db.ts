@@ -104,7 +104,7 @@ export async function listSurahs(): Promise<SurahDoc[]> {
 export const surahNameAr = (no: number): string =>
   surahNames.get(no) ?? String(no);
 
-/** اسمُ السورة بلغة الواجهة: عربيًّا كما هو، وبالنقحرة لغيره — الإحالاتُ
+/** اسمُ السورة بلغة الواجهة: عربيًّا كما هو، وبرسمه اللاتينيّ لغيره — الإحالاتُ
  *  في كل اللوحات تمرُّ من هنا فلا يقرأ الإنجليزيُّ «السجدة» بحروفٍ لا يفكّها
  *  (رصد المالك 2026-07-29). التعديلُ لا يمسُّ العربيةَ في شيء. */
 export const surahNameUI = (no: number): string => {

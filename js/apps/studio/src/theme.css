@@ -2542,7 +2542,7 @@ table.data tr:hover td { background: var(--panel-2); }
 .ayah-card.en-first .en-verse { color: var(--ink); }
 .ayah-card.en-first.sel-ayah .quran { color: var(--ink); opacity: 1; } /* المعلَّمةُ تعود بكاملها */
 
-/* «الكلمةُ الجسر» — نقحرةُ الكلمة ومعناها أولَ لوحتها للقارئ غير العربيّ */
+/* «الكلمةُ الجسر» — رسمُ الكلمة بحروفٍ لاتينية ومعناها أولَ لوحتها للقارئ غير العربيّ */
 .wbw-bridge {
   display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
   padding: 10px 14px; margin-bottom: 10px;
@@ -2588,3 +2588,12 @@ table.data tr:hover td { background: var(--panel-2); }
 
 /* بطاقةُ البيان عند EN: الاقتباسُ العربيُّ يحفظ اتجاهه داخل الصفحة الإنجليزية */
 .by-reading p:first-child { direction: rtl; text-align: right; }
+
+/* نطقُ الكلمة المفردة في لوحتها */
+.wbw-play {
+  width: 30px; height: 30px; flex: none; border: 1px solid var(--accent); border-radius: 50%;
+  background: var(--panel); color: var(--accent); cursor: pointer; font-size: 11px;
+  display: inline-flex; align-items: center; justify-content: center; padding: 0;
+}
+.wbw-play:hover { background: var(--accent); color: #fff; }
+.wbw-play-ar { border: 1px solid var(--accent); color: var(--accent); cursor: pointer; margin-bottom: 10px; background: var(--panel); }

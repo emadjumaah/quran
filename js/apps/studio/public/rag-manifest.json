@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generated": "2026-07-25",
+ "generated": "2026-07-29",
  "books": [
   {
    "id": "muyassar",
@@ -290,7 +290,7 @@
    "label": "بصائر ذوي التمييز",
    "genre": "bayan",
    "author": "الفيروزآبادي",
-   "embedded": false,
+   "embedded": true,
    "entries": 1478
   },
   {
@@ -298,7 +298,7 @@
    "label": "الوجوه والنظائر",
    "genre": "bayan",
    "author": "أبو هلال العسكري",
-   "embedded": false,
+   "embedded": true,
    "entries": 303
   },
   {
@@ -306,7 +306,7 @@
    "label": "قاموس القرآن (الوجوه والنظائر)",
    "genre": "bayan",
    "author": "الدامغاني",
-   "embedded": false,
+   "embedded": true,
    "entries": 272
   },
   {
@@ -330,7 +330,7 @@
    "label": "ملاك التأويل",
    "genre": "bayan",
    "author": "ابن الزبير الغرناطي",
-   "embedded": false,
+   "embedded": true,
    "entries": 704
   },
   {
@@ -346,7 +346,7 @@
    "label": "الإتقان في علوم القرآن",
    "genre": "bayan",
    "author": "السيوطي",
-   "embedded": false,
+   "embedded": true,
    "entries": 782
   },
   {

@@ -85,8 +85,8 @@ export default function AyahPanel({
   if (links?.length) know.push({ k: "links", label: ar ? "صلاتُها" : "Links", n: links.length, title: ar ? "صلاتٌ فحصها قارئٌ مستقلٌّ بمقطعَي سياقها" : "examined links" });
   if (wujuh?.length) know.push({ k: "wujuh", label: ar ? "وجوهُها" : "Senses", title: ar ? `«${wujuh[0].lemma}» معناها هنا غيرُ معناها في مواضعَ أخرى` : "polysemous word here" });
   if (simCount > 0) know.push({ k: "similar", label: ar ? "مثلُها" : "Alike", n: simCount, title: ar ? "أقربُ الآيات معنًى — بالمتّجهات المحسوبة" : "closest verses in meaning" });
-  // «تدبّر» يولِّد عربيًّا — لا يُعرض لغير العربيّ (أمر المالك: أخفِ ما لا إنجليزيَّ فيه)
-  if (ar) know.push({ k: "tadabbur", label: "تدبّر", title: "إعانةٌ على التدبّر بأدواتنا — ليست تفسيرًا" });
+  // «تدبّر» صار يجيب بلغة الواجهة (2026-07-29) — فيُعرض للجميع
+  know.push({ k: "tadabbur", label: ar ? "تدبّر" : "Reflect", title: ar ? "إعانةٌ على التدبّر بأدواتنا — ليست تفسيرًا" : "a reflection aid from our own material — not tafsir" });
 
   // الأدواتُ العربيةُ المحض (التفاسيرُ والإعرابُ والأسباب) تُطوى عند الإنجليزية،
   // والترجمةُ متنٌ دائمٌ هناك فلا يلزم زرُّها
