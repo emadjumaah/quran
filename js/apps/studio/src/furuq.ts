@@ -72,16 +72,19 @@ export function kindsOf(f: Furq): Kind[] {
   return KIND_ORDER.filter((k) => has.has(k));
 }
 
+const KIND_EN: Record<Kind, string> = { "تقديم": "reorder", "صيغة": "form", "إبدال": "substitution", "زيادة": "addition" };
+
 /** «إبدالٌ وزيادة» — اسمُ الزوج من فروقه، لا من سلّةٍ عامّة */
-export function kindsLabel(kinds: Kind[]): string {
+export function kindsLabel(kinds: Kind[], ar = true): string {
   if (!kinds.length) return "";
+  if (!ar) return kinds.map((k) => KIND_EN[k]).join(" + ");
   return kinds.map((k, i) => (i < kinds.length - 1 ? `${k}ٌ` : k)).join(" و");
 }
 
 /** الاسمُ المعروضُ للزوج: البنيويّان باسمهما، وما سواهما بفروقه */
-export function pairLabel(f: Furq): string {
-  if (f.cat === "تطابق" || f.cat === "اشتمال") return catLabel(f.cat);
-  return kindsLabel(kindsOf(f)) || catLabel(f.cat);
+export function pairLabel(f: Furq, ar = true): string {
+  if (f.cat === "تطابق" || f.cat === "اشتمال") return ar ? catLabel(f.cat) : (CAT_INFO[f.cat]?.en ?? f.cat);
+  return kindsLabel(kindsOf(f), ar) || (ar ? catLabel(f.cat) : (CAT_INFO[f.cat]?.en ?? f.cat));
 }
 
 /** display order + a short note for each category. */

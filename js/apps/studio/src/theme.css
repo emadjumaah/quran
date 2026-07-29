@@ -2565,3 +2565,26 @@ table.data tr:hover td { background: var(--panel-2); }
 @media (max-width: 900px) {
   input, select, textarea { font-size: 16px !important; }
 }
+
+/* مقارنةُ ترجمتين متجاورتين — الثانيةُ بوسمٍ ذهبيّ */
+.entr-pill.on2 { background: var(--gold); border-color: var(--gold); color: #fff; font-weight: 600; }
+.entr-cmp { margin-inline-start: auto; }
+.en-verse-cmp { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.en-verse-cmp .en-verse { margin: 0; }
+.en-verse-2 { color: var(--ink-2); }
+.en-cmp-tag {
+  display: inline-block; font-family: var(--font-ui); font-size: 10.5px; font-weight: 700;
+  color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase;
+  margin-inline-end: 8px; vertical-align: 2px;
+}
+.en-verse-cmp .en-verse:first-child .en-cmp-tag { color: var(--accent); }
+.en-verse-2 .en-cmp-tag { color: var(--gold); }
+
+/* ترجمةُ اقتباس العالِم في بطاقة البيان — تحت النص العربيّ بخط القراءة */
+.by-reading-en {
+  margin: 6px 0 0; font-size: 14px; line-height: 1.75; color: var(--ink-2);
+  font-family: Charter, "Iowan Old Style", Georgia, serif; direction: ltr; text-align: left;
+}
+
+/* بطاقةُ البيان عند EN: الاقتباسُ العربيُّ يحفظ اتجاهه داخل الصفحة الإنجليزية */
+.by-reading p:first-child { direction: rtl; text-align: right; }

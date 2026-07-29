@@ -17,7 +17,7 @@ import { loadNamesEn, themeEn } from "../lib/enNames";
 import EvidencePanel from "../components/EvidencePanel";
 import { ayahIdOf } from "../components/AudioButton";
 import { similarOf } from "../similar";
-import { loadFuruq, catLabel } from "../furuq";
+import { loadFuruq, catLabel, CAT_INFO } from "../furuq";
 import { BOOK_LABEL, VERSE_BOOKS, useTariq } from "../lib/tariq";
 import {
   childrenOf, classOf, kulliyaOf, subtreeCounts, themeHeadOf, themeName, themeSizeOf, themeVerses, tierLabel, useKulliyat,
@@ -248,7 +248,7 @@ export default function AyaCard() {
             <summary>⇄ {ar ? "فروق التنزيل — متشابهاتٌ لفظيّة" : "Furūq — near-identical verses"} <span className="muted">{num(twins.length)}</span></summary>
             <div className="aya-more-body">
               {twins.slice(0, 12).map((tw) => (
-                <VerseRow key={tw.loc} loc={tw.loc} texts={texts} extra={<span className="chip" style={{ flex: "none" }}>{catLabel(tw.cat)}</span>} />
+                <VerseRow key={tw.loc} loc={tw.loc} texts={texts} extra={<span className="chip" style={{ flex: "none" }}>{ar ? catLabel(tw.cat) : (CAT_INFO[tw.cat]?.en ?? tw.cat)}</span>} />
               ))}
               {twins.length > 12 && <div className="muted" style={{ fontSize: 12.5 }}>{ar ? `و${num(twins.length - 12)} أخرى` : `+${twins.length - 12} more`}</div>}
               <Link to="/furuq" className="chip link" style={{ marginTop: 6 }}>{ar ? "قارِن الفروق كلمةً كلمة ←" : "compare word-by-word ←"}</Link>

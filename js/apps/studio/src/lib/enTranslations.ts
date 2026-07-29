@@ -30,7 +30,9 @@ export const EN_TRANSLATIONS: TransMeta[] = [
 ];
 
 const KEY = "mishkat:en-translation";
+const KEY2 = "mishkat:en-translation-2"; // الثانيةُ للمقارنة جنبًا إلى جنب — "" = مطفأة
 let active = localStorage.getItem(KEY) ?? "sahih";
+let second = localStorage.getItem(KEY2) ?? "";
 const cache = new Map<string, string[]>();
 const loadingSet = new Set<string>();
 
@@ -44,9 +46,19 @@ const subscribe = (cb: () => void) => {
 export function setActiveTranslation(id: string) {
   active = id;
   localStorage.setItem(KEY, id);
+  if (second === id) { second = ""; localStorage.setItem(KEY2, ""); } // لا تقارن ترجمةً بنفسها
   void ensureLoaded(id);
   notify();
 }
+
+/** الترجمةُ الثانية (Compare): "" تطفئ المقارنة */
+export function setSecondTranslation(id: string) {
+  second = id === active ? "" : id;
+  localStorage.setItem(KEY2, second);
+  if (second) void ensureLoaded(second);
+  notify();
+}
+export const secondTranslationId = (): string => second;
 
 async function ensureLoaded(id: string): Promise<void> {
   const meta = EN_TRANSLATIONS.find((t) => t.id === id);
@@ -60,9 +72,8 @@ async function ensureLoaded(id: string): Promise<void> {
   notify();
 }
 
-/** نصُّ الترجمة الفعّالة لآيةٍ — يسقط إلى صحيح إنترناشونال ريثما يصل الملف */
-export function translationOf(ayah: AyahDoc): { text: string; meta: TransMeta } {
-  const meta = EN_TRANSLATIONS.find((t) => t.id === active) ?? EN_TRANSLATIONS[0];
+function textFor(ayah: AyahDoc, id: string): { text: string; meta: TransMeta } {
+  const meta = EN_TRANSLATIONS.find((t) => t.id === id) ?? EN_TRANSLATIONS[0];
   if (!meta.builtin) {
     const arr = cache.get(meta.id);
     const gid = Number(ayah._id.slice(1));
@@ -73,8 +84,18 @@ export function translationOf(ayah: AyahDoc): { text: string; meta: TransMeta } 
   return { text: ayah.translations?.en ?? "", meta: meta.builtin ? meta : EN_TRANSLATIONS[0] };
 }
 
+/** نصُّ الترجمة الفعّالة لآيةٍ — يسقط إلى صحيح إنترناشونال ريثما يصل الملف */
+export const translationOf = (ayah: AyahDoc): { text: string; meta: TransMeta } => textFor(ayah, active);
+
+/** نصُّ الترجمة الثانية إن كانت المقارنةُ مفتوحة */
+export function secondTranslationOf(ayah: AyahDoc): { text: string; meta: TransMeta } | null {
+  if (!second) return null;
+  const r = textFor(ayah, second);
+  return r.meta.id === active ? null : r;
+}
+
 /** الحالةُ التفاعلية: الفعّالةُ + عدّادُ وصول الملفات (لإعادة الرسم) */
 export function useEnTranslation(): string {
-  return useSyncExternalStore(subscribe, () => `${active}|${cache.size}`);
+  return useSyncExternalStore(subscribe, () => `${active}|${second}|${cache.size}`);
 }
 export const activeTranslationId = (): string => active;

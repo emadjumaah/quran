@@ -15,6 +15,7 @@ import { getUILang, num, useUILang } from "../i18n";
 import { readPathOf } from "../types";
 import PageSearch from "../components/PageSearch";
 import { fuzzyMatch } from "../lib/fuzzy";
+import { bayanCardEn, bayanSideEn, bayanTypeEn, loadBayanEn } from "../lib/enNames";
 
 interface Occ { loc: string; form: string; unit: string; txt: string }
 interface Side {
@@ -143,20 +144,21 @@ function TariqPanel({ roots, locs = [] }: { roots: string[]; locs?: string[] }) 
 
 /** لوحة طرفٍ واحد: العدّادان ثم المصاحبات ثم المواضع كلها قابلة للطي */
 function SidePanel({ s }: { s: Side }) {
+  const arUI = getUILang() === "ar";
   const aspects = Object.entries(s.aspects).filter(([, n]) => n > 0);
   return (
     <details className="by-side">
       <summary>
-        <b>{s.name}</b>
-        <span className="chip">{num(s.total)} موضعًا</span>
-        <span className="chip">مكي {num(s.makki)} · مدني {num(s.madani)}</span>
+        <b>{arUI ? s.name : (bayanSideEn(s.name) ?? s.name)}</b>
+        <span className="chip">{num(s.total)} {arUI ? "موضعًا" : "occurrences"}</span>
+        <span className="chip">{arUI ? `مكي ${num(s.makki)} · مدني ${num(s.madani)}` : `Meccan ${num(s.makki)} · Medinan ${num(s.madani)}`}</span>
         {aspects.length > 0 && (
           <span className="chip">{aspects.map(([k, n]) => `${k} ${num(n)}`).join(" · ")}</span>
         )}
       </summary>
       {s.colloc.length > 0 && (
         <p className="by-colloc">
-          <b>أعلى المصاحبات:</b> {s.colloc.map(([l, n]) => `${l} ${num(n)}`).join(" · ")}
+          <b>{arUI ? "أعلى المصاحبات:" : "Top companions:"}</b> {s.colloc.map(([l, n]) => `${l} ${num(n)}`).join(" · ")}
         </p>
       )}
       <ul className="by-occ">
@@ -174,43 +176,49 @@ function SidePanel({ s }: { s: Side }) {
 }
 
 function CardPage({ card, types }: { card: Card; types: Record<string, string> }) {
+  const ar = getUILang() === "ar";
+  const [, forceEn] = useState(0);
+  useEffect(() => { if (!ar) loadBayanEn().then(() => forceEn((n) => n + 1)); }, [ar]);
+  const en = ar ? null : bayanCardEn(card.id);
   return (
     <div>
       <p>
-        <Link to="/bayan" className="chip">← كل البطاقات</Link>{" "}
-        <span className="chip gold">{types[card.type] ?? card.type}</span>
+        <Link to="/bayan" className="chip">{ar ? "← كل البطاقات" : "← all cards"}</Link>{" "}
+        <span className="chip gold">{ar ? (types[card.type] ?? card.type) : (bayanTypeEn(card.type) ?? card.type)}</span>
       </p>
-      <h2>{card.title}</h2>
+      <h2>{ar ? card.title : (en?.title ?? card.title)}</h2>
       <p className="by-kashf">
-        <b>من استعمال المصحف:</b> {card.kashf}
+        <b>{ar ? "من استعمال المصحف:" : "From the Quran's own usage:"}</b> {ar ? card.kashf : (en?.kashf ?? card.kashf)}
       </p>
-      <h3>خريطة الاستعمال المحسوبة</h3>
+      <h3>{ar ? "خريطة الاستعمال المحسوبة" : "Computed usage map"}</h3>
       {card.sides.map((s) => <SidePanel key={s.name} s={s} />)}
       {card.contrast && (
         <details className="by-side">
-          <summary><b>بصمة الافتراق</b> — لمّات تصاحب طرفًا ولا تصاحب الآخر</summary>
+          <summary><b>{ar ? "بصمة الافتراق" : "Divergence fingerprint"}</b>{ar ? " — لمّات تصاحب طرفًا ولا تصاحب الآخر" : " — words that accompany one side only"}</summary>
           {Object.entries(card.contrast).map(([k, v]) => (
-            <p key={k} className="by-colloc"><b>ينفرد {k}:</b> {v.map(([l, n]) => `${l} ${num(n)}`).join(" · ")}</p>
+            <p key={k} className="by-colloc"><b>{ar ? `ينفرد ${k}:` : `only with ${bayanSideEn(k) ?? k}:`}</b> {v.map(([l, n]) => `${l} ${num(n)}`).join(" · ")}</p>
           ))}
         </details>
       )}
-      <h3>قراءات مستشهد بها</h3>
+      <h3>{ar ? "قراءات مستشهد بها" : "Classical scholars' readings"}</h3>
       {card.readings.map((r, i) => (
         <blockquote key={i} className="by-reading">
           <p>«{r.quote}»</p>
+          {!ar && en?.readings[i] && <p className="by-reading-en">{en.readings[i]}</p>}
           <footer>— {r.src}</footer>
         </blockquote>
       ))}
+      {ar && <>
       <h3>أين طُرق هذا عند العلماء</h3>
       <p className="by-intro">مظانُّ جذور البطاقة ومواضعها في كتب المكتبة التسعة — اضغط لتقرأ المدخل بنصه.</p>
       <TariqPanel roots={card.roots ?? []} locs={[...new Set(card.sides.flatMap((s) => s.occ.map((o) => o.loc)))]} />
+      </>}
       <details className="by-side">
-        <summary><b>منهج البطاقة</b></summary>
+        <summary><b>{ar ? "منهج البطاقة" : "Method"}</b></summary>
         <p className="by-method">
-          كل رقمٍ في الخريطة حسابٌ حتميٌّ من نص المصحف والمدونة الصرفية
-          الأكاديمية ووحدات السياق المعتمدة، يعاد إنتاجه بسكربتٍ معلنٍ في
-          مستودع المشروع؛ والقراءات منقولةٌ بنصها منسوبةً إلى مصادرها —
-          الحساب يصف، والمنقول يفسر، والقارئ يتدبر.
+          {ar
+            ? "كل رقمٍ في الخريطة حسابٌ حتميٌّ من نص المصحف والمدونة الصرفية الأكاديمية ووحدات السياق المعتمدة، يعاد إنتاجه بسكربتٍ معلنٍ في مستودع المشروع؛ والقراءات منقولةٌ بنصها منسوبةً إلى مصادرها — الحساب يصف، والمنقول يفسر، والقارئ يتدبر."
+            : "Every number in the map is computed deterministically from the Quranic text and the academic morphology corpus, reproducible by a published script; the scholars' readings are quoted verbatim with attribution, and their English renderings are aided translations. The computation describes; the quotation explains; the reader reflects."}
         </p>
       </details>
     </div>
@@ -563,6 +571,8 @@ export default function Bayan() {
   useUILang();
   const ar = getUILang() === "ar";
   const data = useBayan();
+  const [, forceEn] = useState(0);
+  useEffect(() => { if (!ar) loadBayanEn().then(() => forceEn((n) => n + 1)); }, [ar]);
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const root = params.get("root") ?? "";
@@ -599,12 +609,12 @@ export default function Bayan() {
 
   const card = id ? data.cards.find((c) => c.id === id) : undefined;
   if (id && card) {
-    return <div className="page" dir="rtl"><div className="bayan-page"><CardPage card={card} types={data.types} /></div></div>;
+    return <div className="page" dir={getUILang() === "ar" ? "rtl" : "ltr"}><div className="bayan-page"><CardPage card={card} types={data.types} /></div></div>;
   }
   if (id && id.startsWith("auto-")) {
     const ac = autoCache?.find((c) => c.id === id);
     return (
-      <div className="page" dir="rtl"><div className="bayan-page">
+      <div className="page" dir={getUILang() === "ar" ? "rtl" : "ltr"}><div className="bayan-page">
         {ac ? <AutoCardPage card={ac} /> : <p style={{ padding: 40, textAlign: "center" }}>…</p>}
       </div></div>
     );
@@ -628,7 +638,7 @@ export default function Bayan() {
   })();
 
   return (
-    <div className="page" dir="rtl">
+    <div className="page" dir={getUILang() === "ar" ? "rtl" : "ltr"}>
     <div className="bayan-page">
       <h2>{ar ? "البيان — لماذا هذه الكلمةُ لا أختُها؟" : "Bayān — why this word, not its sister?"}</h2>
       <p className="by-intro">
@@ -645,16 +655,16 @@ export default function Bayan() {
         const c = list[day % list.length];
         return (
           <Link to={`/bayan/${c.id}`} className="by-hero">
-            <span className="by-hero-eyebrow">{ar ? `بطاقةٌ من البيان · ${data.types[c.type] ?? ""}` : "a card from Bayān"}</span>
-            <b className="by-hero-title">{c.title}</b>
-            <span className="by-hero-kashf">{c.kashf}</span>
+            <span className="by-hero-eyebrow">{ar ? `بطاقةٌ من البيان · ${data.types[c.type] ?? ""}` : `A card from Bayān · ${bayanTypeEn(c.type) ?? ""}`}</span>
+            <b className="by-hero-title">{ar ? c.title : (bayanCardEn(c.id)?.title ?? c.title)}</b>
+            <span className="by-hero-kashf">{ar ? c.kashf : (bayanCardEn(c.id)?.kashf ?? c.kashf)}</span>
             <SidesBar sides={c.sides} />
             <span className="by-hero-go">{ar ? "افتحِ البطاقة — خريطةُ الاستعمال وقراءاتُ الأعلام ←" : "open the card ←"}</span>
           </Link>
         );
       })()}
       <PageSearch value={q} onChange={setQ} placeholder={ar ? "اكتب كلمتين متقاربتين: خوف خشية · بخل شح — أو كلمةً أو جذرًا…" : "two close words: e.g. khawf khashya…"} />
-      {!searching && (
+      {!searching && ar && (
         <p className="by-tabs">
           <button className={"by-tab" + (seg === "cards" && !root && !entry ? " on" : "")}
             onClick={() => { setSeg("cards"); if (root || book || entry) pickBook("", ""); }}>
@@ -671,12 +681,12 @@ export default function Bayan() {
         if (!cards.length) return null;
         return (
           <section key={ty}>
-            <h3>{data.types[ty]}</h3>
+            <h3>{ar ? data.types[ty] : (bayanTypeEn(ty) ?? data.types[ty])}</h3>
             <div className="by-grid">
               {cards.map((c) => (
                 <Link key={c.id} to={`/bayan/${c.id}`} className="fr-card by-tile by-tile-ed">
-                  <b>{c.title}</b>
-                  <span className="by-tile-kashf">{c.kashf}</span>
+                  <b>{ar ? c.title : (bayanCardEn(c.id)?.title ?? c.title)}</b>
+                  <span className="by-tile-kashf">{ar ? c.kashf : (bayanCardEn(c.id)?.kashf ?? c.kashf)}</span>
                   <SidesBar sides={c.sides} />
                   <span className="by-grade g" title="بطاقةٌ محرَّرةٌ بمراجعة">محرَّرة</span>
                 </Link>
@@ -686,7 +696,7 @@ export default function Bayan() {
         );
       })}
 
-      {showCards && autoCache && (() => {
+      {showCards && ar && autoCache && (() => {
         const hits = searching
           ? autoCache.filter((c) => fuzzyMatch(q, c.head) || c.roots.some((r) => fuzzyMatch(q, r)))
           : group
@@ -734,9 +744,9 @@ export default function Bayan() {
         );
       })()}
 
-      {(seg === "lib" || searching || root || entry) && (
+      {ar && (seg === "lib" || searching || root || entry) && (
         <>
-          <h3>{ar ? "مكتبة البيان" : "Bayān library"}</h3>
+          <h3>مكتبة البيان</h3>
           <BayanLib q={q} root={root} book={book} entry={entry} onPick={pickBook} />
         </>
       )}

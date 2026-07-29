@@ -17,6 +17,7 @@ import { readPathOf } from "../types";
 import { CAT_INFO, KIND_INFO, KIND_ORDER, kindsOf, pairLabel, sides, useFuruq, type Furq, type Kind } from "../furuq";
 import PageSearch from "../components/PageSearch";
 import { fuzzyMatch } from "../lib/fuzzy";
+import { EnQuoteLine } from "../components/EnVerse";
 
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 const gpos = (loc: string) => {
@@ -54,10 +55,12 @@ function PairCard({ f }: { f: Furq }) {
         <span className="fr-vs">↔</span>
         <Link to={readPathOf(f.b)} className="fr-ref">{arName(f.b)}</Link>
         <span className="spacer" style={{ flex: 1 }} />
-        <span className="chip gold" title={kindsOf(f).map((k) => `${k}: ${KIND_INFO[k].note}`).join(" · ") || CAT_INFO[f.cat]?.note}>{pairLabel(f)}</span>
+        <span className="chip gold" title={kindsOf(f).map((k) => (ar ? `${k}: ${KIND_INFO[k].note}` : KIND_INFO[k].en)).join(" · ") || (ar ? CAT_INFO[f.cat]?.note : CAT_INFO[f.cat]?.en)}>{pairLabel(f, ar)}</span>
       </div>
       <VerseLine segs={a} side="a" fold={f.win?.s === "a" ? f.win : undefined} />
+      <EnQuoteLine loc={f.a} />
       <VerseLine segs={b} side="b" fold={f.win?.s === "b" ? f.win : undefined} />
+      <EnQuoteLine loc={f.b} />
       {f.win && (
         <div className="fr-note muted">
           {ar
@@ -81,6 +84,7 @@ function FamilyCard({ fam }: { fam: Family }) {
         <span className="chip gold" title={CAT_INFO["تطابق"]?.note}>{ar ? "متطابقة" : "identical"}</span>
       </div>
       <div className="fr-line quran"><span className="fr-tag">≡</span> {fam.text}</div>
+      <EnQuoteLine loc={fam.verses[0]} />
       <div className="fr-refs">
         {fam.verses.map((loc) => (
           <Link key={loc} to={readPathOf(loc)} className="fr-ref-sm">{arName(loc)}</Link>
@@ -194,7 +198,7 @@ export default function Furuq() {
                 onClick={() => setCat(cat === c ? "" : c)}
                 title={noteOf(c)}
               >
-                {c === "تطابق" ? (ar ? "متطابقة" : "identical") : c} <span className="muted">{num(catCounts[c] ?? 0)}</span>
+                {c === "تطابق" ? (ar ? "متطابقة" : "identical") : ar ? c : (CAT_INFO[c]?.en ?? ({"تقديم":"reorder","صيغة":"form","إبدال":"substitution","زيادة":"addition"} as Record<string,string>)[c] ?? c)} <span className="muted">{num(catCounts[c] ?? 0)}</span>
               </button>
             ))}
           </div>

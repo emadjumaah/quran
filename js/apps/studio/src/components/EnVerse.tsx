@@ -13,12 +13,14 @@ import { useEffect, useState } from "react";
 import type { AyahDoc } from "../types";
 import { ayahByLocationMap } from "../db";
 import { getUILang } from "../i18n";
-import { EN_TRANSLATIONS, activeTranslationId, setActiveTranslation, translationOf, useEnTranslation } from "../lib/enTranslations";
+import { EN_TRANSLATIONS, activeTranslationId, secondTranslationId, secondTranslationOf, setActiveTranslation, setSecondTranslation, translationOf, useEnTranslation } from "../lib/enTranslations";
 
 export function EnTransBar() {
   useEnTranslation();
+  const [compare, setCompare] = useState(() => !!secondTranslationId());
   if (getUILang() === "ar") return null;
   const active = activeTranslationId();
+  const second = secondTranslationId();
   return (
     <div className="entr-bar" role="tablist" aria-label="translation">
       <span className="entr-lbl">Translation</span>
@@ -27,13 +29,29 @@ export function EnTransBar() {
           key={t.id}
           role="tab"
           aria-selected={active === t.id}
-          className={`entr-pill${active === t.id ? " on" : ""}`}
-          onClick={() => setActiveTranslation(t.id)}
-          title={t.label}
+          className={`entr-pill${active === t.id ? " on" : second === t.id ? " on2" : ""}`}
+          onClick={() => {
+            // في وضع المقارنة: النقرُ على غير الفعّالة يعيّن الثانية؛ وإلا يبدّل الفعّالة
+            if (compare && t.id !== active) setSecondTranslation(second === t.id ? "" : t.id);
+            else setActiveTranslation(t.id);
+          }}
+          title={compare && t.id !== active ? `compare with ${t.label}` : t.label}
         >
           {t.short}
         </button>
       ))}
+      <button
+        className={`entr-pill entr-cmp${compare ? " on2" : ""}`}
+        onClick={() => {
+          const next = !compare;
+          setCompare(next);
+          if (!next) setSecondTranslation("");
+          else if (!second) setSecondTranslation(EN_TRANSLATIONS.find((t) => t.id !== active)!.id);
+        }}
+        title="show two translations side by side — see how translators differ"
+      >
+        ⇄ Compare
+      </button>
     </div>
   );
 }
@@ -41,8 +59,18 @@ export function EnTransBar() {
 export function EnVerseLine({ ayah }: { ayah: AyahDoc }) {
   useEnTranslation();
   if (getUILang() === "ar") return null;
-  const { text } = translationOf(ayah);
+  const { text, meta } = translationOf(ayah);
   if (!text) return null;
+  const sec = secondTranslationOf(ayah);
+  if (sec?.text) {
+    // المقارنة: الترجمتان متجاورتين موسومتين — يرى القارئُ أين اختلف المترجمون
+    return (
+      <div className="en-verse-cmp" dir="ltr">
+        <p className="en-verse"><span className="en-cmp-tag">{meta.short}</span>{text}</p>
+        <p className="en-verse en-verse-2"><span className="en-cmp-tag">{sec.meta.short}</span>{sec.text}</p>
+      </div>
+    );
+  }
   // بلا ذيل اسم المترجم — الشريطُ المثبَّت يحمله (أمر المالك 2026-07-29)
   return <p className="en-verse" dir="ltr">{text}</p>;
 }

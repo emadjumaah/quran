@@ -11,6 +11,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getUILang, num, t, useUILang } from "../i18n";
+import { curatedBabEn, curatedTitleEn, loadCuratedEn } from "../lib/enNames";
+import { EnQuoteLine } from "../components/EnVerse";
 import { readPathOf } from "../types";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import type { AyahDoc } from "../types";
@@ -38,16 +40,18 @@ interface Payload {
 const arName = (loc: string) => `${surahNameAr(Number(loc.split(":")[0]))} ${num(loc.split(":")[1])}`;
 
 function Card({ k, texts }: { k: Kulliya; texts: Map<string, AyahDoc> | null }) {
+  const arUI = getUILang() === "ar";
   const ar = getUILang() === "ar";
   const [open, setOpen] = useState(false);
   const relEntries = Object.entries(k.rels ?? {}).filter(([, v]) => v.length);
   return (
     <article className="km-card">
       <div className="km-head">
-        <h3 className="km-title">{k.title}</h3>
+        <h3 className="km-title">{arUI ? k.title : (curatedTitleEn(k.loc) ?? k.title)}</h3>
         <Link to={readPathOf(k.loc)} className="km-ref">{k.ref}</Link>
       </div>
       <p className="quran km-text">{k.text}</p>
+      <EnQuoteLine loc={k.loc} />
       <button className={`km-why${open ? " on" : ""}`} onClick={() => setOpen((v) => !v)}>
         {ar ? "أدلّتُها المحسوبة" : "computed evidence"} {open ? "▴" : "▾"}
       </button>
@@ -99,6 +103,8 @@ export default function KulliyatMukhtara() {
   const ar = getUILang() === "ar";
   const [data, setData] = useState<Payload | null>(null);
   const [texts, setTexts] = useState<Map<string, AyahDoc> | null>(null);
+  const [, forceEn] = useState(0);
+  useEffect(() => { if (getUILang() !== "ar") loadCuratedEn().then(() => forceEn((n) => n + 1)); }, []);
   const [q, setQ] = useState("");
   const [bab, setBab] = useState<string>("");
 
@@ -149,7 +155,7 @@ export default function KulliyatMukhtara() {
             <span className="jw-filter-lbl">{ar ? "الباب" : "chapter"}</span>
             <button className={bab === "" ? "on" : ""} onClick={() => setBab("")}>{ar ? "الكل" : "all"}</button>
             {babs.map((b) => (
-              <button key={b} className={bab === b ? "on" : ""} onClick={() => setBab(b)}>{b}</button>
+              <button key={b} className={bab === b ? "on" : ""} onClick={() => setBab(b)}>{ar ? b : (curatedBabEn(b) ?? b)}</button>
             ))}
           </div>
         </div>
@@ -157,7 +163,7 @@ export default function KulliyatMukhtara() {
 
         {grouped.map((g) => (
           <section key={g.bab} className="km-bab">
-            <h2 className="km-bab-h">{g.bab} <span className="muted">{num(g.items.length)}</span></h2>
+            <h2 className="km-bab-h">{ar ? g.bab : (curatedBabEn(g.bab) ?? g.bab)} <span className="muted">{num(g.items.length)}</span></h2>
             <div className="km-grid">
               {g.items.map((k) => <Card key={k.loc} k={k} texts={texts} />)}
             </div>
