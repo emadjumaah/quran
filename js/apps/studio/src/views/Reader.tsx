@@ -19,12 +19,11 @@ import { setSelectedAyah, useReading } from "../reading";
 import { useSettings } from "../settings";
 import { recordProgress, toggleBookmark, useBookmarks } from "../bookmarks";
 import { TAJWID, tajwidWords } from "../tajwid";
-import ReadingBar from "../components/ReadingBar";
 import AyahText from "../components/AyahText";
 import MorphologyCard from "../components/MorphologyCard";
 import RootMeaning from "../components/RootMeaning";
 import CollectButton from "../components/CollectButton";
-import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId } from "../components/AudioButton";
+import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, playFrom, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs, { SimilarAyahsPanel } from "../components/SimilarAyahs";
 import MuhkamaLine from "../components/MuhkamaLine";
 import EraabChip, { EraabPanel } from "../components/EraabChip";
@@ -302,6 +301,7 @@ function MushafPage({
   wordsByAyah,
   selected,
   press,
+  selectedExtras,
   onAyahMarker,
   onAyahPick,
   selectedAyahNo,
@@ -314,6 +314,8 @@ function MushafPage({
   wordsByAyah: Map<number, WordDoc[]>;
   selected: string | null;
   press: WordPressHandlers<WordDoc>;
+  /** ما يُعرض تحت الآية المعلَّمة (أدواتُها وسطرُ معارفها) — بدل الشريط السفليّ */
+  selectedExtras?: React.ReactNode;
   onAyahMarker: (a: AyahDoc) => void;
   onAyahPick: (a: AyahDoc) => void;
   selectedAyahNo: number | null;
@@ -396,6 +398,7 @@ function MushafPage({
                   ﴿{num(ayah.ayahNo)}﴾
                 </span>{" "}
               </span>
+              {selectedAyahNo === ayah.ayahNo && selectedExtras}
             </Fragment>
           );
         })}
@@ -836,6 +839,30 @@ export default function Reader() {
                   wordsByAyah={wordsByAyah}
                   selected={selected?.location ?? null}
                   press={wordPress}
+                  selectedExtras={selectedLoc ? (
+                    <div className="mp-marked" onClick={(e) => e.stopPropagation()}>
+                      <div className="ayah-tools" style={{ margin: 0 }}>
+                        <span className="ayah-meta">{surahNameAr(Number(selectedLoc.split(":")[0]))} {num(Number(selectedLoc.split(":")[1]))}</span>
+                        <button className="chip" onClick={() => {
+                          const gid = (surahBase.get(Number(selectedLoc.split(":")[0])) ?? 0) + Number(selectedLoc.split(":")[1]);
+                          playFrom(gid, {});
+                        }}>▶ {ar ? "استمع من هنا" : "listen"}</button>
+                        <button className="chip" onClick={() => {
+                          const [ss, aa] = selectedLoc.split(":").map(Number);
+                          switchMode("ayat");
+                          navigate(`/read/${ss}/${aa}`);
+                        }} title={ar ? "الأدواتُ كاملةً: مثلها وتدبّر والتفسير والترجمة" : "full tools"}>{ar ? "الآيات" : "ayah view"}</button>
+                        <button className="chip" onClick={async () => {
+                          const [ss, aa] = selectedLoc.split(":").map(Number);
+                          const ws2 = wordsByAyah.get(aa) ?? [];
+                          await shareAyah({ text: ws2.map((w) => w.textUthmani).join(" "), surahName: surahNameAr(ss), ayahNo: num(aa), loc: selectedLoc });
+                        }} title={ar ? "مشاركة الآية بنصّها وموضعها ورابطها" : "share"}>↗</button>
+                        <span style={{ flex: 1 }} />
+                        <button className="chip" onClick={() => setSelectedAyah(null)} title={ar ? "إزالة التعليم" : "clear"}>✕</button>
+                      </div>
+                      <AyahKnows loc={selectedLoc} />
+                    </div>
+                  ) : undefined}
                   // tap the ﴿n﴾ marker → open the reading bar for this ayah,
                   // staying inside صفحات (a separate «الآيات» button jumps to the
                   // ayah view). Selecting also lets ← → walk ayah-by-ayah.
@@ -953,17 +980,6 @@ export default function Reader() {
       </main>
 
       {narrow && <ScrollTopFab scrollerRef={mainRef} />}
-
-      <ReadingBar
-        surahBase={surahBase}
-        onNavigate={navigateAyah}
-        onOpenAyat={() => {
-          if (!selectedLoc) return;
-          const [s, a] = selectedLoc.split(":").map(Number);
-          switchMode("ayat");
-          navigate(`/read/${s}/${a}`);
-        }}
-      />
 
       {(selected || verseSheet) && (
         <>
