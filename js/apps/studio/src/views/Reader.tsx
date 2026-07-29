@@ -566,8 +566,44 @@ export default function Reader() {
   const listenSurah = () => playContinuous((surahBase.get(surahNo) ?? 0) + 1);
 
 
-  /** ضوابطُ الترويسة ظاهرةً: ▶ استمع + مبدّل «صفحات | آيات» — لا قائمةَ نقاطٍ
-   *  تُخفيها (رصد المالك 2026-07-29: «المنيو ٣ نقاط في رأس السورة غير مفيد»). */
+  /** الجوال: الصفُّ اللاصق ضيّقٌ فتبقى قائمةُ ⋮ (الاستماعُ وطريقةُ العرض) —
+   *  والحاسوبُ يعرضها ظاهرةً (أمر المالك 2026-07-29). */
+  const HeaderMenu = () => {
+    const [open, setOpen] = useState(false);
+    const box = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+      if (!open) return;
+      const onDoc = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false); };
+      const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+      document.addEventListener("mousedown", onDoc);
+      document.addEventListener("keydown", onEsc);
+      return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onEsc); };
+    }, [open]);
+    return (
+      <div className="v-more rd-menu" ref={box}>
+        <button className={`chip v-more-btn${open ? " on" : ""}`} onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}
+          title={ar ? "الاستماع وطريقة العرض" : "listen & view mode"}>
+          <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden><circle cx="10" cy="4" r="1.9" fill="currentColor" /><circle cx="10" cy="10" r="1.9" fill="currentColor" /><circle cx="10" cy="16" r="1.9" fill="currentColor" /></svg>
+        </button>
+        {open && (
+          <div className="v-more-menu" role="menu">
+            <button className="v-more-item" onClick={() => { listenSurah(); setOpen(false); }} role="menuitem">
+              ▶ {ar ? "استمع للسورة" : "Listen to the sura"}
+            </button>
+            <div className="v-more-sep" />
+            <div className="v-more-loc" style={{ borderBottom: "none", paddingBottom: 2 }}>{ar ? "طريقةُ العرض" : "View"}</div>
+            {(["pages", "ayat"] as Mode[]).map((m) => (
+              <button key={m} className={`v-more-item${mode === m ? " on" : ""}`} onClick={() => { switchMode(m); setOpen(false); }} role="menuitem">
+                {m === "pages" ? t("reader.pages") : t("reader.ayat")}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  /** الحاسوب: الضوابطُ ظاهرةً — ▶ استمع + مبدّل «صفحات | آيات». */
   const HeaderControls = () => (
     <div className="rd-ctrl">
       <button className="rd-listen" onClick={listenSurah} title={ar ? "استمع للسورة كاملةً" : "listen to the sura"}>▶</button>
@@ -627,7 +663,7 @@ export default function Reader() {
                   </option>
                 ))}
               </select>
-              <HeaderControls />
+              <HeaderMenu />
             </div>
           </>
         )}

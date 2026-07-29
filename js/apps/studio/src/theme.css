@@ -2459,3 +2459,31 @@ table.data tr:hover td { background: var(--panel-2); }
   .ap-row { padding: 7px 10px; }
   .ap-cat { min-width: 100%; }  /* الفئةُ سطرَ عنوانٍ فوق أزرارها على الضيّق */
 }
+
+/* ═══ ضوابطُ رأس السورة: ▶ + مبدّل «صفحات | آيات» — صفٌّ واحدٌ مضبوط ═══ */
+.rd-ctrl { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.rd-listen {
+  width: 34px; height: 34px; flex: none; border: 1px solid var(--line); border-radius: 9px;
+  background: var(--panel); color: var(--accent); cursor: pointer; font-size: 12px;
+  display: inline-flex; align-items: center; justify-content: center; padding: 0;
+}
+.rd-listen:hover { border-color: var(--accent); }
+.rd-seg {
+  display: inline-flex; align-items: center; flex: none;
+  border: 1px solid var(--line); border-radius: 9px; background: var(--panel-2);
+  padding: 2px; gap: 2px;
+}
+.rd-seg button {
+  border: none; background: transparent; color: var(--muted); cursor: pointer;
+  font: inherit; font-size: 12.5px; padding: 5px 12px; border-radius: 7px; line-height: 1; white-space: nowrap;
+}
+.rd-seg button.on { background: var(--panel); color: var(--accent); font-weight: 700; box-shadow: 0 1px 2px rgb(36 31 24 / 0.08); }
+
+/* الجوال: الصفُّ اللاصق يتّسع لعناصره — البحثُ يتمدّد وما سواه ثابت */
+@media (max-width: 760px) {
+  .reader-sticky { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+  .reader-sticky-search { flex: 1 1 auto; min-width: 0; }
+  .reader-surah-pick { flex: 0 1 auto; min-width: 84px; max-width: 34vw; height: 38px; }
+  .rd-seg button { padding: 5px 8px; font-size: 11.5px; }
+  .rd-listen { width: 32px; height: 32px; }
+}

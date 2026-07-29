@@ -152,7 +152,11 @@ export default function AyaCard() {
   const themeHead = ready && cls ? themeHeadOf(cls.theme) : null;
 
   if (!ready) return <div className="page page-narrow"><div className="muted" style={{ padding: 40, textAlign: "center" }}>{t("loading")}</div></div>;
-  if (!cls) return <div className="page page-narrow"><div className="muted" style={{ padding: 40, textAlign: "center" }}>{t("notFound")}</div></div>;
+  // الموضعُ غيرُ الصحيح وحدَه «غير موجود» — أما آيةٌ خارج طبقة الشبكة فبطاقتُها
+  // تُعرض بما عندها من الطبقات العامة (مثلها · الفروق · الجذور · البيان)
+  if (texts.size > 0 && !texts.has(loc)) {
+    return <div className="page page-narrow"><div className="muted" style={{ padding: 40, textAlign: "center" }}>{t("notFound")}</div></div>;
+  }
 
   const under: string[] = [];
   if (sub) { if (sub.jamia) under.push(ar ? `${num(sub.jamia)} جامعة` : `${sub.jamia} jāmiʿa`); if (sub.tafsil) under.push(ar ? `${num(sub.tafsil)} تفصيلًا` : `${sub.tafsil} tafṣīl`); }
@@ -162,15 +166,15 @@ export default function AyaCard() {
       <div className="jw-wrap aya-wrap">
         <header className="jw-header">
           <div className="aya-crumb">
-            <Link to="/kulliyat">{ar ? "الكلّيّات" : "Kulliyyāt"}</Link>
+            {cls ? <Link to="/kulliyat">{ar ? "الكلّيّات" : "Kulliyyāt"}</Link> : <Link to={`/read/${s}/${a}`}>{ar ? "المصحف" : "Mushaf"}</Link>}
             <span className="mw-sep">›</span>
             <span className="mw-here">{arName(loc)}</span>
           </div>
           <h1 className="jw-title" style={{ marginBottom: 6 }}>{ar ? "بطاقةُ الآية" : "Verse card"}</h1>
           <div className="aya-head-badges">
             <Link to={`/read/${s}/${a}`} className="kl-verse-ref" style={{ fontSize: 15 }}>{arName(loc)}</Link>
-            <span className={`kl-badge ${tierCls(cls.tier)}`}>{cls.tier}</span>
-            <span className="chip">{ar ? "مفصِّلات" : "elaborators"} {num(cls.m ?? 0)}{(cls.mu ?? 0) > 0 ? (ar ? ` · مثانٍ ${num(cls.mu ?? 0)}` : ` · mutual ${num(cls.mu ?? 0)}`) : ""}</span>
+            {cls && <span className={`kl-badge ${tierCls(cls.tier)}`}>{cls.tier}</span>}
+            {cls && <span className="chip">{ar ? "مفصِّلات" : "elaborators"} {num(cls.m ?? 0)}{(cls.mu ?? 0) > 0 ? (ar ? ` · مثانٍ ${num(cls.mu ?? 0)}` : ` · mutual ${num(cls.mu ?? 0)}`) : ""}</span>}
           </div>
         </header>
 
@@ -178,6 +182,7 @@ export default function AyaCard() {
           <p className="quran aya-verse-text" dir="rtl">{texts.get(loc)?.textUthmani ?? texts.get(loc)?.textClean ?? loc}</p>
         </div>
 
+        {cls && (
         <div className="card aya-facts">
           <div className="aya-fact" title={ar ? "وسمُ الشبكة الموحّدة — نسخةٌ أولى قبل موجاتِ التعميق، تُحدَّث بعدها" : "unified-network tier — first edition before the deepening waves; updates after"}>
             <span className="aya-fact-l">{ar ? "المرتبة" : "tier"}</span>
@@ -205,8 +210,19 @@ export default function AyaCard() {
             </span>
           </div>
         </div>
+        )}
 
-        <EvidencePanel location={loc} />        <WhyRank location={loc} />
+        {cls && <EvidencePanel location={loc} />}
+        {cls && <WhyRank location={loc} />}
+        {!cls && (
+          <div className="card aya-facts">
+            <div className="muted" style={{ fontSize: 13, lineHeight: 1.9 }}>
+              {ar
+                ? "هذه الآيةُ ليست في طبقة «القواعد وتفصيلها» (٢٬٥٣٧ آيةً مؤهَّلةً ببوّابات صيغة العموم) — وما تحتها طبقاتُها العامّة: أقربُ الآيات معنًى، ومتشابهاتُها اللفظيّة، وجذورُها، ومظانُّها في كتب البيان."
+                : "This verse is outside the rules layer — its universal layers are below."}
+            </div>
+          </div>
+        )}
 
         {/* folded layers — the verse across the project */}
         {neighbors.length > 0 && (
@@ -233,7 +249,7 @@ export default function AyaCard() {
           </details>
         )}
 
-        {(themeHead || themeSibs.length > 0) && (
+        {cls && (themeHead || themeSibs.length > 0) && (
           <details className="card aya-more">
             <summary>◇ {ar ? "محورُها (تجميعٌ حسابي):" : "its axis (computed grouping):"} <span className="muted">{themeName(cls.theme)}</span></summary>
             <div className="aya-more-body">
@@ -277,8 +293,8 @@ export default function AyaCard() {
 
         <div className="aya-actions">
           <Link to={`/read/${s}/${a}`} className="chip link">{ar ? "اقرأ في المصحف ←" : "read ←"}</Link>
-          <Link to={`/mawdui/${cls.theme}`} className="chip link">{ar ? "المحور ←" : "محور ←"}</Link>
-          <Link to="/kulliyat" className="chip link">{ar ? "شجرة الكلّيّات ←" : "the tree ←"}</Link>
+          {cls && <Link to={`/mawdui/${cls.theme}`} className="chip link">{ar ? "المحور ←" : "محور ←"}</Link>}
+          {cls && <Link to="/kulliyat" className="chip link">{ar ? "شجرة الكلّيّات ←" : "the tree ←"}</Link>}
           <Link to="/about" className="chip link">{ar ? "كيف نحسب؟ ←" : "how? ←"}</Link>
         </div>
       </div>
