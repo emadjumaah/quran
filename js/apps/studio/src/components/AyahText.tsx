@@ -5,9 +5,8 @@ import { TAJWID, tajwidWords } from "../tajwid";
 import type { WordPressHandlers } from "../lib/pressWord";
 
 /** One ayah rendered word-by-word. «القراءةُ أولًا» (قرار المالك 2026-07-29):
- *  النقرُ فوق الكلمة يسري إلى الآية فيعلّمها؛ وبياناتُ الكلمة بقصدٍ ظاهرٍ
- *  وحدَه — نقرٌ طويلٌ على الجوال، أو نقرةٌ بعد تعليم الآية على الحاسوب
- *  (المساكاتُ من useWordPress تُمرَّر عبر `press`). Honours the script setting
+ *  النقرةُ الأولى تسري إلى الآية فتعلّمها، والثانيةُ على كلمةٍ من المعلَّمة
+ *  تفتح بياناتِها — قاعدةٌ واحدةٌ للجوال والحاسوب. Honours the script setting
  *  (Uthmani ⇄ imlaa'i); with tajwīd on, each word is colour-coded in place. */
 export default function AyahText({
   words,
@@ -29,12 +28,7 @@ export default function AyahText({
         <span key={w.location}>
           <span
             className={`w${selected === w.location ? " sel" : ""}`}
-            onPointerDown={press ? (e) => press.onPointerDown(e, w) : undefined}
-            onPointerMove={press?.onPointerMove}
-            onPointerUp={press?.onPointerUp}
-            onPointerCancel={press?.onPointerCancel}
             onClick={press ? (e) => press.onClick(e, w) : undefined}
-            onContextMenu={press ? (e) => e.preventDefault() : undefined}
           >
             {colored
               ? colored[wi].map((s, i) =>

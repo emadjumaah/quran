@@ -274,12 +274,7 @@ function MushafPage({
                   <span key={w.location}>
                     <span
                       className={`w${selected === w.location ? " sel" : ""}`}
-                      onPointerDown={(e) => press.onPointerDown(e, w)}
-                      onPointerMove={press.onPointerMove}
-                      onPointerUp={press.onPointerUp}
-                      onPointerCancel={press.onPointerCancel}
                       onClick={(e) => press.onClick(e, w)}
-                      onContextMenu={(e) => e.preventDefault()}
                     >
                       {colored
                         ? colored[wi].map((s, i) =>

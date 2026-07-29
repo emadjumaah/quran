@@ -405,6 +405,8 @@ function App() {
             <>
               <ShareButton />
               <BookmarksPanel />
+              {/* تبديلُ اللغة من رأس الجوال مباشرةً (أمر المالك 2026-07-29) */}
+              <LangToggle />
               <SettingsPanel />
             </>
           ) : (

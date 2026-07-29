@@ -12,6 +12,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ayahByLocationMap, surahNameAr } from "../db";
 import { getUILang, num, t, useUILang } from "../i18n";
+import { babEn, loadNamesEn, topicEn } from "../lib/enNames";
+import { loadSiyaqEn, siyaqNameEn } from "../siyaq";
 import type { AyahDoc } from "../types";
 import { readPathOf } from "../types";
 import PageSearch from "../components/PageSearch";
@@ -41,6 +43,8 @@ const slug = (s: string) => encodeURIComponent(s);
 function TopicIndex({ data }: { data: Payload }) {
   const ar = getUILang() === "ar";
   const [q, setQ] = useState("");
+  const [, force] = useState(0);
+  useEffect(() => { if (!ar) loadNamesEn().then(() => force((n) => n + 1)); }, [ar]);
   const shown = useMemo(
     () => (q.trim() ? data.topics.filter((x) => fuzzyMatch(q, x.name, x.bab)) : data.topics),
     [data, q],
@@ -65,11 +69,11 @@ function TopicIndex({ data }: { data: Payload }) {
         if (!items.length) return null;
         return (
           <section key={b} className="tf-genre">
-            <h2 className="tf-genre-h">{b}</h2>
+            <h2 className="tf-genre-h">{ar ? b : (babEn(b) ?? b)}</h2>
             <div className="mw-topics">
               {items.map((x) => (
                 <Link key={x.name} to={`/mawadi/${slug(x.name)}`} className="mw-topic-card">
-                  <span className="mw-topic-name">{x.name}</span>
+                  <span className="mw-topic-name">{ar ? x.name : (topicEn(x.name) ?? x.name)}</span>
                   <span className="mw-topic-count">{num(x.unitsTotal)} {ar ? "مقطعًا" : "passages"}</span>
                 </Link>
               ))}
@@ -84,6 +88,8 @@ function TopicIndex({ data }: { data: Payload }) {
 /* ── مستوى ١: موضوعٌ واحد بمقاطعه وآياتها ── */
 function TopicView({ data, name }: { data: Payload; name: string }) {
   const ar = getUILang() === "ar";
+  const [, force] = useState(0);
+  useEffect(() => { if (!ar) loadNamesEn().then(() => force((n) => n + 1)); }, [ar]);
   const topic = data.topics.find((x) => x.name === name);
   const [texts, setTexts] = useState<Map<string, AyahDoc> | null>(null);
   const [limit, setLimit] = useState(12);
@@ -95,12 +101,12 @@ function TopicView({ data, name }: { data: Payload; name: string }) {
       <nav className="mw-crumb" aria-label="مسار">
         <Link to="/mawadi">{ar ? "المواضيع" : "Topics"}</Link>
         <span className="mw-sep">›</span>
-        <span className="muted">{topic.bab}</span>
+        <span className="muted">{ar ? topic.bab : (babEn(topic.bab) ?? topic.bab)}</span>
         <span className="mw-sep">›</span>
-        <span className="mw-here">{topic.name}</span>
+        <span className="mw-here">{ar ? topic.name : (topicEn(topic.name) ?? topic.name)}</span>
       </nav>
       <header className="mw-head">
-        <h1 className="mw-title">{topic.name}</h1>
+        <h1 className="mw-title">{ar ? topic.name : (topicEn(topic.name) ?? topic.name)}</h1>
         <div className="muted" style={{ fontSize: 13, lineHeight: 1.9 }}>
           {num(topic.unitsTotal)} {ar ? "مقطعًا" : "passages"} · {num(topic.lex)} {ar ? "آيةً فيها لفظُ الموضوع" : "anchor verses"}
           {topic.roots.length > 0 && <> · {ar ? "الجذور: " : "roots: "}{topic.roots.map((r) => (
@@ -115,7 +121,7 @@ function TopicView({ data, name }: { data: Payload; name: string }) {
           return (
             <section key={u.i} className="mv-unit">
               <div className="mv-unit-head">
-                <h3 className="mv-unit-name">{u.name}</h3>
+                <h3 className="mv-unit-name">{ar ? u.name : (siyaqNameEn({ i: u.i, s: u.s, a1: u.a1, a2: u.a2, name: u.name }) ?? u.name)}</h3>
                 <Link to={readPathOf(`${u.s}:${u.a1}`)} className="mv-unit-span">
                   {surahNameAr(u.s)} {num(u.a1)}–{num(u.a2)}
                 </Link>

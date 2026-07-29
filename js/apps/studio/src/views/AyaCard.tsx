@@ -13,6 +13,7 @@ import { getUILang, num, t, useUILang } from "../i18n";
 import type { AyahDoc } from "../types";
 import WhyRank from "../components/WhyRank";
 import { EnQuoteLine } from "../components/EnVerse";
+import { loadNamesEn, themeEn } from "../lib/enNames";
 import EvidencePanel from "../components/EvidencePanel";
 import { ayahIdOf } from "../components/AudioButton";
 import { similarOf } from "../similar";
@@ -150,6 +151,9 @@ export default function AyaCard() {
     return () => { live = false; };
   }, [loc]);
 
+  const [, forceNames] = useState(0);
+  useEffect(() => { if (!ar) loadNamesEn().then(() => forceNames((n) => n + 1)); }, [ar]);
+  const themeDisp = (i: number) => (ar ? themeName(i) : (themeEn(i) ?? themeName(i)));
   const themeSibs = useMemo(() => (ready && cls ? themeVerses(cls.theme).filter((l) => l !== loc).slice(0, 6) : []), [ready, cls, loc]);
   const themeHead = ready && cls ? themeHeadOf(cls.theme) : null;
 
@@ -196,7 +200,7 @@ export default function AyaCard() {
           <div className="aya-fact">
             <span className="aya-fact-l">{ar ? "المحور" : "محور"}</span>
             <span className="aya-fact-v">
-              <Link to={`/mawdui/${cls.theme}`} className="aya-theme">◇ {themeName(cls.theme) || arName(loc)}</Link>
+              <Link to={`/mawdui/${cls.theme}`} className="aya-theme">◇ {themeDisp(cls.theme) || arName(loc)}</Link>
               <span className="muted" style={{ marginInlineStart: 8 }}>{ar ? `يضمّ ${num(themeSizeOf(cls.theme))} آية` : `${themeSizeOf(cls.theme)} verses`}</span>
             </span>
           </div>
@@ -254,7 +258,7 @@ export default function AyaCard() {
 
         {cls && (themeHead || themeSibs.length > 0) && (
           <details className="card aya-more">
-            <summary>◇ {ar ? "محورُها (تجميعٌ حسابي):" : "its axis (computed grouping):"} <span className="muted">{themeName(cls.theme)}</span></summary>
+            <summary>◇ {ar ? "محورُها (تجميعٌ حسابي):" : "its axis (computed grouping):"} <span className="muted">{themeDisp(cls.theme)}</span></summary>
             <div className="aya-more-body">
               {themeHead && themeHead !== loc && (
                 <div className="aya-more-lbl">{ar ? "أوسعُ قواعدِ المحورِ أدلةً:" : "the axis\u2019s most-evidenced rule:"}</div>

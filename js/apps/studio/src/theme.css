@@ -493,7 +493,11 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
    (الخلفيةُ والمؤشّر) للآية المعلَّمة وحدَها، وسائرُ الآيات نصٌّ صافٍ
    (رصدُ المالك 2026-07-29) */
 .sel-ayah .w { cursor: pointer; }
-.sel-ayah .w:hover { background: var(--accent-soft); box-shadow: 0 1.5px 0 var(--accent); }
+/* التلميحُ لمن يملك مؤشّرًا يحوم فعلًا — على اللمس تلتصق حالةُ hover بعد النقر
+   فيظهر خطٌّ مشوِّش تحت الكلمة (رصد المالك 2026-07-29) */
+@media (hover: hover) {
+  .sel-ayah .w:hover { background: var(--accent-soft); box-shadow: 0 1.5px 0 var(--accent); }
+}
 .quran .w.sel { background: var(--accent-soft); color: var(--accent); }
 .quran .w.selB { background: var(--gold-soft); color: var(--gold); }
 .ayah-marker {
@@ -2553,4 +2557,11 @@ table.data tr:hover td { background: var(--panel-2); }
   margin: 4px 0 0; font-size: 14.5px; line-height: 1.7; color: var(--ink-2);
   font-family: Charter, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   text-align: left;
+}
+
+/* ═══ لا زومَ تلقائيًّا على الجوال: سفاري iOS يكبّر الشاشةَ عند التركيز على
+   أيِّ حقلٍ خطُّه دون 16px (رصد المالك 2026-07-29) — فكلُّ حقول الإدخال
+   على الشاشات الضيقة ترفع خطَّها إليها ═══ */
+@media (max-width: 900px) {
+  input, select, textarea { font-size: 16px !important; }
 }
