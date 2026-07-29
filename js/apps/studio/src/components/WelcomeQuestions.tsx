@@ -31,18 +31,21 @@ export default function WelcomeQuestions() {
     localStorage.setItem(KEY, "1");
     setGone(true);
   };
+  // نافذةٌ منبثقةٌ مرّةً واحدةً عند أول فتح — لا لافتةٌ فوق الفاتحة (أمر المالك)
   return (
-    <div className="wq card" role="note">
-      <button className="wq-x" onClick={dismiss} aria-label="إغلاق">✕</button>
-      <div className="wq-head">أسئلةٌ تجيبك عنها مشكاةُ — ولا تجدها في غيرها</div>
-      <div className="wq-list">
-        {QUESTIONS.map((x) => (
-          <Link key={x.to} to={x.to} className="wq-q" onClick={dismiss}>
-            {x.q} <span className="wq-go">←</span>
-          </Link>
-        ))}
+    <div className="wq-overlay" onClick={(e) => { if (e.target === e.currentTarget) dismiss(); }} role="dialog" aria-modal="true" aria-label="أسئلة مشكاة">
+      <div className="wq card">
+        <button className="wq-x" onClick={dismiss} aria-label="إغلاق">✕</button>
+        <div className="wq-head">أسئلةٌ تجيبك عنها مشكاةُ — ولا تجدها في غيرها</div>
+        <div className="wq-list">
+          {QUESTIONS.map((x) => (
+            <Link key={x.to} to={x.to} className="wq-q" onClick={dismiss}>
+              {x.q} <span className="wq-go">←</span>
+            </Link>
+          ))}
+        </div>
+        <div className="wq-foot muted">كلُّ جوابٍ محسوبٌ من نصِّ المصحف وصرفِه — بسندٍ معلن. هذه النافذةُ لن تعود.</div>
       </div>
-      <div className="wq-foot muted">كلُّ جوابٍ محسوبٌ من نصِّ المصحف وصرفِه — بسندٍ معلن. هذه اللافتةُ لن تعود.</div>
     </div>
   );
 }

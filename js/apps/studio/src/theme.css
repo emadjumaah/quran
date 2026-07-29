@@ -2376,8 +2376,13 @@ table.data tr:hover td { background: var(--panel-2); }
 .ak-wajh { margin: 0; font-size: 13.5px; line-height: 1.95; color: var(--ink); }
 .ak-wajh .quran { font-size: 16px; }
 
-/* ═══ استقبالُ الزيارة الأولى — أسئلةٌ حيّةٌ لا شرحٌ ═══ */
-.wq { position: relative; margin: 4px 0 14px; padding: 14px 16px; border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+/* ═══ استقبالُ الزيارة الأولى — نافذةٌ منبثقةٌ مرّةً واحدة، أسئلةٌ حيّةٌ لا شرحٌ ═══ */
+.wq-overlay {
+  position: fixed; inset: 0; z-index: 80;
+  background: rgb(20 17 12 / 0.45); backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center; padding: 18px;
+}
+.wq { position: relative; max-width: 560px; width: 100%; padding: 18px 20px; border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); box-shadow: 0 12px 40px rgb(0 0 0 / 0.25); }
 .wq-x { position: absolute; top: 8px; inset-inline-end: 10px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 13px; padding: 4px; }
 .wq-head { font-family: var(--font-quran); color: var(--gold); font-size: 16.5px; margin-bottom: 8px; }
 .wq-list { display: flex; flex-direction: column; gap: 4px; }
