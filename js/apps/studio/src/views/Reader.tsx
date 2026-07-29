@@ -39,6 +39,7 @@ import Translations from "../components/Translations";
 import { useWordPress, type WordPressHandlers } from "../lib/pressWord";
 import AyahPanel from "../components/AyahPanel";
 import WelcomeQuestions from "../components/WelcomeQuestions";
+import { EnTransBar, EnVerseLine } from "../components/EnVerse";
 
 const MODE_KEY = "quran-studio:reader-mode";
 type Mode = "pages" | "ayat";
@@ -685,6 +686,8 @@ export default function Reader() {
         )}
 
         {!loading && <WelcomeQuestions />}
+        {/* غيرُ العربيّ: شريطُ تقليب الترجمات — التبديلُ فوريٌّ على الصفحة كلها */}
+        {!loading && mode === "ayat" && <EnTransBar />}
         {loading ? (
           <p className="muted">{t("loading")}</p>
         ) : ayahs.length === 0 ? (
@@ -739,7 +742,7 @@ export default function Reader() {
               <article
                 key={ayah.location}
                 id={`ayah-${ayah.surahNo}-${ayah.ayahNo}`}
-                className={`ayah-card${marked ? " sel-ayah" : isTarget && !selectedLoc ? " target-ayah" : ""}`}
+                className={`ayah-card${getUILang() !== "ar" ? " en-first" : ""}${marked ? " sel-ayah" : isTarget && !selectedLoc ? " target-ayah" : ""}`}
                 onClick={(e) => {
                   const el = e.target as HTMLElement;
                   if (el.closest("button, a, .ayah-tools, .v-more-menu, input, select")) return;
@@ -757,6 +760,8 @@ export default function Reader() {
                   selected={selected?.location ?? null}
                   press={wordPress}
                 />
+                {/* «وضعُ الفهم»: الترجمةُ متنٌ مقروءٌ تحت كل آيةٍ عند الواجهة غير العربية */}
+                <EnVerseLine ayah={ayah} />
                 {/* لوحةُ الآية الواحدة — الرأسُ والمعارفُ والأدواتُ في بطاقةٍ منظّمةٍ
                     بهوية مشكاة (أمر المالك 2026-07-29؛ ألغت قائمةَ النقاط الثلاث) */}
                 {showTools && (

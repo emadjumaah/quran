@@ -29,8 +29,8 @@ export const SOURCES: { url: string; ar: string; en: string }[] = [
   },
   {
     url: "https://tanzil.net/trans/",
-    ar: "الترجمات: صحيح إنترناشونال (EN) · حميد الله (FR) · ديانت (TR) — تنزيل",
-    en: "Translations: Saheeh Intl (EN) · Hamidullah (FR) · Diyanet (TR) — Tanzil",
+    ar: "الترجمات: صحيح إنترناشونال · بيكثال · يوسف علي · هلالي وخان · آربري · المودودي (EN) · حميد الله (FR) · ديانت (TR) — تنزيل",
+    en: "Translations: Saheeh Intl · Pickthall · Yusuf Ali · Hilali-Khan · Arberry · Maududi (EN) · Hamidullah (FR) · Diyanet (TR) — Tanzil",
   },
   {
     url: "https://alquran.cloud/cdn",
