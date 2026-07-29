@@ -41,7 +41,7 @@ async function loadFuruqIndex(): Promise<Map<string, Furq[]>> {
   return (furuqByLoc = m);
 }
 
-interface WajhHit { lemma: string; sense: string; othersN: number }
+export interface WajhHit { lemma: string; sense: string; othersN: number }
 let wujuhByLoc: Map<string, WajhHit[]> | null = null;
 let wujuhLoading: Promise<Map<string, WajhHit[]>> | null = null;
 function loadWujuhIndex(): Promise<Map<string, WajhHit[]>> {
@@ -88,7 +88,7 @@ async function loadInbound(): Promise<Map<string, { loc: string; rel: string }[]
 
 // ─── لوحاتُ العرض ────────────────────────────────────────────────────────────
 /** محاذاةُ التوأم: سطران كلمةً بكلمة والفرقُ مميَّز (عرضٌ مصغّرٌ من فروق التنزيل) */
-function TwinPanel({ loc, pairs }: { loc: string; pairs: Furq[] }) {
+export function TwinPanel({ loc, pairs }: { loc: string; pairs: Furq[] }) {
   return (
     <div className="ak-panel">
       {pairs.slice(0, 2).map((f, i) => {
@@ -119,7 +119,7 @@ function TwinPanel({ loc, pairs }: { loc: string; pairs: Furq[] }) {
   );
 }
 
-function LinksPanel({ loc, links }: { loc: string; links: { loc: string; rel: string }[] }) {
+export function LinksPanel({ loc, links }: { loc: string; links: { loc: string; rel: string }[] }) {
   return (
     <div className="ak-panel">
       <div className="ak-links">
@@ -138,7 +138,7 @@ function LinksPanel({ loc, links }: { loc: string; links: { loc: string; rel: st
   );
 }
 
-function WujuhPanel({ hits }: { hits: WajhHit[] }) {
+export function WujuhPanel({ hits }: { hits: WajhHit[] }) {
   return (
     <div className="ak-panel">
       {hits.slice(0, 2).map((h, i) => (
@@ -152,19 +152,15 @@ function WujuhPanel({ hits }: { hits: WajhHit[] }) {
   );
 }
 
-// ─── السطرُ نفسُه ────────────────────────────────────────────────────────────
-export default function AyahKnows({ loc, initialOpen }: { loc: string; initialOpen?: "twin" | "links" | "wujuh" }) {
+// ─── الخطّاف: معارفُ الموضع للوحة الآية ─────────────────────────────────────
+export function useAyahKnowledge(loc: string): { twins: Furq[] | null; links: { loc: string; rel: string }[] | null; wujuh: WajhHit[] | null } {
   const kullReady = useKulliyat();
   const [twins, setTwins] = useState<Furq[] | null>(null);
   const [wujuh, setWujuh] = useState<WajhHit[] | null>(null);
   const [links, setLinks] = useState<{ loc: string; rel: string }[] | null>(null);
-  // سؤالُ الاستقبال يصل بـ?know= فيفتح لوحتَه فورَ وصول بياناتها
-  const [open, setOpen] = useState<"twin" | "links" | "wujuh" | null>(initialOpen ?? null);
-  const prevLoc = useRef(loc);
 
   useEffect(() => {
     let live = true;
-    if (prevLoc.current !== loc) { setOpen(null); prevLoc.current = loc; }
     loadFuruqIndex().then((m) => live && setTwins(m.get(loc) ?? []));
     loadWujuhIndex().then((m) => live && setWujuh(m.get(loc) ?? []));
     loadInbound().then((rev) => {
@@ -178,6 +174,18 @@ export default function AyahKnows({ loc, initialOpen }: { loc: string; initialOp
     });
     return () => { live = false; };
   }, [loc, kullReady]);
+
+  return { twins, links, wujuh };
+}
+
+// ─── السطرُ المستقل (يبقى للاستعمال خارج لوحة الآية إن لزم) ─────────────────
+export default function AyahKnows({ loc, initialOpen }: { loc: string; initialOpen?: "twin" | "links" | "wujuh" }) {
+  const { twins, links, wujuh } = useAyahKnowledge(loc);
+  const [open, setOpen] = useState<"twin" | "links" | "wujuh" | null>(initialOpen ?? null);
+  const prevLoc = useRef(loc);
+  useEffect(() => {
+    if (prevLoc.current !== loc) { setOpen(null); prevLoc.current = loc; }
+  }, [loc]);
 
   const has = useMemo(() => ({
     twin: (twins?.length ?? 0) > 0,

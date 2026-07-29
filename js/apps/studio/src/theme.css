@@ -2402,3 +2402,55 @@ table.data tr:hover td { background: var(--panel-2); }
   border-radius: 10px; background: var(--panel);
   font-family: var(--font-ui); font-size: 13px;
 }
+
+/* ═══ لوحةُ الآية — بطاقةٌ واحدةٌ منظّمةٌ بهوية مشكاة (أمر المالك 2026-07-29) ═══ */
+.ayah-panel {
+  margin-top: 8px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--panel); overflow: hidden;
+  font-family: var(--font-ui); font-size: 13px;
+  box-shadow: 0 1px 4px rgb(36 31 24 / 0.05);
+}
+.ap-head {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 12px; background: var(--panel-2); border-bottom: 1px solid var(--line);
+}
+.ap-ref { font-family: var(--font-quran); font-size: 15.5px; color: var(--accent); font-weight: 700; }
+.ap-meta { font-size: 11.5px; }
+.ap-ic {
+  width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
+  color: var(--ink-2); cursor: pointer; font-size: 13px; padding: 0; flex: none;
+}
+.ap-ic:hover { border-color: var(--accent); color: var(--accent); }
+.ap-ic.on { color: var(--gold); border-color: var(--gold); background: var(--gold-soft); }
+.ap-ic-txt { width: auto; padding: 0 10px; font-size: 12px; }
+
+.ap-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 12px; }
+.ap-know { border-bottom: 1px dashed var(--line); }
+.ap-cat {
+  font-size: 10.5px; color: var(--muted); letter-spacing: 0.08em; min-width: 52px; flex: none;
+}
+.ap-know .ap-cat { color: var(--gold); }
+.ap-btn {
+  border: 1px solid var(--line); border-radius: 999px; background: var(--panel);
+  color: var(--ink); font: inherit; font-size: 12.5px; padding: 4px 12px;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 5px; line-height: 1.4;
+  text-decoration: none;
+}
+.ap-btn:hover { border-color: var(--accent); }
+.ap-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ap-btn.g { border-color: color-mix(in srgb, var(--gold) 55%, var(--line)); }
+.ap-btn.g:hover { border-color: var(--gold); background: var(--gold-soft); }
+.ap-btn.g.on { background: var(--gold); border-color: var(--gold); color: #fff; }
+.ap-n { font-size: 11px; font-variant-numeric: tabular-nums; opacity: 0.85; }
+.ap-btn.g .ap-n { color: inherit; }
+.ap-link { color: var(--accent); }
+.ap-audio .chip, .ap-collect .chip { border-radius: 999px; font-size: 12.5px; }
+.ap-panel-slot { padding: 4px 12px 12px; border-top: 1px dashed var(--line); }
+.ap-panel-slot .ak-panel { border: none; border-inline-start: 2px solid var(--gold); margin-top: 6px; padding-inline-start: 10px; }
+
+@media (max-width: 760px) {
+  .ap-head { padding: 7px 10px; }
+  .ap-row { padding: 7px 10px; }
+  .ap-cat { min-width: 100%; }  /* الفئةُ سطرَ عنوانٍ فوق أزرارها على الضيّق */
+}

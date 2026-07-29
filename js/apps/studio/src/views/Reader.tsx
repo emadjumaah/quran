@@ -23,7 +23,7 @@ import AyahText from "../components/AyahText";
 import MorphologyCard from "../components/MorphologyCard";
 import RootMeaning from "../components/RootMeaning";
 import CollectButton from "../components/CollectButton";
-import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, playFrom, usePlayingId } from "../components/AudioButton";
+import AudioButton, { ayahIdOf, isPreviewPlaying, playContinuous, usePlayingId } from "../components/AudioButton";
 import SimilarAyahs, { SimilarAyahsPanel } from "../components/SimilarAyahs";
 import MuhkamaLine from "../components/MuhkamaLine";
 import EraabChip, { EraabPanel } from "../components/EraabChip";
@@ -37,8 +37,7 @@ import { classOf, useKulliyat } from "../kulliyat";
 import { loadSiyaq, unitOf } from "../siyaq";
 import Translations from "../components/Translations";
 import { useWordPress, type WordPressHandlers } from "../lib/pressWord";
-import { shareAyah } from "../components/ShareButton";
-import AyahKnows from "../components/AyahKnows";
+import AyahPanel from "../components/AyahPanel";
 import WelcomeQuestions from "../components/WelcomeQuestions";
 
 const MODE_KEY = "quran-studio:reader-mode";
@@ -141,120 +140,6 @@ function SurahSidebar({
         )}
       </div>
     </aside>
-  );
-}
-
-/** قائمةُ النقاط الثلاث تحت الآية — ما لا يُحتاج في كلِّ نظرة: موضعُها من الجزء
- *  والصفحة، والإعرابُ والتفسيرُ وأسبابُ النزول والترجمة، والحفظُ والجمع. */
-function VerseMore({
-  ayah,
-  words,
-  bookmarked,
-  isOpen,
-  onOpen,
-}: {
-  ayah: AyahDoc;
-  words: WordDoc[];
-  bookmarked: boolean;
-  isOpen: (kind: string) => boolean;
-  onOpen: (kind: string) => void;
-}) {
-  const ar = getUILang() === "ar";
-  const [open, setOpen] = useState(false);
-  const [shared, setShared] = useState(false);
-  const boxRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (!boxRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    document.addEventListener("mousedown", onDoc);
-    document.addEventListener("keydown", onEsc);
-    return () => {
-      document.removeEventListener("mousedown", onDoc);
-      document.removeEventListener("keydown", onEsc);
-    };
-  }, [open]);
-  const pick = (kind: string) => {
-    onOpen(kind);
-    setOpen(false);
-  };
-  const ITEMS: { kind: string; ar: string; en: string }[] = [
-    { kind: "tafsir", ar: "التفسير", en: "Tafsir" },
-    { kind: "eraab", ar: "الإعراب", en: "Iʿrāb" },
-    { kind: "asbab", ar: "سبب النزول", en: "Occasion" },
-    { kind: "translate", ar: "الترجمة", en: "Translation" },
-  ];
-  return (
-    <div className="v-more" ref={boxRef}>
-      <button
-        className={`chip v-more-btn${open ? " on" : ""}`}
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        title={ar ? "المزيد: التفسير والإعراب والترجمة وموضعُها" : "more: tafsir, iʿrāb, translation, location"}
-      >
-        <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden focusable="false">
-          <circle cx="10" cy="4" r="1.9" fill="currentColor" />
-          <circle cx="10" cy="10" r="1.9" fill="currentColor" />
-          <circle cx="10" cy="16" r="1.9" fill="currentColor" />
-        </svg>
-        <span className="v-more-lbl">{ar ? "المزيد" : "More"}</span>
-      </button>
-      {open && (
-        <div className="v-more-menu" role="menu">
-          <div className="v-more-loc">
-            {t("reader.juz")} {num(ayah.juz)} · {t("reader.page")} {num(ayah.page)}
-          </div>
-          {/* الاستماعُ من هنا (قرار المالك): السطرُ للقراءة، والأدواتُ في القائمة */}
-          <div className="v-more-audio">
-            <AudioButton ayahId={ayahIdOf(ayah)} />
-          </div>
-          {ITEMS.map((it) => (
-            <button key={it.kind} className={`v-more-item${isOpen(it.kind) ? " on" : ""}`} onClick={() => pick(it.kind)} role="menuitem">
-              {ar ? it.ar : it.en}
-            </button>
-          ))}
-          <div className="v-more-sep" />
-          <button
-            className="v-more-item"
-            onClick={async () => {
-              const r = await shareAyah({
-                text: words.map((w) => w.textUthmani).join(" "),
-                surahName: surahNameAr(ayah.surahNo),
-                ayahNo: num(ayah.ayahNo),
-                loc: ayah.location,
-              });
-              setShared(r === "copied");
-              if (r !== "copied") setOpen(false);
-              else window.setTimeout(() => { setShared(false); setOpen(false); }, 1400);
-            }}
-            role="menuitem"
-          >
-            {shared ? (ar ? "✓ نُسخت الآية" : "✓ copied") : (ar ? "↗ مشاركة الآية" : "↗ Share the āya")}
-          </button>
-          <button
-            className={`v-more-item${bookmarked ? " on" : ""}`}
-            onClick={() => {
-              toggleBookmark(ayah.location);
-              setOpen(false);
-            }}
-            role="menuitem"
-          >
-            {bookmarked ? "★ " : "☆ "}
-            {ar ? "علامة مرجعيّة" : "Bookmark"}
-          </button>
-          <div className="v-more-collect">
-            <CollectButton
-              locations={[ayah.location]}
-              criterion={{ kind: "manual", value: ayah.location }}
-              label={ar ? "⊕ إلى مجموعة" : "⊕ collect"}
-            />
-          </div>
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -445,16 +330,6 @@ export default function Reader() {
   // page short and the panel renders beneath the verse, not above it.
   // ONE study panel open at a time (إعراب · تفصيل · مثلها · تدبّر) — no wall of
   // stacked panels around a single ayah. Key = "kind:surah:ayah".
-  // one panel per āyah (loc → kind); each āyah keeps its own open panel independently
-  const [openPanels, setOpenPanels] = useState<Record<string, string>>({});
-  const panelOpen = (kind: string, loc: string) => openPanels[loc] === kind;
-  const togglePanel = (kind: string, loc: string) =>
-    setOpenPanels((cur) => {
-      const next = { ...cur };
-      if (next[loc] === kind) delete next[loc];
-      else next[loc] = kind;
-      return next;
-    });
   // مودالُ بيانات الآية يفتحه النقرُ على رقمها أو على كلمةٍ منها — أما النقرُ
   // في فراغها فيحدّدها بالخضرة فقط (قرار المالك 2026-07-21)
   const [verseSheet, setVerseSheet] = useState<string | null>(null);
@@ -839,30 +714,19 @@ export default function Reader() {
                   wordsByAyah={wordsByAyah}
                   selected={selected?.location ?? null}
                   press={wordPress}
-                  selectedExtras={selectedLoc ? (
-                    <div className="mp-marked" onClick={(e) => e.stopPropagation()}>
-                      <div className="ayah-tools" style={{ margin: 0 }}>
-                        <span className="ayah-meta">{surahNameAr(Number(selectedLoc.split(":")[0]))} {num(Number(selectedLoc.split(":")[1]))}</span>
-                        <button className="chip" onClick={() => {
-                          const gid = (surahBase.get(Number(selectedLoc.split(":")[0])) ?? 0) + Number(selectedLoc.split(":")[1]);
-                          playFrom(gid, {});
-                        }}>▶ {ar ? "استمع من هنا" : "listen"}</button>
-                        <button className="chip" onClick={() => {
-                          const [ss, aa] = selectedLoc.split(":").map(Number);
-                          switchMode("ayat");
-                          navigate(`/read/${ss}/${aa}`);
-                        }} title={ar ? "الأدواتُ كاملةً: مثلها وتدبّر والتفسير والترجمة" : "full tools"}>{ar ? "الآيات" : "ayah view"}</button>
-                        <button className="chip" onClick={async () => {
-                          const [ss, aa] = selectedLoc.split(":").map(Number);
-                          const ws2 = wordsByAyah.get(aa) ?? [];
-                          await shareAyah({ text: ws2.map((w) => w.textUthmani).join(" "), surahName: surahNameAr(ss), ayahNo: num(aa), loc: selectedLoc });
-                        }} title={ar ? "مشاركة الآية بنصّها وموضعها ورابطها" : "share"}>↗</button>
-                        <span style={{ flex: 1 }} />
-                        <button className="chip" onClick={() => setSelectedAyah(null)} title={ar ? "إزالة التعليم" : "clear"}>✕</button>
-                      </div>
-                      <AyahKnows loc={selectedLoc} />
-                    </div>
-                  ) : undefined}
+                  selectedExtras={(() => {
+                    if (!selectedLoc) return undefined;
+                    const selAyah = ayahs.find((a) => a.location === selectedLoc);
+                    if (!selAyah) return undefined;
+                    return (
+                      <AyahPanel
+                        ayah={selAyah}
+                        words={wordsByAyah.get(selAyah.ayahNo) ?? []}
+                        onClose={() => setSelectedAyah(null)}
+                        onOpenAyat={() => { switchMode("ayat"); navigate(`/read/${selAyah.surahNo}/${selAyah.ayahNo}`); }}
+                      />
+                    );
+                  })()}
                   // tap the ﴿n﴾ marker → open the reading bar for this ayah,
                   // staying inside صفحات (a separate «الآيات» button jumps to the
                   // ayah view). Selecting also lets ← → walk ayah-by-ayah.
@@ -905,7 +769,7 @@ export default function Reader() {
             // «القراءةُ أولًا»: أدواتُ الآية لا تظهر إلا حين تُعلَّم (أو للوحةٍ
             // مفتوحةٍ من قبل) — فيبقى سيلُ الآيات نصًّا صافيًا (قرار المالك 2026-07-29)
             const marked = selectedLoc ? selectedLoc === ayah.location : isTarget;
-            const showTools = marked || !!openPanels[ayah.location];
+            const showTools = marked;
             return (
               <article
                 key={ayah.location}
@@ -928,50 +792,15 @@ export default function Reader() {
                   selected={selected?.location ?? null}
                   press={wordPress}
                 />
-                {/* ONE tight line UNDER the verse: locate · listen · study tools ·
-                    save · and the verse's computed مرتبة — all as small chips */}
-                {/* سطرٌ واحدٌ هادئ: الموضعُ والاستماعُ ومثلُها وتدبّرٌ ووسمُها —
-                    وما سواه (الجزءُ والصفحةُ والإعرابُ والتفسيرُ وأسبابُ النزول
-                    والترجمة) في قائمة النقاط الثلاث (قرار المالك 2026-07-21) */}
+                {/* لوحةُ الآية الواحدة — الرأسُ والمعارفُ والأدواتُ في بطاقةٍ منظّمةٍ
+                    بهوية مشكاة (أمر المالك 2026-07-29؛ ألغت قائمةَ النقاط الثلاث) */}
                 {showTools && (
-                <div className="ayah-tools">
-                  <span className="ayah-meta">{surahNameAr(ayah.surahNo)} {num(ayah.ayahNo)}</span>
-                  {ayah.sajdaType && (
-                    <span className="chip gold" title={ayah.sajdaType}>۩ {t("reader.sajda")}</span>
-                  )}
-                  <SimilarAyahs ayahId={ayahIdOf(ayah)} location={ayah.location} open={panelOpen("similar", ayah.location)} onToggle={() => togglePanel("similar", ayah.location)} />
-                  <TadabburChip open={panelOpen("tadabbur", ayah.location)} onToggle={() => togglePanel("tadabbur", ayah.location)} />
-                  <MuhkamaLine location={ayah.location} />
-                  <span style={{ flex: 1 }} />
-                  <VerseMore
+                  <AyahPanel
                     ayah={ayah}
                     words={wordsByAyah.get(ayah.ayahNo) ?? []}
-                    bookmarked={bookmarks.includes(ayah.location)}
-                    isOpen={(kind) => panelOpen(kind, ayah.location)}
-                    onOpen={(kind) => togglePanel(kind, ayah.location)}
+                    onClose={() => setSelectedAyah(null)}
+                    initialOpen={knowParam && isTarget ? knowParam : undefined}
                   />
-                </div>
-                )}
-                {/* «مشكاةُ تعرف عنها» — معارفُ الآية الخاصة تظهر مع تعليمها (الرؤية 2026-07-29) */}
-                {marked && <AyahKnows loc={ayah.location} initialOpen={knowParam && isTarget ? knowParam : undefined} />}
-                <EraabPanel location={ayah.location} open={panelOpen("eraab", ayah.location)} />
-                <TafsirPanel location={ayah.location} open={panelOpen("tafsir", ayah.location)} />
-                <AsbabPanel location={ayah.location} open={panelOpen("asbab", ayah.location)} />
-                <Translations ayah={ayah} open={panelOpen("translate", ayah.location)} />
-                <TadabburPanel ayah={ayah} ayahId={ayahIdOf(ayah)} open={panelOpen("tadabbur", ayah.location)} />
-                {panelOpen("similar", ayah.location) && (
-                  <SimilarAyahsPanel ayahId={ayahIdOf(ayah)} location={ayah.location} />
-                )}
-                {/* إغلاقٌ ظاهرٌ لأيِّ لوحةٍ مفتوحة (تفسيرٌ/ترجمةٌ/إعرابٌ…) — كان
-                    الإغلاقُ لا يُهتدى إليه إلا بإعادة النقر على مصدره */}
-                {openPanels[ayah.location] && (
-                  <button
-                    className="panel-close"
-                    onClick={() => togglePanel(openPanels[ayah.location], ayah.location)}
-                    title={getUILang() === "ar" ? "إغلاق اللوحة" : "close"}
-                  >
-                    ✕ {getUILang() === "ar" ? "إغلاق" : "Close"}
-                  </button>
                 )}
               </article>
             );
