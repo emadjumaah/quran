@@ -60,6 +60,35 @@ function audioUrl(id: number): string {
   return `${CDN_ROOT}/${r.br}/${r.ed}/${id}.mp3`;
 }
 
+/** الجلبُ المسبق للآية التالية (2026-07-29، رصد المالك: التلاوةُ تتوقف بعد
+ *  آيةٍ أو اثنتين والشاشةُ مطفأة): iOS يعلّق شبكةَ الصفحة عند إطفاء الشاشة،
+ *  وفجوةُ تحميل الآية التالية تقطع جلسةَ الصوت. نجلب التاليةَ blob مسبقًا
+ *  فيصير تبديلُ المصدر فوريًّا بلا شبكة — والجلسةُ لا تنقطع. إن منع CORS
+ *  الجلبَ سقطنا للرابط المباشر كما كان. */
+const prefetched = new Map<number, string>();
+let prefetching = new Set<number>();
+async function prefetchAyah(id: number): Promise<void> {
+  if (id < 1 || id > LAST_AYAH || prefetched.has(id) || prefetching.has(id)) return;
+  prefetching.add(id);
+  try {
+    const res = await fetch(audioUrl(id), { mode: "cors" });
+    if (res.ok) {
+      const blob = await res.blob();
+      prefetched.set(id, URL.createObjectURL(blob));
+      // نظافة: لا نُبقي إلا جوارَ الموضع الحاليّ
+      for (const [k, u] of prefetched) {
+        if (Math.abs(k - id) > 3) { URL.revokeObjectURL(u); prefetched.delete(k); }
+      }
+    }
+  } catch { /* يسقط للرابط المباشر */ }
+  prefetching.delete(id);
+}
+function clearPrefetch() {
+  for (const u of prefetched.values()) URL.revokeObjectURL(u);
+  prefetched.clear();
+  prefetching = new Set();
+}
+
 let player: HTMLAudioElement | null = null;
 let currentId = 0;
 let continuous = false;
@@ -83,6 +112,7 @@ export const usePlayingId = () => useSyncExternalStore(subscribe, () => currentI
 export const playingLocation = () => currentLocation;
 
 export function stopAudio() {
+  if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "none";
   continuous = false;
   repeatTotal = 0;
   repeatLeft = 0;
@@ -113,6 +143,7 @@ export function setLivePlaybackRate(rate: number) {
 /** Reciter changed in settings — restart the current ayah in the new voice so
  *  the change is heard at once (keeps continuous/repeat/range state). */
 export function reloadForReciter() {
+  clearPrefetch(); // مخزونُ الجلب بصوت القارئ السابق
   if (currentId && player && !player.paused) start(currentId);
 }
 
@@ -145,7 +176,15 @@ function start(id: number) {
   if (!player) {
     player = new Audio();
     if ("mediaSession" in navigator) {
-      navigator.mediaSession.setActionHandler("pause", stopAudio);
+      // «إيقاف مؤقت» من شاشة القفل يوقف دون قتل الجلسة — و«تشغيل» يستأنف
+      navigator.mediaSession.setActionHandler("pause", () => {
+        player?.pause();
+        if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
+      });
+      navigator.mediaSession.setActionHandler("play", () => {
+        void player?.play();
+        if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
+      });
       navigator.mediaSession.setActionHandler("stop", stopAudio);
       navigator.mediaSession.setActionHandler("nexttrack", () => next());
       navigator.mediaSession.setActionHandler("previoustrack", () => {
@@ -158,7 +197,9 @@ function start(id: number) {
     if (currentId !== id) return;
     if (repeatLeft > 0) {
       repeatLeft -= 1;
-      start(id); // replay same ayah
+      // إعادةُ الآية نفسِها بلا إعادةِ تحميل — أثبتُ في الخلفية
+      player!.currentTime = 0;
+      void player!.play().catch(() => { if (currentId === id) stopAudio(); });
       return;
     }
     if (stopAtId && id >= stopAtId) {
@@ -170,10 +211,24 @@ function start(id: number) {
       start(id + 1);
     } else stopAudio();
   };
+  let retried = false;
   player.onerror = () => {
-    if (currentId === id) stopAudio();
+    if (currentId !== id) return;
+    // هفوةُ شبكةٍ (كثيرًا ما تقع والشاشةُ مطفأة) — محاولةٌ ثانيةٌ قبل الإيقاف
+    if (!retried) {
+      retried = true;
+      window.setTimeout(() => {
+        if (currentId !== id || !player) return;
+        player.src = prefetched.get(id) ?? audioUrl(id);
+        void player.play().catch(() => { if (currentId === id) stopAudio(); });
+      }, 1200);
+      return;
+    }
+    stopAudio();
   };
-  player.src = audioUrl(id);
+  // من المخزون المسبق إن وُجد — تبديلٌ فوريٌّ بلا شبكةٍ فلا تنقطع جلسةُ الخلفية
+  player.src = prefetched.get(id) ?? audioUrl(id);
+  player.preload = "auto";
   // loading a new src resets the rate to defaultPlaybackRate — set both
   player.defaultPlaybackRate = getSettings().speed;
   player.playbackRate = getSettings().speed;
@@ -182,6 +237,9 @@ function start(id: number) {
     // a rapid second play() aborts this one — only clear if still current
     if (currentId === id) stopAudio();
   });
+  if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
+  // اجلب التاليتين الآن — وقتَ ما تزال الشبكةُ حيّة
+  if (continuous) { void prefetchAyah(id + 1); void prefetchAyah(id + 2); }
   notify();
   void updateMediaSession(id);
 }
