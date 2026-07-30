@@ -89,7 +89,14 @@ function clearPrefetch() {
   prefetching = new Set();
 }
 
-let player: HTMLAudioElement | null = null;
+/** مشغّلان متناوبان (2026-07-29، المرحلة الثانية من علاج الخلفية — المالك:
+ *  «يشغّل ٣ أو ٤ آيات ثم يتوقف»): fetch تُعلَّق والشاشةُ مطفأة فينفد مخزونُ
+ *  الجلب المسبق، أمّا تحميلُ عنصرِ الوسائط فمسموحٌ ما دامت جلسةُ الصوت حيّة —
+ *  فبينما يُتلى بالمشغّل الفعّال يحمّل الاحتياطيُّ الآيةَ التالية، ويتسلّم
+ *  عند «ended» فورًا بمخزونه، ثم يتبادلان الدور. */
+let playersPair: [HTMLAudioElement, HTMLAudioElement] | null = null;
+let curIdx = 0;
+let player: HTMLAudioElement | null = null; // = playersPair[curIdx] — الفعّال
 let currentId = 0;
 let continuous = false;
 let currentLocation: string | null = null;
@@ -118,7 +125,7 @@ export function stopAudio() {
   repeatLeft = 0;
   stopAtId = 0;
   preview = false;
-  if (player && !player.paused) player.pause();
+  for (const pl of playersPair ?? []) if (!pl.paused) pl.pause();
   currentId = 0;
   currentLocation = null;
   notify();
@@ -134,9 +141,9 @@ export const isPreviewPlaying = () => preview;
 
 /** Apply a new playback rate to the live player (settings change mid-recitation). */
 export function setLivePlaybackRate(rate: number) {
-  if (player) {
-    player.defaultPlaybackRate = rate;
-    player.playbackRate = rate;
+  for (const pl of playersPair ?? []) {
+    pl.defaultPlaybackRate = rate;
+    pl.playbackRate = rate;
   }
 }
 
@@ -144,6 +151,7 @@ export function setLivePlaybackRate(rate: number) {
  *  the change is heard at once (keeps continuous/repeat/range state). */
 export function reloadForReciter() {
   clearPrefetch(); // مخزونُ الجلب بصوت القارئ السابق
+  if (playersPair) playersPair[1 - curIdx].removeAttribute("src"); // احتياطيٌّ بصوتٍ قديم
   if (currentId && player && !player.paused) start(currentId);
 }
 
@@ -168,13 +176,35 @@ async function updateMediaSession(id: number) {
   }
 }
 
+/** يهيّئ زوجَ المشغّلين مرةً ويعيد الفعّالَ الحاليّ */
+function ensurePair(): HTMLAudioElement {
+  if (!playersPair) {
+    playersPair = [new Audio(), new Audio()];
+    for (const pl of playersPair) pl.preload = "auto";
+  }
+  player = playersPair[curIdx];
+  return player;
+}
+
+/** حضِّر الاحتياطيَّ بالآية التالية — تحميلُ وسائطَ يعمل والشاشةُ مطفأة */
+function primeStandby(nextId: number) {
+  if (!playersPair || nextId < 1 || nextId > LAST_AYAH) return;
+  const standby = playersPair[1 - curIdx];
+  const target = prefetched.get(nextId) ?? audioUrl(nextId);
+  if (standby.src !== target) {
+    standby.src = target;
+    standby.load();
+  }
+}
+
 function start(id: number) {
   if (id < 1 || id > LAST_AYAH) {
     stopAudio();
     return;
   }
-  if (!player) {
-    player = new Audio();
+  const firstInit = !playersPair;
+  const pl = ensurePair();
+  if (firstInit) {
     if ("mediaSession" in navigator) {
       // «إيقاف مؤقت» من شاشة القفل يوقف دون قتل الجلسة — و«تشغيل» يستأنف
       navigator.mediaSession.setActionHandler("pause", () => {
@@ -193,13 +223,13 @@ function start(id: number) {
       });
     }
   }
-  player.onended = () => {
+  pl.onended = () => {
     if (currentId !== id) return;
     if (repeatLeft > 0) {
       repeatLeft -= 1;
       // إعادةُ الآية نفسِها بلا إعادةِ تحميل — أثبتُ في الخلفية
-      player!.currentTime = 0;
-      void player!.play().catch(() => { if (currentId === id) stopAudio(); });
+      pl.currentTime = 0;
+      void pl.play().catch(() => { if (currentId === id) stopAudio(); });
       return;
     }
     if (stopAtId && id >= stopAtId) {
@@ -208,38 +238,47 @@ function start(id: number) {
     }
     if (continuous && id < LAST_AYAH) {
       if (repeatTotal > 0) repeatLeft = repeatTotal; // repeat each ayah in a continuous range
+      curIdx = 1 - curIdx; // الاحتياطيُّ المحمَّلُ سلفًا يتسلّم الدور
       start(id + 1);
     } else stopAudio();
   };
   let retried = false;
-  player.onerror = () => {
+  pl.onerror = () => {
     if (currentId !== id) return;
     // هفوةُ شبكةٍ (كثيرًا ما تقع والشاشةُ مطفأة) — محاولةٌ ثانيةٌ قبل الإيقاف
     if (!retried) {
       retried = true;
       window.setTimeout(() => {
-        if (currentId !== id || !player) return;
-        player.src = prefetched.get(id) ?? audioUrl(id);
-        void player.play().catch(() => { if (currentId === id) stopAudio(); });
+        if (currentId !== id) return;
+        pl.src = prefetched.get(id) ?? audioUrl(id);
+        void pl.play().catch(() => { if (currentId === id) stopAudio(); });
       }, 1200);
       return;
     }
     stopAudio();
   };
-  // من المخزون المسبق إن وُجد — تبديلٌ فوريٌّ بلا شبكةٍ فلا تنقطع جلسةُ الخلفية
-  player.src = prefetched.get(id) ?? audioUrl(id);
-  player.preload = "auto";
+  // إن كان هذا المشغّلُ حُضِّر بهذه الآية سلفًا (تناوبُ الاحتياطي) — بأيِّ
+  // صورةٍ من صورتيها blob أو رابطًا — فلا نعيد التعيين كي يبقى مخزونُه المحمَّل
+  const direct = audioUrl(id);
+  const blob = prefetched.get(id);
+  if (pl.src !== direct && !(blob && pl.src === blob)) pl.src = blob ?? direct;
+  pl.preload = "auto";
   // loading a new src resets the rate to defaultPlaybackRate — set both
-  player.defaultPlaybackRate = getSettings().speed;
-  player.playbackRate = getSettings().speed;
+  pl.defaultPlaybackRate = getSettings().speed;
+  pl.playbackRate = getSettings().speed;
   currentId = id;
-  void player.play().catch(() => {
+  void pl.play().catch(() => {
     // a rapid second play() aborts this one — only clear if still current
     if (currentId === id) stopAudio();
   });
   if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
-  // اجلب التاليتين الآن — وقتَ ما تزال الشبكةُ حيّة
-  if (continuous) { void prefetchAyah(id + 1); void prefetchAyah(id + 2); }
+  // اجلب التاليتين الآن — وقتَ ما تزال الشبكةُ حيّة — وحضِّر الاحتياطيَّ
+  // بالتالية عبر قناة الوسائط (تعمل والشاشةُ مطفأة)
+  if (continuous) {
+    void prefetchAyah(id + 1).then(() => { if (currentId === id) primeStandby(id + 1); });
+    void prefetchAyah(id + 2);
+    primeStandby(id + 1);
+  }
   notify();
   void updateMediaSession(id);
 }

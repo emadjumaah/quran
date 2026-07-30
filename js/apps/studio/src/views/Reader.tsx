@@ -339,9 +339,9 @@ export default function Reader() {
   // صفحات is the default (easiest for most readers); آيات is opt-in for its
   // tools/translation/«مثلها». A returning reader's explicit choice is remembered.
   const [mode, setMode] = useState<Mode>(
-    // ayah view is the default — it carries the tools (إعراب · مثلها · تدبّر ·
-    // ترجمة); pages are opt-in for those who want the pure muṣḥaf flow.
-    () => (localStorage.getItem(MODE_KEY) === "pages" ? "pages" : "ayat"),
+    // «الصفحاتُ هي الأصل» (أمر المالك 2026-07-29): سيلُ المصحف المتصل هو
+    // الافتراضيّ، و«آيات» بأدواتها اختيارٌ يُحفظ لمن بدّل إليه.
+    () => (localStorage.getItem(MODE_KEY) === "ayat" ? "ayat" : "pages"),
   );
   const switchMode = (m: Mode) => {
     setMode(m);
