@@ -348,10 +348,13 @@ mark.hl { background: var(--gold-soft); color: inherit; border-radius: 3px; padd
    on-page search opens as a row beneath on demand, so the header is one line. */
 .reader-sticky {
   position: sticky; top: 0; z-index: 16;
-  display: flex; align-items: center; gap: 7px; flex-wrap: nowrap;
-  margin: 0 -12px 10px; padding: 8px 12px;
+  display: flex; align-items: center; gap: 6px; flex-wrap: nowrap;
+  /* يمتدّ على كامل العرض ويأكل حوافَّ الصفحة — والفائضُ لحقل البحث
+     (رصد المالك على أندرويد 2026-07-29: «الحقل صغير جدًّا وهناك بادنغ») */
+  margin: 0 -12px 10px; padding: 8px 8px;
   background: var(--bg); border-bottom: 1px solid var(--line);
 }
+.reader-sticky-search { flex: 1 1 140px; min-width: 120px; }
 /* the reader drops the page's top padding on mobile so its sticky header sits
    flush under the app header (a sticky element ignores negative margin, so the
    padding is what has to go). */
@@ -2634,8 +2637,10 @@ table.data tr:hover td { background: var(--panel-2); }
 .rd-seg-m button { padding: 5px 8px; }
 .rd-seg-m button svg { display: block; }
 @media (max-width: 900px) {
-  .reader-sticky .reader-surah-pick { max-width: 30vw; }
+  .reader-sticky .reader-surah-pick { max-width: 24vw; padding-inline-start: 18px; padding-inline-end: 6px; background-position: left 4px center; }
   .rd-ctrl-m .rd-listen { width: 30px; height: 32px; font-size: 10px; }
+  .rd-ctrl-m { gap: 3px; }
+  .rd-seg-m button { padding: 5px 6px; }
 }
 
 /* جانبُ الفاب المسحوب — يلتصق بالحافة المختارة ويُحفظ */
