@@ -373,17 +373,22 @@ export default function Assistant() {
     setListW(clamped);
   };
 
-  // بعد الإرسال: مرِّر إلى رأس آخر سؤالٍ لا إلى ذيل القائمة — كان التمريرُ
-  // للذيل يرفع المحادثةَ فتبدو الصفحةُ فارغةً حتى يعود المستخدمُ بالسكرول
-  // (رصد المالك على الجوال 2026-07-29)
+  // بعد الإرسال: نمرِّر حاويةَ المحادثة وحدَها (scrollTo على .mu-thread) —
+  // كان scrollIntoView يمرِّر الصفحةَ الأمَّ أيضًا، فمع لوحة مفاتيح iOS تُدفع
+  // الواجهةُ كلُّها للأعلى وتبدو الشاشةُ بيضاء (رصد المالك بلقطتين 2026-07-29).
+  // ونعيد نافذةَ المتصفح لموضعها صراحةً.
   useEffect(() => {
     const msgs = chat?.messages ?? [];
     const last = msgs[msgs.length - 1];
+    const scroller = document.querySelector<HTMLElement>(".mu-thread");
+    if (!scroller) return;
+    window.scrollTo(0, 0);
     if (last?.role === "user") {
-      // سؤالٌ أُرسل للتوّ: اجعل رأسه أعلى النافذة فيُرى هو وبدايةُ الجواب تحته
-      document.getElementById(`mu-msg-${msgs.length - 1}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      // سؤالٌ أُرسل للتوّ: رأسُه أعلى الحاوية — يُرى هو وبدايةُ الجواب تحته
+      const el = document.getElementById(`mu-msg-${msgs.length - 1}`);
+      if (el) scroller.scrollTo({ top: Math.max(0, el.offsetTop - 10), behavior: "smooth" });
     } else {
-      endRef.current?.scrollIntoView({ behavior: "smooth" });
+      scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
     }
   }, [chat?.messages.length, busy]);
 

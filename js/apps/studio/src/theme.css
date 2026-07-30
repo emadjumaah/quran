@@ -2656,3 +2656,20 @@ table.data tr:hover td { background: var(--panel-2); }
 @media (max-width: 385px) {
   .bm-trigger { display: none; }
 }
+
+/* شريطُ «الآن يُتلى» — صنفٌ موحّد: على الحاسوب كما كان، وعلى الجوال شريطٌ
+   عريضٌ فوق شريط التبويب لا يختبئ خلف الفاب (رصد المالك بلقطة 2026-07-29) */
+.npb {
+  position: fixed; bottom: 46px; inset-inline-start: 16px; z-index: 40;
+  display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+}
+@media (max-width: 760px) {
+  .npb {
+    inset-inline: 8px; bottom: calc(70px + env(safe-area-inset-bottom));
+    justify-content: flex-start; padding: 7px 12px;
+  }
+  /* الفاب يرتفع فوق شريط التلاوة حين يظهر وحدَه — وإلا فموضعه المعتاد */
+  body:has(.npb) .nibras-fab { bottom: calc(126px + env(safe-area-inset-bottom)); }
+}
+/* حاويةُ المحادثة مرجعُ offsetTop لرسائلها */
+.mu-thread { position: relative; }

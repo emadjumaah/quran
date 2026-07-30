@@ -273,19 +273,7 @@ export function NowPlayingBar() {
   if (id === 0 || selected) return null;
   const loc = currentLocation;
   return (
-    <div
-      className="card"
-      style={{
-        position: "fixed",
-        bottom: 46,
-        insetInlineStart: 16,
-        zIndex: 40,
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "8px 14px",
-      }}
-    >
+    <div className="card npb">
       <span
         style={{
           width: 8,
