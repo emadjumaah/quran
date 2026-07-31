@@ -7,16 +7,19 @@
  * ويشاركه في هذا العدد ١٢٧ لفظًا آخرَ فلا دلالةَ في العدد» — فهذا ما لا يُتاح
  * إلا لمن يملك النصَّ موسومًا.
  *
- * قالبان في هذه الدفعة: **العدد** و**الكلّيّة** (خطّة التصميم §٦).
+ * ثلاثةُ قوالبَ في هذه الدفعة: **العدد** و**الكلّيّة** — وهما محسوبان تمامًا —
+ * و**الإعراب**، وهو جلبٌ بالمرساة: لا يُعطي قولًا واحدًا بل يضع أهلَ الصنعة
+ * متجاورين بالأقدميّة، فإن اختلفوا رأى القارئُ الخلافَ وحكم عليه.
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { allAyahs } from "../db";
 import { normalizeAr } from "../lib/arabicSearch";
+import { type RefHit, refsForAyah } from "../lib/refs";
 import { num } from "../i18n";
 import type { AyahDoc } from "../types";
 
-type Qalab = "adad" | "kulliya";
+type Qalab = "adad" | "kulliya" | "iraab";
 
 /** نصُّ الآيات مطبَّعًا ومحاطًا بفراغٍ — ليُطابَق المتّصلُ متّصلًا لا مبعثرًا */
 interface Corpus {
@@ -83,9 +86,48 @@ function examine(corpus: Corpus, raw: string): Result | null {
   return { phrase: q, bare, withPrefix, sameCount, distinctWords: corpus.freq.size };
 }
 
+/**
+ * لوحُ الإعراب — الأربعةُ متجاورين ومعهم طبقةُ المعاني، مرتَّبين بالأقدميّة.
+ * والمقصودُ إظهارُ **خلافهم** لا إخفاؤه: أوّلُ بطاقةٍ عندنا حُسمت به، إذ خالف
+ * الزجّاجُ (ت٣١١) مكّيًّا والعكبريَّ في ٦:٢٠ فسقط إطلاقُ الدعوى.
+ */
+function IraabPanel({ loc }: { loc: string }) {
+  const [hits, setHits] = useState<RefHit[] | null>(null);
+  const [open, setOpen] = useState<string | null>(null);
+  useEffect(() => {
+    setHits(null);
+    refsForAyah(loc, { ranks: [1, 3, 5] }).then((h) => { setHits(h); setOpen(h[0]?.book.id ?? null); });
+  }, [loc]);
+
+  if (!hits) return <p className="hint">…</p>;
+  if (!hits.length) return <p className="hint">لا مدخلَ لهذا الموضع عند المراجع المرساةِ بالآية. وهذا يقع: التغطيةُ ٩٠٪ لا ١٠٠٪، والنقصُ يُعلن ولا يُستر.</p>;
+
+  return (
+    <div className="iraab">
+      <p className="hint" style={{ margin: "0 0 10px" }}>
+        {num(hits.length)} مرجعًا لهذا الموضع، بالأقدميّة. وإذا اختلفوا فالخلافُ
+        نفسُه هو الحكم — يُعرض ولا يُكتم.
+      </p>
+      {hits.map((h) => (
+        <div className="bk-open" key={h.book.id}>
+          <button onClick={() => setOpen(open === h.book.id ? null : h.book.id)}>
+            <span className="nm">{h.book.label}</span>
+            <span className="au">{h.book.author}{h.book.died ? ` (ت ${num(h.book.died)})` : ""}</span>
+            <span className="rk">الرتبة {num(h.book.rank)}</span>
+          </button>
+          {open === h.book.id && (
+            <div className="body">{h.texts.map((t, i) => <p key={i}>{t}</p>)}</div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function FahisTool() {
   const [qalab, setQalab] = useState<Qalab>("adad");
   const [word, setWord] = useState("");
+  const [loc, setLoc] = useState("");
   const [claimed, setClaimed] = useState("");
   const [corpus, setCorpus] = useState<Corpus | null>(null);
   const [ran, setRan] = useState<string | null>(null);
@@ -143,35 +185,61 @@ export default function FahisTool() {
           border: 1px solid var(--line); border-radius: 7px; padding: 2px 8px; opacity: .85; }
         .fahis-tool .sample { margin-top: 12px; font-size: .92rem; line-height: 2.1; opacity: .9; }
         .fahis-tool .sample div { padding: 5px 0; border-bottom: 1px dotted var(--line); }
+        .fahis-tool .bk-open { border-bottom: 1px solid var(--line); }
+        .fahis-tool .bk-open:last-child { border-bottom: 0; }
+        .fahis-tool .bk-open > button { display: flex; align-items: baseline; gap: 9px; width: 100%;
+          background: none; border: 0; color: inherit; font: inherit; text-align: start;
+          padding: 11px 2px; cursor: pointer; flex-wrap: wrap; }
+        .fahis-tool .bk-open .nm { font-weight: 600; }
+        .fahis-tool .bk-open .au { opacity: .6; font-size: .88rem; }
+        .fahis-tool .bk-open .rk { margin-inline-start: auto; opacity: .5; font-size: .78rem; white-space: nowrap; }
+        .fahis-tool .bk-open .body { padding: 0 2px 14px; }
+        .fahis-tool .bk-open .body p { margin: 0 0 9px; line-height: 2.05; opacity: .88; font-size: .95rem; }
       `}</style>
 
       <div className="tabs">
         <button data-on={qalab === "adad" ? 1 : 0} onClick={() => { setQalab("adad"); setRan(null); }}><span>قالبُ العدد</span></button>
         <button data-on={qalab === "kulliya" ? 1 : 0} onClick={() => { setQalab("kulliya"); setRan(null); }}><span>قالبُ الكلّيّة</span></button>
+        <button data-on={qalab === "iraab" ? 1 : 0} onClick={() => { setQalab("iraab"); setRan(null); }}><span>قالبُ الإعراب</span></button>
       </div>
 
       <div className="form">
-        <input
-          className="w" value={word} onChange={(e) => setWord(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && run()}
-          placeholder={qalab === "adad" ? "اللفظُ أو العبارة — مثل: الصلاة" : "اللفظُ الذي تقول إنّه ليس في القرآن"}
-          dir="rtl" lang="ar"
-        />
+        {qalab === "iraab" ? (
+          <input
+            className="w" value={loc} onChange={(e) => setLoc(e.target.value)} dir="ltr"
+            placeholder="الموضع — مثل: 6:20" inputMode="text"
+          />
+        ) : (
+          <input
+            className="w" value={word} onChange={(e) => setWord(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && run()}
+            placeholder={qalab === "adad" ? "اللفظُ أو العبارة — مثل: الصلاة" : "اللفظُ الذي تقول إنّه ليس في القرآن"}
+            dir="rtl" lang="ar"
+          />
+        )}
         {qalab === "adad" && (
           <input className="n" value={claimed} onChange={(e) => setClaimed(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && run()} placeholder="العددُ المدَّعى" inputMode="numeric" />
         )}
-        <button className="go" onClick={run} disabled={!corpus || !word.trim()}>
-          {corpus ? "افحص" : "…"}
-        </button>
+        {qalab !== "iraab" && (
+          <button className="go" onClick={run} disabled={!corpus || !word.trim()}>
+            {corpus ? "افحص" : "…"}
+          </button>
+        )}
       </div>
       <p className="hint">
         {qalab === "adad"
           ? "يُحسب العددُ على وجهين: الصيغةُ المجرّدة، وهي مع سوابقها (وَ فَ بِ كَ لِ الـ) — فأكثرُ الخلاف في العدّ سببُه هذا. ويُحسب معه معدّلُ الصدفة."
-          : "الدعوى السالبة («لا يوجد في القرآن كذا») تُنقض بموضعٍ واحد. ويُبحث باللفظ وسوابقِه."}
+          : qalab === "kulliya"
+          ? "الدعوى السالبة («لا يوجد في القرآن كذا») تُنقض بموضعٍ واحد. ويُبحث باللفظ وسوابقِه."
+          : "لا يُعطيك فاحصٌ قولًا واحدًا في الإعراب — بل يضع أهلَ الصنعة متجاورين بالأقدميّة، فإن اختلفوا رأيتَ الخلافَ وحكمتَ عليه."}
       </p>
 
-      {res && shown && (
+      {qalab === "iraab" && /^\d{1,3}\s*:\s*\d{1,3}$/.test(loc.trim()) && (
+        <div className="out"><IraabPanel loc={loc.trim().replace(/\s/g, "")} /></div>
+      )}
+
+      {qalab !== "iraab" && res && shown && (
         <div className="out">
           <div className="nums">
             <div><b>{num(res.bare.total)}</b><span>موضعًا بالصيغة المجرّدة</span></div>
