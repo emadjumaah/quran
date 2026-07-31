@@ -12,7 +12,37 @@ import { ayahByLocationMap, getAyahByGlobalNo, getRoot, surahNameAr, wordsOfAyah
 import { loadSiyaq, unitOf } from "./siyaq";
 import { classOf, loadKulliyat } from "./kulliyat";
 
+/**
+ * التدبّرُ المولَّدُ مسبقًا — يُقرأ من ملفٍّ ساكنٍ لا من نداءٍ لكلِّ قارئ.
+ *
+ * علّةُ ذلك (رصدها المالك 2026-07-31): مادّةُ التدبّر **محسوبةٌ كلُّها من
+ * عندنا** — الآيةُ وسياقُها وإعرابُها وجذورُها — فالمخرَجُ ثابتٌ لكلِّ آية،
+ * ولو نقر ألفُ قارئٍ على الآية نفسِها لتكرّر النداءُ ألفًا بلا فائدة. فوُلّد
+ * مرّةً واحدةً وشُظّي بالسور. والفائدةُ الأكبرُ ليست الكلفةَ بل **أنّ النصَّ
+ * يُراجَع قبل أن يقرأه أحد**.
+ *
+ * وما لم يُولَّد بعدُ يعود إلى الواجهة، فالتغطيةُ تنمو والنداءُ يتناقص.
+ */
+const cache = new Map<string, Record<string, string> | null>();
+async function pregenerated(loc: string, lang: string): Promise<string | null> {
+  const sura = loc.split(":")[0];
+  const key = `${lang}/${sura}`;
+  if (!cache.has(key)) {
+    cache.set(
+      key,
+      await fetch(`${import.meta.env.BASE_URL}tadabbur/${key}.json?v=${__DATA_VERSION__}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    );
+  }
+  return cache.get(key)?.[loc] ?? null;
+}
+
 export async function askTadabbur(ayah: AyahDoc, ayahId: number): Promise<string> {
+  const lang = getUILang() === "ar" ? "ar" : "en";
+  const ready = await pregenerated(ayah.location, lang);
+  if (ready) return ready;
+
   const [eraabMap, neighbors, words] = await Promise.all([
     loadEraab().catch(() => ({}) as Record<string, EraabEntry>),
     similarOf(ayahId).catch(() => [] as { ayahId: number; score: number }[]),
@@ -76,7 +106,14 @@ export async function askTadabbur(ayah: AyahDoc, ayahId: number): Promise<string
     if (m) roots.push(`«${w.root}»: ${m.replace(/\s+/g, " ").trim().slice(0, 160)}`);
   }
 
-  const res = await fetch("/api/tadabbur", {
+  // GET بموضعٍ ولغة: مفتاحٌ ثابتٌ في المسار، فتخزّنه شبكةُ فيرسل **على مستوى
+  // النظام لا المتصفّح** — أوّلُ قارئٍ يولّد ومن بعده يأخذ المخزَّن. والمادّةُ
+  // تُقرأ في الواجهة من ملفٍّ ساكنٍ (tadabbur-material) فلا تُرسَل في الطلب.
+  const res = await fetch(`/api/tadabbur?loc=${encodeURIComponent(ayah.location)}&lang=${lang}`);
+  if (res.ok) return (await res.json()).text as string;
+
+  // وإن تعذّر — طريقُ POST القديم بالمادّة كاملةً من المتصفّح
+  const fallback = await fetch("/api/tadabbur", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -89,12 +126,12 @@ export async function askTadabbur(ayah: AyahDoc, ayahId: number): Promise<string
       siyaq,
       links,
       tier: cls?.tier,
-      lang: getUILang() === "ar" ? "ar" : "en",
+      lang,
     }),
   });
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({}) as { error?: string });
-    throw new Error(e.error || `HTTP ${res.status}`);
+  if (!fallback.ok) {
+    const e = await fallback.json().catch(() => ({}) as { error?: string });
+    throw new Error(e.error || `HTTP ${fallback.status}`);
   }
-  return (await res.json()).text as string;
+  return (await fallback.json()).text as string;
 }

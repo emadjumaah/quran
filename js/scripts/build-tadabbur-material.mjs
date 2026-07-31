@@ -1,5 +1,5 @@
 /**
- * توليدُ التدبّر مرّةً واحدة — بدل ندائه لكلِّ قارئٍ في كلِّ مرّة.
+ * مادّةُ التدبّر ساكنةً — لتتمكّن الواجهةُ من إعادة بنائها بنفسها.
  *
  * العلّة (رصدها المالك): كلُّ نقرةٍ على «تدبّر» نداءٌ جديدٌ لجيميناي — ولو نقر
  * ألفُ قارئٍ على الآية نفسِها لتكرّر النداءُ ألفًا، والمخرَجُ واحدٌ لأنّ
@@ -14,12 +14,16 @@
  * يبنيها التطبيق — وحدةُ السياق كاملةً والآيةُ معلَّمةٌ فيها بين ⟪⟫ — فلا
  * تُتدبَّر الآيةُ مبتورةً.
  *
- * usage:
- *   node js/scripts/build-tadabbur.mjs --limit 20        # دفعةٌ تجريبيّةٌ تُقاس
- *   node js/scripts/build-tadabbur.mjs                   # المصحفُ كلُّه (يُستأنَف)
- *   node js/scripts/build-tadabbur.mjs --lang en
- * env: GEMINI_API_KEY
- * out: js/data/tadabbur/<lang>/<sura>.json  ثمّ shard إلى public/tadabbur/
+ * العلّة: أردنا أن تخزّن شبكةُ فيرسل نتيجةَ التدبّر على مستوى النظام لا
+ * المتصفّح. والشبكةُ لا تخزّن إلا طلبَ GET بمفتاحٍ ثابتٍ في مساره — فلا يصلح
+ * أن يرسل المتصفّحُ المادّةَ في جسم الطلب. فتُكتب المادّةُ هنا ملفًّا ساكنًا
+ * لكلِّ سورة، وتقرؤها الواجهةُ من نفس النشر، فيصير المفتاحُ (موضعًا ولغةً)
+ * وحدَه كافيًا.
+ *
+ * ولا نداءَ لنموذجٍ في هذا الملفّ ألبتّة — مادّةٌ محسوبةٌ فحسب.
+ *
+ * usage: node js/scripts/build-tadabbur-material.mjs
+ * out:   js/apps/studio/public/tadabbur-material/<sura>.json
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -30,14 +34,12 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, "..", "..");
 const PUB = path.join(ROOT, "js/apps/studio/public");
 const OUT = path.join(ROOT, "js/data/tadabbur");
-const KEY = process.env.GEMINI_API_KEY;
 const MODEL = process.env.TADABBUR_MODEL || "gemini-2.5-flash";
 
 const args = process.argv.slice(2);
 const LIMIT = args.includes("--limit") ? Number(args[args.indexOf("--limit") + 1]) : Infinity;
 const LANG = args.includes("--lang") ? args[args.indexOf("--lang") + 1] : "ar";
 const CONC = args.includes("--conc") ? Number(args[args.indexOf("--conc") + 1]) : 6;
-if (!KEY) { console.error("GEMINI_API_KEY مطلوب"); process.exit(1); }
 
 /* ــــ النصُّ الموجِّه: هو نفسُه الذي في api/tadabbur.js حرفًا بحرف ــــ */
 const SYSTEM = `أنت مُعينٌ على تدبّر القرآن ضمن مادّةٍ محدَّدةٍ تُعطى لك، ولستَ مفسِّرًا.
@@ -153,70 +155,23 @@ function material(a) {
   return { ctx, hasSiyaq: !!siyaq };
 }
 
-/* ــــ التوليد ــــ */
-let inTok = 0, outTok = 0, done = 0, failed = 0, noSiyaq = 0;
 
-async function generate(a) {
+/* ــــ الكتابة: ملفٌّ لكلِّ سورة ــــ */
+const OUTM = path.join(PUB, "tadabbur-material");
+fs.rmSync(OUTM, { recursive: true, force: true });
+fs.mkdirSync(OUTM, { recursive: true });
+
+const bySura = new Map();
+let noSiyaq = 0, bytes = 0;
+for (const a of ayat) {
   const { ctx, hasSiyaq } = material(a);
   if (!hasSiyaq) noSiyaq++;
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${KEY}`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: LANG === "en" ? `${SYSTEM}\n\n${STYLE_EN}` : SYSTEM }] },
-      contents: [{ role: "user", parts: [{ text: `تدبَّرْ هذه الآية معتمدًا على ما يلي فقط:\n\n${ctx}` }] }],
-      generationConfig: { temperature: 0.6, topP: 0.9, maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } },
-    }),
-  });
-  if (!res.ok) throw new Error(`upstream ${res.status}: ${(await res.text()).slice(0, 160)}`);
-  const d = await res.json();
-  const text = (d?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text || "").join("").trim();
-  if (!text) throw new Error("empty");
-  inTok += d?.usageMetadata?.promptTokenCount ?? 0;
-  outTok += d?.usageMetadata?.candidatesTokenCount ?? 0;
-  return text;
+  if (!bySura.has(a.surah_no)) bySura.set(a.surah_no, {});
+  bySura.get(a.surah_no)[a.location] = ctx;
 }
-
-const dir = path.join(OUT, LANG);
-fs.mkdirSync(dir, { recursive: true });
-const store = new Map(); // سورة → { "s:a": نصّ }
-for (const f of fs.readdirSync(dir).filter((f) => f.endsWith(".json")))
-  store.set(Number(f.replace(".json", "")), JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")));
-
-const todo = ayat.filter((a) => !store.get(a.surah_no)?.[a.location]).slice(0, LIMIT === Infinity ? undefined : LIMIT);
-console.log(`المتبقّي: ${todo.length} آيةً من ${ayat.length} · اللغة: ${LANG} · النموذج: ${MODEL}\n`);
-
-const t0 = Date.now();
-for (let i = 0; i < todo.length; i += CONC) {
-  const batch = todo.slice(i, i + CONC);
-  await Promise.all(batch.map(async (a) => {
-    for (let tryN = 0; tryN < 3; tryN++) {
-      try {
-        const text = await generate(a);
-        if (!store.has(a.surah_no)) store.set(a.surah_no, {});
-        store.get(a.surah_no)[a.location] = text;
-        done++;
-        return;
-      } catch (e) {
-        if (tryN === 2) { failed++; console.log(`  ✗ ${a.location}: ${String(e.message).slice(0, 90)}`); }
-        else await new Promise((r) => setTimeout(r, 1500 * (tryN + 1)));
-      }
-    }
-  }));
-  // يُحفظ بعد كلِّ دفعةٍ فلا يضيع ما تمّ إن انقطع
-  for (const [s, obj] of store) fs.writeFileSync(path.join(dir, `${s}.json`), JSON.stringify(obj));
-  if ((i / CONC) % 5 === 0 || i + CONC >= todo.length) {
-    const el = (Date.now() - t0) / 1000;
-    const rate = done / Math.max(el, 1);
-    console.log(`  ${done}/${todo.length} · ${el.toFixed(0)}ث · ${rate.toFixed(1)}/ث · مدخل ${inTok} · مخرج ${outTok}`);
-  }
+for (const [s, obj] of bySura) {
+  const buf = JSON.stringify(obj);
+  fs.writeFileSync(path.join(OUTM, `${s}.json`), buf);
+  bytes += buf.length;
 }
-
-/* ــــ الحساب الحقيقيّ: يُقاس ولا يُقدَّر ــــ */
-const IN_PRICE = 0.30 / 1e6, OUT_PRICE = 2.50 / 1e6; // gemini-2.5-flash
-const cost = inTok * IN_PRICE + outTok * OUT_PRICE;
-const perAyah = done ? cost / done : 0;
-console.log(`\n✓ وُلّد ${done} · أخفق ${failed} · بلا وحدةِ سياق ${noSiyaq}`);
-console.log(`رموزٌ: مدخل ${inTok} · مخرج ${outTok}`);
-console.log(`الكلفةُ المقيسة: $${cost.toFixed(4)} · للآية $${perAyah.toFixed(5)}`);
-console.log(`فالمصحفُ كلُّه (${ayat.length} آية) ≈ **$${(perAyah * ayat.length).toFixed(2)}** للّغة الواحدة`);
+console.log(`✓ مادّةُ ${ayat.length} آيةٍ في ${bySura.size} سورة · ${(bytes / 1024 / 1024).toFixed(1)}MB · بلا وحدةِ سياق ${noSiyaq}`);
