@@ -31,16 +31,47 @@ const SYSTEM = `أنت مُعينٌ على تدبّر القرآن ضمن ماد
  *  (البقايا الصغيرة 2026-07-29): الحرّاسُ لا يتغيّرون، الأسلوبُ وحدَه. */
 const STYLE_EN = `Write in dignified, concise English (3–4 short paragraphs or bullets). The Quranic verse and any quoted Arabic stay in Arabic with a brief English gloss. Stay humble, never assert what the material does not say, start without any preamble, and do not claim this is tafsir.`;
 
-function json(obj, status = 200) {
-  return new Response(JSON.stringify(obj), { status, headers: { "content-type": "application/json" } });
+function json(obj, status = 200, cache = false) {
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: {
+      "content-type": "application/json",
+      // تخزينٌ على مستوى الشبكة لا المتصفّح: أوّلُ قارئٍ يولّد، ومن بعده يأخذ
+      // المخزَّن — سنةً كاملة، فالمخرَجُ ثابتٌ لأنّ المدخلَ محسوبٌ من عندنا.
+      ...(cache ? { "cache-control": "public, s-maxage=31536000, stale-while-revalidate=86400, max-age=3600" } : {}),
+    },
+  });
 }
 
 export default async function handler(req) {
-  if (req.method !== "POST") return json({ error: "POST only" }, 405);
   const blocked = guard(req);
   if (blocked) return blocked;
   const key = process.env.GEMINI_API_KEY;
   if (!key) return json({ error: "GEMINI_API_KEY not configured" }, 500);
+
+  /**
+   * مساران: GET بموضعٍ ولغة — وهو **المخزَّن في شبكة فيرسل** لأنّ مفتاحَه ثابت،
+   * فتُقرأ مادّتُه من ملفٍّ ساكنٍ في النشر نفسِه. وPOST بالمادّة كاملةً — يبقى
+   * للتوافق ولا يُخزَّن (مفتاحُه ليس في المسار).
+   */
+  const url = new URL(req.url);
+  const isGet = req.method === "GET";
+  if (isGet) {
+    const loc = (url.searchParams.get("loc") || "").trim();
+    const lang = url.searchParams.get("lang") === "en" ? "en" : "ar";
+    if (!/^\d{1,3}:\d{1,3}$/.test(loc)) return json({ error: "loc required (s:a)" }, 400);
+    const sura = loc.split(":")[0];
+    const mat = await fetch(new URL(`/tadabbur-material/${sura}.json`, url.origin), { cf: { cacheEverything: true } })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+    const ctx = mat?.[loc];
+    if (!ctx) return json({ error: "material not found" }, 404);
+    const text = await callModel(key, ctx, lang);
+    if (typeof text !== "string") return text;
+    return json({ text }, 200, true);
+  }
+
+  if (req.method !== "POST") return json({ error: "GET or POST" }, 405);
 
   let body;
   try {
@@ -85,13 +116,20 @@ export default async function handler(req) {
     .filter(Boolean)
     .join("\n\n");
 
+  const text = await callModel(key, ctx, body.lang === "en" ? "en" : "ar");
+  if (typeof text !== "string") return text;
+  return json({ text });
+}
+
+/** نداءُ النموذج — يعيد نصًّا، أو استجابةَ خطأٍ جاهزة */
+async function callModel(key, ctx, lang) {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`,
     {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: body.lang === "en" ? `${SYSTEM}\n\n${STYLE_EN}` : SYSTEM }] },
+        systemInstruction: { parts: [{ text: lang === "en" ? `${SYSTEM}\n\n${STYLE_EN}` : SYSTEM }] },
         contents: [{ role: "user", parts: [{ text: `تدبَّرْ هذه الآية معتمدًا على ما يلي فقط:\n\n${ctx}` }] }],
         generationConfig: { temperature: 0.6, topP: 0.9, maxOutputTokens: 700, thinkingConfig: { thinkingBudget: 0 } },
       }),
@@ -101,5 +139,5 @@ export default async function handler(req) {
   const data = await res.json();
   const text = (data?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text || "").join("").trim();
   if (!text) return json({ error: "empty response" }, 502);
-  return json({ text });
+  return text;
 }
