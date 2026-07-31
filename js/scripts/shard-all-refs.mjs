@@ -17,12 +17,16 @@ const OUT = path.join(PUB, "refs");
 
 /** الرتبُ كما في ميثاق الفحص §ب */
 const RANKS = {
+  1: "النصُّ ووسمُه والقراءاتُ المتواترة — قاطعةٌ فيما تدلّ عليه",
   2: "معاجمُ اللغة — حجّةٌ في المعنى الوضعيّ",
   3: "معاني القرآن والإعراب — حجّةٌ في الحكم النحويّ والدلاليّ",
-  4: "فقهُ اللغة وأصولُ التفسير — حجّةٌ في القاعدة لا في الجزئيّة",
+  4: "فقهُ اللغة وأصولُ التفسير وأصولُ الفقه — حجّةٌ في القاعدة لا في الجزئيّة",
+  5: "المنقولُ من الوجوه والقراءات الشاذّة — يُعرض ولا يُقطع به وحدَه",
 };
 
 const SOURCES = [
+  // القراءاتُ رتبتان لا رتبةٌ واحدة، فتُقرأ رتبةُ كلِّ كتابٍ من ملفّه نفسِه
+  { dir: "qiraat", kind: "ayah", rank: null, group: "القراءات" },
   { dir: "lex", kind: "root", rank: 2, group: "معاجمُ اللغة" },
   { dir: "iraab", kind: "ayah", rank: 3, group: "كتبُ الإعراب" },
   { dir: "maani", kind: "ayah", rank: 3, group: "معاني القرآن" },
@@ -43,8 +47,9 @@ for (const src of SOURCES) {
       : writeShardedByRoot(OUT, id, j.meta, j.entries);
     manifest.books.push({
       id, label: j.meta.label, author: j.meta.author, died: j.meta.died,
-      rank: src.rank, group: src.group, kind: src.kind,
+      rank: src.rank ?? j.meta.rank ?? 5, group: src.group, kind: src.kind,
       anchor: j.meta.anchor ?? null, source: j.meta.source,
+      role: j.meta.role ?? null,
       coverage: src.kind === "ayah" ? r.locs : r.roots,
       coverageOf: src.kind === "ayah" ? 6236 : 1651,
       shards: r.shards, bytes: r.bytes,
@@ -71,4 +76,4 @@ fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify(manifest));
 
 const tot = manifest.books.reduce((s, b) => s + b.bytes, 0);
 console.log(`\nالمانيفست: ${manifest.books.length} كتابًا · ${(tot / 1024 / 1024).toFixed(0)}MB`);
-console.log("الرتب:", [2, 3, 4].map((r) => `${r}:${manifest.books.filter((b) => b.rank === r).length}`).join(" · "));
+console.log("الرتب:", [1, 2, 3, 4, 5].map((r) => `${r}:${manifest.books.filter((b) => b.rank === r).length}`).join(" · "));
