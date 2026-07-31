@@ -161,6 +161,7 @@ for (const b of BOOKS) {
   fs.writeFileSync(path.join(OUT, `${b.id}.json`), JSON.stringify({
     meta: { id: b.id, label: b.label, author: b.by, died: b.died,
             source: `OpenITI ${b.author}.${b.work} · ${file}`, date: "2026-07-31",
+            anchor: "عنوانُ الآية المصرَّحُ به في المتن",
             role: "إعراب — حجّةٌ في الحكم النحويّ (ميثاق الفحص، الرتبة ٣)" },
     entries,
   }));

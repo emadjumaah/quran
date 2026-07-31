@@ -1,0 +1,230 @@
+/**
+ * فاحص — منهجُ مشكاة في فحص الدعاوى، وعلى أيِّ شيءٍ يقوم. المسار: /fahis.
+ *
+ * الأصلُ الحاكم (ميثاق الفحص §د-٢): **الدليلُ قبل الحكم**، والقارئُ يرى
+ * النتيجةَ بنفسه. فالصفحةُ تبدأ بالمقياس ثم بالمراجع، ولا تصل إلى حكمٍ إلا
+ * بعد أن يكون سندُه ورتبتُه ظاهرَين.
+ *
+ * ولوحُ المراجع مولَّدٌ من `refs/manifest.json` الذي يكتبه shard-all-refs —
+ * فلا يُكتب باليد ولا يشيخ إذا زاد كتابٌ أو نقص أو تغيّرت تغطيتُه.
+ */
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getUILang, num, useUILang } from "../i18n";
+
+interface Book {
+  id: string; label: string; author: string; died: number | null;
+  rank: number; group: string; kind: "ayah" | "root" | "section";
+  anchor?: string | null; role?: string | null; note?: string;
+  coverage: number; coverageOf: number | null; shards: number; bytes: number;
+}
+interface Manifest { date: string; ranks: Record<string, string>; books: Book[] }
+
+/** الأصولُ الثلاثة — نصُّ الميثاق §أ مختصرًا */
+const USUL = [
+  { t: "المرجعُ من أهل الاختصاص", d: "التفاسيرُ ليست مراجعَ لغويّةً إلا ما كان منها كتابَ اختصاصٍ في بابه. فالدعوى اللغويّةُ تُردّ أو تُثبَت من المعاجم وكتب المعاني والإعراب وفقه اللغة، ونقلُ المفسِّر شاهدُ استعمالٍ لا حكمَ لغة." },
+  { t: "الفكرةُ تُحاكَم لا قائلُها", d: "لا يُذكر اسمُ باحثٍ في حكم، ولا تُقوَّى دعوى بجاهِ صاحبها ولا تُضعَّف بخصومته. تُجرَّد الدعوى من قائلها ثم تُوزن." },
+  { t: "لا نتبنّى مذهبًا، نطلب الحقيقة", d: "لسنا مع فريقٍ ولا على فريق. نؤيّد ما تؤيّده الأدلّة، ونفنّد ما تفنّده الأدلّة، ونقف حيث تقف. و«موقوف» حكمٌ مشرِّفٌ لا نقص." },
+];
+
+/** شروطُ قبول الدعوى — الميثاق §ج */
+const SHURUT = [
+  { t: "قابليّةُ التكذيب", d: "تُصاغ الدعوى بحيث يمكن أن تُنقض بشاهد. وما لا يُنقَض بشيءٍ لا يُثبَت بشيء." },
+  { t: "الاستقراءُ التامّ", d: "تُفحص على كلِّ مواضع اللفظ في المصحف لا على ما وافقها، وموضعٌ واحدٌ ناقضٌ يُسقطها أو يُقيّدها." },
+  { t: "السندُ من رتبةٍ مناسبة", d: "لغويّةٌ بمعجم، ونحويّةٌ بمعرِب، وقاعديّةٌ بأصوليّ — لا بنقلٍ عن غير أهل الشأن." },
+  { t: "معدّلُ الصدفة قبل الحكم", d: "في كلِّ دعوى عدديّةٍ يُحسب أولًا كم مثيلًا يقع تلقائيًّا. فإن كثُر المثيلُ فلا دلالةَ في الواقعة." },
+];
+
+/** ما فُحص فعلًا — الدليلُ أولًا ثم الحكم، كما يقتضي الميثاق §د-٢ */
+const FUHISA = [
+  {
+    claim: "«بنو إسرائيل» في القرآن هم ذرّيّةُ من حُمل مع نوح، بقرينةِ تساوي وُرودِ اللفظين ٤٣ مرّةً لكلٍّ",
+    kind: "إحصائيّة",
+    evidence: [
+      "معدّلُ الصدفة: من كلِّ أزواج أسماء الأعلام في المصحف ٢٪ متساويةُ العدد تلقائيًّا — منها يوسفُ ولوط، وسليمانُ وإسحاق. فالتساوي وحدَه واقعةٌ شائعةٌ لا دلالةَ فيها.",
+      "الإعرابُ في الإسراء ٣: «ذُرّيّةَ من حملنا مع نوح» منصوبةٌ على النداء أو الاختصاص، لا بدلًا يُفسِّر «بني إسرائيل».",
+      "مريم ٥٨ تعطف الصنفين: «من ذرّيّة آدمَ ومّمن حملنا مع نوحٍ ومن ذرّيّة إبراهيمَ وإسرائيل» — والعطفُ يقتضي المغايرة.",
+    ],
+    verdict: "باطلةٌ ببرهانِ نقضها",
+    limit: "لا يلزم من بطلانها صحّةُ القول المقابل في تفصيله؛ إنّما سقط هذا الدليلُ بعينه.",
+  },
+  {
+    claim: "كلُّ كلمات القرآن ترجع إلى جذرٍ ثلاثيّ",
+    kind: "صرفيّة",
+    evidence: [
+      "الاستقراءُ التامُّ على وسم الصرف: ٤٣ جذرًا رباعيًّا في المصحف (كـ«دحرج» و«زلزل») تنقض الكلّيّة.",
+      "و٢٧٬٧٢٣ جذعًا لا جذرَ له أصلًا — وهي الأعلامُ والحروفُ والدخيل.",
+    ],
+    verdict: "صحيحةٌ بقيدٍ لا مطلقة",
+    limit: "الغالبُ الأعمُّ ثلاثيّ، وهذا حقٌّ؛ والخطأُ في لفظ «كلّ».",
+  },
+];
+
+const RANK_TONE: Record<number, string> = {
+  1: "var(--gold, #c9a227)", 2: "#4a8f7b", 3: "#5b7fa8", 4: "#8a6fa8", 5: "#8f7a5b",
+};
+
+export default function Fahis() {
+  useUILang();
+  const ar = getUILang() === "ar";
+  const [m, setM] = useState<Manifest | null>(null);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}refs/manifest.json?v=${__DATA_VERSION__}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setM)
+      .catch(() => {});
+  }, []);
+
+  const byRank = new Map<number, Book[]>();
+  for (const b of m?.books ?? []) {
+    if (!byRank.has(b.rank)) byRank.set(b.rank, []);
+    byRank.get(b.rank)!.push(b);
+  }
+  const ranks = [...byRank.keys()].sort((a, b) => a - b);
+  const totalAyah = m ? new Set(m.books.filter((b) => b.kind === "ayah")).size : 0;
+
+  return (
+    <div className="page page-narrow fahis" dir="rtl" lang="ar">
+      <style>{`
+        .fahis { --line: color-mix(in oklab, currentColor 12%, transparent); }
+        .fahis h1 { font-size: 1.9rem; margin: 0 0 6px; letter-spacing: -.01em; }
+        .fahis .lede { font-size: 1.05rem; line-height: 1.9; opacity: .85; max-width: 62ch; }
+        .fahis section { margin-top: 44px; }
+        .fahis h2 { font-size: 1.25rem; margin: 0 0 4px; }
+        .fahis h2 + .sub { opacity: .6; font-size: .9rem; margin: 0 0 18px; }
+        .fahis .usul { display: grid; gap: 14px; }
+        .fahis .usul > div { border-inline-start: 3px solid var(--line); padding-inline-start: 14px; }
+        .fahis .usul b { display: block; margin-bottom: 3px; }
+        .fahis .usul p { margin: 0; opacity: .8; line-height: 1.85; }
+        .fahis .rank { margin-bottom: 26px; }
+        .fahis .rank > header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;
+          padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+        .fahis .rn { font-weight: 700; font-size: .85rem; padding: 2px 9px; border-radius: 999px;
+          color: #fff; flex: none; }
+        .fahis .rd { font-size: .92rem; opacity: .78; }
+        .fahis .books { display: grid; gap: 8px; }
+        .fahis .bk { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; align-items: baseline;
+          padding: 9px 0; border-bottom: 1px dotted var(--line); }
+        .fahis .bk:last-child { border-bottom: 0; }
+        .fahis .bk .nm { font-weight: 600; }
+        .fahis .bk .au { opacity: .62; font-size: .9rem; margin-inline-start: 8px; font-weight: 400; }
+        .fahis .bk .cv { font-variant-numeric: tabular-nums; font-size: .88rem; opacity: .75; white-space: nowrap; }
+        .fahis .bk .how { grid-column: 1 / -1; font-size: .82rem; opacity: .55; line-height: 1.7; }
+        .fahis .card { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+        .fahis .card .cl { font-weight: 600; line-height: 1.8; }
+        .fahis .card ol { margin: 12px 0 0; padding-inline-start: 20px; }
+        .fahis .card li { margin-bottom: 8px; line-height: 1.85; opacity: .85; }
+        .fahis .vd { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line);
+          display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+        .fahis .vd b { font-size: 1.02rem; }
+        .fahis .lim { font-size: .87rem; opacity: .62; line-height: 1.75; margin-top: 6px; }
+        .fahis .tag { font-size: .78rem; opacity: .6; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+        @media (max-width: 560px) { .fahis .bk { grid-template-columns: 1fr; } }
+      `}</style>
+
+      {!ar && (
+        <p className="muted" style={{ marginBottom: 18, fontSize: ".9rem" }} dir="ltr" lang="en">
+          Fāḥiṣ is Mishkāt’s method for examining claims about the Qur’an and its language. The
+          references and rulings below are in Arabic, as are the sources they rest on.
+        </p>
+      )}
+
+      <h1>فاحص</h1>
+      <p className="lede">
+        أداةٌ تفحص الدعوى في القرآن ولغته بمقياسٍ معلَن، فتعرض <b>الدليلَ قبل
+        الحكم</b> والقارئُ يرى النتيجةَ بنفسه. لا نتبنّى مذهبًا ولا نناجز أحدًا:
+        نؤيّد ما تؤيّده الأدلّة، ونفنّد ما تفنّده، ونقف حيث تقف.
+      </p>
+
+      <section>
+        <h2>الأصولُ الثلاثة</h2>
+        <p className="sub">عليها يقوم كلُّ حكمٍ في هذه الصفحة</p>
+        <div className="usul">
+          {USUL.map((u) => (
+            <div key={u.t}><b>{u.t}</b><p>{u.d}</p></div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2>متى تُقبل الدعوى</h2>
+        <p className="sub">أربعةُ شروطٍ مجتمعة — يسقط بواحدٍ منها كثيرٌ ممّا يُتداول</p>
+        <div className="usul">
+          {SHURUT.map((u) => (
+            <div key={u.t}><b>{u.t}</b><p>{u.d}</p></div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2>على أيِّ شيءٍ يقوم فاحص</h2>
+        <p className="sub">
+          {m
+            ? <>المراجعُ المعتمَدةُ كلُّها، مرتَّبةً بقوّتها في الاحتجاج — {num(m.books.length)} كتابًا،
+              وكلُّ رقمٍ هنا مولَّدٌ من البناء لا مكتوبٌ باليد. وما لم يثبت إسنادُه إلى موضعه لم يُحمل أصلًا.</>
+            : "…"}
+        </p>
+
+        {ranks.map((r) => (
+          <div className="rank" key={r}>
+            <header>
+              <span className="rn" style={{ background: RANK_TONE[r] ?? "#777" }}>الرتبة {num(r)}</span>
+              <span className="rd">{m?.ranks[String(r)]}</span>
+            </header>
+            <div className="books">
+              {byRank.get(r)!.map((b) => (
+                <div className="bk" key={b.id}>
+                  <div>
+                    <span className="nm">{b.label}</span>
+                    <span className="au">{b.author}{b.died ? ` (ت ${num(b.died)})` : ""}</span>
+                  </div>
+                  <div className="cv">
+                    {b.kind === "ayah" && <>{num(b.coverage)} موضعًا من {num(6236)}</>}
+                    {b.kind === "root" && <>{num(b.coverage)} مادّةً من {num(1651)}</>}
+                    {b.kind === "section" && <>{num(b.coverage)} بابًا</>}
+                  </div>
+                  {/* لا يُعاد نصُّ الرتبة تحت كلِّ كتاب — يُذكر ما يخصُّ الكتابَ
+                      وحدَه: دورُه إن كان مميِّزًا، وإلا فالمِرساةُ التي أُسند بها */}
+                  {(b.note || b.anchor || b.role) && (
+                    <div className="how">
+                      {b.note ?? (b.rank === 1 || b.rank === 5 ? b.role : b.anchor ? `المِرساة: ${b.anchor}` : b.role)}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <p className="lim" style={{ marginTop: 18 }}>
+          وهذه المراجعُ تُقرأ في مواضعها من التطبيق أيضًا: المعاجمُ في{" "}
+          <Link to="/roots">صفحة المادّة</Link>، وكتبُ الإعراب والمعاني عند الآية.
+          والتفاسيرُ تُعرض في <Link to="/tafasir">بابها</Link> شاهدَ فهمٍ ونقلٍ لا حجّةً لغويّة.
+        </p>
+      </section>
+
+      <section>
+        <h2>ما فُحص حتى الآن</h2>
+        <p className="sub">الدعوى مجرّدةً من قائلها، والدليلُ قبل الحكم</p>
+        {FUHISA.map((f) => (
+          <div className="card" key={f.claim}>
+            <div className="cl">«{f.claim}»</div>
+            <ol>{f.evidence.map((e, i) => <li key={i}>{e}</li>)}</ol>
+            <div className="vd">
+              <span className="tag">دعوًى {f.kind}</span>
+              <b>الحكم: {f.verdict}</b>
+            </div>
+            <div className="lim">حدودُ الحكم: {f.limit}</div>
+          </div>
+        ))}
+        <p className="lim">
+          هذه أوائلُ ما فُحص، والبابُ مفتوحٌ لما بعدَه. ولن يُعرض حكمٌ ما لم يكن
+          سندُه ورتبتُه ظاهرَين معه، ولا يُكتم دليلٌ يخالف ما رُجّح — يُذكر ويُبيَّن
+          لِمَ لم يُقدَّم. و<Link to="/docs">التوثيق</Link> يشرح كيف بُني كلُّ جزءٍ من مشكاة.
+        </p>
+      </section>
+      {totalAyah ? null : null}
+    </div>
+  );
+}
