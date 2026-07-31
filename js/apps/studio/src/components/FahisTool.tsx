@@ -13,13 +13,13 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { allAyahs } from "../db";
+import { allAyahs, fuzzyRoots, wordsByRoot } from "../db";
 import { normalizeAr } from "../lib/arabicSearch";
-import { type RefHit, refsForAyah } from "../lib/refs";
+import { type RefHit, refsForAyah, refsForRoot } from "../lib/refs";
 import { num } from "../i18n";
 import type { AyahDoc } from "../types";
 
-type Qalab = "adad" | "kulliya" | "iraab";
+type Qalab = "adad" | "kulliya" | "iraab" | "dalala";
 
 /** نصُّ الآيات مطبَّعًا ومحاطًا بفراغٍ — ليُطابَق المتّصلُ متّصلًا لا مبعثرًا */
 interface Corpus {
@@ -124,6 +124,87 @@ function IraabPanel({ loc }: { loc: string }) {
   );
 }
 
+/**
+ * لوحُ الدلالة — أثقلُ القوالب وأنفعُها. الدعوى «هذا اللفظ يعني كذا» لا تُحسم
+ * بمعجمٍ وحدَه ولا برأي، بل بثلاثةٍ مجتمعة:
+ *   ١) **الاستقراءُ التامّ**: كلُّ ما في المصحف من مادّة اللفظ — لأنّ الدعوى
+ *      الدلاليّةَ تُفحص على كلِّ المواضع لا على ما وافقها (الميثاق §ج٢).
+ *   ٢) **المعاجم** (الرتبة ٢): ما وضعته العربُ للمادّة، والأقدمُ مقدَّم.
+ *   ٣) **معاني القرآن** (الرتبة ٣): وهي أقدمُ من التفسير المدوَّن، فتحسم دعوى
+ *      «التراثُ أقحم معنًى».
+ * والآلةُ تعرض هذه الثلاثةَ ثمّ **تسأل ولا تحكم**: أيستقيم معناك في هذه كلِّها؟
+ * فالحكمُ الدلاليُّ هو الموضعُ الوحيدُ الذي يلزم فيه فهمٌ، ولا نتقمّصه بحساب.
+ */
+function DalalaPanel({ word }: { word: string }) {
+  const [root, setRoot] = useState<string | null>(null);
+  const [occ, setOcc] = useState<{ loc: string; t: string }[] | null>(null);
+  const [lex, setLex] = useState<RefHit[]>([]);
+  const [maani, setMaani] = useState<RefHit[]>([]);
+  const [open, setOpen] = useState<string | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    setRoot(null); setOcc(null); setLex([]); setMaani([]);
+    (async () => {
+      // المادّةُ تُلتمس من أقرب الجذور رسمًا إلى اللفظ المكتوب
+      const rs = await fuzzyRoots(word, 1);
+      const r = rs[0]?.doc?.root ?? null;
+      if (!live) return;
+      setRoot(r);
+      if (!r) { setOcc([]); return; }
+      const ws = await wordsByRoot(r, 3000);
+      if (!live) return;
+      setOcc(ws.map((w) => ({ loc: `${w.surahNo}:${w.ayahNo}`, t: w.textClean })));
+      refsForRoot(r).then((h) => live && setLex(h));
+      // معاني القرآن تُجلب لأوّل موضعٍ من المادّة — شاهدًا على استعمالها
+      const first = ws[0];
+      if (first) refsForAyah(`${first.surahNo}:${first.ayahNo}`, { ranks: [3] }).then((h) => live && setMaani(h));
+    })();
+    return () => { live = false; };
+  }, [word]);
+
+  if (occ === null) return <p className="hint">…</p>;
+  if (!root) return <p className="hint">لم تُعرف مادّةُ هذا اللفظ. جرّب صيغةً مجرّدةً منه.</p>;
+
+  const byAyah = new Map<string, string[]>();
+  for (const o of occ) { const a = byAyah.get(o.loc) ?? []; a.push(o.t); byAyah.set(o.loc, a); }
+  const forms = [...new Set(occ.map((o) => o.t))];
+
+  return (
+    <div className="iraab">
+      <div className="nums" style={{ marginBottom: 12 }}>
+        <div><b>{root}</b><span>المادّة</span></div>
+        <div><b>{num(occ.length)}</b><span>موضعًا في المصحف</span></div>
+        <div><b>{num(byAyah.size)}</b><span>آيةً</span></div>
+        <div><b>{num(forms.length)}</b><span>صيغةً مشتقّة</span></div>
+      </div>
+      <p className="hint" style={{ margin: "0 0 12px" }}>
+        الدعوى الدلاليّةُ تُفحص على <b>كلِّ</b> هذه المواضع لا على ما وافقها —
+        فإن لم يستقم معناك في موضعٍ واحدٍ منها سقط إطلاقُه أو لزمه قيد. وهذا
+        الحكمُ لك: نعرض المادّةَ ولا نحكم عنك.
+      </p>
+      <div className="locs" style={{ marginBottom: 14 }}>
+        {forms.slice(0, 40).map((f) => <span key={f} style={{ border: "1px solid var(--line)", borderRadius: 7, padding: "2px 8px", fontSize: ".9rem" }}>{f}</span>)}
+      </div>
+      {[...lex, ...maani].map((h) => (
+        <div className="bk-open" key={h.book.id}>
+          <button onClick={() => setOpen(open === h.book.id ? null : h.book.id)}>
+            <span className="nm">{h.book.label}</span>
+            <span className="au">{h.book.author}{h.book.died ? ` (ت ${num(h.book.died)})` : ""}</span>
+            <span className="rk">الرتبة {num(h.book.rank)}</span>
+          </button>
+          {open === h.book.id && <div className="body">{h.texts.map((t, i) => <p key={i}>{t}</p>)}</div>}
+        </div>
+      ))}
+      <div className="sample" style={{ marginTop: 8 }}>
+        {[...byAyah.entries()].slice(0, 6).map(([l]) => (
+          <div key={l}><Link to={`/aya/${l.replace(":", "/")}`} style={{ opacity: .7, fontSize: ".84rem" }}>{l}</Link></div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function FahisTool() {
   const [qalab, setQalab] = useState<Qalab>("adad");
   const [word, setWord] = useState("");
@@ -154,6 +235,7 @@ export default function FahisTool() {
   }
 
   const shown = qalab === "kulliya" ? res?.withPrefix : res?.bare;
+  const computed = qalab === "adad" || qalab === "kulliya";
 
   return (
     <div className="fahis-tool">
@@ -201,6 +283,7 @@ export default function FahisTool() {
         <button data-on={qalab === "adad" ? 1 : 0} onClick={() => { setQalab("adad"); setRan(null); }}><span>قالبُ العدد</span></button>
         <button data-on={qalab === "kulliya" ? 1 : 0} onClick={() => { setQalab("kulliya"); setRan(null); }}><span>قالبُ الكلّيّة</span></button>
         <button data-on={qalab === "iraab" ? 1 : 0} onClick={() => { setQalab("iraab"); setRan(null); }}><span>قالبُ الإعراب</span></button>
+        <button data-on={qalab === "dalala" ? 1 : 0} onClick={() => { setQalab("dalala"); setRan(null); }}><span>قالبُ الدلالة</span></button>
       </div>
 
       <div className="form">
@@ -232,14 +315,18 @@ export default function FahisTool() {
           ? "يُحسب العددُ على وجهين: الصيغةُ المجرّدة، وهي مع سوابقها (وَ فَ بِ كَ لِ الـ) — فأكثرُ الخلاف في العدّ سببُه هذا. ويُحسب معه معدّلُ الصدفة."
           : qalab === "kulliya"
           ? "الدعوى السالبة («لا يوجد في القرآن كذا») تُنقض بموضعٍ واحد. ويُبحث باللفظ وسوابقِه."
-          : "لا يُعطيك فاحصٌ قولًا واحدًا في الإعراب — بل يضع أهلَ الصنعة متجاورين بالأقدميّة، فإن اختلفوا رأيتَ الخلافَ وحكمتَ عليه."}
+          : qalab === "iraab"
+          ? "لا يُعطيك فاحصٌ قولًا واحدًا في الإعراب — بل يضع أهلَ الصنعة متجاورين بالأقدميّة، فإن اختلفوا رأيتَ الخلافَ وحكمتَ عليه."
+          : "اكتب اللفظَ الذي تدّعي له معنًى، فتُعرض عليك مادّتُه كلُّها في المصحف ومعها المعاجمُ ومعاني القرآن — ثمّ تحكم أنت: أيستقيم معناك في هذه كلِّها؟"}
       </p>
 
       {qalab === "iraab" && /^\d{1,3}\s*:\s*\d{1,3}$/.test(loc.trim()) && (
         <div className="out"><IraabPanel loc={loc.trim().replace(/\s/g, "")} /></div>
       )}
 
-      {qalab !== "iraab" && res && shown && (
+      {qalab === "dalala" && ran && <div className="out"><DalalaPanel word={ran} /></div>}
+
+      {computed && res && shown && (
         <div className="out">
           <div className="nums">
             <div><b>{num(res.bare.total)}</b><span>موضعًا بالصيغة المجرّدة</span></div>
