@@ -53,3 +53,7 @@ findings/deepening/waves/dirA-*.json
 findings/deepening/waves/sym-*.json
 findings/deepening/rejudge/dirA-r*.json
 hosted-data/
+
+# مادّةُ الباحثين للفحص — طرفٌ ثالث، لا تُرفع (أمر المالك 2026-07-31)
+research/
+!research/README.md
