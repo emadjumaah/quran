@@ -68,24 +68,32 @@ for (const b of BOOKS) {
   let best = null, bestN = -1;
   for (const f of fs.readdirSync(dir).filter((x) => !x.endsWith(".yml") && !x.endsWith(".md"))) {
     const t = fs.readFileSync(path.join(dir, f), "utf8");
-    const n = (t.match(/^###[\s|]*(?:CHECK\s*)?\[?\s*[ء-ي](?:\s?[ء-ي]){1,5}\s*\]?\s*$/gm) || []).length;
+    // صيغتان: عنوانٌ مستقلٌّ بالمادّة، أو «### $ مادّة: نصُّ المدخل…» (اللسان)
+    const n = (t.match(/^###[\s|$]*(?:CHECK\s*)?\[?\s*[ء-ي](?:\s?[ء-ي]){1,5}\s*\]?\s*(?::|$)/gm) || []).length;
     if (n > bestN) { bestN = n; best = f; }
   }
   if (!best || bestN < 200) { console.log(`✗ ${b.label}: لا مداخلَ معنونةً بالمادّة (${bestN})`); continue; }
 
   const body = fs.readFileSync(path.join(dir, best), "utf8").split("#META#Header#End#").pop();
-  const parts = body.split(/^###\s*\|?\s*/m);
+  const parts = body.split(/^###[\s|$]*/m);
   const entries = {};
   let matched = 0, skipped = 0;
   for (const part of parts) {
-    const nl = part.indexOf("\n");
-    if (nl < 0) continue;
-    const head = part.slice(0, nl).trim();
-    const m = head.match(/^[\s|]*(?:CHECK\s*)?\[?\s*([ء-ي](?:\s?[ء-ي]){1,5})\s*\]?\s*$/);
+    // المادّةُ إمّا عنوانٌ مستقلٌّ في سطرٍ، وإمّا صدرُ السطر يتلوها «:» ثم النصّ
+    const inline = part.match(/^(?:CHECK\s*)?\[?\s*([ء-ي](?:\s?[ء-ي]){1,5})\s*\]?\s*:\s*/);
+    let m, rest;
+    if (inline) {
+      m = inline; rest = part.slice(inline[0].length);
+    } else {
+      const nl = part.indexOf("\n");
+      if (nl < 0) { skipped++; continue; }
+      m = part.slice(0, nl).trim().match(/^[\s|]*(?:CHECK\s*)?\[?\s*([ء-ي](?:\s?[ء-ي]){1,5})\s*\]?\s*$/);
+      rest = part.slice(nl + 1);
+    }
     if (!m) { skipped++; continue; }
     const qroot = quranRoots.get(normRoot(m[1]));
     if (!qroot) { skipped++; continue; }
-    const text = cleanOpenITI(part.slice(nl + 1));
+    const text = cleanOpenITI(rest);
     if (text.length < 30) { skipped++; continue; }
     const cut = text.length > 6000 ? text.slice(0, 6000) + "…" : text;
     entries[qroot] = entries[qroot] ? `${entries[qroot]}\n${cut}` : cut;
