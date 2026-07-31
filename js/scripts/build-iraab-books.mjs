@@ -12,7 +12,8 @@
  * يُطرح، فلا نحمل في بياناتنا ما لا يُسنَد.
  *
  * usage: node js/scripts/build-iraab-books.mjs
- * out:   js/apps/studio/public/iraab/<id>.json  { meta, entries: { "s:a": [نصّ…] } }
+ * out:   js/data/refs-src/iraab/<id>.json (خامٌ غيرُ منشور) — ثم
+ *        node js/scripts/shard-all-refs.mjs يشظّيه إلى public/refs/<id>/
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -22,7 +23,7 @@ import { anchorSequentialBook, buildSequentialIndex } from "./lib/anchor-sequent
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, "..", "..");
-const OUT = path.join(ROOT, "js/apps/studio/public/iraab");
+const OUT = path.join(ROOT, "js/data/refs-src/iraab");
 const MIRROR = "/Volumes/data/RELEASE-master/data";
 
 /** الكتبُ الأربعة بمعرّفاتها ونسخِها المفضّلة (الأنظفُ تقطيعًا) */

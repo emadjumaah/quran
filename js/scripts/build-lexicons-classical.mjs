@@ -17,7 +17,8 @@
  * المعجمُ كلُّه، فيخفّ الملفُّ ويصير كلُّ مدخلٍ مسنَدًا إلى مادّةٍ عندنا.
  *
  * usage: node js/scripts/build-lexicons-classical.mjs
- * out:   js/apps/studio/public/lex/<id>.json  { meta, entries: { "<جذر>": نصّ } }
+ * out:   js/data/refs-src/lex/<id>.json (خامٌ غيرُ منشور) — ثم
+ *        node js/scripts/shard-all-refs.mjs يشظّيه إلى public/refs/<id>/
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -27,7 +28,7 @@ import { cleanOpenITI } from "./lib/anchor-by-quote.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, "..", "..");
-const OUT = path.join(ROOT, "js/apps/studio/public/lex");
+const OUT = path.join(ROOT, "js/data/refs-src/lex");
 const MIRROR = "/Volumes/data/RELEASE-master/data";
 
 const BOOKS = [

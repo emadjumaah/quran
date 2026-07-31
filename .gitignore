@@ -57,3 +57,6 @@ hosted-data/
 # مادّةُ الباحثين للفحص — طرفٌ ثالث، لا تُرفع (أمر المالك 2026-07-31)
 research/
 !research/README.md
+
+# مصادرُ المراجع الخام (تُبنى من مرآة OpenITI، ويُنشر منها الشظايا في public/refs)
+js/data/refs-src/
