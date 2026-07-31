@@ -18,6 +18,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { anchorByMarkedQuote, anchorParagraph, buildQuranIndex, cleanOpenITI, pickBiggest } from "./lib/anchor-by-quote.mjs";
+import { anchorSequentialBook, buildSequentialIndex } from "./lib/anchor-sequential.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, "..", "..");
@@ -69,26 +70,48 @@ console.log("يُبنى فهرسُ المصحف المقلوب…");
 const { idx } = buildQuranIndex();
 console.log(`  خماسيّاتٌ مميِّزة: ${idx.size}\n`);
 
-/** الكتبُ التي لا مرساةَ صريحةَ فيها: تُرسى بمطابقة النصّ القرآنيّ المقتبَس */
+const seqIx = buildSequentialIndex();
+
+/**
+ * الكتبُ التي لا مرساةَ صريحةَ فيها: تُجرَّب مِرساتان وتُقدَّم أوسعُهما سندًا —
+ * **المتتابعة** (الاقتباسُ متّصلًا مع ترتيب المصحف) لما جرى على ترتيب السور،
+ * و**التصويت** لما كان موضوعيًّا. لا يُفرض منهجٌ واحدٌ على كتابٍ لا يناسبه.
+ */
 function byQuote(b, dir) {
   const file = pickBiggest(dir);
   const body = fs.readFileSync(path.join(dir, file), "utf8").split("#META#Header#End#").pop();
-  // فقراتٌ على علامات الصفحات وفواصل الأسطر المزدوجة — وحداتُ كلامٍ متماسكة
-  const chunks = body.split(/PageV\d+P\d+|\n(?=#\s)/).filter((x) => x.length > 120);
-  const entries = {};
-  let placed = 0, dropped = 0;
-  let marked = 0;
-  for (const raw of chunks) {
-    // الاقتباسُ المعلَّم أولًا (أدقّ)، ثم تصويتُ الفقرة
+
+  // ١) التصويت
+  const vote = {};
+  let placed = 0, dropped = 0, marked = 0;
+  for (const raw of body.split(/PageV\d+P\d+|\n(?=#\s)/)) {
+    if (raw.length < 120) { continue; }
     const a = anchorByMarkedQuote(raw, idx) ?? anchorParagraph(raw, idx);
     if (!a) { dropped++; continue; }
     if (a.how) marked++;
     const c = cleanOpenITI(raw);
-    (entries[a.loc] ??= []).push(c.length > 4000 ? c.slice(0, 4000) + "…" : c);
+    (vote[a.loc] ??= []).push(c.length > 4000 ? c.slice(0, 4000) + "…" : c);
     placed++;
   }
-  const how = marked > placed / 2 ? "الاقتباسُ القرآنيُّ المعلَّم" : "مطابقةُ النصّ المقتبَس";
-  return { entries, placed, dropped, file, how };
+
+  // ٢) المتتابعة
+  const { anchors } = anchorSequentialBook(body, seqIx);
+  const seq = {};
+  for (let i = 0; i < anchors.length; i++) {
+    const text = cleanOpenITI(body.slice(anchors[i].pos, anchors[i + 1]?.pos ?? body.length));
+    if (text.length < 40) continue;
+    (seq[anchors[i].loc] ??= []).push(text.length > 6000 ? text.slice(0, 6000) + "…" : text);
+  }
+
+  const useSeq = Object.keys(seq).length > Object.keys(vote).length;
+  return {
+    entries: useSeq ? seq : vote,
+    placed: useSeq ? anchors.length : placed,
+    dropped: useSeq ? 0 : dropped,
+    file,
+    how: useSeq ? "الاقتباسُ القرآنيُّ متّصلًا + ترتيبُ المصحف"
+       : marked > placed / 2 ? "الاقتباسُ القرآنيُّ المعلَّم" : "مطابقةُ النصّ المقتبَس",
+  };
 }
 
 const summary = [];
