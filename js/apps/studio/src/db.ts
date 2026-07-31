@@ -184,6 +184,15 @@ export async function wordsByLemma(
   })) as WordDoc[];
 }
 
+/**
+ * كلماتُ المصحف التي تطابق رسمًا مكتوبًا — بابُ العدِّ **بصيغ اللفظ لا برسمه**.
+ * فمن سأل عن «شهر» أراد صيغَه كلَّها (شهرًا · الشهر · أشهر…) لا الرسمَ وحدَه؛
+ * والوسمُ الصرفيُّ عندنا يعطي لكلِّ كلمةٍ جذعَها وجذرَها، فيُعدَّان لا الرسم.
+ */
+export async function wordsByText(textClean: string, limit = 4000): Promise<WordDoc[]> {
+  return (await coll("words").findMany({ where: { textClean }, take: limit })) as WordDoc[];
+}
+
 export async function getRoot(root: string): Promise<RootDoc | null> {
   return (await coll("roots").findFirst({ where: { root } })) as RootDoc | null;
 }

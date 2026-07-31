@@ -13,7 +13,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { allAyahs, fuzzyRoots, wordsByRoot } from "../db";
+import { allAyahs, fuzzyRoots, listWords, wordsByLemma, wordsByRoot, wordsByText } from "../db";
 import { normalizeAr } from "../lib/arabicSearch";
 import { type RefHit, refsForAyah, refsForRoot } from "../lib/refs";
 import { num } from "../i18n";
@@ -37,6 +37,62 @@ function loadCorpus(): Promise<Corpus> {
     return { rows, freq };
   });
   return corpusPromise;
+}
+
+/**
+ * العدُّ **بصيغ اللفظ لا برسمه** (رصده المالك 2026-07-31).
+ *
+ * كان القالبُ يعدّ الرسمَ المكتوبَ وحدَه، فمن سأل عن «شهر» أُجيب بأربعةٍ —
+ * وهي مواضعُ الرسم المجرّد لا مواضعُ اللفظ. واللفظُ في المصحف يجري بصيغه:
+ * شهر · شهرًا · الشهر · والشهر · بالشهر · شهرين · أشهر · الأشهر · الشهور.
+ * فالعدُّ الصحيح على **الجذع** (اللفظ بصيغه) لا على الحروف المكتوبة.
+ *
+ * ويُعرض **جدولُ الصيغ** بأعدادها، فيرى السائلُ ما عُدّ بعينه ويحكم: أهذه
+ * الصيغُ من دعواه أم بعضُها؟ فلا يُخفى وراء رقمٍ واحدٍ ما يُختلف فيه.
+ */
+interface Morph {
+  lemma: string | null;
+  forms: { form: string; n: number }[];
+  total: number;
+  ayat: number;
+  locs: string[];
+}
+
+async function morphCount(raw: string): Promise<Morph | null> {
+  const q = normalizeAr(raw).trim();
+  if (!q || q.includes(" ")) return null; // العدُّ الصرفيُّ للفظٍ مفردٍ لا لعبارة
+  const seed = await wordsByText(q).catch(() => []);
+  const lemma = seed.find((w) => w.lemma)?.lemma ?? null;
+  const all = lemma ? await wordsByLemma(lemma, 4000).catch(() => []) : seed;
+  if (!all.length) return null;
+  const byForm = new Map<string, number>();
+  const ayat = new Set<string>();
+  for (const w of all) {
+    byForm.set(w.textClean, (byForm.get(w.textClean) ?? 0) + 1);
+    ayat.add(`${w.surahNo}:${w.ayahNo}`);
+  }
+  return {
+    lemma,
+    forms: [...byForm.entries()].map(([form, n]) => ({ form, n })).sort((a, b) => b.n - a.n),
+    total: all.length,
+    ayat: ayat.size,
+    locs: [...ayat],
+  };
+}
+
+/** توزيعُ أعداد الجذوع في المصحف — لمعدّل الصدفة على أساسٍ صرفيٍّ لا رسميّ */
+let lemmaFreqP: Promise<number[]> | null = null;
+function lemmaFreq(): Promise<number[]> {
+  lemmaFreqP ??= (async () => {
+    const counts = new Map<string, number>();
+    for (let s = 1; s <= 114; s++) {
+      for (const w of await listWords(s).catch(() => [])) {
+        if (w.lemma) counts.set(w.lemma, (counts.get(w.lemma) ?? 0) + 1);
+      }
+    }
+    return [...counts.values()];
+  })();
+  return lemmaFreqP;
 }
 
 /** السوابقُ التي تلتصق بأوّل الكلمة فلا تُعدّ لفظًا آخر */
@@ -212,8 +268,26 @@ export default function FahisTool() {
   const [claimed, setClaimed] = useState("");
   const [corpus, setCorpus] = useState<Corpus | null>(null);
   const [ran, setRan] = useState<string | null>(null);
+  const [morph, setMorph] = useState<Morph | null | undefined>(undefined);
+  const [same, setSame] = useState<number | null>(null);
 
   useEffect(() => { loadCorpus().then(setCorpus).catch(() => {}); }, []);
+
+  // العدُّ الصرفيُّ يُشغَّل مع كلِّ فحصٍ في قالبَي العدد والكلّيّة
+  useEffect(() => {
+    if (!ran || (qalab !== "adad" && qalab !== "kulliya")) { setMorph(undefined); setSame(null); return; }
+    let live = true;
+    setMorph(undefined); setSame(null);
+    morphCount(ran).then(async (m) => {
+      if (!live) return;
+      setMorph(m);
+      if (m) {
+        const f = await lemmaFreq();
+        if (live) setSame(Math.max(0, f.filter((c) => c === m.total).length - 1));
+      }
+    });
+    return () => { live = false; };
+  }, [ran, qalab]);
   const res = useMemo(() => (corpus && ran ? examine(corpus, ran) : null), [corpus, ran]);
 
   const run = () => setRan(word.trim());
@@ -224,12 +298,15 @@ export default function FahisTool() {
   let verdict: { k: "تستقيم" | "تحتاج تقييدًا" | "لا تستقيم"; why: string } | null = null;
   if (res) {
     if (qalab === "adad" && claimN !== null) {
-      if (res.bare.total === claimN) verdict = { k: "تستقيم", why: `العدُّ التامُّ على المصحف يعطي ${num(res.bare.total)} — مطابقٌ لما ذُكر.` };
-      else if (res.withPrefix.total === claimN) verdict = { k: "تحتاج تقييدًا", why: `العددُ يصحّ إذا عُدَّت المواضعُ بسوابقها (${num(res.withPrefix.total)})، أمّا الصيغةُ المجرّدةُ فـ${num(res.bare.total)}. فالعددُ صحيحٌ والتسميةُ تحتاج ضبطًا.` };
-      else verdict = { k: "لا تستقيم", why: `العدُّ التامُّ يعطي ${num(res.bare.total)} مجرّدةً و${num(res.withPrefix.total)} بالسوابق — وكلاهما يخالف ${num(claimN)}.` };
+      // العبرةُ بعدد **صيغ اللفظ** لا برسمه — وإليه يُنسب الحكم
+      const m = morph?.total ?? null;
+      if (m !== null && m === claimN) verdict = { k: "تستقيم", why: `عدُّ اللفظ بصيغه كلِّها يعطي ${num(m)} — مطابقٌ لما ذُكر.` };
+      else if (res.bare.total === claimN) verdict = { k: "تحتاج تقييدًا", why: `الرسمُ المجرّدُ وحدَه ${num(res.bare.total)} — مطابقٌ لما ذُكر، لكنّ اللفظ بصيغه كلِّها ${m !== null ? num(m) : "أكثر"}. فالمقصودُ رسمٌ لا لفظ، ويلزم التصريحُ به.` };
+      else if (res.withPrefix.total === claimN) verdict = { k: "تحتاج تقييدًا", why: `العددُ يصحّ بالرسم وسوابقِه (${num(res.withPrefix.total)})، واللفظُ بصيغه كلِّها ${m !== null ? num(m) : "أكثر"}.` };
+      else verdict = { k: "لا تستقيم", why: `اللفظُ بصيغه كلِّها ${m !== null ? num(m) : "—"}، وبالرسم المجرّد ${num(res.bare.total)}، وبالسوابق ${num(res.withPrefix.total)} — ولا يوافق ${num(claimN)}.` };
     } else if (qalab === "kulliya") {
       verdict = res.withPrefix.total === 0
-        ? { k: "تستقيم", why: "لم يرد هذا اللفظُ في المصحف في أيِّ موضعٍ — والقولُ السالبُ يستقيم بهذا، ما لم يكن للّفظ رسمٌ آخر." }
+        ? { k: "تستقيم", why: morph ? `لم يرد رسمُ اللفظ، لكنّ له في المصحف ${num(morph.total)} موضعًا بصيغٍ أخرى — فانظر جدولَ الصيغ قبل الحكم.` : "لم يرد هذا اللفظُ في المصحف في أيِّ موضعٍ — والقولُ السالبُ يستقيم بهذا، ما لم يكن للّفظ رسمٌ آخر." }
         : { k: "لا تستقيم", why: `ورد في ${num(res.withPrefix.hits.length)} آيةً — ويكفي في تقييد الكلّيّة موضعٌ واحد، وأوّلُه ${res.withPrefix.hits[0].loc}.` };
     }
   }
@@ -312,7 +389,7 @@ export default function FahisTool() {
       </div>
       <p className="hint">
         {qalab === "adad"
-          ? "يُحسب العددُ على وجهين: الصيغةُ المجرّدة، وهي مع سوابقها (وَ فَ بِ كَ لِ الـ) — فأكثرُ الخلاف في العدّ سببُه هذا. ويُحسب معه معدّلُ الصدفة."
+          ? "العبرةُ بعددِ **صيغ اللفظ** لا برسمه المكتوب: «شهر» يجري في المصحف شهرًا والشهرَ وبالشهرِ وأشهُرًا… فيُعدُّ الجذعُ بوسم الصرف، ويُعرض جدولُ الصيغ ليرى السائلُ ما عُدّ. ويُذكر معه الرسمُ المجرّدُ للمقارنة، ومعدّلُ الصدفة."
           : qalab === "kulliya"
           ? "القولُ السالب («لا يوجد في القرآن كذا») يُختبر بموضعٍ واحد. ويُبحث باللفظ وسوابقِه."
           : qalab === "iraab"
@@ -329,13 +406,27 @@ export default function FahisTool() {
       {computed && res && shown && (
         <div className="out">
           <div className="nums">
-            <div><b>{num(res.bare.total)}</b><span>موضعًا بالصيغة المجرّدة</span></div>
-            <div><b>{num(res.withPrefix.total)}</b><span>بالسوابق</span></div>
-            <div><b>{num(shown.hits.length)}</b><span>آيةً</span></div>
-            {res.sameCount !== null && (
-              <div><b>{num(res.sameCount)}</b><span>لفظًا آخرَ يرد بالعدد نفسِه</span></div>
-            )}
+            {morph && <div><b>{num(morph.total)}</b><span>موضعًا <b style={{ fontWeight: 700 }}>بصيغ اللفظ كلِّها</b></span></div>}
+            {morph && <div><b>{num(morph.ayat)}</b><span>آيةً</span></div>}
+            <div><b>{num(res.bare.total)}</b><span>بالرسم المجرّد</span></div>
+            <div><b>{num(res.withPrefix.total)}</b><span>بالرسم وسوابقِه</span></div>
+            {same !== null && <div><b>{num(same)}</b><span>لفظًا آخرَ يرد بالعدد نفسِه</span></div>}
           </div>
+
+          {morph && (
+            <div style={{ marginBottom: 14 }}>
+              <p className="hint" style={{ margin: "0 0 6px" }}>
+                الصيغُ التي عُدّت — فيرى السائلُ ما دخل في العدد بعينه:
+              </p>
+              <div className="locs">
+                {morph.forms.map((f) => (
+                  <span key={f.form} style={{ border: "1px solid var(--line)", borderRadius: 7, padding: "2px 9px", fontSize: ".9rem" }}>
+                    {f.form} <b style={{ opacity: .55 }}>{num(f.n)}</b>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {verdict && (
             <div className="vd">
