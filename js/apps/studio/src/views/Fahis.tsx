@@ -10,6 +10,7 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import FahisTool from "../components/FahisTool";
 import { getUILang, num, useUILang } from "../i18n";
 
 interface Book {
@@ -254,6 +255,19 @@ export default function Fahis() {
           وهذه المراجعُ تُقرأ في مواضعها من التطبيق أيضًا: المعاجمُ في{" "}
           <Link to="/roots">صفحة المادّة</Link>، وكتبُ الإعراب والمعاني عند الآية.
           والتفاسيرُ تُعرض في <Link to="/tafasir">بابها</Link> شاهدَ فهمٍ ونقلٍ لا حجّةً لغويّة.
+        </p>
+      </section>
+
+      <section>
+        <h2>افحص فكرة</h2>
+        <p className="sub">
+          اكتب دعواك فيُجيبك <b>حسابٌ على المصحف</b> لا رأي — بلا ذكاءٍ اصطناعيّ،
+          وكلُّ رقمٍ هنا يُعاد فيُطابق
+        </p>
+        <FahisTool />
+        <p className="lim" style={{ marginTop: 12 }}>
+          هذان قالبان من سبعة. والباقي — الدلالةُ والترادفُ والإعرابُ والقراءةُ
+          والصرف — يُبنى تباعًا، ولكلٍّ آلتُه ورتبتُه في الجدول أعلاه.
         </p>
       </section>
 
