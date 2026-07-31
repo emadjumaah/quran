@@ -52,10 +52,11 @@ function loadCorpus(): Promise<Corpus> {
  */
 interface Morph {
   lemma: string | null;
-  forms: { form: string; n: number }[];
+  /** الصيغُ مصنَّفةً بعددها الصرفيّ — فالدعوى غالبًا في المفرد وحدَه */
+  groups: { key: "S" | "D" | "P"; label: string; total: number; forms: { form: string; n: number }[] }[];
+  singular: number;
   total: number;
   ayat: number;
-  locs: string[];
 }
 
 async function morphCount(raw: string): Promise<Morph | null> {
@@ -65,18 +66,30 @@ async function morphCount(raw: string): Promise<Morph | null> {
   const lemma = seed.find((w) => w.lemma)?.lemma ?? null;
   const all = lemma ? await wordsByLemma(lemma, 4000).catch(() => []) : seed;
   if (!all.length) return null;
-  const byForm = new Map<string, number>();
+  // وسمُ الصرف يترك المفردَ بلا علامة، ويعلّم المثنّى بـD والجمعَ بـP
+  const buckets: Record<"S" | "D" | "P", Map<string, number>> = { S: new Map(), D: new Map(), P: new Map() };
   const ayat = new Set<string>();
   for (const w of all) {
-    byForm.set(w.textClean, (byForm.get(w.textClean) ?? 0) + 1);
+    const n = w.segments?.find((g) => g.role === "stem")?.number;
+    const k: "S" | "D" | "P" = n === "D" ? "D" : n === "P" ? "P" : "S";
+    buckets[k].set(w.textClean, (buckets[k].get(w.textClean) ?? 0) + 1);
     ayat.add(`${w.surahNo}:${w.ayahNo}`);
   }
+  const LABEL = { S: "المفرد", D: "المثنّى", P: "الجمع" } as const;
+  const groups = (["S", "D", "P"] as const)
+    .map((key) => ({
+      key,
+      label: LABEL[key],
+      total: [...buckets[key].values()].reduce((a, b) => a + b, 0),
+      forms: [...buckets[key].entries()].map(([form, n]) => ({ form, n })).sort((a, b) => b.n - a.n),
+    }))
+    .filter((g) => g.total > 0);
   return {
     lemma,
-    forms: [...byForm.entries()].map(([form, n]) => ({ form, n })).sort((a, b) => b.n - a.n),
+    groups,
+    singular: groups.find((g) => g.key === "S")?.total ?? 0,
     total: all.length,
     ayat: ayat.size,
-    locs: [...ayat],
   };
 }
 
@@ -300,10 +313,12 @@ export default function FahisTool() {
     if (qalab === "adad" && claimN !== null) {
       // العبرةُ بعدد **صيغ اللفظ** لا برسمه — وإليه يُنسب الحكم
       const m = morph?.total ?? null;
-      if (m !== null && m === claimN) verdict = { k: "تستقيم", why: `عدُّ اللفظ بصيغه كلِّها يعطي ${num(m)} — مطابقٌ لما ذُكر.` };
+      const sg = morph?.singular ?? null;
+      if (sg !== null && sg === claimN) verdict = { k: "تستقيم", why: `المفردُ بصيغه كلِّها ${num(sg)} — مطابقٌ لما ذُكر. (والمجموعُ مع المثنّى والجمع ${num(m ?? 0)}.)` };
+      else if (m !== null && m === claimN) verdict = { k: "تستقيم", why: `اللفظُ بصيغه كلِّها — مفردًا ومثنًّى وجمعًا — ${num(m)}، مطابقٌ لما ذُكر.` };
       else if (res.bare.total === claimN) verdict = { k: "تحتاج تقييدًا", why: `الرسمُ المجرّدُ وحدَه ${num(res.bare.total)} — مطابقٌ لما ذُكر، لكنّ اللفظ بصيغه كلِّها ${m !== null ? num(m) : "أكثر"}. فالمقصودُ رسمٌ لا لفظ، ويلزم التصريحُ به.` };
       else if (res.withPrefix.total === claimN) verdict = { k: "تحتاج تقييدًا", why: `العددُ يصحّ بالرسم وسوابقِه (${num(res.withPrefix.total)})، واللفظُ بصيغه كلِّها ${m !== null ? num(m) : "أكثر"}.` };
-      else verdict = { k: "لا تستقيم", why: `اللفظُ بصيغه كلِّها ${m !== null ? num(m) : "—"}، وبالرسم المجرّد ${num(res.bare.total)}، وبالسوابق ${num(res.withPrefix.total)} — ولا يوافق ${num(claimN)}.` };
+      else verdict = { k: "لا تستقيم", why: `المفردُ ${sg !== null ? num(sg) : "—"}، والمجموعُ بالمثنّى والجمع ${m !== null ? num(m) : "—"}، وبالرسم المجرّد ${num(res.bare.total)} — ولا يوافق ${num(claimN)} واحدٌ منها.` };
     } else if (qalab === "kulliya") {
       verdict = res.withPrefix.total === 0
         ? { k: "تستقيم", why: morph ? `لم يرد رسمُ اللفظ، لكنّ له في المصحف ${num(morph.total)} موضعًا بصيغٍ أخرى — فانظر جدولَ الصيغ قبل الحكم.` : "لم يرد هذا اللفظُ في المصحف في أيِّ موضعٍ — والقولُ السالبُ يستقيم بهذا، ما لم يكن للّفظ رسمٌ آخر." }
@@ -344,6 +359,15 @@ export default function FahisTool() {
           border: 1px solid var(--line); border-radius: 7px; padding: 2px 8px; opacity: .85; }
         .fahis-tool .sample { margin-top: 12px; font-size: .92rem; line-height: 2.1; opacity: .9; }
         .fahis-tool .sample div { padding: 5px 0; border-bottom: 1px dotted var(--line); }
+        .fahis-tool .counts { display: grid; gap: 10px; margin-bottom: 16px; }
+        .fahis-tool .cg { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+        .fahis-tool .cg[data-main="1"] { border-color: color-mix(in oklab, var(--gold, #c9a227) 55%, transparent); }
+        .fahis-tool .cg[data-sum="1"] { border-style: dashed; opacity: .8; }
+        .fahis-tool .cg-h { display: flex; align-items: baseline; gap: 9px; margin-bottom: 6px; }
+        .fahis-tool .cg-h b { font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+        .fahis-tool .cg-h span { font-size: .9rem; opacity: .7; }
+        .fahis-tool .cg .locs span { border: 1px solid var(--line); border-radius: 7px; padding: 2px 9px; font-size: .88rem; }
+        .fahis-tool .cg .locs b { opacity: .5; font-weight: 600; }
         .fahis-tool .bk-open { border-bottom: 1px solid var(--line); }
         .fahis-tool .bk-open:last-child { border-bottom: 0; }
         .fahis-tool .bk-open > button { display: flex; align-items: baseline; gap: 9px; width: 100%;
@@ -389,7 +413,7 @@ export default function FahisTool() {
       </div>
       <p className="hint">
         {qalab === "adad"
-          ? "العبرةُ بعددِ **صيغ اللفظ** لا برسمه المكتوب: «شهر» يجري في المصحف شهرًا والشهرَ وبالشهرِ وأشهُرًا… فيُعدُّ الجذعُ بوسم الصرف، ويُعرض جدولُ الصيغ ليرى السائلُ ما عُدّ. ويُذكر معه الرسمُ المجرّدُ للمقارنة، ومعدّلُ الصدفة."
+          ? "العبرةُ بصيغ اللفظ لا برسمه، **والمفردُ يُفصل عن المثنّى والجمع** — فأكثرُ ما يُذكر من أعدادٍ إنّما هو في المفرد. وتُعرض الصيغُ في كلِّ قسمٍ ليرى السائلُ ما عُدّ بعينه."
           : qalab === "kulliya"
           ? "القولُ السالب («لا يوجد في القرآن كذا») يُختبر بموضعٍ واحد. ويُبحث باللفظ وسوابقِه."
           : qalab === "iraab"
@@ -405,28 +429,31 @@ export default function FahisTool() {
 
       {computed && res && shown && (
         <div className="out">
-          <div className="nums">
-            {morph && <div><b>{num(morph.total)}</b><span>موضعًا <b style={{ fontWeight: 700 }}>بصيغ اللفظ كلِّها</b></span></div>}
-            {morph && <div><b>{num(morph.ayat)}</b><span>آيةً</span></div>}
-            <div><b>{num(res.bare.total)}</b><span>بالرسم المجرّد</span></div>
-            <div><b>{num(res.withPrefix.total)}</b><span>بالرسم وسوابقِه</span></div>
-            {same !== null && <div><b>{num(same)}</b><span>لفظًا آخرَ يرد بالعدد نفسِه</span></div>}
-          </div>
-
+          {/* العددُ يُفصَّل بالعدد الصرفيّ — فالقولُ غالبًا في المفرد وحدَه،
+              وخلطُ المفرد بالمثنّى والجمع يُخفي محلَّ النزاع */}
           {morph && (
-            <div style={{ marginBottom: 14 }}>
-              <p className="hint" style={{ margin: "0 0 6px" }}>
-                الصيغُ التي عُدّت — فيرى السائلُ ما دخل في العدد بعينه:
-              </p>
-              <div className="locs">
-                {morph.forms.map((f) => (
-                  <span key={f.form} style={{ border: "1px solid var(--line)", borderRadius: 7, padding: "2px 9px", fontSize: ".9rem" }}>
-                    {f.form} <b style={{ opacity: .55 }}>{num(f.n)}</b>
-                  </span>
-                ))}
+            <div className="counts">
+              {morph.groups.map((g) => (
+                <div className="cg" key={g.key} data-main={g.key === "S" ? 1 : 0}>
+                  <div className="cg-h"><b>{num(g.total)}</b><span>{g.label}</span></div>
+                  <div className="locs">
+                    {g.forms.map((f) => (
+                      <span key={f.form}>{f.form} <b>{num(f.n)}</b></span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <div className="cg" data-sum="1">
+                <div className="cg-h"><b>{num(morph.total)}</b><span>المجموع في {num(morph.ayat)} آية</span></div>
               </div>
             </div>
           )}
+
+          <div className="nums">
+            <div><b>{num(res.bare.total)}</b><span>بالرسم المجرّد</span></div>
+            <div><b>{num(res.withPrefix.total)}</b><span>بالرسم وسوابقِه</span></div>
+            {same !== null && <div><b>{num(same)}</b><span>لفظًا آخرَ بالعدد نفسِه</span></div>}
+          </div>
 
           {verdict && (
             <div className="vd">
