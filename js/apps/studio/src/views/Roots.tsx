@@ -11,6 +11,7 @@ import type { ChangeEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import RootJourneyPanel from "../components/RootJourneyPanel";
 import SarfCounts from "../components/SarfCounts";
+import LexPanel from "../components/LexPanel";
 import {
   ayahLocationsOfRoot,
   countRoots,
@@ -447,6 +448,9 @@ function RootDetail({ root }: { root: string }) {
             </div>
           </div>
         )}
+
+        {/* معاجمُ اللغة العامّة عند المادّة — أُدخلت ولم تكن تُقرأ (2026-08-01) */}
+        <LexPanel root={rootDoc.root} />
 
         {/* trace this word across the mushaf — the thematic thread */}
         <div style={{ marginTop: 12 }}>

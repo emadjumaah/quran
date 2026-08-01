@@ -26,13 +26,14 @@ import CollectButton from "./CollectButton";
 import MuhkamaLine from "./MuhkamaLine";
 import { SimilarAyahsPanel } from "./SimilarAyahs";
 import { EraabPanel } from "./EraabChip";
+import RefsPanel from "./RefsPanel";
 import { TafsirPanel } from "./TafsirChip";
 import { AsbabPanel } from "./AsbabChip";
 import { TadabburPanel } from "./TadabburChip";
 import Translations from "./Translations";
 import { similarOf } from "../similar";
 
-type Active = "twin" | "links" | "wujuh" | "similar" | "tadabbur" | "tafsir" | "eraab" | "asbab" | "translate" | null;
+type Active = "twin" | "links" | "wujuh" | "similar" | "tadabbur" | "tafsir" | "eraab" | "refs" | "asbab" | "translate" | null;
 
 export default function AyahPanel({
   ayah,
@@ -94,6 +95,7 @@ export default function AyahPanel({
     ? [
         { k: "tafsir", label: "التفسير" },
         { k: "eraab", label: "الإعراب" },
+        { k: "refs", label: "المراجع" },
         { k: "asbab", label: "سببُ النزول" },
         { k: "translate", label: "الترجمة" },
       ]
@@ -152,6 +154,7 @@ export default function AyahPanel({
           <TadabburPanel ayah={ayah} ayahId={gid} open={active === "tadabbur"} />
           <TafsirPanel location={loc} open={active === "tafsir"} />
           <EraabPanel location={loc} open={active === "eraab"} />
+          <RefsPanel location={loc} open={active === "refs"} />
           <AsbabPanel location={loc} open={active === "asbab"} />
           {active === "translate" && <Translations ayah={ayah} open />}
         </div>
