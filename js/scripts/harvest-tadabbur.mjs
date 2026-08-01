@@ -39,7 +39,10 @@ let got = 0, miss = 0, err = 0;
 for (let i = 0; i < missing.length; i += CONC) {
   await Promise.all(missing.slice(i, i + CONC).map(async (loc) => {
     try {
-      const r = await fetch(`${HOST}/api/tadabbur?loc=${encodeURIComponent(loc)}&lang=${LANG}`);
+      // الحارسُ يشترط أن يكون الطلبُ من صفحات التطبيق نفسِه (origin/referer)،
+      // فيُرسَل الترويسةُ صريحةً — فالحاصدُ أداةُ المشروع لا طرفٌ خارجيّ.
+      const r = await fetch(`${HOST}/api/tadabbur?loc=${encodeURIComponent(loc)}&lang=${LANG}`,
+        { headers: { referer: `${HOST}/` } });
       const state = (r.headers.get("x-vercel-cache") || "").toUpperCase();
       if (!r.ok) { err++; return; }
       if (state !== "HIT" && state !== "STALE") { miss++; return; } // لم يولّده أحدٌ بعدُ — لا نحفظ ما ولّدناه بطلبنا
