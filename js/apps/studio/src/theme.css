@@ -240,6 +240,12 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .page { overflow-y: auto; width: 100%; max-width: none; margin-inline: 0;
   padding: 16px max(24px, calc((100% - var(--page-w)) / 2)) 24px; }
 .page-narrow { max-width: var(--page-w); margin: 0 auto; }
+/* إذا اجتمعت page-narrow مع page على العنصر الممرَّر نفسِه بطل تحديدُ العرض —
+   وإلا عادت علّةُ العجلة في الهامش، بل انسحق المحتوى: حشوُ التوسيط يُحسب على
+   عرض النافذة ثم يُطبَّق داخل عنصرٍ عرضُه --page-w فيبقى للمحتوى الفتات
+   (رصده المالك 2026-08-01 — عمودٌ هزيل). وتبقى page-narrow وحدَها غلافًا
+   داخليًّا مشروعًا في غير الحاوية الممرَّرة. */
+.page.page-narrow { max-width: none; margin: 0; }
 /* عرضُ الحاوية واحدٌ في المشروع كلِّه (قرار المالك 2026-07-21): عريضٌ مريحٌ
    لا كاملُ الشاشة — تُطبّقه كلُّ الصفحات بما فيها المصحف. */
 @media (max-width: 600px) {
