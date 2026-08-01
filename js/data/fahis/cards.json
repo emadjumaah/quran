@@ -1,5 +1,5 @@
 {
- "_": "بطاقاتُ فاحص — المصدرُ الحاكم. تُحرَّر هنا وتُفحص بـ fahis-lint ثم تُنشر نسخةُ العرض. ترتيبُ المصفوفة هو ترتيبُ العرض، وn رقمُ الاستشهاد الثابت.",
+ "_": "بطاقاتُ فاحص — المصدرُ الحاكم. تُحرَّر هنا وتُفحص بـ fahis-lint ثم تُنشر نسخةُ العرض «مجرَّدةً من sources»: الإسنادُ الداخليُّ (الباحثُ والكتابُ/الرابط) جاهزٌ للإظهار متى قرّر المالك، ولا يظهر في الصفحة اليوم. ترتيبُ المصفوفة هو ترتيبُ العرض، وn رقمُ الاستشهاد الثابت.",
  "cards": [
   {
    "id": "man-lil-aqil",
@@ -43,7 +43,14 @@
    ],
    "date": "2026-08-01",
    "batch": 14,
-   "revisions": []
+   "revisions": [],
+   "sources": [
+    {
+     "researcher": "محمد شحرور",
+     "kind": "book",
+     "ref": "https://archive.org/download/shahrourBooks/book1_djvu.txt"
+    }
+   ]
   },
   {
    "id": "fulk-safinah",
@@ -122,7 +129,14 @@
    ],
    "date": "2026-08-01",
    "batch": 14,
-   "revisions": []
+   "revisions": [],
+   "sources": [
+    {
+     "researcher": "محمد شحرور",
+     "kind": "book",
+     "ref": "https://archive.org/download/shahrourBooks/book1_djvu.txt"
+    }
+   ]
   },
   {
    "id": "jahr-alan",
@@ -245,7 +259,14 @@
    ],
    "date": "2026-08-01",
    "batch": 14,
-   "revisions": []
+   "revisions": [],
+   "sources": [
+    {
+     "researcher": "محمد شحرور",
+     "kind": "book",
+     "ref": "https://archive.org/download/shahrourBooks/book1_djvu.txt"
+    }
+   ]
   },
   {
    "id": "dalalat-sigha",
@@ -513,7 +534,25 @@
    ],
    "date": "2026-08-01",
    "batch": 13,
-   "revisions": []
+   "revisions": [],
+   "sources": [
+    {
+     "researcher": "عادل عصمت",
+     "kind": "video",
+     "title": "ثبات النصّ وحركة المعنى | د. مولاي مروان العلوي",
+     "ref": "https://www.youtube.com/watch?v=HaDn8fQSthc"
+    },
+    {
+     "researcher": "محمد شحرور",
+     "kind": "book",
+     "ref": "https://archive.org/download/shahrourBooks/book1_djvu.txt"
+    },
+    {
+     "researcher": "يوسف أبو عوّاد",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "lafz-aya",
@@ -642,7 +681,15 @@
    ],
    "date": "2026-08-01",
    "batch": 13,
-   "revisions": []
+   "revisions": [],
+   "sources": [
+    {
+     "researcher": "جمال البنّا",
+     "kind": "book",
+     "title": "الباحث الإسلامي جمال البنا ",
+     "ref": "https://archive.org/download/GamalAlBanna/%D8%AA%D8%AB%D9%88%D9%8A%D8%B1%20%D8%A7%D9%84%D9%82%D8%B1%D8%A7%D9%86_djvu.txt"
+    }
+   ]
   },
   {
    "id": "sab-samawat-alwan",
@@ -689,7 +736,15 @@
    ],
    "date": "2026-08-01",
    "revisions": [],
-   "batch": 9
+   "batch": 9,
+   "sources": [
+    {
+     "researcher": "عبد الدائم الكحيل",
+     "kind": "site",
+     "title": "مطابقة الحقائق العلمية للآيات القرانية – موسوعة الكحيل للاعجاز العلمي",
+     "ref": "https://kaheel7.net/?p=373"
+    }
+   ]
   },
   {
    "id": "la-taraduf-qatt",
@@ -748,7 +803,24 @@
    ],
    "date": "2026-08-01",
    "revisions": [],
-   "batch": 10
+   "batch": 10,
+   "sources": [
+    {
+     "researcher": "محمد شحرور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "علي منصور كيالي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "سامر إسلامبولي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "irtidad-uqubah",
@@ -804,7 +876,20 @@
    ],
    "date": "2026-08-01",
    "revisions": [],
-   "batch": 11
+   "batch": 11,
+   "sources": [
+    {
+     "researcher": "حسن بن فرحان المالكي",
+     "kind": "site",
+     "title": "حسن بن فرحان المالكي / الثقافة القضائية! - الجزء الأوّل - أ.حسن فرحان المالكي. @HsnFrhanAL",
+     "ref": "https://almaliky.org/subject.php?id=1775"
+    },
+    {
+     "researcher": "أحمد صبحي منصور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "libas-khumur",
@@ -858,7 +943,15 @@
    ],
    "date": "2026-08-01",
    "revisions": [],
-   "batch": 11
+   "batch": 11,
+   "sources": [
+    {
+     "researcher": "جمال البنّا",
+     "kind": "book",
+     "title": "الباحث الإسلامي جمال البنا ",
+     "ref": "https://archive.org/download/GamalAlBanna/%D8%AA%D9%81%D9%86%D9%8A%D8%AF%20%D8%AF%D8%B9%D9%88%D9%89%20%D8%A7%D9%84%D9%86%D8%B3%D8%AE%20%D9%81%D9%8A%20%D8%A7%D9%84%D9%82%D8%B1%D8%A7%D9%86_djvu.txt"
+    }
+   ]
   },
   {
    "id": "yamin-maymanah",
@@ -905,7 +998,14 @@
    ],
    "date": "2026-08-01",
    "revisions": [],
-   "batch": 11
+   "batch": 11,
+   "sources": [
+    {
+     "researcher": "علي منصور كيالي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "nizam-19",
@@ -952,7 +1052,15 @@
    ],
    "date": "2026-08-01",
    "revisions": [],
-   "batch": 12
+   "batch": 12,
+   "sources": [
+    {
+     "researcher": "عبد الدائم الكحيل",
+     "kind": "site",
+     "title": "شيفرة سورة مريم عليها السلام – موسوعة الكحيل للاعجاز العلمي",
+     "ref": "https://kaheel7.net/?p=22481"
+    }
+   ]
   },
   {
    "id": "taat-rasul",
@@ -1008,7 +1116,19 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 1
+   "batch": 1,
+   "sources": [
+    {
+     "researcher": "سامر إسلامبولي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "ياسر العديرقاوي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "nur-diya",
@@ -1058,7 +1178,14 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 1
+   "batch": 1,
+   "sources": [
+    {
+     "researcher": "علي منصور كيالي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "ibad-abid",
@@ -1102,7 +1229,14 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 1
+   "batch": 1,
+   "sources": [
+    {
+     "researcher": "محمد شحرور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "ithm-dhanb",
@@ -1147,7 +1281,14 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 1
+   "batch": 1,
+   "sources": [
+    {
+     "researcher": "سامر إسلامبولي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "rahman-rahim",
@@ -1201,7 +1342,19 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 2
+   "batch": 2,
+   "sources": [
+    {
+     "researcher": "يوسف أبو عوّاد",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "محمد شحرور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "hamd-shukr",
@@ -1251,7 +1404,14 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 2
+   "batch": 2,
+   "sources": [
+    {
+     "researcher": "يوسف أبو عوّاد",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "wahid-ahad",
@@ -1301,7 +1461,19 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 2
+   "batch": 2,
+   "sources": [
+    {
+     "researcher": "عادل عصمت",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "محمد شحرور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "nabi-rasul",
@@ -1351,7 +1523,24 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 3
+   "batch": 3,
+   "sources": [
+    {
+     "researcher": "يوسف أبو عوّاد",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "سامر إسلامبولي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "محمد شحرور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "inzal-tanzil",
@@ -1402,7 +1591,14 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 3
+   "batch": 3,
+   "sources": [
+    {
+     "researcher": "محمد شحرور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "islam-iman",
@@ -1452,7 +1648,29 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 4
+   "batch": 4,
+   "sources": [
+    {
+     "researcher": "عادل عصمت",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "جمال البنّا",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "محمد شحرور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "أحمد صبحي منصور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "ab-walid",
@@ -1502,7 +1720,19 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 4
+   "batch": 4,
+   "sources": [
+    {
+     "researcher": "علي منصور كيالي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "محمد شحرور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "kitab-quran-dhikr",
@@ -1560,7 +1790,14 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 5
+   "batch": 5,
+   "sources": [
+    {
+     "researcher": "محمد شحرور",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "lisan-lughah",
@@ -1612,7 +1849,19 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 5
+   "batch": 5,
+   "sources": [
+    {
+     "researcher": "عادل عصمت",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "سامر إسلامبولي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "walidah-umm",
@@ -1662,7 +1911,14 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 5
+   "batch": 5,
+   "sources": [
+    {
+     "researcher": "علي منصور كيالي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "naskh-kitabah",
@@ -1723,7 +1979,19 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 6
+   "batch": 6,
+   "sources": [
+    {
+     "researcher": "نيازي عزّ الدين",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    },
+    {
+     "researcher": "ياسر العديرقاوي",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "utu-alkitab",
@@ -1777,7 +2045,14 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 7
+   "batch": 7,
+   "sources": [
+    {
+     "researcher": "يوسف أبو عوّاد",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "bani-israil-43",
@@ -1835,7 +2110,14 @@
      "why": "فُحصت البطاقةُ قبل اكتمال مكتبة المراجع، فأمر المالكُ بإسنادها إليها"
     }
    ],
-   "batch": 8
+   "batch": 8,
+   "sources": [
+    {
+     "researcher": "يوسف أبو عوّاد",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   },
   {
    "id": "judhur-thulathiyyah",
@@ -1872,7 +2154,14 @@
    ],
    "date": "2026-07-31",
    "revisions": [],
-   "batch": 8
+   "batch": 8,
+   "sources": [
+    {
+     "researcher": "يوسف أبو عوّاد",
+     "kind": "corpus",
+     "note": "مادّتُه المجموعةُ بمراجعها في research/INDEX.md — والنسبةُ من سجلّ FAHIS-REGISTER"
+    }
+   ]
   }
  ]
 }

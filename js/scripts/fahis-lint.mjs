@@ -93,6 +93,17 @@ for (const c of cards) {
     if (typeof e.counter !== "boolean") err(`${at}: الشاهد ${i + 1} بلا وسم counter`);
   }
 
+  // الإسنادُ الداخليّ (أمرُ المالك 2026-08-01): لكلِّ بطاقةٍ مصادرُها — الباحثُ
+  // ومرجعُه (كتابٌ/موقعٌ/تفريغٌ برابطه، أو النسبةُ العامّةُ من السجلّ). لا يظهر
+  // في الصفحة اليوم، ويُجرَّد من نسخة العرض عند المزامنة — جاهزًا للإظهار متى قُرّر.
+  if (!Array.isArray(c.sources) || !c.sources.length) err(`${at}: بلا إسنادٍ داخليّ (sources) — لكلِّ بطاقةٍ مَن أثارها ومرجعُه`);
+  for (const [i, s] of (c.sources ?? []).entries()) {
+    if (!s.researcher) err(`${at}: المصدر ${i + 1} بلا اسم باحث`);
+    if (!["book", "site", "video", "corpus"].includes(s.kind)) err(`${at}: المصدر ${i + 1} بنوعٍ مجهول (${s.kind})`);
+    if (s.kind !== "corpus" && !s.ref) err(`${at}: المصدر ${i + 1} (${s.kind}) بلا رابط`);
+    if (s.kind === "corpus" && !s.note) err(`${at}: المصدر ${i + 1} العامُّ بلا بيان`);
+  }
+
   // وصلةُ الأداة: للبطاقة المحسوبة وصلةٌ أو علّةُ غياب
   if (c.tool) {
     if (!QAWALIB.has(c.tool.qalab)) err(`${at}: قالبُ الأداة مجهول: ${c.tool.qalab}`);
@@ -141,6 +152,12 @@ console.log(`\n${cards.length} بطاقةً · ${errors.length} خطأً · ${wa
 if (errors.length) process.exit(1);
 
 if (process.argv.includes("--sync")) {
-  writeFileSync(PUB, JSON.stringify({ date: new Date().toISOString().slice(0, 10), cards }), "utf8");
-  console.log(`✓ نُشرت نسخةُ العرض → ${PUB}`);
+  // نسخةُ العرض تُجرَّد من الإسناد الداخليّ — «الفكرةُ تُبحث لا قائلُها» في المنشور،
+  // والإسنادُ محفوظٌ في المصدر الحاكم جاهزًا للإظهار متى قرّر المالك
+  const pubCards = cards.map(({ sources, ...rest }) => rest);
+  writeFileSync(PUB, JSON.stringify({ date: new Date().toISOString().slice(0, 10), cards: pubCards }), "utf8");
+  const raw = readFileSync(PUB, "utf8");
+  const leak = ["sources", ...(rosterTokens()?.singles ?? [])].filter((t) => raw.includes(`"${t}"`) || (t !== "sources" && raw.includes(t)));
+  if (leak.length) { console.error(`✗ تسرّب إلى نسخة العرض: ${leak.join("، ")}`); process.exit(1); }
+  console.log(`✓ نُشرت نسخةُ العرض مجرَّدةً من الإسناد → ${PUB}`);
 }
