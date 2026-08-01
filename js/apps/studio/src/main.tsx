@@ -35,6 +35,9 @@ const Sarf = lazy(() => import("./views/Sarf"));
 const About = lazy(() => import("./views/About"));
 const Docs = lazy(() => import("./views/Docs"));
 const Fahis = lazy(() => import("./views/Fahis"));
+const FahisCard = lazy(() => import("./views/FahisCard"));
+const FahisToolPage = lazy(() => import("./views/FahisToolPage"));
+const FahisMethod = lazy(() => import("./views/FahisMethod"));
 import ShareButton from "./components/ShareButton";
 const Galaxy = lazy(() => import("./views/Galaxy"));
 const MushafMap = lazy(() => import("./views/MushafMap"));
@@ -183,7 +186,7 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
       ["/sarf", "الصرف بالأرقام", "Morphology"],
       ["/galaxy", "شبكة الجذور", "Roots network"],
       ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
-      ["/fahis", "فاحص — منهج الفحص", "Fāḥiṣ — how claims are tested"],
+      ["/fahis", "ميزانُ الأقوال", "Mīzān al-Aqwāl — weighing claims"],
       ["/docs", "توثيق المشروع", "Documentation"],
     ],
   },
@@ -500,6 +503,9 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/docs" element={<Docs />} />
           <Route path="/fahis" element={<Fahis />} />
+          <Route path="/fahis/c/:id" element={<FahisCard />} />
+          <Route path="/fahis/tool" element={<FahisToolPage />} />
+          <Route path="/fahis/method" element={<FahisMethod />} />
           <Route path="/lexicon" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />

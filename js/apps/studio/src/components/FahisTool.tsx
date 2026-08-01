@@ -22,6 +22,15 @@ import type { AyahDoc } from "../types";
 
 type Qalab = "adad" | "kulliya" | "iraab" | "dalala" | "open";
 
+/** تعبئةٌ مسبقةٌ من أزرار «أعِد الفحصَ بنفسك» في البطاقات — فالحسابُ يُعاد أمام القارئ فيُطابق */
+export interface FahisToolInitial {
+  qalab?: Qalab;
+  word?: string;
+  loc?: string;
+  claimed?: string;
+  autorun?: boolean;
+}
+
 /** نصُّ الآيات مطبَّعًا ومحاطًا بفراغٍ — ليُطابَق المتّصلُ متّصلًا لا مبعثرًا */
 interface Corpus {
   rows: { loc: string; n: string; t: string }[];
@@ -275,13 +284,15 @@ function DalalaPanel({ word }: { word: string }) {
   );
 }
 
-export default function FahisTool() {
-  const [qalab, setQalab] = useState<Qalab>("adad");
-  const [word, setWord] = useState("");
-  const [loc, setLoc] = useState("");
-  const [claimed, setClaimed] = useState("");
+export default function FahisTool({ initial }: { initial?: FahisToolInitial }) {
+  const [qalab, setQalab] = useState<Qalab>(initial?.qalab ?? "adad");
+  const [word, setWord] = useState(initial?.word ?? "");
+  const [loc, setLoc] = useState(initial?.loc ?? "");
+  const [claimed, setClaimed] = useState(initial?.claimed ?? "");
   const [corpus, setCorpus] = useState<Corpus | null>(null);
-  const [ran, setRan] = useState<string | null>(null);
+  const [ran, setRan] = useState<string | null>(
+    initial?.autorun && initial.word && initial.qalab !== "iraab" ? initial.word.trim() : null,
+  );
   const [morph, setMorph] = useState<Morph | null | undefined>(undefined);
   const [prose, setProse] = useState("");
   const [card, setCard] = useState<Card | null>(null);
