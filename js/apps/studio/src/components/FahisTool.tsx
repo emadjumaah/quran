@@ -16,10 +16,11 @@ import { Link } from "react-router-dom";
 import { allAyahs, fuzzyRoots, listWords, wordsByLemma, wordsByRoot, wordsByText } from "../db";
 import { normalizeAr } from "../lib/arabicSearch";
 import { type RefHit, refsForAyah, refsForRoot } from "../lib/refs";
+import { type Card, examineOpen } from "../lib/fahisOpen";
 import { num } from "../i18n";
 import type { AyahDoc } from "../types";
 
-type Qalab = "adad" | "kulliya" | "iraab" | "dalala";
+type Qalab = "adad" | "kulliya" | "iraab" | "dalala" | "open";
 
 /** نصُّ الآيات مطبَّعًا ومحاطًا بفراغٍ — ليُطابَق المتّصلُ متّصلًا لا مبعثرًا */
 interface Corpus {
@@ -282,6 +283,10 @@ export default function FahisTool() {
   const [corpus, setCorpus] = useState<Corpus | null>(null);
   const [ran, setRan] = useState<string | null>(null);
   const [morph, setMorph] = useState<Morph | null | undefined>(undefined);
+  const [prose, setProse] = useState("");
+  const [card, setCard] = useState<Card | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   const [same, setSame] = useState<number | null>(null);
 
   useEffect(() => { loadCorpus().then(setCorpus).catch(() => {}); }, []);
@@ -359,6 +364,16 @@ export default function FahisTool() {
           border: 1px solid var(--line); border-radius: 7px; padding: 2px 8px; opacity: .85; }
         .fahis-tool .sample { margin-top: 12px; font-size: .92rem; line-height: 2.1; opacity: .9; }
         .fahis-tool .sample div { padding: 5px 0; border-bottom: 1px dotted var(--line); }
+        .fahis-tool .open-box textarea { width: 100%; font: inherit; font-size: 16px; line-height: 1.9;
+          padding: 11px 13px; border-radius: 10px; border: 1px solid var(--line); background: transparent;
+          color: inherit; resize: vertical; }
+        .fahis-tool .open-go { display: flex; gap: 12px; align-items: center; margin-top: 9px; flex-wrap: wrap; }
+        .fahis-tool .oc-lines { margin: 10px 0 0; padding-inline-start: 20px; }
+        .fahis-tool .oc-lines li { margin-bottom: 8px; line-height: 1.95; opacity: .88; }
+        .fahis-tool .open-card .vd { margin-top: 14px; }
+        .fahis-tool .oc-ev { margin-top: 12px; font-size: .87rem; opacity: .72; }
+        .fahis-tool .oc-ev summary { cursor: pointer; }
+        .fahis-tool .oc-ev li { margin: 6px 0; line-height: 1.8; }
         .fahis-tool .counts { display: grid; gap: 10px; margin-bottom: 16px; }
         .fahis-tool .cg { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
         .fahis-tool .cg[data-main="1"] { border-color: color-mix(in oklab, var(--gold, #c9a227) 55%, transparent); }
@@ -385,8 +400,33 @@ export default function FahisTool() {
         <button data-on={qalab === "kulliya" ? 1 : 0} onClick={() => { setQalab("kulliya"); setRan(null); }}><span>قالبُ الكلّيّة</span></button>
         <button data-on={qalab === "iraab" ? 1 : 0} onClick={() => { setQalab("iraab"); setRan(null); }}><span>قالبُ الإعراب</span></button>
         <button data-on={qalab === "dalala" ? 1 : 0} onClick={() => { setQalab("dalala"); setRan(null); }}><span>قالبُ الدلالة</span></button>
+        <button data-on={qalab === "open" ? 1 : 0} onClick={() => { setQalab("open"); setRan(null); }}><span>اعرِضْ فكرةً نثرًا</span></button>
       </div>
 
+      {qalab === "open" ? (
+        <div className="open-box">
+          <textarea
+            value={prose} onChange={(e) => setProse(e.target.value)} dir="rtl" lang="ar" rows={3}
+            placeholder="اكتب الفكرةَ بلغتك — مثل: سمعتُ أنّ كلمة «شهر» وردت اثنتي عشرة مرّة في القرآن"
+          />
+          <div className="open-go">
+            <button
+              className="go"
+              disabled={busy || prose.trim().length < 8}
+              onClick={async () => {
+                setBusy(true); setErr(null); setCard(null);
+                try { setCard(await examineOpen(prose.trim())); }
+                catch (e) { setErr(e instanceof Error ? e.message : "تعذّر"); }
+                finally { setBusy(false); }
+              }}
+            >{busy ? "…يُفحص" : "افحص"}</button>
+            <span className="hint" style={{ margin: 0 }}>
+              يُصنَّف قولُك، ثمّ <b>يُشغَّل الحسابُ عندنا</b>، ثمّ تُصاغ البطاقةُ من مخرَجه — فلا يُذكر رقمٌ لم نحسبه.
+            </span>
+          </div>
+        </div>
+      ) : (
+        <>
       <div className="form">
         {qalab === "iraab" ? (
           <input
@@ -420,6 +460,23 @@ export default function FahisTool() {
           ? "لا يُعطيك فاحصٌ قولًا واحدًا في الإعراب — بل يضع أهلَ الصنعة متجاورين بالأقدميّة، فإن اختلفوا رأيتَ الخلافَ وحكمتَ عليه."
           : "اكتب اللفظَ الذي تريد بحثَ معناه، فتُعرض عليك مادّتُه كلُّها في المصحف ومعها المعاجمُ ومعاني القرآن — ثمّ تنظر أنت: أيستقيم هذا المعنى في هذه كلِّها؟"}
       </p>
+        </>
+      )}
+
+      {qalab === "open" && err && <p className="hint" style={{ color: "#b4483a" }}>تعذّر: {err}</p>}
+      {qalab === "open" && card && (
+        <div className="out open-card">
+          {card.why && <p className="hint" style={{ marginTop: 0 }}>صُنّفت: <b>{card.kind}</b> — {card.why}</p>}
+          {card.lines.length > 0 && <ol className="oc-lines">{card.lines.map((l, i) => <li key={i}>{l}</li>)}</ol>}
+          <div className="vd"><b>النتيجة: {card.verdict}</b>{card.limit && <p>حدودُ النتيجة: {card.limit}</p>}</div>
+          {card.evidence.length > 0 && (
+            <details className="oc-ev">
+              <summary>المعطى المحسوبُ الذي بُنيت عليه ({num(card.evidence.length)})</summary>
+              <ul>{card.evidence.map((e, i) => <li key={i}>{e}</li>)}</ul>
+            </details>
+          )}
+        </div>
+      )}
 
       {qalab === "iraab" && /^\d{1,3}\s*:\s*\d{1,3}$/.test(loc.trim()) && (
         <div className="out"><IraabPanel loc={loc.trim().replace(/\s/g, "")} /></div>
