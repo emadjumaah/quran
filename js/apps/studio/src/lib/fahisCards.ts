@@ -16,6 +16,12 @@ export type FahisVerdict =
   | "tastaqim" | "taqyid" | "la-tastaqim"
   | "lam-yatabayyan" | "mawquf" | "kharij-babina";
 
+/** جدولُ الصيغ: ما عُدّ بعينه — فلا يُخفى وراء رقمٍ خلافٌ في حدِّ المعدود */
+export interface SighaTable {
+  title?: string;
+  groups: { label: string; forms: { form: string; n: number }[]; more?: number }[];
+}
+
 export interface FahisEvidence {
   text: string;
   /** رتبةُ السند ١–٥، وnull لسطر المنهج الذي لا شاهدَ رتبةٍ فيه */
@@ -38,7 +44,7 @@ export interface FahisCardData {
   verdictDetail: string;
   scope: string;
   evidence: FahisEvidence[];
-  sighaTable: unknown;
+  sighaTable: SighaTable | null;
   limit: string;
   tool: { qalab: string; [k: string]: unknown } | null;
   toolNote?: string;

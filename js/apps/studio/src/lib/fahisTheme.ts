@@ -87,8 +87,17 @@ export const FAHIS_CSS = `
     padding: 1px 8px; margin-inline-end: 7px; vertical-align: 2px; white-space: nowrap; }
   .fahis .fc .rb.m { background: none; color: inherit; border: 1px dashed var(--line); opacity: .65; }
   .fahis .fc li.counter { border-inline-start: 3px solid color-mix(in oklab, currentColor 25%, transparent);
-    padding-inline-start: 10px; list-style-position: inside; margin-inline-start: -13px; }
+    padding-inline-start: 10px; }
   .fahis .fc .cmark { display: block; font-size: .78rem; opacity: .6; margin-bottom: 3px; }
+  .fahis .sigha { margin-top: 14px; font-size: .9rem; }
+  .fahis .sigha summary { cursor: pointer; opacity: .75; }
+  .fahis .sigha .sg { margin-top: 10px; }
+  .fahis .sigha .sg b { display: block; font-size: .86rem; margin-bottom: 6px; opacity: .85; }
+  .fahis .sigha .forms { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fahis .sigha .forms span { border: 1px solid var(--line); border-radius: 7px; padding: 2px 9px;
+    font-size: .86rem; white-space: nowrap; }
+  .fahis .sigha .forms i { font-style: normal; opacity: .6; font-variant-numeric: tabular-nums; }
+  .fahis .sigha .forms .more { border-style: dashed; opacity: .65; }
   .fahis .vstrip { margin-top: 18px; border-radius: 10px; padding: 12px 14px;
     border-inline-start: 4px solid var(--vc);
     background: color-mix(in oklab, var(--vc) 9%, transparent); }

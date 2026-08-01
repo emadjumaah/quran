@@ -42,6 +42,21 @@ export default function FahisCardBlock({ card }: { card: FahisCardData }) {
         ))}
       </ol>
 
+      {card.sighaTable && (
+        <details className="sigha">
+          <summary>{card.sighaTable.title ?? "جدولُ الصيغ — ما عُدّ بعينه"}</summary>
+          {card.sighaTable.groups.map((g) => (
+            <div className="sg" key={g.label}>
+              <b>{g.label}</b>
+              <div className="forms">
+                {g.forms.map((f) => <span key={f.form}>{f.form} <i>{num(f.n)}</i></span>)}
+                {g.more ? <span className="more">…و{num(g.more)} غيرُها</span> : null}
+              </div>
+            </div>
+          ))}
+        </details>
+      )}
+
       <div className="vstrip">
         <b>النتيجة: {v.label}</b>
         <p className="vd-detail">{card.verdictDetail}</p>
