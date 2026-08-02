@@ -160,4 +160,10 @@ if (process.argv.includes("--sync")) {
   const leak = ["sources", ...(rosterTokens()?.singles ?? [])].filter((t) => raw.includes(`"${t}"`) || (t !== "sources" && raw.includes(t)));
   if (leak.length) { console.error(`✗ تسرّب إلى نسخة العرض: ${leak.join("، ")}`); process.exit(1); }
   console.log(`✓ نُشرت نسخةُ العرض مجرَّدةً من الإسناد → ${PUB}`);
+
+  // مسابرُ الفحص (الخطّة ٧٫٥/٤٫٤): أرقامٌ معلومةُ الحكم تُعاد من القاعدة قبل أيِّ نشر
+  const { runProbes } = await import("./fahis-probes.mjs");
+  const pr = await runProbes();
+  if (pr.skipped) console.log("⚠ quran-kg.db غيرُ حاضرةٍ — المسابرُ لم تُشغَّل هنا؛ شغِّلها على جهازٍ فيه القاعدة");
+  else if (pr.fail) { console.error("✗ مسبارٌ منحرفٌ — المزامنةُ لا تمرّ"); process.exit(1); }
 }

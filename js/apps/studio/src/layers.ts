@@ -417,6 +417,54 @@ async function bayanLookup(anchor: string): Promise<LayerResult> {
   return { layer: "bayan", entries: entries.slice(0, 4) };
 }
 
+// ——— ميزان الأقوال: بطاقات الفحص المنشورة — حكمٌ بشواهدَ مرتَّبةٍ وحدودِ ما يلزم ———
+// المصدر نسخةُ العرض المجرَّدة (fahis-cards.json): لا اسمَ باحثٍ فيها أصلًا —
+// «الفكرةُ تُبحث لا قائلُها» محفوظةٌ في البيانات قبل التعليمات.
+interface MizanCard {
+  id: string; n: number; title: string; claim: string; plain: string;
+  kindDetail: string; verdict: string; verdictDetail: string; scope: string;
+  evidence: { text: string; rank: number | null; counter: boolean }[];
+  limit: string; lemmas?: string[]; topics?: string[];
+}
+const MIZAN_VERDICT: Record<string, string> = {
+  tastaqim: "تستقيم", taqyid: "تحتاج تقييدًا", "la-tastaqim": "لا تستقيم",
+  "lam-yatabayyan": "لم يتبيّن", mawquf: "موقوفة", "kharij-babina": "خارجُ بابنا",
+};
+async function loadMizan(): Promise<MizanCard[]> {
+  return (await loadJson<{ cards: MizanCard[] }>("fahis-cards.json"))?.cards ?? [];
+}
+function mizanEntry(c: MizanCard): LayerEntry {
+  const v = MIZAN_VERDICT[c.verdict] ?? c.verdict;
+  const ev = c.evidence.slice(0, 2).map((e, i) => `${i + 1}) ${e.counter ? "‹شاهد يجري خلاف القول› " : ""}${e.text}`).join("\n");
+  return {
+    label: `ميزان الأقوال · بطاقة ${c.n} — ${v}`, ref: c.title, href: `/fahis/c/${c.id}`,
+    text: `القول: «${c.claim}»\nما فُحص: ${c.scope}\nمن شواهده:\n${ev}\nالنتيجة: ${v} — ${c.verdictDetail}\nما لا يلزم من النتيجة: ${c.limit}`.slice(0, 1100),
+  };
+}
+async function mizanFind(qRaw: string, k = 3): Promise<LayerResult> {
+  const cards = await loadMizan();
+  if (!cards.length) return { layer: "mizan", entries: [], error: "تعذر تحميل بطاقات الميزان" };
+  const q = bare(qRaw);
+  const toks = termTokens(qRaw);
+  const scored = cards
+    .map((c) => {
+      let s = termScore(`${c.title} ${c.claim} ${c.plain} ${c.kindDetail} ${(c.topics ?? []).join(" ")}`, toks);
+      // اللفظُ المرصود بعينه أقوى القرائن — واحتواءُ العنوان للمرسى كاملًا كذلك
+      if ((c.lemmas ?? []).some((l) => q.includes(bare(l)))) s += 2;
+      if (q.length >= 3 && bare(`${c.title} ${c.claim}`).includes(q)) s += 3;
+      return { c, s };
+    })
+    .filter((x) => x.s > 0)
+    .sort((a, b) => b.s - a.s || a.c.n - b.c.n)
+    .slice(0, Math.min(k, 4));
+  if (!scored.length) return { layer: "mizan", entries: [], note: `لا بطاقةَ في الميزان تمسّ «${qRaw}» — القولُ غيرُ مفحوصٍ عندنا: لا تحكم عليه من عندك، وأحِل السائل إلى «زِنْ قولًا» في ميزان الأقوال (/fahis/tool) ليُفحص بالحساب` };
+  return {
+    layer: "mizan",
+    entries: scored.map((x) => mizanEntry(x.c)),
+    note: "حكمُ البطاقة يُنقل بنصّه وبحدوده معًا (لا تشديدَ ولا إسقاطَ لسطر «ما لا يلزم»)، وتُذكر باسمها ورقمها («ميزان الأقوال، بطاقة كذا») — والفكرةُ تُبحث لا قائلُها: لا نسبةَ لأحد",
+  };
+}
+
 // ——— التبويب الموضوعي المحسوب: المصحف كله مبوَّب بوحداته (أبواب ← مواضيع) ———
 async function tabwibLookup(anchor: string): Promise<LayerResult> {
   await Promise.all([loadSiyaq(), loadTabwib(), loadTopics()]);
@@ -618,6 +666,9 @@ export async function layerHints(kind: "root" | "aya", key: string): Promise<str
       const tariq = await loadJson<TariqIndex>("bayan-tariq.json");
       const th = tariq?.roots[q];
       if (th?.length) hints.push(`طرقه العلماءُ في كتب البيان: ${th.map(([b, n]) => `${bookLabelOf(b)} (${n})`).join("، ")} — layer_of(tariq, ${q})`);
+      const miz = await loadMizan();
+      const mc = miz.find((c) => (c.lemmas ?? []).some((l) => bare(l) === q));
+      if (mc) hints.push(`في «ميزان الأقوال» بطاقةُ فحصٍ لقولٍ في هذا اللفظ («${mc.title}») — layer_of(mizan, ${q})`);
       const edited = await loadJson<{ cards: BayanCard[] }>("bayan.json");
       const card = edited?.cards.find((c) => bare(c.title).includes(q) || bare(c.kashf).includes(q));
       if (card) hints.push(`بطاقةُ بيانٍ محررة «${card.title}» بكشفها المحسوب — layer_of(bayan, ${card.title})`);
@@ -663,6 +714,7 @@ export async function layerLookup(layer: string, anchor: string): Promise<LayerR
   if (id === "stats") return statsLookup(a);
   if (id === "qiraat" || id === "i3rab") return genreLookup(id as Genre, a);
   if (id === "bayan") return bayanLookup(a);
+  if (id === "mizan" || id === "fahis") return mizanFind(a);
   if (id === "tariq" || id === "matruq") return tariqLookup(a);
   if (id === "tabwib" || id === "mawadi" || id === "mawdui") return tabwibLookup(a);
   if (id === "simat") return simatLookup(a);
@@ -688,6 +740,8 @@ export async function layerLookup(layer: string, anchor: string): Promise<LayerR
 export async function layerSearch(layer: string, query: string, k = 6): Promise<LayerResult> {
   await ensureLayers();
   const id = layer.trim();
+  // الميزانُ يُبحث بترتيب القرائن لا بالمتجهات — بطاقاتُه قليلةٌ محرَّرةُ العناوين
+  if (id === "mizan" || id === "fahis") return mizanFind(query, Math.min(k, 4));
   const inGenre = ["tafsir", "asbab", "gharib", "lexicon", "qiraat", "i3rab", "bayan"].includes(id)
     ? BOOK_SOURCES.filter((b) => b.genre === (id as Genre) && b.embedded).map((b) => b.id)
     : null;
