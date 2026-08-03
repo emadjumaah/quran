@@ -103,7 +103,7 @@ export const TARIKH_CSS = `
   .tarikh .tlist .d { font-size: .82rem; font-weight: 600; flex: none; white-space: nowrap; }
   .tarikh .tlist .p { font-size: .84rem; opacity: .75; line-height: 1.8; flex: 1; min-width: 0; }
 
-  /* بطاقاتُ الدعاوى الثماني */
+  /* بطاقاتُ الأقوال الثمانية */
   .tarikh .cards { display: grid; gap: 10px; margin-top: 12px; }
   .tarikh .card { display: block; text-decoration: none; color: inherit; padding: 14px 16px;
     border: 1px solid var(--line); border-radius: 13px; }
@@ -117,7 +117,7 @@ export const TARIKH_CSS = `
     .tarikh .card .t { flex-basis: 100%; }
   }
 
-  /* صفحةُ الدعوى */
+  /* صفحةُ القول */
   .tarikh .verdict { border-radius: 12px; padding: 14px 16px; margin: 16px 0 8px;
     border-inline-start: 4px solid var(--gc, var(--line));
     background: color-mix(in oklab, var(--gc, currentColor) 8%, transparent); }

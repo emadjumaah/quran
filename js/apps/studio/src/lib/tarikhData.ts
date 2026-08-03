@@ -5,8 +5,8 @@
  * وسجلاتُها)، يبني منها `js/scripts/build-tarikh.mjs` ملفّاتِ العرض. وكلُّ نصٍّ
  * حكميٍّ هنا **منقولٌ حرفًا من v1** — لا صياغةَ من التطبيق.
  *
- * الكسل: فهرسُ الدعاوى ملفٌّ واحدٌ صغير، وكلُّ عنقودٍ ملفٌّ مستقلٌّ لا يُجلب
- * إلا حين يُطلب — فلا يُشحن عنقودٌ قبل فتح دعواه.
+ * الكسل: فهرسُ الأقوال ملفٌّ واحدٌ صغير، وكلُّ عنقودٍ ملفٌّ مستقلٌّ لا يُجلب
+ * إلا حين يُطلب — فلا يُشحن عنقودٌ قبل فتح صفحته.
  */
 import type { GradeId } from "./tarikhTheme";
 
@@ -27,6 +27,8 @@ export interface TarikhClaim {
 export interface TarikhWitness { id: string; title: string; raw: string }
 export interface TarikhGrade { id: GradeId; label: string; gloss: string }
 export interface TarikhClusterBrief {
+  /** لقبُ العنقود المعروض: أقدمُ شاهدٍ مكتوبٍ فيه — لا معرّفُ قاعدةِ بيانات */
+  label: string; labelDeath: number | null;
   id: string; nodes: number; edges: number; records: number; works: number;
   eventTags: string[]; earliestWitness: { record: string; work_ar: string; death_ah: number } | null;
   chronoSuspect: number; nameNodes: number; withJami: number;
@@ -34,16 +36,14 @@ export interface TarikhClusterBrief {
 
 export interface TarikhClaims {
   version: number;
-  source: { doc: string; rev: string; sha256: string; method: { doc: string; sha256: string } };
-  head: { title: string; meta: { label: string; raw: string }[] };
+  head: { title: string };
   howToRead: { n: number; raw: string }[];
   qoyud: { id: string; raw: string }[];
   grades: TarikhGrade[];
-  documentary: { witnesses: TarikhWitness[]; generalLimit: string; preamble: string };
+  documentary: { witnesses: TarikhWitness[]; generalLimit: string };
   claims: TarikhClaim[];
   conclusion: { title: string; items: { n: number; raw: string }[] };
   externalRefs: { title: string; raw: string };
-  sealLog: { title: string; items: { raw: string }[] };
   clusterIndex: TarikhClusterBrief[];
   /** الميثاقُ الحاكم منقولًا حرفًا — سلّمُ الأدلّة وقواعدُ الفحص وحدودُ المنهج */
   method: {
@@ -119,12 +119,21 @@ function once<T>(cache: { p: Promise<T> | null }, file: string): Promise<T> {
 }
 
 const claimsCache: { p: Promise<TarikhClaims> | null } = { p: null };
-export const loadTarikhClaims = () => once(claimsCache, "tarikh-claims.json");
+export function loadTarikhClaims(): Promise<TarikhClaims> {
+  return once(claimsCache, "tarikh-claims.json").then(async (d) => {
+    // فهرسُ ألقاب العناقيد يُضبط مرّةً، فيُؤنَّس كلُّ معرّفٍ في كلّ صفحة
+    const [{ clusterLabels }, { setClusterLabels }] = await Promise.all([
+      import("./tarikhIds"), import("./tarikhMd"),
+    ]);
+    setClusterLabels(clusterLabels(d.clusterIndex));
+    return d;
+  });
+}
 
 const timelineCache: { p: Promise<TarikhTimeline> | null } = { p: null };
 export const loadTarikhTimeline = () => once(timelineCache, "tarikh-timeline.json");
 
-const hukmCache: { p: Promise<{ doc: string; rev: string; sha256: string; markdown: string }> | null } = { p: null };
+const hukmCache: { p: Promise<{ doc: string; markdown: string; chars: number }> | null } = { p: null };
 export const loadTarikhHukm = () => once(hukmCache, "tarikh-hukm.json");
 
 /** العنقودُ لا يُجلب إلا عند طلبه بعينه — وهذا هو التحميلُ الكسول المشترط */

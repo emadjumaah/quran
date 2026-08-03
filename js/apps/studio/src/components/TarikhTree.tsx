@@ -14,6 +14,22 @@ import { arNum, count, COUNTS, FLAG_GLOSS, jamiHref, type TarikhCluster, type Ta
 /** فاصلةٌ معزولةُ الاتجاه — لا تلتصق بالأرقام فتُقرأ رقمًا */
 const Sep = () => <span className="sep">·</span>;
 
+/**
+ * موضعُ الرواية بلسانٍ عربيّ: علاماتُ الصفحات في المدوّنة تأتي بصيغة الفهرسة
+ * `PageV01P033` — تُقرأ هنا «ج١ ص٣٣»، ويُعرض معها البابُ إن ذُكر. لا يُحذف
+ * معنًى ولا يُضاف: الرقمان هما هما.
+ */
+function locusAr(locus: string | null): string | null {
+  if (!locus) return null;
+  const parts = locus.split("|").map((x) => x.trim()).filter(Boolean);
+  const out = parts.map((p) => {
+    const m = p.match(/^PageV(\d+)P(\d+)$/);
+    if (!m) return p;
+    return `ج${arNum(+m[1])} ص${arNum(+m[2])}`;
+  });
+  return out.join(" — ") || null;
+}
+
 const W = 100, H = 100;
 
 interface Placed { n: TarikhNode; x: number; y: number }
@@ -185,8 +201,7 @@ export default function TarikhTree({ cluster }: { cluster: TarikhCluster }) {
                       <b>{r.source.workAr ?? "—"}</b>
                       {r.source.authorAr ? ` — ${r.source.authorAr}` : ""}
                       {r.source.deathAh != null ? ` (ت${arNum(r.source.deathAh)})` : ""}
-                      {r.source.locus ? <><Sep /><bdi>{r.source.locus}</bdi></> : null}
-                      <Sep /><bdi style={{ opacity: 0.7 }}>{r.id}</bdi>
+                      {locusAr(r.source.locus) ? <><Sep />{locusAr(r.source.locus)}</> : null}
                     </div>
                     <div className="txt" dir="rtl" lang="ar">{r.fullText}</div>
                     {r.jamiRef && (

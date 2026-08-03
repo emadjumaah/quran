@@ -2,7 +2,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 
 const TABS: [to: string, label: string][] = [
-  ["/tarikh", "الدعاوى الثماني"],
+  ["/tarikh", "الأقوال الثمانية"],
   ["/tarikh/masadir", "المصادر والمنهج"],
   ["/tarikh/wathiqa", "الوثيقةُ كاملةً"],
 ];

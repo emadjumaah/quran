@@ -193,7 +193,7 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
       ["/fahis", "ميزانُ الأقوال", "Mīzān al-Aqwāl — weighing claims"],
       // موضعُه المؤقّت جنبَ الميزان — كلاهما بابُ فحصٍ بدرجاتٍ معلَنة.
       // (موضعُه النهائيُّ في التنقّل سؤالٌ للإدارة في تقرير خ٧.)
-      ["/tarikh", "تاريخ النص", "The text's history"],
+      ["/tarikh", "ملفّ جمع القرآن", "The collection of the Qur'an"],
       ["/docs", "توثيق المشروع", "Documentation"],
     ],
   },

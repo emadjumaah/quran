@@ -1,12 +1,12 @@
 /**
- * صفحةُ الدعوى — المسار: /tarikh/d/:id.
+ * صفحةُ القول — المسار: /tarikh/d/:id.
  *
  * ترتيبُ العرض: الحكمُ وتسبيبُه ← البيّنةُ المنقولةُ وشجرتُها التفاعليّة ←
  * بطاقاتُ البيّنة الوثائقيّة ← «حدود الحكم» و«ما الذي يغيّر الدرجة» في ذيل
  * الصفحة بتصميمٍ محترمٍ لا هامشيّ. وكلُّ نصٍّ هنا منقولٌ حرفًا من v1.
  *
- * الكسل: شجرةُ العنقود لا تُجلب إلا حين يُطلب عنقودُها — والدعوى ذاتُ عناقيدَ
- * متعدّدةٍ تُحمّل المفتوحَ منها وحدَه.
+ * الكسل: شجرةُ العنقود لا تُجلب إلا حين يُطلب عنقودُها — وذو العناقيدِ المتعدّدة
+ * يُحمَّل المفتوحُ منها وحدَه.
  */
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -15,6 +15,7 @@ import {
   arNum, count, COUNTS, loadTarikhClaims, loadTarikhCluster,
   type TarikhClaim, type TarikhClaims, type TarikhCluster,
 } from "../lib/tarikhData";
+import { clusterNumber } from "../lib/tarikhIds";
 
 /** فاصلةٌ معزولةُ الاتجاه — لا تلتصق بالأرقام فتُقرأ رقمًا */
 const Sep = () => <span className="sep">·</span>;
@@ -37,7 +38,7 @@ function ClusterPane({ id, data }: { id: string; data: TarikhClaims }) {
 
   const brief = data.clusterIndex.find((c) => c.id === id);
   if (err) return <p className="note">تعذّر تحميلُ العنقود: {err}</p>;
-  if (!cl) return <p className="note">…تُحمَّل شجرةُ {id}</p>;
+  if (!cl) return <p className="note">…تُحمَّل الشجرة</p>;
 
   const earliest = cl.earliestWitness;
   const settled = cl.earliestFullySettledRoute;
@@ -115,11 +116,11 @@ export default function TarikhClaim() {
     <div className="page page-narrow tarikh" dir="rtl" lang="ar">
       <style>{TARIKH_CSS}</style>
       <TarikhTabs />
-      <p className="crumb"><Link to="/tarikh">تاريخ النص</Link> ← {claim?.title ?? decodeURIComponent(id)}</p>
+      <p className="crumb"><Link to="/tarikh">ملفُّ جمع القرآن</Link> ← {claim?.title ?? decodeURIComponent(id)}</p>
 
       {err && <p className="note">تعذّر التحميل: {err}</p>}
       {!data && !err && <p className="note">…</p>}
-      {data && !claim && <p className="note">لا دعوى بهذا المعرّف.</p>}
+      {data && !claim && <p className="note">لا قولَ بهذا المعرّف.</p>}
 
       {data && claim && (
         <>
@@ -168,24 +169,35 @@ export default function TarikhClaim() {
             <Md className="body" text={claim.fields.manqul.raw} />
             {claim.clusters.length > 0 && (
               <>
+                {claim.clusters.filter((c) => c.inSnapshot).length > 1 && (
+                  <p className="note" style={{ margin: "10px 0 2px" }}>
+                    لهذا القول أكثرُ من طريقٍ مشجَّرة — اخترْ إحداها:
+                  </p>
+                )}
                 <div className="cltabs">
-                  {claim.clusters.map((c) =>
-                    c.inSnapshot && c.id ? (
+                  {claim.clusters.map((c) => {
+                    if (!c.inSnapshot || !c.id) {
+                      return (
+                        <span key={c.ref} className="out" title="طريقٌ مذكورةٌ في الوثيقة ولم تُشجَّر في هذا العرض">
+                          العنقود {clusterNumber(c.ref)} — غيرُ مشجَّرٍ في هذا العرض
+                        </span>
+                      );
+                    }
+                    const b = data.clusterIndex.find((x) => x.id === c.id);
+                    return (
                       <button key={c.ref} data-on={active === c.id ? 1 : 0} onClick={() => setActive(c.id)}>
-                        {c.ref}
+                        {b
+                          ? `العنقود ${clusterNumber(b.id)} — ${b.label}${b.labelDeath != null ? ` (ت${arNum(b.labelDeath)})` : ""}`
+                          : `العنقود ${clusterNumber(c.id ?? c.ref)}`}
                       </button>
-                    ) : (
-                      <span key={c.ref} className="out" title="عنقودٌ مذكورٌ في الوثيقة وليس في لقطة هذا الباب">
-                        {c.ref} — خارجَ اللقطة
-                      </span>
-                    ),
-                  )}
+                    );
+                  })}
                 </div>
                 {active && <ClusterPane id={active} data={data} />}
               </>
             )}
             {claim.clusters.length === 0 && (
-              <p className="note">لا شجرةَ عنقودٍ لهذه الدعوى في الوثيقة — بيّنتُها المنقولة وسومٌ وأبوابُ كتب.</p>
+              <p className="note">لا شجرةَ عنقودٍ لهذا القول في الوثيقة — بيّنتُه المنقولة وسومٌ وأبوابُ كتب.</p>
             )}
           </div>
 
@@ -235,7 +247,7 @@ export default function TarikhClaim() {
             </div>
             {claim.qaydRefs.length > 0 && (
               <p className="note" style={{ marginTop: 10, lineHeight: 1.9 }}>
-                قيودٌ تُقرأ مع بيّنات هذه الدعوى:{" "}
+                قيودٌ تُقرأ مع بيّنات هذا القول:{" "}
                 {claim.qaydRefs.map((q, i) => {
                   const qd = data.qoyud.find((x) => x.id === q);
                   return (

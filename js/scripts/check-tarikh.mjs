@@ -146,7 +146,6 @@ const GRADE_LABEL = {
   for (const q of claims.qoyud) { lifted++; g2.ok(inV1(q.raw), `${q.id} ليس في v1`); }
   for (const h of claims.howToRead) { lifted++; g2.ok(inV1(h.raw), `«كيف تُقرأ» ${h.n} ليس في v1`); }
   for (const it of claims.conclusion.items) { lifted++; g2.ok(inV1(it.raw), `الخلاصة ${it.n} ليست في v1`); }
-  for (const it of claims.sealLog.items) { lifted++; g2.ok(inV1(it.raw), "سجلُّ الختم ليس في v1"); }
   // الميثاقُ في صفحة «المصادر والمنهج»: منقولٌ حرفًا من METHOD.md
   const m = claims.method;
   lifted += 2;
@@ -198,8 +197,10 @@ const GRADE_LABEL = {
   }
 
   // ٢/ج — صفرُ جملةٍ تقويميّةٍ مضافة: كودُ الواجهة لا يذكر درجةً ولا لفظَ نبرة
-  const TONE = ["زعم", "يزعم", "مزاعم", "باطل", "بطلان", "فُنّدت", "فنّدت", "خرافة", "مؤامرة", "أكذوبة", "قطعًا", "بلا شكّ", "لا شكّ"];
-  const files = ["views/Tarikh.tsx", "views/TarikhClaim.tsx", "views/TarikhHukm.tsx",
+    // ولسانُ الباب لسانُ «ميزان الأقوال»: **قولٌ** يُوزن لا دعوى تُرمى بها فئة
+  const TONE = ["زعم", "يزعم", "مزاعم", "باطل", "بطلان", "فُنّدت", "فنّدت", "خرافة",
+    "مؤامرة", "أكذوبة", "قطعًا", "بلا شكّ", "لا شكّ", "دعوى", "الدعوى", "دعاوى", "الدعاوى"];
+  const files = ["views/TarikhMasadir.tsx", "components/TarikhTabs.tsx", "views/Tarikh.tsx", "views/TarikhClaim.tsx", "views/TarikhHukm.tsx",
     "components/TarikhTree.tsx", "components/TarikhFooter.tsx", "components/GradeChip.tsx",
     "lib/tarikhData.ts", "lib/tarikhMd.tsx", "lib/tarikhTheme.ts"];
   // التعليقاتُ تُنزع أوّلًا: شرحُ المبرمج ليس نصَّ عرض، والمفحوصُ ما يُعرض
@@ -312,17 +313,42 @@ const g3 = gate("٣", "التتبّع — عقدة ← سجل ← نصّ بلا 
 // ——————————————————————————————————————————————————————————
 // ٤ — الكسل: الفهرسُ خفيفٌ ولا يحمل عنقودًا
 // ——————————————————————————————————————————————————————————
-const g4 = gate("٤", "الكسل — فهرسُ الدعاوى لا يحمل حمولةَ عنقود");
+const g4 = gate("٤", "الكسل — فهرسُ الأقوال لا يحمل حمولةَ عنقود");
 {
   const raw = readFileSync(join(PUB, "tarikh-claims.json"), "utf8");
-  g4.ok(!/"nodes":\s*\[/.test(raw), "فهرسُ الدعاوى يحمل عقدَ شجرة");
-  g4.ok(!/"fullText"/.test(raw), "فهرسُ الدعاوى يحمل نصوصَ روايات");
-  g4.ok(raw.length < 300_000, `فهرسُ الدعاوى ثقيل: ${raw.length} بايت`);
+  g4.ok(!/"nodes":\s*\[/.test(raw), "فهرسُ الأقوال يحمل عقدَ شجرة");
+  g4.ok(!/"fullText"/.test(raw), "فهرسُ الأقوال يحمل نصوصَ روايات");
+  g4.ok(raw.length < 300_000, `فهرسُ الأقوال ثقيل: ${raw.length} بايت`);
   const clusterFiles = readdirSync(PUB).filter((x) => /^tarikh-cluster-.*\.json$/.test(x));
   g4.ok(clusterFiles.length === claims.clusterIndex.length,
     `عددُ ملفّات العناقيد (${clusterFiles.length}) لا يطابق الفهرس (${claims.clusterIndex.length})`);
   g4.g.indexBytes = raw.length;
   g4.g.clusterFiles = clusterFiles.length;
+}
+
+// ——————————————————————————————————————————————————————————
+// ٥ — نظافةُ العرض: لا يخرج إلى التطبيق شأنٌ داخليٌّ لمستودع البحث
+// ——————————————————————————————————————————————————————————
+const g5 = gate("٥", "نظافةُ العرض — لا اسمَ محرِّرٍ ولا مسارَ ملفٍّ ولا بصمةَ إيداعةٍ في ملفّات العرض");
+{
+  const INTERNAL = [
+    [/Fable|Opus 5|Sonnet|Claude/i, "اسمُ نموذجٍ أو محرِّر"],
+    [/\b(data|plan|js|findings|scripts)\/[A-Za-z0-9_\-/]+\.(md|py|json|jsonl|mjs)/, "مسارُ ملفٍّ في مستودع البحث"],
+    [/HUKM-JAMC-DRAFT|HOLDOUT-MOTZKI|SESSION-KH/, "اسمُ ملفٍّ داخليّ"],
+    [/\bخ[١-٩]\/[أ-ي]/, "رمزُ جلسةٍ داخليّة"],
+    [/"sha256"|\b[0-9a-f]{40}\b/, "بصمةٌ أو إيداعة"],
+  ];
+  for (const f of ["tarikh-claims.json", "tarikh-hukm.json", "tarikh-timeline.json"]) {
+    const raw = readFileSync(join(PUB, f), "utf8");
+    for (const [re, what] of INTERNAL) {
+      const hit = raw.match(re);
+      g5.ok(!hit, `${f}: ${what} — «${hit?.[0] ?? ""}»`);
+    }
+  }
+  // ومعرّفاتُ السجلات لا تُعرض لقبًا: لكلِّ عنقودٍ لقبٌ من أقدم شاهدٍ فيه
+  for (const c of claims.clusterIndex) {
+    g5.ok(!!c.label && !/^clx-jamc-/.test(c.label), `${c.id}: لقبٌ فنّيٌّ لا اسمُ كتاب`);
+  }
 }
 
 // ——————————————————————————————————————————————————————————

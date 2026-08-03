@@ -159,8 +159,8 @@ function documentary() {
   if (out.length !== 5) die(`§١: توقّعنا خمسَ بيّناتٍ وثائقيّةٍ فوجدنا ${out.length}`);
   const g = body.match(/^- \*\*حدّ عام:\*\* (.+)$/m);
   if (!g) die("§١: لم يوجد «حدّ عام»");
-  const preamble = body.match(/^(تُذكر مرةً[^\n]+)$/m);
-  return { witnesses: out, generalLimit: lift(g[1]), preamble: lift(preamble[1]) };
+  // (ديباجةُ §١ تحمل رمزَ جلسةٍ داخليّة، فلا تخرج إلى العرض)
+  return { witnesses: out, generalLimit: lift(g[1]) };
 }
 
 // ——————————————————————————————————————————————————————————————
@@ -465,6 +465,9 @@ function buildClusters(recordsById, spansByCluster) {
     writeFileSync(join(PUB, `tarikh-cluster-${id}.json`), JSON.stringify(out));
     index.push({
       id,
+      // لقبٌ يُعرض للقارئ: أقدمُ شاهدٍ مكتوبٍ في العنقود — لا معرّفُ قاعدةِ بيانات
+      label: out.earliestWitness?.work_ar ?? (out.works[0] ?? id),
+      labelDeath: out.earliestWitness?.death_ah ?? null,
       nodes: nodes.length, edges: edges.length, records: records.length,
       works: out.works.length,
       eventTags: out.eventTags,
@@ -475,6 +478,20 @@ function buildClusters(recordsById, spansByCluster) {
     });
   }
   return index;
+}
+
+/**
+ * سجلُّ الإحالات للعرض العامّ: أسماءُ الدراسات وأوعيتُها كما هي، وتُقصّ منه
+ * الإشارةُ إلى ملفّ محكّ المعايرة في مستودع البحث — فمساراتُ الملفّات ليست
+ * مرجعًا لقارئ (أمر المالك 2026-08-03). **حذفٌ من الذيل لا تحريرٌ للنصّ:**
+ * والمخرَجُ يُتحقَّق أنّه بدايةُ الأصل حرفًا.
+ */
+function publicRefs() {
+  const full = sections["٤"].body.trim();
+  const cut = full.indexOf(" — محكُّ المعايرة، انظر");
+  const out = (cut > -1 ? full.slice(0, cut) : full).trim();
+  if (!full.startsWith(out)) die("§٤: القصُّ ليس حذفًا من الذيل");
+  return lift(out);
 }
 
 // ——————————————————————————————————————————————————————————————
@@ -505,19 +522,19 @@ for (const c of cl) {
 
 const claimsOut = {
   version: 1,
-  source: {
-    doc: "HUKM-JAMC-v1.md", rev: "2a6aba2",
-    sha256: sha256(V1), method: { doc: "METHOD.md", sha256: sha256(METHOD) },
-  },
-  head,
+  // (بصماتُ الإيداعات وتجزئاتُ الملفّات محفوظةٌ في `MANIFEST.md` باللقطة —
+  //  ولا تخرج إلى ملفّات العرض)
+  // صدرُ الوثيقة (المحرِّر · مساراتُ المادّة · حالةُ الوثيقة) شأنُ مستودع البحث:
+  // لا يخرج منه إلى التطبيق إلا العنوان (أمر المالك 2026-08-03).
+  head: { title: head.title },
   howToRead: howItems,
   qoyud,
   grades: gradeGlosses(),
   documentary: doc,
   claims: cl,
   conclusion: { title: lift(sections["٣"].title), items: numberedItems(sections["٣"].body, 3, "§٣") },
-  externalRefs: { title: lift(sections["٤"].title), raw: lift(sections["٤"].body) },
-  sealLog: { title: lift(sections["٥"].title), items: bulletItems(sections["٥"].body, "§٥", 4) },
+  externalRefs: { title: lift(sections["٤"].title), raw: publicRefs() },
+  // سجلُّ الختم (§٥) سجلُّ تحريرٍ داخليّ بإيداعاته — لا يخرج إلى التطبيق
   clusterIndex,
   // ——— المصادرُ والمنهج: ما يراه الباحثُ ليعيد الفحص، والقارئُ ليطمئنّ ———
   method: (() => {
@@ -538,8 +555,16 @@ const claimsOut = {
 };
 writeFileSync(join(PUB, "tarikh-claims.json"), JSON.stringify(claimsOut));
 writeFileSync(join(PUB, "tarikh-timeline.json"), JSON.stringify(timeline(doc)));
+// نسخةُ العرض العامّة: متنُ الوثيقة (§٠…§٤) بلا صدرِ التحرير وبلا سجلّ الختم —
+// فأسماءُ المحرِّرين ومساراتُ الملفّات وبصماتُ الإيداعات شأنُ مستودع البحث لا
+// شأنُ قارئ التطبيق (أمر المالك 2026-08-03). ولا يُحرَّر من المتن حرف.
+const bodyStart = V1.indexOf("## ٠.");
+const sealStart = V1.indexOf("## ٥.");
+if (bodyStart < 0 || sealStart < 0) die("تعذّر تحديدُ متن الوثيقة للعرض العامّ");
+const publicMd = `# ${head.title}\n\n${V1.slice(bodyStart, sealStart).trimEnd()}`
+  .replace(" — محكُّ المعايرة، انظر `plan/HOLDOUT-MOTZKI.md`.", ".");
 writeFileSync(join(PUB, "tarikh-hukm.json"), JSON.stringify({
-  doc: "HUKM-JAMC-v1.md", rev: "2a6aba2", sha256: sha256(V1), markdown: V1,
+  doc: "HUKM-JAMC-v1.md", markdown: publicMd, chars: publicMd.length,
 }));
 
 // ——— نسخةُ نبراس: الوثيقةُ مقروءةً بمداخلَ معنونة (بنمط كتب البيان) ———

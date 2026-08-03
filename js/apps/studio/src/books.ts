@@ -67,7 +67,7 @@ export const BOOK_SOURCES: BookSource[] = [
   { id: "maqayis", label: "مقاييس اللغة", genre: "lexicon", author: "ابن فارس", embedded: true },
   // — تاريخ النص: وثيقةُ الحكم المختومة، مصدرٌ يُقرأ ويُقتبس. غيرُ مضمَّنة —
   //   التضمينُ وربطُ أدوات نبراس الدلاليّة به سؤالُ بوابةٍ للإدارة (خ٧).
-  { id: "tarikh", label: "ملف جمع القرآن — وثيقة الحكم", genre: "tarikh", author: "حلقة التاريخ المبكّر" },
+  { id: "tarikh", label: "وثيقة الحكم (مختومة)", genre: "tarikh", author: "حلقة التاريخ المبكّر" },
 ];
 export const EMBEDDED_SOURCES = BOOK_SOURCES.filter((s) => s.embedded);
 export const TAFSIR_SOURCES = BOOK_SOURCES.filter((s) => s.genre === "tafsir");
@@ -82,7 +82,7 @@ export const bookById = (id: string): BookSource | undefined => BOOK_SOURCES.fin
 export const bookLabel = (id: string): string => bookById(id)?.label ?? id;
 
 export const GENRE_LABELS: Record<Genre, string> = {
-  tafsir: "التفاسير", asbab: "أسباب النزول", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات", bayan: "كتب البيان", lexicon: "المعاجم", tarikh: "تاريخ النص",
+  tafsir: "التفاسير", asbab: "أسباب النزول", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات", bayan: "كتب البيان", lexicon: "المعاجم", tarikh: "ملفّ جمع القرآن",
 };
 // «كل كتابٍ مستخدمٍ في مشكاة يجب أن يكون في المكتبة» — الكل يُعرض؛ المصطلحيّة
 // (بيان/معاجم) بعرضِ عناوينَ لا سُوَر (see isTermKeyed)

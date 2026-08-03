@@ -7,6 +7,11 @@
  * حرفٌ ولا يُحذف.
  */
 import type { ReactNode } from "react";
+import { humanize, tagRender, tidy, type ClusterLabels } from "./tarikhIds";
+
+/** فهرسُ ألقاب العناقيد — يُضبط مرّةً عند تحميل البيانات، فيراه كلُّ عارض */
+let LABELS: ClusterLabels | undefined;
+export const setClusterLabels = (m: ClusterLabels) => { LABELS = m; };
 
 /**
  * عزلُ المقاطع اللاتينية داخل النصّ العربيّ — أسماءُ الباحثين وأوعيةُ النشر
@@ -27,18 +32,28 @@ function isolateLatin(text: string, keyPrefix: string): ReactNode[] {
   return out.length ? out : [text];
 }
 
-/** التوكيدُ والشيفرةُ داخل السطر */
+/**
+ * التوكيدُ والشيفرةُ داخل السطر — ومعهما تأنيسُ المعرّفات: يُبدَّل معرّفُ
+ * العنقود باسم أقدمِ كتابٍ فيه، وتُطوى أعلامُ الجودة ومعرّفاتُ الرواة
+ * والسجلات. البياناتُ تبقى حرفًا، والتأنيسُ في العرض وحدَه (tarikhIds.ts).
+ */
 export function inlineMd(text: string, keyPrefix = ""): ReactNode[] {
+  // ١) الوسومُ وأعلامُ الجودة: تُسمّى بالعربيّة أو تُطوى، والقوسُ يُنظَّف إن فرغ
+  const stripped = tidy(text.replace(/`([^`]+)`/g, (whole, code: string) => {
+    const r = tagRender(code);
+    return r === null ? whole : r ? `«${r}»` : "";
+  }));
   const out: ReactNode[] = [];
   const re = /\*\*([^*]+)\*\*|`([^`]+)`/g;
   let last = 0, m: RegExpExecArray | null, i = 0;
-  while ((m = re.exec(text))) {
-    if (m.index > last) out.push(...isolateLatin(text.slice(last, m.index), `${keyPrefix}${i}p`));
-    if (m[1] !== undefined) out.push(<b key={`${keyPrefix}b${i++}`}>{isolateLatin(m[1], `${keyPrefix}b${i}`)}</b>);
-    else out.push(<code key={`${keyPrefix}c${i++}`} dir="ltr">{m[2]}</code>);
+  const plain = (t: string, k: string) => isolateLatin(humanize(t, LABELS), k);
+  while ((m = re.exec(stripped))) {
+    if (m.index > last) out.push(...plain(stripped.slice(last, m.index), `${keyPrefix}${i}p`));
+    if (m[1] !== undefined) out.push(<b key={`${keyPrefix}b${i++}`}>{plain(m[1], `${keyPrefix}b${i}`)}</b>);
+    else out.push(<code key={`${keyPrefix}c${i++}`} dir="ltr">{humanize(m[2], LABELS)}</code>);
     last = m.index + m[0].length;
   }
-  if (last < text.length) out.push(...isolateLatin(text.slice(last), `${keyPrefix}${i}e`));
+  if (last < stripped.length) out.push(...plain(stripped.slice(last), `${keyPrefix}${i}e`));
   return out;
 }
 

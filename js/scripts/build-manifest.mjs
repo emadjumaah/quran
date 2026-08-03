@@ -68,7 +68,7 @@ const BOOKS = [
   { id: "mufradat", label: "المفردات في غريب القرآن", genre: "lexicon", author: "الراغب الأصفهاني" },
   { id: "maqayis", label: "مقاييس اللغة", genre: "lexicon", author: "ابن فارس" },
   // — تاريخ النص: وثيقةُ الحكم المختومة مصدرًا يُقرأ ويُقتبس (بلا تضمين) —
-  { id: "tarikh", label: "ملف جمع القرآن — وثيقة الحكم", genre: "tarikh", author: "حلقة التاريخ المبكّر" },
+  { id: "tarikh", label: "وثيقة الحكم (مختومة)", genre: "tarikh", author: "حلقة التاريخ المبكّر" },
 ];
 
 const books = BOOKS.map((b) => {

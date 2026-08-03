@@ -1,9 +1,10 @@
 /**
- * «تاريخ النص» — صدرُ الباب. المسار: /tarikh.
+ * «ملفُّ جمع القرآن» — صدرُ الباب. المسار: /tarikh.
  *
- * مدخلٌ واحدٌ وكشفٌ تدريجيّ: سطرٌ زمنيٌّ وثائقيٌّ واحد، ثمّ ثماني بطاقاتِ دعوى
- * بترتيب السردية على كلٍّ منها شارةُ درجتها. والدرجاتُ ونصوصُها كلُّها منقولةٌ
- * حرفًا من وثيقة الحكم المختومة v1 — تُعرض ولا تُحرَّر.
+ * مدخلٌ واحدٌ وكشفٌ تدريجيّ: سطرٌ زمنيٌّ وثائقيٌّ واحد، ثمّ ثماني بطاقاتٍ بترتيب
+ * القصّة على كلٍّ منها شارةُ درجتها. والأحكامُ ونصوصُها كلُّها منقولةٌ حرفًا من
+ * وثيقة الحكم المختومة — تُعرض ولا تُحرَّر. ولسانُ الباب لسانُ «ميزان الأقوال»:
+ * **قولٌ** يُوزن، لا اتّهامَ لقائل (أمر المالك 2026-08-03).
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -121,20 +122,20 @@ export default function Tarikh() {
 
       {!ar && (
         <p className="muted" style={{ marginBottom: 18, fontSize: ".9rem" }} dir="ltr" lang="en">
-          «Tārīkh al-naṣṣ» presents the sealed verdict document on the collection of the Qurʾān:
-          eight claims, each with its evidence — transmitted and documentary — its graded verdict,
+          «Milaff Jamʿ al-Qurʾān» presents the sealed verdict document on the collection of the Qurʾān:
+          eight statements, each with its evidence — transmitted and documentary — its graded verdict,
           its limits, and what would change the grade. Arabic only for now.
         </p>
       )}
 
       <TarikhTabs />
 
-      <h1>تاريخ النص</h1>
+      <h1>ملفُّ جمع القرآن</h1>
       <p className="lede">
-        كيف وصل المصحفُ إلينا؟ ثماني دعاوى تُعرض هنا بأدلّتها: بيّنةٌ منقولةٌ
-        مؤرَّخةُ الدوران بأشجار طرقها، وبيّنةٌ وثائقيّةٌ من الرقوق والنقوش —
-        ولكلِّ دعوى <b>درجةٌ معلَنة</b>، وحدودٌ لا يتجاوزها حكمُها، وبندٌ يقول
-        صراحةً <b>ما الذي يغيّر الدرجة</b>.
+        كيف وصل إلينا المصحف؟ يُقال في ذلك كلامٌ كثير، فتُوزن هنا <b>ثمانيةُ
+        أقوال</b> بأدلّتها: بيّنةٌ منقولةٌ مؤرَّخةُ الدوران بأشجار طرقها، وبيّنةٌ
+        وثائقيّةٌ من الرقوق والنقوش — ولكلِّ قولٍ <b>درجةٌ معلَنة</b>، وحدودٌ لا
+        يتجاوزها حكمُه، وبندٌ يقول صراحةً <b>ما الذي يغيّر الدرجة</b>.
       </p>
 
       <div className="howto">
@@ -142,7 +143,7 @@ export default function Tarikh() {
         <ol>
           <li>المفحوصُ هنا <b>أخبارٌ تاريخيّةٌ عن جمع المصحف</b> — رواياتٌ من كتب التراث ووثائقُ ماديّة — لا القرآنُ نفسُه.</li>
           <li>السطرُ الزمنيّ أدناه يضع <b>الشواهدَ الماديّة</b> (رقوقٌ ونقوش) في مواضعها من الزمن.</li>
-          <li>لكلِّ دعوى بطاقةٌ عليها <b>شارةُ درجتها</b>؛ افتحها ترَ الأدلّةَ قبل النتيجة، ثمّ حدودَ الحكم وما يغيّره.</li>
+          <li>لكلِّ قولٍ بطاقةٌ عليها <b>شارةُ درجته</b>؛ افتحها ترَ الأدلّةَ قبل النتيجة، ثمّ حدودَ الحكم وما يغيّره.</li>
           <li>ومن أراد التحقّق: <Link to="/tarikh/masadir">المصادرُ والمنهج</Link> — الكتبُ بأسمائها، والميثاقُ الذي وُزنت به.</li>
         </ol>
       </div>
@@ -154,8 +155,8 @@ export default function Tarikh() {
 
       {data && (
         <>
-          <h2>الدعاوى الثماني</h2>
-          <p className="sub">بترتيب السردية — من كتابة الوحي إلى مصاحف الصحابة.</p>
+          <h2>الأقوال الثمانية</h2>
+          <p className="sub">بترتيب القصّة — من كتابة الوحي إلى مصاحف الصحابة.</p>
           <div className="cards">
             {data.claims.map((c) => (
               <Link className={`card g-${c.grade}`} key={c.id} to={c.route}>
@@ -164,7 +165,7 @@ export default function Tarikh() {
                   <span className="t">{c.title}</span>
                   <GradeChip grade={c.grade} grades={data.grades} />
                   {c.grades.length > 1 && (
-                    <span className="gchip more" title="للدعوى أحكامٌ فرعيّةٌ بدرجاتٍ أخرى — تُقرأ داخلها">
+                    <span className="gchip more" title="للقول أحكامٌ فرعيّةٌ بدرجاتٍ أخرى — تُقرأ داخله">
                       ودرجاتٌ أخرى ({arNum(c.grades.length - 1)})
                     </span>
                   )}

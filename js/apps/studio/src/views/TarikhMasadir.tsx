@@ -9,20 +9,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { TARIKH_CSS } from "../lib/tarikhTheme";
-import { arNum, count, COUNTS, loadTarikhClaims, loadTarikhHukm, type TarikhClaims } from "../lib/tarikhData";
+import { arNum, count, COUNTS, loadTarikhClaims, type TarikhClaims } from "../lib/tarikhData";
 import { inlineMd } from "../lib/tarikhMd";
 import TarikhTabs from "../components/TarikhTabs";
 
-const Sep = () => <span className="sep">·</span>;
-
 export default function TarikhMasadir() {
   const [data, setData] = useState<TarikhClaims | null>(null);
-  const [hukm, setHukm] = useState<{ rev: string; sha256: string; markdown: string } | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  useEffect(() => {
-    loadTarikhClaims().then(setData).catch((e) => setErr(String(e)));
-    loadTarikhHukm().then(setHukm).catch(() => {});
-  }, []);
+  useEffect(() => { loadTarikhClaims().then(setData).catch((e) => setErr(String(e))); }, []);
 
   const totalRecords = data?.clusterIndex.reduce((a, c) => a + c.records, 0) ?? 0;
 
@@ -64,7 +58,7 @@ export default function TarikhMasadir() {
 
           {/* ٢ — البيّنة الوثائقية */}
           <h2>البيّنةُ الوثائقيّة</h2>
-          <p className="sub">{inlineMd(data.documentary.preamble, "pre-")}</p>
+          <p className="sub">آثارٌ ماديّةٌ ودراساتٌ منشورة، يُحال إليها في الأحكام بالرمز و١…و٥.</p>
           <div className="wcards">
             {data.documentary.witnesses.map((w) => (
               <div className="wcard" key={w.id}>
@@ -113,26 +107,10 @@ export default function TarikhMasadir() {
             {data.qoyud.map((q) => <li key={q.id}><b>{q.id}:</b> {inlineMd(q.raw, `${q.id}-`)}</li>)}
           </ul>
 
-          {/* ٥ — البصمة وإعادة التشغيل */}
-          <h2>البصمةُ وإعادةُ التشغيل</h2>
-          <div className="wcard">
-            <div className="x" style={{ fontSize: ".92rem" }}>
-              {data.head.meta.map((m) => (
-                <p key={m.label} style={{ margin: "0 0 8px" }}><b>{m.label}:</b> {inlineMd(m.raw, `${m.label}-`)}</p>
-              ))}
-              {hukm && (
-                <p style={{ margin: "10px 0 0" }} className="note">
-                  إصدارةُ الختم <code>{hukm.rev}</code><Sep />
-                  بصمةُ الوثيقة <code>{hukm.sha256.slice(0, 16)}</code><Sep />
-                  {arNum(hukm.markdown.length)} حرفًا — تُقرأ كاملةً في{" "}
-                  <Link to="/tarikh/wathiqa">صفحة الوثيقة</Link>.
-                </p>
-              )}
-            </div>
-          </div>
-          <p className="note" style={{ marginTop: 12, lineHeight: 1.9 }}>
-            وكلُّ ملفّات هذا الباب مولَّدةٌ آليًّا من تلك اللقطة، تحرسها بوّابةٌ تُعيد
-            مقابلةَ كلِّ نصٍّ معروضٍ بمصدره حرفًا حرفًا قبل أن يُعرض.
+          <p className="note" style={{ marginTop: 26, lineHeight: 1.9 }}>
+            وكلُّ ما في هذا الباب مولَّدٌ آليًّا من نسخةٍ مجمَّدةٍ من هذه المادّة، تحرسها
+            بوّابةٌ تُعيد مقابلةَ كلِّ نصٍّ معروضٍ بمصدره حرفًا حرفًا قبل أن يُعرض —
+            فلا يصل إلى الصفحة نصٌّ لم يُطابَق.
           </p>
         </>
       )}
