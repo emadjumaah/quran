@@ -9,7 +9,7 @@
  */
 import { embedQuery } from "./semantic";
 
-export type Genre = "tafsir" | "asbab" | "gharib" | "i3rab" | "qiraat" | "bayan" | "lexicon";
+export type Genre = "tafsir" | "asbab" | "gharib" | "i3rab" | "qiraat" | "bayan" | "lexicon" | "tarikh";
 export interface BookSource { id: string; label: string; genre: Genre; author?: string; embedded?: boolean; remote?: boolean; note?: string }
 
 /**
@@ -65,6 +65,9 @@ export const BOOK_SOURCES: BookSource[] = [
   // root-keyed معاجم — تُعرض في بطاقة الكلمة وفي المكتبة (عرضًا مصطلحيًّا)
   { id: "mufradat", label: "المفردات في غريب القرآن", genre: "lexicon", author: "الراغب الأصفهاني", embedded: true },
   { id: "maqayis", label: "مقاييس اللغة", genre: "lexicon", author: "ابن فارس", embedded: true },
+  // — تاريخ النص: وثيقةُ الحكم المختومة، مصدرٌ يُقرأ ويُقتبس. غيرُ مضمَّنة —
+  //   التضمينُ وربطُ أدوات نبراس الدلاليّة به سؤالُ بوابةٍ للإدارة (خ٧).
+  { id: "tarikh", label: "ملف جمع القرآن — وثيقة الحكم", genre: "tarikh", author: "حلقة التاريخ المبكّر" },
 ];
 export const EMBEDDED_SOURCES = BOOK_SOURCES.filter((s) => s.embedded);
 export const TAFSIR_SOURCES = BOOK_SOURCES.filter((s) => s.genre === "tafsir");
@@ -79,13 +82,13 @@ export const bookById = (id: string): BookSource | undefined => BOOK_SOURCES.fin
 export const bookLabel = (id: string): string => bookById(id)?.label ?? id;
 
 export const GENRE_LABELS: Record<Genre, string> = {
-  tafsir: "التفاسير", asbab: "أسباب النزول", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات", bayan: "كتب البيان", lexicon: "المعاجم",
+  tafsir: "التفاسير", asbab: "أسباب النزول", gharib: "غريب القرآن", i3rab: "إعراب القرآن", qiraat: "القراءات", bayan: "كتب البيان", lexicon: "المعاجم", tarikh: "تاريخ النص",
 };
 // «كل كتابٍ مستخدمٍ في مشكاة يجب أن يكون في المكتبة» — الكل يُعرض؛ المصطلحيّة
 // (بيان/معاجم) بعرضِ عناوينَ لا سُوَر (see isTermKeyed)
-const GENRE_ORDER: Genre[] = ["tafsir", "asbab", "gharib", "i3rab", "qiraat", "bayan", "lexicon"];
+const GENRE_ORDER: Genre[] = ["tafsir", "asbab", "gharib", "i3rab", "qiraat", "bayan", "lexicon", "tarikh"];
 /** كتابٌ مداخلُه عناوينُ (فرق/وجه/مادّة…) لا آيات — يُعرض قائمةً مصطلحيّة */
-export const isTermKeyed = (b: BookSource): boolean => b.genre === "bayan" || b.genre === "lexicon";
+export const isTermKeyed = (b: BookSource): boolean => b.genre === "bayan" || b.genre === "lexicon" || b.genre === "tarikh";
 /** Books grouped by genre (registry order), for the تفاسير section. */
 export function booksByGenre(): { genre: Genre; label: string; books: BookSource[] }[] {
   return GENRE_ORDER
