@@ -22,6 +22,7 @@ import { inlineMd, Md } from "../lib/tarikhMd";
 import GradeChip from "../components/GradeChip";
 import TarikhFooter from "../components/TarikhFooter";
 import TarikhTree from "../components/TarikhTree";
+import TarikhTabs from "../components/TarikhTabs";
 
 /** الشجرةُ ومعها بطاقةُ العنقود — تُحمّل عند اختيار عنقودها لا قبلَه */
 function ClusterPane({ id, data }: { id: string; data: TarikhClaims }) {
@@ -113,6 +114,7 @@ export default function TarikhClaim() {
   return (
     <div className="page page-narrow tarikh" dir="rtl" lang="ar">
       <style>{TARIKH_CSS}</style>
+      <TarikhTabs />
       <p className="crumb"><Link to="/tarikh">تاريخ النص</Link> ← {claim?.title ?? decodeURIComponent(id)}</p>
 
       {err && <p className="note">تعذّر التحميل: {err}</p>}
@@ -142,12 +144,27 @@ export default function TarikhClaim() {
             )}
           </div>
 
+          <details className="howto" style={{ marginTop: 6 }}>
+            <summary style={{ cursor: "pointer" }}>ماذا تعني هذه الدرجة؟ — سلّمُ الدرجات الخمس</summary>
+            <div className="ladder" style={{ marginTop: 8 }}>
+              {data.grades.map((g) => (
+                <div className={`g g-${g.id}`} key={g.id}>
+                  <span className="gchip">{g.label}</span>
+                  <span className="gl">{g.gloss}</span>
+                </div>
+              ))}
+            </div>
+          </details>
+
           {/* ٢ — البيّنة المنقولة وشجرتُها */}
           <div className="block">
             <h3>
               {claim.fields.manqul.label}
               {claim.fields.manqul.note ? ` (${claim.fields.manqul.note})` : ""}
             </h3>
+            <p className="note" style={{ margin: "0 0 8px" }}>
+              ما رواه الناسُ عن هذا الخبر في كتب التراث: مَن رواه عمّن، وفي أيّ كتابٍ دُوّن، ومتى دار.
+            </p>
             <Md className="body" text={claim.fields.manqul.raw} />
             {claim.clusters.length > 0 && (
               <>
@@ -179,6 +196,9 @@ export default function TarikhClaim() {
                 {claim.fields.wathaiqi?.label ?? "البيّنة الوثائقية"}
                 {claim.fields.wathaiqi?.note ? ` (${claim.fields.wathaiqi.note})` : ""}
               </h3>
+              <p className="note" style={{ margin: "0 0 8px" }}>
+                ما بقي من آثارٍ ماديّةٍ يمكن مسكُها: رقوقٌ مؤرَّخةٌ كربونيًّا ونقوشٌ محفورة.
+              </p>
               {claim.fields.wathaiqi && <Md className="body" text={claim.fields.wathaiqi.raw} />}
               {claim.witnessRefs.length > 0 && (
                 <div className="wcards" style={{ marginTop: 10 }}>

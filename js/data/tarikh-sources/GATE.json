@@ -39,14 +39,14 @@
     {
       "id": "٢",
       "title": "أمانةُ الأحكام — كلُّ مقطعٍ حكميٍّ منقولٌ حرفًا، والدرجاتُ تطابق مسحًا مستقلًّا",
-      "checks": 350,
+      "checks": 372,
       "failures": [],
-      "liftedSegments": 156
+      "liftedSegments": 176
     },
     {
       "id": "٣",
       "title": "التتبّع — عقدة ← سجل ← نصّ بلا انقطاع، وكلُّ بطاقةٍ وثائقيّةٍ بإحالتها",
-      "checks": 5389,
+      "checks": 5564,
       "failures": [],
       "counts": {
         "nodes": 751,
@@ -60,14 +60,15 @@
       ],
       "outOfSnapshot": [
         "د٥:clx-jamc-0668-90fe6c"
-      ]
+      ],
+      "corpusWorks": 87
     },
     {
       "id": "٤",
       "title": "الكسل — فهرسُ الدعاوى لا يحمل حمولةَ عنقود",
       "checks": 4,
       "failures": [],
-      "indexBytes": 32119,
+      "indexBytes": 43502,
       "clusterFiles": 18
     }
   ],

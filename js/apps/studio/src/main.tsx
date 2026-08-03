@@ -41,6 +41,7 @@ const FahisMethod = lazy(() => import("./views/FahisMethod"));
 const Tarikh = lazy(() => import("./views/Tarikh"));
 const TarikhClaim = lazy(() => import("./views/TarikhClaim"));
 const TarikhHukm = lazy(() => import("./views/TarikhHukm"));
+const TarikhMasadir = lazy(() => import("./views/TarikhMasadir"));
 import ShareButton from "./components/ShareButton";
 const Galaxy = lazy(() => import("./views/Galaxy"));
 const MushafMap = lazy(() => import("./views/MushafMap"));
@@ -515,6 +516,7 @@ function App() {
           <Route path="/tarikh" element={<Tarikh />} />
           <Route path="/tarikh/d/:id" element={<TarikhClaim />} />
           <Route path="/tarikh/wathiqa" element={<TarikhHukm />} />
+          <Route path="/tarikh/masadir" element={<TarikhMasadir />} />
           <Route path="/lexicon" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />

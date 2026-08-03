@@ -45,6 +45,17 @@ export interface TarikhClaims {
   externalRefs: { title: string; raw: string };
   sealLog: { title: string; items: { raw: string }[] };
   clusterIndex: TarikhClusterBrief[];
+  /** الميثاقُ الحاكم منقولًا حرفًا — سلّمُ الأدلّة وقواعدُ الفحص وحدودُ المنهج */
+  method: {
+    title: string; aim: string;
+    ladder: { title: string; items: string[] };
+    rules: { title: string; items: string[] };
+    limits: { title: string; items: string[] };
+  };
+  /** وصفُ حجم المدوّنة كلِّها، منقولًا من صدر الوثيقة */
+  corpusNote: string;
+  /** الكتبُ التي جاءت منها الرواياتُ المعروضة، بوفيات مصنِّفيها */
+  corpus: { work: string; author: string | null; deathAh: number | null; records: number; clusters: number }[];
 }
 
 export interface TarikhNode {
@@ -161,6 +172,7 @@ export const COUNTS = {
   edge: { one: "حافّةٌ واحدة", two: "حافّتان", few: "حوافّ", many: "حافّةً" },
   student: { one: "تلميذٌ واحد", two: "تلميذان", few: "تلاميذ", many: "تلميذًا" },
   branch: { one: "فرعٌ معتضِدٌ واحد", two: "فرعان معتضدان", few: "فروعٍ معتضدة", many: "فرعًا معتضدًا" },
+  cluster: { one: "عنقودٌ واحد", two: "عنقودان", few: "عناقيد", many: "عنقودًا" },
 } as const;
 
 /** شرحُ أعلام الجودة على العقد — أسماءٌ فنّيّةٌ تُفكّ للقارئ */

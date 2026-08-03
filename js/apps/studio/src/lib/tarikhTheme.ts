@@ -24,6 +24,37 @@ export const TARIKH_CSS = `
   .tarikh .sep { opacity: .4; margin: 0 7px; unicode-bidi: isolate; }
   .tarikh bdi { unicode-bidi: isolate; }
 
+  /* أبوابُ القسم */
+  .tarikh .ttabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line);
+    margin: 0 0 20px; flex-wrap: wrap; }
+  .tarikh .ttabs a { padding: 8px 14px; text-decoration: none; color: inherit; opacity: .6;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; font-size: .95rem; white-space: nowrap; }
+  .tarikh .ttabs a:hover { opacity: .85; }
+  .tarikh .ttabs a.on { opacity: 1; font-weight: 600; border-color: var(--gold, #a97e2f); }
+
+  /* جدولُ الكتب */
+  .tarikh .works { display: grid; gap: 0; margin-top: 8px; }
+  .tarikh .work { display: flex; gap: 10px; align-items: baseline; padding: 9px 4px;
+    border-bottom: 1px solid var(--line); font-size: .93rem; }
+  .tarikh .work .wn { flex: 1; min-width: 0; line-height: 1.7; }
+  .tarikh .work .wa { opacity: .6; font-size: .86rem; white-space: nowrap; }
+  .tarikh .work .wc { opacity: .5; font-size: .8rem; white-space: nowrap; flex: none;
+    border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+  @media (max-width: 620px) {
+    .tarikh .work { flex-wrap: wrap; gap: 4px 10px; }
+    .tarikh .work .wn { flex-basis: 100%; }
+  }
+  .tarikh .mlist { padding-inline-start: 22px; margin: 8px 0 18px; }
+  .tarikh .mlist li { margin-bottom: 10px; line-height: 1.95; }
+  .tarikh .refs { line-height: 2.1; font-size: .92rem; opacity: .85; }
+
+  /* شريطُ «كيف تُقرأ هذه الصفحة» — للقارئ غير المتخصّص */
+  .tarikh .howto { border: 1px dashed var(--line); border-radius: 12px; padding: 12px 15px;
+    margin: 14px 0 4px; font-size: .9rem; line-height: 1.9; opacity: .85; }
+  .tarikh .howto b { opacity: 1; }
+  .tarikh .howto ol { margin: 6px 0 0; padding-inline-start: 20px; }
+  .tarikh .howto li { margin-bottom: 4px; }
+
   .tarikh h1 { font-size: 1.9rem; margin: 0 0 6px; letter-spacing: -.01em; }
   .tarikh .lede { font-size: 1.05rem; line-height: 1.9; opacity: .85; max-width: 62ch; }
   .tarikh h2 { font-size: 1.2rem; margin: 34px 0 10px; }
@@ -62,15 +93,15 @@ export const TARIKH_CSS = `
   .tarikh .tl .ticks { display: flex; justify-content: space-between; margin: 0 18px;
     font-size: .7rem; opacity: .45; font-variant-numeric: tabular-nums; }
   .tarikh .tl .cap { margin: 4px 18px 0; font-size: .78rem; opacity: .6; line-height: 1.8; }
-  @media (max-width: 760px) {
-    .tarikh .tl .axis { height: 240px; margin: 0 14px; }
-    .tarikh .tl .rule { top: 0; bottom: 0; inset-inline: auto; inset-inline-start: 8px; width: 1px; height: auto; }
-    .tarikh .tl .pt { top: auto; inset-inline-start: 8px; transform: none; width: auto; }
-    .tarikh .tl .pt .dot { top: 0; inset-inline-start: -4.5px; }
-    .tarikh .tl .pt .span { top: 2px; inset-inline-start: -2px; height: 5px; }
-    .tarikh .tl .pt .lab, .tarikh .tl .pt .w { position: static; transform: none; display: block; margin-inline-start: 14px; }
-    .tarikh .tl .ticks { display: none; }
-  }
+  /* على الجوّال يصير المحورُ قائمةً رأسيّة — أوضحُ من محورٍ مضغوط */
+  .tarikh .tlist { margin: 0; padding: 4px 16px 2px; list-style: none; }
+  .tarikh .tlist li { display: flex; gap: 10px; align-items: baseline; padding: 9px 0;
+    border-bottom: 1px solid var(--line); }
+  .tarikh .tlist li:last-child { border-bottom: none; }
+  .tarikh .tlist .w { font-size: .74rem; opacity: .55; flex: none; border: 1px solid var(--line);
+    border-radius: 999px; padding: 1px 8px; }
+  .tarikh .tlist .d { font-size: .82rem; font-weight: 600; flex: none; white-space: nowrap; }
+  .tarikh .tlist .p { font-size: .84rem; opacity: .75; line-height: 1.8; flex: 1; min-width: 0; }
 
   /* بطاقاتُ الدعاوى الثماني */
   .tarikh .cards { display: grid; gap: 10px; margin-top: 12px; }
@@ -81,6 +112,10 @@ export const TARIKH_CSS = `
   .tarikh .card .n { font-size: .78rem; opacity: .5; font-variant-numeric: tabular-nums; }
   .tarikh .card .t { font-weight: 600; font-size: 1.05rem; flex: 1; min-width: 0; line-height: 1.7; }
   .tarikh .card .cl { margin: 6px 0 0; font-size: .92rem; line-height: 1.85; opacity: .75; }
+  @media (max-width: 620px) {
+    .tarikh .card .row { row-gap: 7px; }
+    .tarikh .card .t { flex-basis: 100%; }
+  }
 
   /* صفحةُ الدعوى */
   .tarikh .verdict { border-radius: 12px; padding: 14px 16px; margin: 16px 0 8px;

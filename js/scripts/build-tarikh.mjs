@@ -51,6 +51,37 @@ const GRADE_IDS = {
 };
 const GRADE_NAMES = Object.keys(GRADE_IDS);
 
+// ——————————————————————————————————————————————————————————————
+// الميثاقُ الحاكم: تُنقل منه أقسامٌ بعينها إلى صفحة «المصادر والمنهج» — حرفًا
+// ——————————————————————————————————————————————————————————————
+/** أقسامُ METHOD.md برقمها العربيّ */
+function methodSections() {
+  const out = {};
+  let cur = null, buf = [];
+  for (const ln of METHOD.split("\n")) {
+    const m = ln.match(/^## ([٠-٩]+)\. (.+)$/);
+    if (m) {
+      if (cur) out[cur.n] = { title: cur.title, body: buf.join("\n") };
+      cur = { n: m[1], title: m[2] };
+      buf = [];
+    } else if (cur) buf.push(ln);
+  }
+  if (cur) out[cur.n] = { title: cur.title, body: buf.join("\n") };
+  return out;
+}
+
+/** بنودٌ مرقّمة/مشرَّطة من الميثاق، منقولةً حرفًا */
+function methodItems(body, kind, expect, whence) {
+  const re = kind === "num"
+    ? /^(\d+)\. (.+(?:\n(?!\d+\.\s|##|- ).*)*)$/gm
+    : /^- (.+(?:\n(?!- |##).*)*)$/gm;
+  const items = [];
+  let m;
+  while ((m = re.exec(body))) items.push(lift(kind === "num" ? m[2] : m[1], METHOD, "METHOD.md"));
+  if (expect && items.length !== expect) die(`${whence}: توقّعنا ${expect} بندًا فوجدنا ${items.length}`);
+  return items;
+}
+
 /** شرحُ كلِّ درجةٍ سطرًا حرفيًّا من الميثاق §٣ */
 function gradeGlosses() {
   const out = [];
@@ -323,6 +354,9 @@ function loadDatingSpans() {
   return by;
 }
 
+/** فهرسُ الكتب التي جاءت منها الروايات المعروضة — يُملأ أثناء بناء العناقيد */
+const corpus = new Map();
+
 function buildClusters(recordsById, spansByCluster) {
   const files = readdirSync(join(SRC, "trees")).filter((f) => f.endsWith(".json")).sort();
   const index = [];
@@ -396,6 +430,14 @@ function buildClusters(recordsById, spansByCluster) {
           })),
         })),
       };
+    }
+    for (const r of records) {
+      const key = r.source.workAr ?? "—";
+      const w = corpus.get(key) ?? { work: key, author: r.source.authorAr ?? null, deathAh: r.source.deathAh ?? null, records: 0, clusters: new Set() };
+      w.records++; w.clusters.add(id);
+      if (w.deathAh == null && r.source.deathAh != null) w.deathAh = r.source.deathAh;
+      if (!w.author && r.source.authorAr) w.author = r.source.authorAr;
+      corpus.set(key, w);
     }
     const out = {
       id, mode: t.mode,
@@ -477,6 +519,22 @@ const claimsOut = {
   externalRefs: { title: lift(sections["٤"].title), raw: lift(sections["٤"].body) },
   sealLog: { title: lift(sections["٥"].title), items: bulletItems(sections["٥"].body, "§٥", 4) },
   clusterIndex,
+  // ——— المصادرُ والمنهج: ما يراه الباحثُ ليعيد الفحص، والقارئُ ليطمئنّ ———
+  method: (() => {
+    const ms = methodSections();
+    return {
+      title: lift(METHOD.match(/^# (.+)$/m)[1], METHOD, "METHOD.md"),
+      aim: lift(METHOD.match(/^\*\*الغاية:\*\* (.+)$/m)[1], METHOD, "METHOD.md"),
+      ladder: { title: lift(ms["٢"].title, METHOD, "METHOD.md"), items: methodItems(ms["٢"].body, "num", 5, "الميثاق §٢") },
+      rules: { title: lift(ms["٤"].title, METHOD, "METHOD.md"), items: methodItems(ms["٤"].body, "num", 7, "الميثاق §٤") },
+      limits: { title: lift(ms["٦"].title, METHOD, "METHOD.md"), items: methodItems(ms["٦"].body, "bul", 3, "الميثاق §٦") },
+    };
+  })(),
+  // جملةٌ منقولةٌ من صدر الوثيقة تصف حجمَ المدوّنة كلِّها — لا حجمَ ما عُرض
+  corpusNote: lift("من مدوّنة ١٦٨٣ رواية في ١٥٣ كتابًا"),
+  corpus: [...corpus.values()]
+    .map((w) => ({ work: w.work, author: w.author, deathAh: w.deathAh, records: w.records, clusters: w.clusters.size }))
+    .sort((a, b) => (a.deathAh ?? 9999) - (b.deathAh ?? 9999) || b.records - a.records),
 };
 writeFileSync(join(PUB, "tarikh-claims.json"), JSON.stringify(claimsOut));
 writeFileSync(join(PUB, "tarikh-timeline.json"), JSON.stringify(timeline(doc)));

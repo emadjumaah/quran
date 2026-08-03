@@ -15,6 +15,7 @@ import {
 import { inlineMd } from "../lib/tarikhMd";
 import GradeChip from "../components/GradeChip";
 import TarikhFooter from "../components/TarikhFooter";
+import TarikhTabs from "../components/TarikhTabs";
 import { getUILang, useUILang } from "../i18n";
 
 /**
@@ -22,9 +23,46 @@ import { getUILang, useUILang } from "../i18n";
  * فالمحورُ يُقرأ كما يُقرأ السطر. والمرتكزُ ذو المدى يُرسم شريطًا لا نقطةً،
  * والبطاقاتُ تتناوب علوًّا كي لا تتراكب عند التقارب.
  */
+function useNarrow(): boolean {
+  const [m, setM] = useState(() => window.matchMedia("(max-width: 760px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 760px)");
+    const on = (e: MediaQueryListEvent) => setM(e.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return m;
+}
+
 function Timeline({ tl }: { tl: TarikhTimeline }) {
   const { ceFrom, ceTo } = tl.axis;
   const at = (ce: number) => ((ce - ceFrom) / (ceTo - ceFrom)) * 100;
+  const narrow = useNarrow();
+  const dateOf = (p: TarikhTimeline["points"][number]) =>
+    p.ah != null ? `${arNum(p.ah)}هـ` : p.ce[0] !== null ? `${arNum(p.ce[0])}–${arNum(p.ce[1]!)}م` : `قبل ${arNum(p.ce[1]!)}م`;
+
+  if (narrow) {
+    return (
+      <div className="tl">
+        <ul className="tlist">
+          {tl.points.map((p) => (
+            <li key={p.key}>
+              <span className="w">{p.witness}</span>
+              <span className="d">{dateOf(p)}</span>
+              <span className="p">{p.phrase}</span>
+            </li>
+          ))}
+          {tl.bands.map((b) => (
+            <li key={b.witness}>
+              <span className="w">{b.witness}</span>
+              <span className="d">{b.band}</span>
+              <span className="p">{b.phrase}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
   return (
     <div className="tl">
       <div className="axis">
@@ -44,9 +82,7 @@ function Timeline({ tl }: { tl: TarikhTimeline }) {
               )}
               <div className="dot" />
               <div className="w">{p.witness}</div>
-              <div className="lab">
-                {p.ah != null ? `${arNum(p.ah)}هـ` : lo !== null ? `${arNum(lo)}–${arNum(hi)}م` : `قبل ${arNum(hi)}م`}
-              </div>
+              <div className="lab">{dateOf(p)}</div>
             </div>
           );
         })}
@@ -91,6 +127,8 @@ export default function Tarikh() {
         </p>
       )}
 
+      <TarikhTabs />
+
       <h1>تاريخ النص</h1>
       <p className="lede">
         كيف وصل المصحفُ إلينا؟ ثماني دعاوى تُعرض هنا بأدلّتها: بيّنةٌ منقولةٌ
@@ -98,6 +136,16 @@ export default function Tarikh() {
         ولكلِّ دعوى <b>درجةٌ معلَنة</b>، وحدودٌ لا يتجاوزها حكمُها، وبندٌ يقول
         صراحةً <b>ما الذي يغيّر الدرجة</b>.
       </p>
+
+      <div className="howto">
+        <b>كيف تُقرأ هذه الصفحة؟</b>
+        <ol>
+          <li>المفحوصُ هنا <b>أخبارٌ تاريخيّةٌ عن جمع المصحف</b> — رواياتٌ من كتب التراث ووثائقُ ماديّة — لا القرآنُ نفسُه.</li>
+          <li>السطرُ الزمنيّ أدناه يضع <b>الشواهدَ الماديّة</b> (رقوقٌ ونقوش) في مواضعها من الزمن.</li>
+          <li>لكلِّ دعوى بطاقةٌ عليها <b>شارةُ درجتها</b>؛ افتحها ترَ الأدلّةَ قبل النتيجة، ثمّ حدودَ الحكم وما يغيّره.</li>
+          <li>ومن أراد التحقّق: <Link to="/tarikh/masadir">المصادرُ والمنهج</Link> — الكتبُ بأسمائها، والميثاقُ الذي وُزنت به.</li>
+        </ol>
+      </div>
 
       {err && <p className="note">تعذّر تحميلُ الباب: {err}</p>}
       {!data && !err && <p className="note">…</p>}

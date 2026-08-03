@@ -147,6 +147,19 @@ const GRADE_LABEL = {
   for (const h of claims.howToRead) { lifted++; g2.ok(inV1(h.raw), `«كيف تُقرأ» ${h.n} ليس في v1`); }
   for (const it of claims.conclusion.items) { lifted++; g2.ok(inV1(it.raw), `الخلاصة ${it.n} ليست في v1`); }
   for (const it of claims.sealLog.items) { lifted++; g2.ok(inV1(it.raw), "سجلُّ الختم ليس في v1"); }
+  // الميثاقُ في صفحة «المصادر والمنهج»: منقولٌ حرفًا من METHOD.md
+  const m = claims.method;
+  lifted += 2;
+  g2.ok(inMethod(m.title), "عنوانُ الميثاق ليس في METHOD.md");
+  g2.ok(inMethod(m.aim), "غايةُ الميثاق ليست في METHOD.md");
+  for (const part of ["ladder", "rules", "limits"]) {
+    lifted++;
+    g2.ok(inMethod(m[part].title), `عنوانُ «${part}» ليس في METHOD.md`);
+    for (const it of m[part].items) { lifted++; g2.ok(inMethod(it), `بندٌ من «${part}» ليس في METHOD.md حرفيًّا`); }
+  }
+  g2.ok(m.ladder.items.length === 5, `سلّمُ الأدلّة ${m.ladder.items.length} لا ٥`);
+  g2.ok(m.rules.items.length === 7, `قواعدُ الفحص ${m.rules.items.length} لا ٧`);
+
   // شروحُ الدرجات: من الميثاق لا من عندنا
   for (const gr of claims.grades) {
     lifted += 2;
@@ -279,6 +292,21 @@ const g3 = gate("٣", "التتبّع — عقدة ← سجل ← نصّ بلا 
     }
   }
   g3.g.outOfSnapshot = claims.claims.flatMap((c) => c.clusters.filter((x) => !x.inSnapshot).map((x) => `${c.id}:${x.ref}`));
+
+  // فهرسُ الكتب المعروض: كلُّ كتابٍ فيه مشحونٌ فعلًا، والمجموعُ يطابق السجلات
+  const works = new Map();
+  for (const f of readdirSync(PUB).filter((x) => /^tarikh-cluster-.*\.json$/.test(x))) {
+    for (const r of JSON.parse(readFileSync(join(PUB, f), "utf8")).records) {
+      const k = r.source.workAr ?? "—";
+      works.set(k, (works.get(k) ?? 0) + 1);
+    }
+  }
+  for (const w of claims.corpus) {
+    g3.ok(works.has(w.work), `فهرسُ الكتب يذكر كتابًا لا روايةَ له في العرض: ${w.work}`);
+    g3.ok(works.get(w.work) === w.records, `${w.work}: العددُ المعروض ${w.records} والمشحونُ ${works.get(w.work)}`);
+  }
+  g3.ok(claims.corpus.length === works.size, `فهرسُ الكتب ${claims.corpus.length} والمشحونُ ${works.size}`);
+  g3.g.corpusWorks = claims.corpus.length;
 }
 
 // ——————————————————————————————————————————————————————————

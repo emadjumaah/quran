@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { TARIKH_CSS } from "../lib/tarikhTheme";
 import { arNum, loadTarikhHukm } from "../lib/tarikhData";
 import { Md } from "../lib/tarikhMd";
+import TarikhTabs from "../components/TarikhTabs";
 
 export default function TarikhHukm() {
   const [doc, setDoc] = useState<{ rev: string; sha256: string; markdown: string } | null>(null);
@@ -18,6 +19,7 @@ export default function TarikhHukm() {
   return (
     <div className="page page-narrow tarikh" dir="rtl" lang="ar">
       <style>{TARIKH_CSS}</style>
+      <TarikhTabs />
       <p className="crumb"><Link to="/tarikh">تاريخ النص</Link> ← الوثيقةُ كاملةً</p>
       {err && <p className="note">تعذّر التحميل: {err}</p>}
       {!doc && !err && <p className="note">…</p>}
