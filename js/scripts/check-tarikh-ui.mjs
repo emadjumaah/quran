@@ -99,8 +99,9 @@ try {
   await sleep(600);
   const nCards = await ev(c, "document.querySelectorAll('.tarikh .cards .card').length");
   ok(nCards === claims.claims.length, `صدرُ الباب يعرض ${nCards} بطاقةً لا ${claims.claims.length}`);
-  const nChips = await ev(c, "document.querySelectorAll('.tarikh .cards .card .row .gchip:not(.more)').length");
-  ok(nChips === claims.claims.length, `شاراتُ الدرجة ${nChips} لا ${claims.claims.length} — لكلِّ بطاقةٍ شارة`);
+  // لكلِّ بطاقةٍ شارةُ درجة: في ترويستها، أو على حكمها إن كانت مُصدَّرةً بأحكامها
+  const nChips = await ev(c, "[...document.querySelectorAll('.tarikh .cards .card')].filter((x) => x.querySelector('.gchip:not(.more)')).length");
+  ok(nChips === claims.claims.length, `بطاقاتٌ بشارةِ درجة ${nChips} لا ${claims.claims.length}`);
 
   // ——— التوجيهُ التحريريّ (قرارُ الإدارة س٧): بطاقةُ القول الثامن في متصفّحٍ حقيقيّ ———
   for (const [i, cl] of claims.claims.entries()) {

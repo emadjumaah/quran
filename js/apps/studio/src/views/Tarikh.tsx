@@ -163,7 +163,9 @@ export default function Tarikh() {
                 <div className="row">
                   <span className="n">{c.id}</span>
                   <span className="t">{c.title}</span>
-                  <GradeChip grade={c.grade} grades={data.grades} />
+                  {/* البطاقةُ المُصدَّرةُ بحكميها تحمل شارتَها على الحكم نفسِه —
+                      فلا تُكرَّر في الترويسة فوقه (تكرارٌ يقرؤه القارئُ تلعثمًا). */}
+                  {!c.leadWithRulings && <GradeChip grade={c.grade} grades={data.grades} />}
                   {c.grades.length > 1 && !c.leadWithRulings && (
                     <span className="gchip more" title="للقول أحكامٌ فرعيّةٌ بدرجاتٍ أخرى — تُقرأ داخله">
                       ودرجاتٌ أخرى ({arNum(c.grades.length - 1)})

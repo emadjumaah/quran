@@ -148,16 +148,16 @@ export default function TarikhClaim() {
           {/* «يُقرأ مع»: قولان يشهد فيهما شاهدٌ وثائقيٌّ واحدٌ بعينه، فلا يُفرد
               أحدُهما عن الآخر في القراءة. والإحالةُ متبادلةٌ وأساسُها مفحوصٌ
               في البيانات — يسقط البناءُ إن لم يشتركا في ذلك الشاهد. */}
-          {(claim.readWith ?? []).map((w) => (
-            <p className="readwith" key={w.id}>
-              يُقرأ مع <Link to={w.route}><b>{w.id} — {w.title}</b></Link>
-              <span className="sep">·</span>
-              الشاهدُ الوثائقيُّ فيهما واحد ({w.witness}
-              {data.documentary.witnesses.find((x) => x.id === w.witness)
-                ? ` ${data.documentary.witnesses.find((x) => x.id === w.witness)!.title}`
-                : ""})
-            </p>
-          ))}
+          {(claim.readWith ?? []).map((w) => {
+            const wit = data.documentary.witnesses.find((x) => x.id === w.witness);
+            return (
+              <p className="readwith" key={w.id}>
+                يُقرأ مع <Link to={w.route}><b>{w.id} — {w.title}</b></Link>
+                <span className="sep">·</span>
+                الشاهدُ الوثائقيُّ فيهما واحد ({w.witness}{wit ? ` ${wit.title}` : ""})
+              </p>
+            );
+          })}
 
           <details className="howto" style={{ marginTop: 6 }}>
             <summary style={{ cursor: "pointer" }}>ماذا تعني هذه الدرجة؟ — سلّمُ الدرجات الخمس</summary>

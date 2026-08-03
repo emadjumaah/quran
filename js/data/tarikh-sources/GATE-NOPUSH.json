@@ -1,19 +1,19 @@
 {
-  "ok": false,
+  "ok": true,
   "branch": "main",
-  "head": "32f8b713ecd6317d5ba530122aea40ff86b418ca",
-  "main": "32f8b713ecd6317d5ba530122aea40ff86b418ca",
+  "head": "286f2221950087cf318cf6185fd0bfe1b2549b13",
+  "main": "286f2221950087cf318cf6185fd0bfe1b2549b13",
   "originMain": "32f8b713ecd6317d5ba530122aea40ff86b418ca",
-  "ahead": 0,
+  "ahead": 1,
   "behind": 0,
-  "localCommits": [],
+  "localCommits": [
+    "286f222 خ٧-ب: لسانُ «الأقوال» مصدرًا للعرض، وعنقودُ ابن عمر يدخل اللقطة، ومجموعةُ الفحص والتحقيق"
+  ],
   "remoteRefs": {
     "refs/remotes/origin/HEAD": "32f8b713ecd6317d5ba530122aea40ff86b418ca",
     "refs/remotes/origin/main": "32f8b713ecd6317d5ba530122aea40ff86b418ca"
   },
   "lastPush": "32f8b71 refs/remotes/origin/main@{0}: update by push",
   "baselineLastPush": "32f8b71 refs/remotes/origin/main@{0}: update by push",
-  "failures": [
-    "لا إيداعةَ محلّيّةً فوق origin/main — لم يُودَع شيءٌ بعد"
-  ]
+  "failures": []
 }
