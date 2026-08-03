@@ -1,0 +1,82 @@
+{
+  "ok": true,
+  "base": "http://localhost:4173",
+  "detail": {
+    "claims": [
+      {
+        "id": "د١",
+        "clusters": 1,
+        "twoClicks": "نصٌّ بطول 465",
+        "fetched": [
+          "tarikh-cluster-clx-jamc-0006-c7f96e.json"
+        ],
+        "verbatim": true
+      },
+      {
+        "id": "د٢",
+        "clusters": 0,
+        "twoClicks": "لا شجرةَ لهذه الدعوى في الوثيقة",
+        "fetched": []
+      },
+      {
+        "id": "د٣",
+        "clusters": 2,
+        "twoClicks": "نصٌّ بطول 678",
+        "fetched": [
+          "tarikh-cluster-clx-jamc-0998-af0cf1.json"
+        ],
+        "verbatim": true
+      },
+      {
+        "id": "د٤",
+        "clusters": 1,
+        "twoClicks": "نصٌّ بطول 466",
+        "fetched": [
+          "tarikh-cluster-clx-jamc-0078-d76841.json"
+        ],
+        "verbatim": true
+      },
+      {
+        "id": "د٥",
+        "clusters": 4,
+        "twoClicks": "نصٌّ بطول 1302",
+        "fetched": [
+          "tarikh-cluster-clx-jamc-0025-048506.json"
+        ],
+        "verbatim": true
+      },
+      {
+        "id": "د٦",
+        "clusters": 6,
+        "twoClicks": "نصٌّ بطول 1454",
+        "fetched": [
+          "tarikh-cluster-clx-jamc-0907-9216d9.json"
+        ],
+        "verbatim": true
+      },
+      {
+        "id": "د٧",
+        "clusters": 1,
+        "twoClicks": "نصٌّ بطول 926",
+        "fetched": [
+          "tarikh-cluster-clx-jamc-0092-cc914f.json"
+        ],
+        "verbatim": true
+      },
+      {
+        "id": "د٨",
+        "clusters": 0,
+        "twoClicks": "لا شجرةَ لهذه الدعوى في الوثيقة",
+        "fetched": []
+      }
+    ],
+    "lazy": {
+      "index": 0
+    },
+    "doc": {
+      "rendered": 17170,
+      "source": 18128
+    }
+  },
+  "failures": []
+}

@@ -1,0 +1,9 @@
+{
+  "rows": 291,
+  "clusters_with_any_candidate": 60,
+  "rows_det": 146,
+  "rows_inf": 145,
+  "rows_with_candidate_death_year": 223,
+  "rows_with_students_range": 239,
+  "rows_without_fully_settled_route": 78
+}

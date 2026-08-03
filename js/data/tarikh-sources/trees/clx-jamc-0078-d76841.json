@@ -1,0 +1,659 @@
+{
+ "cluster": "clx-jamc-0078-d76841",
+ "mode": "inf",
+ "event_tags": [
+  "tawhid-cuthman",
+  "suhuf-hafsa"
+ ],
+ "records": [
+  "jamc-0078",
+  "jamc-1244",
+  "jamc-1522"
+ ],
+ "chains_used": 3,
+ "representative": "jamc-0078",
+ "works": [
+  "الآحاد والمثاني لابن أبي عاصم",
+  "المصاحف",
+  "مسند الشاميين للطبراني"
+ ],
+ "earliest_witness": {
+  "record": "jamc-1522",
+  "work_ar": "الآحاد والمثاني لابن أبي عاصم",
+  "death_ah": 287
+ },
+ "earliest_fully_settled_route": {
+  "record": "jamc-1244",
+  "work_ar": "مسند الشاميين للطبراني",
+  "death_ah": 360
+ },
+ "edges_chrono_suspect": 0,
+ "terminal_branching": {
+  "node": "n:سالم ان مروان كان",
+  "students": 1,
+  "terminals": [
+   "n:سالم ان مروان كان",
+   "n:سالم بن عبد الله",
+   "r3194"
+  ]
+ },
+ "nodes": [
+  {
+   "node": "n:ابو يمان",
+   "label": "أبو اليمان",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أبو اليمان"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 2,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-0078"
+   ]
+  },
+  {
+   "node": "n:جده",
+   "label": "جَدِّهِ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "جَدِّهِ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 2,
+   "flags": [
+    "rawi-relational",
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-1522"
+   ]
+  },
+  {
+   "node": "n:حسين بن حسن",
+   "label": "حُسَيْنُ بْنُ حَسَنٍ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "حُسَيْنُ بْنُ حَسَنٍ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 0,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1522"
+   ]
+  },
+  {
+   "node": "n:زهري",
+   "label": "الزهري",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "الزهري",
+    "الزُّهْرِيِّ"
+   ],
+   "students": 2,
+   "teachers": 2,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 4,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0078",
+    "jamc-1522"
+   ]
+  },
+  {
+   "node": "n:سالم ان مروان كان",
+   "label": "سَالِمٌ ، أَنَّ مَرْوَانَ كَانَ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "سَالِمٌ ، أَنَّ مَرْوَانَ كَانَ"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 4,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-1522"
+   ]
+  },
+  {
+   "node": "n:سالم بن عبد الله",
+   "label": "سالم بن عبد الله",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "سالم بن عبد الله"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 5,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0078"
+   ]
+  },
+  {
+   "node": "n:شعيب",
+   "label": "شعيب",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "شعيب"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 3,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0078"
+   ]
+  },
+  {
+   "node": "n:عبد الله",
+   "label": "عبد الله",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "عبد الله"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 0,
+   "flags": [
+    "alias-db-override",
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0078"
+   ]
+  },
+  {
+   "node": "n:محمد بن عوف",
+   "label": "محمد بن عوف",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "محمد بن عوف"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 1,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0078"
+   ]
+  },
+  {
+   "node": "r1382",
+   "label": "الحكم بن نافع البهراني",
+   "rawi_id": 1382,
+   "tabaka": 10,
+   "death_year": 221,
+   "raw_names": [
+    "أَبُو الْيَمَانِ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1244"
+   ]
+  },
+  {
+   "node": "r20850",
+   "label": "أبو زرعة الدمشقي",
+   "rawi_id": 20850,
+   "tabaka": 11,
+   "death_year": 281,
+   "raw_names": [
+    "أَبُو زُرْعَةَ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 4,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1244"
+   ]
+  },
+  {
+   "node": "r2307",
+   "label": "الحجاج بن أبي منيع الرصافي",
+   "rawi_id": 2307,
+   "tabaka": 10,
+   "death_year": null,
+   "raw_names": [
+    "حَجَّاجُ بْنُ أَبِي مَنِيعٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1522"
+   ]
+  },
+  {
+   "node": "r3194",
+   "label": "سالم بن عبد الله العدوي",
+   "rawi_id": 3194,
+   "tabaka": 3,
+   "death_year": 106,
+   "raw_names": [
+    "سَالِمُ بْنُ عَبْدِ اللَّهِ ، أَنَّ مَرْوَانَ ، كَانَ"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 4,
+   "flags": [],
+   "records": [
+    "jamc-1244"
+   ]
+  },
+  {
+   "node": "r3801",
+   "label": "شعيب بن أبي حمزة الأموي",
+   "rawi_id": 3801,
+   "tabaka": 7,
+   "death_year": 162,
+   "raw_names": [
+    "شُعَيْبٌ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-1244"
+   ]
+  },
+  {
+   "node": "r7272",
+   "label": "محمد بن شهاب الزهري",
+   "rawi_id": 7272,
+   "tabaka": 4,
+   "death_year": 124,
+   "raw_names": [
+    "الزُّهْرِيِّ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 3,
+   "flags": [],
+   "records": [
+    "jamc-1244"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "n:ابو يمان",
+   "to": "n:شعيب",
+   "from_label": "أبو اليمان",
+   "to_label": "شعيب",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0078"
+   ]
+  },
+  {
+   "from": "n:جده",
+   "to": "n:زهري",
+   "from_label": "جَدِّهِ",
+   "to_label": "الزهري",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1522"
+   ]
+  },
+  {
+   "from": "n:حسين بن حسن",
+   "to": "r2307",
+   "from_label": "حُسَيْنُ بْنُ حَسَنٍ",
+   "to_label": "الحجاج بن أبي منيع الرصافي",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1522"
+   ]
+  },
+  {
+   "from": "n:زهري",
+   "to": "n:سالم ان مروان كان",
+   "from_label": "الزهري",
+   "to_label": "سَالِمٌ ، أَنَّ مَرْوَانَ كَانَ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1522"
+   ]
+  },
+  {
+   "from": "n:زهري",
+   "to": "n:سالم بن عبد الله",
+   "from_label": "الزهري",
+   "to_label": "سالم بن عبد الله",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0078"
+   ]
+  },
+  {
+   "from": "n:شعيب",
+   "to": "n:زهري",
+   "from_label": "شعيب",
+   "to_label": "الزهري",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0078"
+   ]
+  },
+  {
+   "from": "n:عبد الله",
+   "to": "n:محمد بن عوف",
+   "from_label": "عبد الله",
+   "to_label": "محمد بن عوف",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0078"
+   ]
+  },
+  {
+   "from": "n:محمد بن عوف",
+   "to": "n:ابو يمان",
+   "from_label": "محمد بن عوف",
+   "to_label": "أبو اليمان",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0078"
+   ]
+  },
+  {
+   "from": "r1382",
+   "to": "r3801",
+   "from_label": "الحكم بن نافع البهراني",
+   "to_label": "شعيب بن أبي حمزة الأموي",
+   "student_death_year": 221,
+   "teacher_death_year": 162,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1244"
+   ]
+  },
+  {
+   "from": "r20850",
+   "to": "r1382",
+   "from_label": "أبو زرعة الدمشقي",
+   "to_label": "الحكم بن نافع البهراني",
+   "student_death_year": 281,
+   "teacher_death_year": 221,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1244"
+   ]
+  },
+  {
+   "from": "r2307",
+   "to": "n:جده",
+   "from_label": "الحجاج بن أبي منيع الرصافي",
+   "to_label": "جَدِّهِ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1522"
+   ]
+  },
+  {
+   "from": "r3801",
+   "to": "r7272",
+   "from_label": "شعيب بن أبي حمزة الأموي",
+   "to_label": "محمد بن شهاب الزهري",
+   "student_death_year": 162,
+   "teacher_death_year": 124,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1244"
+   ]
+  },
+  {
+   "from": "r7272",
+   "to": "r3194",
+   "from_label": "محمد بن شهاب الزهري",
+   "to_label": "سالم بن عبد الله العدوي",
+   "student_death_year": 124,
+   "teacher_death_year": 106,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1244"
+   ]
+  }
+ ],
+ "chains": [
+  {
+   "record": "jamc-0078",
+   "chain_no": 0,
+   "nodes": [
+    "n:عبد الله",
+    "n:محمد بن عوف",
+    "n:ابو يمان",
+    "n:شعيب",
+    "n:زهري",
+    "n:سالم بن عبد الله"
+   ]
+  },
+  {
+   "record": "jamc-1244",
+   "chain_no": 0,
+   "nodes": [
+    "r20850",
+    "r1382",
+    "r3801",
+    "r7272",
+    "r3194"
+   ]
+  },
+  {
+   "record": "jamc-1522",
+   "chain_no": 0,
+   "nodes": [
+    "n:حسين بن حسن",
+    "r2307",
+    "n:جده",
+    "n:زهري",
+    "n:سالم ان مروان كان"
+   ]
+  }
+ ],
+ "common_link_candidates": {
+  "2": {
+   "candidates": [
+    {
+     "node": "n:زهري",
+     "label": "الزهري",
+     "students": 2,
+     "students_corroborated": 0,
+     "depth": 4,
+     "single_thread_above": 0,
+     "death_year": null,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 0,
+      "min": null,
+      "max": null
+     },
+     "isolation": {
+      "routes_through": 2,
+      "above": {
+       "paths": 2,
+       "single": 2,
+       "single_ratio": 1.0
+      },
+      "below": {
+       "paths": 2,
+       "single": 2,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [
+      "cl-on-name-node",
+      "rawi-ambiguous"
+     ],
+     "records": [
+      "jamc-0078",
+      "jamc-1522"
+     ],
+     "branches": [
+      {
+       "student": "n:جده",
+       "student_label": "جَدِّهِ",
+       "records": [
+        "jamc-1522"
+       ],
+       "works": [
+        "الآحاد والمثاني لابن أبي عاصم"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.7263,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "n:شعيب",
+       "student_label": "شعيب",
+       "records": [
+        "jamc-0078"
+       ],
+       "works": [
+        "المصاحف"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.7263,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  },
+  "3": {
+   "candidates": [],
+   "partial": []
+  },
+  "4": {
+   "candidates": [],
+   "partial": []
+  },
+  "2-corroborated": {
+   "min_works_per_branch": 2,
+   "candidates": [],
+   "partial": []
+  },
+  "most-corroborated": {
+   "min_works_per_branch": 2,
+   "min_corroborated_branches": 2,
+   "candidates": [],
+   "partial": []
+  }
+ }
+}

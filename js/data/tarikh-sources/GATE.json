@@ -1,0 +1,77 @@
+{
+  "gates": [
+    {
+      "id": "١",
+      "title": "حرفيّةُ العرض — ٢٠ روايةً ببذرةٍ ثابتة تُقابَل مصدرَها في مستودع التاريخ",
+      "checks": 22,
+      "failures": [],
+      "sample": {
+        "size": 20,
+        "matched": 20,
+        "ids": [
+          "jamc-1623",
+          "jamc-1166",
+          "jamc-1385",
+          "jamc-1384",
+          "jamc-1013",
+          "jamc-1240",
+          "jamc-1227",
+          "jamc-1230",
+          "jamc-1671",
+          "jamc-0919",
+          "jamc-0989",
+          "jamc-1161",
+          "jamc-1191",
+          "jamc-1458",
+          "jamc-0065",
+          "jamc-1117",
+          "jamc-1405",
+          "jamc-1106",
+          "jamc-1311",
+          "jamc-1349"
+        ]
+      },
+      "allRecords": {
+        "total": 290,
+        "matched": 290
+      }
+    },
+    {
+      "id": "٢",
+      "title": "أمانةُ الأحكام — كلُّ مقطعٍ حكميٍّ منقولٌ حرفًا، والدرجاتُ تطابق مسحًا مستقلًّا",
+      "checks": 372,
+      "failures": [],
+      "liftedSegments": 176
+    },
+    {
+      "id": "٣",
+      "title": "التتبّع — عقدة ← سجل ← نصّ بلا انقطاع، وكلُّ بطاقةٍ وثائقيّةٍ بإحالتها",
+      "checks": 5564,
+      "failures": [],
+      "counts": {
+        "nodes": 751,
+        "nodesWithRecords": 751,
+        "edges": 795,
+        "records": 290,
+        "chainless": 1
+      },
+      "chainless": [
+        "clx-jamc-0907-9216d9/jamc-1251"
+      ],
+      "outOfSnapshot": [
+        "د٥:clx-jamc-0668-90fe6c"
+      ],
+      "corpusWorks": 87
+    },
+    {
+      "id": "٤",
+      "title": "الكسل — فهرسُ الدعاوى لا يحمل حمولةَ عنقود",
+      "checks": 4,
+      "failures": [],
+      "indexBytes": 43502,
+      "clusterFiles": 18
+    }
+  ],
+  "failures": [],
+  "ok": true
+}

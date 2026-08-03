@@ -38,6 +38,10 @@ const Fahis = lazy(() => import("./views/Fahis"));
 const FahisCard = lazy(() => import("./views/FahisCard"));
 const FahisToolPage = lazy(() => import("./views/FahisToolPage"));
 const FahisMethod = lazy(() => import("./views/FahisMethod"));
+const Tarikh = lazy(() => import("./views/Tarikh"));
+const TarikhClaim = lazy(() => import("./views/TarikhClaim"));
+const TarikhHukm = lazy(() => import("./views/TarikhHukm"));
+const TarikhMasadir = lazy(() => import("./views/TarikhMasadir"));
 import ShareButton from "./components/ShareButton";
 const Galaxy = lazy(() => import("./views/Galaxy"));
 const MushafMap = lazy(() => import("./views/MushafMap"));
@@ -187,6 +191,9 @@ const NAV_GROUPS: { ar: string; en: string; items: NavItem[] }[] = [
       ["/galaxy", "شبكة الجذور", "Roots network"],
       ["/fawasil", "أطلس الفواصل", "Rhyme atlas"],
       ["/fahis", "ميزانُ الأقوال", "Mīzān al-Aqwāl — weighing claims"],
+      // موضعُه المؤقّت جنبَ الميزان — كلاهما بابُ فحصٍ بدرجاتٍ معلَنة.
+      // (موضعُه النهائيُّ في التنقّل سؤالٌ للإدارة في تقرير خ٧.)
+      ["/tarikh", "تاريخ النص", "The text's history"],
       ["/docs", "توثيق المشروع", "Documentation"],
     ],
   },
@@ -506,6 +513,10 @@ function App() {
           <Route path="/fahis/c/:id" element={<FahisCard />} />
           <Route path="/fahis/tool" element={<FahisToolPage />} />
           <Route path="/fahis/method" element={<FahisMethod />} />
+          <Route path="/tarikh" element={<Tarikh />} />
+          <Route path="/tarikh/d/:id" element={<TarikhClaim />} />
+          <Route path="/tarikh/wathiqa" element={<TarikhHukm />} />
+          <Route path="/tarikh/masadir" element={<TarikhMasadir />} />
           <Route path="/lexicon" element={<Navigate to="/kulliyat" replace />} />
           <Route path="/wujuh" element={<Wujuh />} />
           <Route path="/furuq" element={<Furuq />} />

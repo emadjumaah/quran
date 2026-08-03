@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generated": "2026-08-02",
+ "generated": "2026-08-03",
  "books": [
   {
    "id": "muyassar",
@@ -364,6 +364,14 @@
    "author": "ابن فارس",
    "embedded": true,
    "entries": 5270
+  },
+  {
+   "id": "tarikh",
+   "label": "ملف جمع القرآن — وثيقة الحكم",
+   "genre": "tarikh",
+   "author": "حلقة التاريخ المبكّر",
+   "embedded": false,
+   "entries": 14
   }
  ],
  "layers": [
