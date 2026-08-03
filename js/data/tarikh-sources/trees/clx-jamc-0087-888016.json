@@ -1,0 +1,496 @@
+{
+ "cluster": "clx-jamc-0087-888016",
+ "mode": "inf",
+ "event_tags": [
+  "tawhid-cuthman",
+  "ahruf"
+ ],
+ "records": [
+  "jamc-0087",
+  "jamc-0882",
+  "jamc-1196"
+ ],
+ "chains_used": 3,
+ "representative": "jamc-0087",
+ "works": [
+  "المصاحف",
+  "تاريخ المدينة",
+  "مسند أبي يعلى الموصلي"
+ ],
+ "earliest_witness": {
+  "record": "jamc-0882",
+  "work_ar": "تاريخ المدينة",
+  "death_ah": 262
+ },
+ "earliest_fully_settled_route": null,
+ "edges_chrono_suspect": 0,
+ "terminal_branching": {
+  "node": "r2607",
+  "students": 1,
+  "terminals": [
+   "n:خارجه بن زيد بن ثابت انه سمع زيد بن ثابت",
+   "r2607",
+   "r3131"
+  ]
+ },
+ "nodes": [
+  {
+   "node": "n:ابراهيم بن سعد",
+   "label": "إبراهيم ابن سعد",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "إبراهيم ابن سعد"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 1,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0882"
+   ]
+  },
+  {
+   "node": "n:ابو يمان",
+   "label": "أبو اليمان",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أبو اليمان"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 2,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-0087"
+   ]
+  },
+  {
+   "node": "n:خارجه بن زيد بن ثابت انه سمع زيد بن ثابت",
+   "label": "خَارِجَةُ بْنُ زَيْدِ بْنِ ثَابِتٍ ، أَنَّهُ سَمِعَ زَيْدَ بْنَ ثَابِتٍ ، يَقُولُ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "خَارِجَةُ بْنُ زَيْدِ بْنِ ثَابِتٍ ، أَنَّهُ سَمِعَ زَيْدَ بْنَ ثَابِتٍ ، يَقُولُ"
+   ],
+   "students": 0,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 0,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-1196"
+   ]
+  },
+  {
+   "node": "n:زهري",
+   "label": "الزهري",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "الزهري"
+   ],
+   "students": 2,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 4,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0087",
+    "jamc-0882"
+   ]
+  },
+  {
+   "node": "n:شعيب",
+   "label": "شعيب",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "شعيب"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 3,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0087"
+   ]
+  },
+  {
+   "node": "n:عبد الله",
+   "label": "عبد الله",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "عبد الله"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 0,
+   "flags": [
+    "alias-db-override",
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0087"
+   ]
+  },
+  {
+   "node": "n:محمد بن خلف عسقلاني ومحمد بن عوف حمصي",
+   "label": "محمد بن خلف العسقلاني، ومحمد بن عوف الحمصي قالا",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "محمد بن خلف العسقلاني، ومحمد بن عوف الحمصي قالا"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 1,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-0087"
+   ]
+  },
+  {
+   "node": "r2607",
+   "label": "خارجة بن زيد الأنصاري",
+   "rawi_id": 2607,
+   "tabaka": 3,
+   "death_year": 99,
+   "raw_names": [
+    "خارجة بن زيد بن ثابت"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 1,
+   "single_thread_above": 1,
+   "depth": 5,
+   "flags": [],
+   "records": [
+    "jamc-0087",
+    "jamc-0882"
+   ]
+  },
+  {
+   "node": "r3131",
+   "label": "زيد بن ثابت الأنصاري",
+   "rawi_id": 3131,
+   "tabaka": 1,
+   "death_year": 45,
+   "raw_names": [
+    "زيد بن ثابت"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 6,
+   "flags": [
+    "rawi-inferred"
+   ],
+   "records": [
+    "jamc-0087"
+   ]
+  },
+  {
+   "node": "r3587",
+   "label": "سليمان بن داود القرشي",
+   "rawi_id": 3587,
+   "tabaka": 9,
+   "death_year": 219,
+   "raw_names": [
+    "سليمان بن داود الهاشمي"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 0,
+   "flags": [
+    "rawi-inferred"
+   ],
+   "records": [
+    "jamc-0882"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "n:ابراهيم بن سعد",
+   "to": "n:زهري",
+   "from_label": "إبراهيم ابن سعد",
+   "to_label": "الزهري",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0882"
+   ]
+  },
+  {
+   "from": "n:ابو يمان",
+   "to": "n:شعيب",
+   "from_label": "أبو اليمان",
+   "to_label": "شعيب",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0087"
+   ]
+  },
+  {
+   "from": "n:زهري",
+   "to": "r2607",
+   "from_label": "الزهري",
+   "to_label": "خارجة بن زيد الأنصاري",
+   "student_death_year": null,
+   "teacher_death_year": 99,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0087",
+    "jamc-0882"
+   ]
+  },
+  {
+   "from": "n:شعيب",
+   "to": "n:زهري",
+   "from_label": "شعيب",
+   "to_label": "الزهري",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0087"
+   ]
+  },
+  {
+   "from": "n:عبد الله",
+   "to": "n:محمد بن خلف عسقلاني ومحمد بن عوف حمصي",
+   "from_label": "عبد الله",
+   "to_label": "محمد بن خلف العسقلاني، ومحمد بن عوف الحمصي قالا",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0087"
+   ]
+  },
+  {
+   "from": "n:محمد بن خلف عسقلاني ومحمد بن عوف حمصي",
+   "to": "n:ابو يمان",
+   "from_label": "محمد بن خلف العسقلاني، ومحمد بن عوف الحمصي قالا",
+   "to_label": "أبو اليمان",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0087"
+   ]
+  },
+  {
+   "from": "r2607",
+   "to": "r3131",
+   "from_label": "خارجة بن زيد الأنصاري",
+   "to_label": "زيد بن ثابت الأنصاري",
+   "student_death_year": 99,
+   "teacher_death_year": 45,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0087"
+   ]
+  },
+  {
+   "from": "r3587",
+   "to": "n:ابراهيم بن سعد",
+   "from_label": "سليمان بن داود القرشي",
+   "to_label": "إبراهيم ابن سعد",
+   "student_death_year": 219,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0882"
+   ]
+  }
+ ],
+ "chains": [
+  {
+   "record": "jamc-0087",
+   "chain_no": 0,
+   "nodes": [
+    "n:عبد الله",
+    "n:محمد بن خلف عسقلاني ومحمد بن عوف حمصي",
+    "n:ابو يمان",
+    "n:شعيب",
+    "n:زهري",
+    "r2607",
+    "r3131"
+   ]
+  },
+  {
+   "record": "jamc-0882",
+   "chain_no": 0,
+   "nodes": [
+    "r3587",
+    "n:ابراهيم بن سعد",
+    "n:زهري",
+    "r2607"
+   ]
+  },
+  {
+   "record": "jamc-1196",
+   "chain_no": 0,
+   "nodes": [
+    "n:خارجه بن زيد بن ثابت انه سمع زيد بن ثابت"
+   ]
+  }
+ ],
+ "common_link_candidates": {
+  "2": {
+   "candidates": [
+    {
+     "node": "n:زهري",
+     "label": "الزهري",
+     "students": 2,
+     "students_corroborated": 0,
+     "depth": 4,
+     "single_thread_above": 2,
+     "death_year": null,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 0,
+      "min": null,
+      "max": null
+     },
+     "isolation": {
+      "routes_through": 2,
+      "above": {
+       "paths": 2,
+       "single": 2,
+       "single_ratio": 1.0
+      },
+      "below": {
+       "paths": 2,
+       "single": 2,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [
+      "cl-on-name-node",
+      "rawi-ambiguous"
+     ],
+     "records": [
+      "jamc-0087",
+      "jamc-0882"
+     ],
+     "branches": [
+      {
+       "student": "n:ابراهيم بن سعد",
+       "student_label": "إبراهيم ابن سعد",
+       "records": [
+        "jamc-0882"
+       ],
+       "works": [
+        "تاريخ المدينة"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.4531,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "n:شعيب",
+       "student_label": "شعيب",
+       "records": [
+        "jamc-0087"
+       ],
+       "works": [
+        "المصاحف"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.4531,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  },
+  "3": {
+   "candidates": [],
+   "partial": []
+  },
+  "4": {
+   "candidates": [],
+   "partial": []
+  },
+  "2-corroborated": {
+   "min_works_per_branch": 2,
+   "candidates": [],
+   "partial": []
+  },
+  "most-corroborated": {
+   "min_works_per_branch": 2,
+   "min_corroborated_branches": 2,
+   "candidates": [],
+   "partial": []
+  }
+ }
+}

@@ -1,0 +1,814 @@
+{
+ "cluster": "clx-jamc-1025-5eedb8",
+ "mode": "inf",
+ "event_tags": [
+  "ahruf"
+ ],
+ "records": [
+  "jamc-1025",
+  "jamc-1124",
+  "jamc-1434",
+  "jamc-1438"
+ ],
+ "chains_used": 4,
+ "representative": "jamc-1124",
+ "works": [
+  "الاستذكار",
+  "التمهيد لابن عبد البر",
+  "السنن الكبرى للنسائي",
+  "سنن النسائى الصغرى"
+ ],
+ "earliest_witness": {
+  "record": "jamc-1025",
+  "work_ar": "سنن النسائى الصغرى",
+  "death_ah": 303
+ },
+ "earliest_fully_settled_route": {
+  "record": "jamc-1025",
+  "work_ar": "سنن النسائى الصغرى",
+  "death_ah": 303
+ },
+ "edges_chrono_suspect": 0,
+ "terminal_branching": {
+  "node": "r396",
+  "students": 1,
+  "terminals": [
+   "r396"
+  ]
+ },
+ "nodes": [
+  {
+   "node": "n:ابو قاسم خلف بن قاسم ان ابو طاهر محمد بن احمد بن عبد الله بن بحير قاضي بمصر املي عليهم",
+   "label": "أَبِي الْقَاسِمِ خَلَفُ بْنُ الْقَاسِمِ ، أَنَّ أَبَا الطاهر مُحَمَّدِ بْنَ أَحْمَدَ بْنِ عَبْدِ اللَّهِ بْنِ بَحِيرٍ الْقَاضِي ، بِمِصْرَ أَمْلَى عَلَيْهِمْ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أَبِي الْقَاسِمِ خَلَفُ بْنُ الْقَاسِمِ ، أَنَّ أَبَا الطاهر مُحَمَّدِ بْنَ أَحْمَدَ بْنِ عَبْدِ اللَّهِ بْنِ بَحِيرٍ الْقَاضِي ، بِمِصْرَ أَمْلَى عَلَيْهِمْ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 0,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1434"
+   ]
+  },
+  {
+   "node": "r13810",
+   "label": "جعفر بن محمد الفريابي",
+   "rawi_id": 13810,
+   "tabaka": 12,
+   "death_year": 301,
+   "raw_names": [
+    "أَبُو بَكْرٍ جَعْفَرُ بْنُ مُحَمَّدٍ الْمِشْقَاصِيُّ الْفِرْيَابِيُّ الْقَاضِي",
+    "أَبُو بَكْرٍ جَعْفَرُ بْنُ مُحَمَّدِ بْنِ الْحَسَنِ الْفِرْيَابِيُّ الْقَاضِي"
+   ],
+   "students": 2,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "node": "r16463",
+   "label": "ابن الدباغ الأزدي",
+   "rawi_id": 16463,
+   "tabaka": 16,
+   "death_year": 393,
+   "raw_names": [
+    "خَلَفُ بْنُ الْقَاسِمِ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1438"
+   ]
+  },
+  {
+   "node": "r28286",
+   "label": "محمد بن أحمد الذهلي",
+   "rawi_id": 28286,
+   "tabaka": 15,
+   "death_year": 367,
+   "raw_names": [
+    "أَبُو الطَّاهِرِ مُحَمَّدُ بْنُ أَحْمَدَ ، بِمِصْرَ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1438"
+   ]
+  },
+  {
+   "node": "r3307",
+   "label": "سعيد بن جبير الأسدي",
+   "rawi_id": 3307,
+   "tabaka": 3,
+   "death_year": 95,
+   "raw_names": [
+    "سَعِيدِ بْنِ جُبَيْرٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 1,
+   "single_thread_above": 2,
+   "depth": 6,
+   "flags": [],
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "node": "r396",
+   "label": "أبي بن كعب الأنصاري",
+   "rawi_id": 396,
+   "tabaka": 1,
+   "death_year": 22,
+   "raw_names": [
+    "أُبَيِّ بْنِ كَعْبٍ"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 1,
+   "single_thread_above": 0,
+   "depth": 8,
+   "flags": [],
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "node": "r4883",
+   "label": "عبد الله بن العباس القرشي",
+   "rawi_id": 4883,
+   "tabaka": 1,
+   "death_year": 68,
+   "raw_names": [
+    "ابْنِ عَبَّاسٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 1,
+   "single_thread_above": 1,
+   "depth": 7,
+   "flags": [],
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "node": "r5064",
+   "label": "عبد الله بن محمد القضاعي",
+   "rawi_id": 5064,
+   "tabaka": 10,
+   "death_year": 234,
+   "raw_names": [
+    "أَبُو جَعْفَرٍ النُّفَيْلِيُّ",
+    "أَبُو جَعْفَرِ بْنُ نُفَيْلٍ",
+    "أَبُو جَعْفَرِ بْنِ نُفَيْلٍ"
+   ],
+   "students": 2,
+   "teachers": 1,
+   "students_corroborated": 2,
+   "single_thread_above": 5,
+   "depth": 3,
+   "flags": [],
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "node": "r5699",
+   "label": "عكرمة بن خالد المخزومي",
+   "rawi_id": 5699,
+   "tabaka": 3,
+   "death_year": null,
+   "raw_names": [
+    "عِكْرِمَةَ",
+    "عِكْرِمَةَ بْنِ خَالِدٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 1,
+   "single_thread_above": 3,
+   "depth": 5,
+   "flags": [],
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "node": "r6205",
+   "label": "عمرو بن منصور النسائي",
+   "rawi_id": 6205,
+   "tabaka": 11,
+   "death_year": null,
+   "raw_names": [
+    "عَمْرُو بْنُ مَنْصُورٍ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1025",
+    "jamc-1124"
+   ]
+  },
+  {
+   "node": "r7621",
+   "label": "معقل بن عبيد الله العبسي",
+   "rawi_id": 7621,
+   "tabaka": 7,
+   "death_year": 166,
+   "raw_names": [
+    "مَعْقِلٍ",
+    "مَعْقِلِ بْنِ عُبَيْدِ اللَّهِ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 1,
+   "single_thread_above": 4,
+   "depth": 4,
+   "flags": [],
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "n:ابو قاسم خلف بن قاسم ان ابو طاهر محمد بن احمد بن عبد الله بن بحير قاضي بمصر املي عليهم",
+   "to": "r13810",
+   "from_label": "أَبِي الْقَاسِمِ خَلَفُ بْنُ الْقَاسِمِ ، أَنَّ أَبَا الطاهر مُحَمَّدِ بْنَ أَحْمَدَ بْنِ عَبْدِ اللَّهِ بْنِ بَحِيرٍ الْقَاضِي ، بِمِصْرَ أَمْلَى عَلَيْهِمْ",
+   "to_label": "جعفر بن محمد الفريابي",
+   "student_death_year": null,
+   "teacher_death_year": 301,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1434"
+   ]
+  },
+  {
+   "from": "r13810",
+   "to": "r5064",
+   "from_label": "جعفر بن محمد الفريابي",
+   "to_label": "عبد الله بن محمد القضاعي",
+   "student_death_year": 301,
+   "teacher_death_year": 234,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "from": "r16463",
+   "to": "r28286",
+   "from_label": "ابن الدباغ الأزدي",
+   "to_label": "محمد بن أحمد الذهلي",
+   "student_death_year": 393,
+   "teacher_death_year": 367,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1438"
+   ]
+  },
+  {
+   "from": "r28286",
+   "to": "r13810",
+   "from_label": "محمد بن أحمد الذهلي",
+   "to_label": "جعفر بن محمد الفريابي",
+   "student_death_year": 367,
+   "teacher_death_year": 301,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1438"
+   ]
+  },
+  {
+   "from": "r3307",
+   "to": "r4883",
+   "from_label": "سعيد بن جبير الأسدي",
+   "to_label": "عبد الله بن العباس القرشي",
+   "student_death_year": 95,
+   "teacher_death_year": 68,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "from": "r4883",
+   "to": "r396",
+   "from_label": "عبد الله بن العباس القرشي",
+   "to_label": "أبي بن كعب الأنصاري",
+   "student_death_year": 68,
+   "teacher_death_year": 22,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "from": "r5064",
+   "to": "r7621",
+   "from_label": "عبد الله بن محمد القضاعي",
+   "to_label": "معقل بن عبيد الله العبسي",
+   "student_death_year": 234,
+   "teacher_death_year": 166,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "from": "r5699",
+   "to": "r3307",
+   "from_label": "عكرمة بن خالد المخزومي",
+   "to_label": "سعيد بن جبير الأسدي",
+   "student_death_year": null,
+   "teacher_death_year": 95,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  },
+  {
+   "from": "r6205",
+   "to": "r5064",
+   "from_label": "عمرو بن منصور النسائي",
+   "to_label": "عبد الله بن محمد القضاعي",
+   "student_death_year": null,
+   "teacher_death_year": 234,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1025",
+    "jamc-1124"
+   ]
+  },
+  {
+   "from": "r7621",
+   "to": "r5699",
+   "from_label": "معقل بن عبيد الله العبسي",
+   "to_label": "عكرمة بن خالد المخزومي",
+   "student_death_year": 166,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1025",
+    "jamc-1124",
+    "jamc-1434",
+    "jamc-1438"
+   ]
+  }
+ ],
+ "chains": [
+  {
+   "record": "jamc-1025",
+   "chain_no": 0,
+   "nodes": [
+    "r6205",
+    "r5064",
+    "r7621",
+    "r5699",
+    "r3307",
+    "r4883",
+    "r396"
+   ]
+  },
+  {
+   "record": "jamc-1124",
+   "chain_no": 0,
+   "nodes": [
+    "r6205",
+    "r5064",
+    "r7621",
+    "r5699",
+    "r3307",
+    "r4883",
+    "r396"
+   ]
+  },
+  {
+   "record": "jamc-1434",
+   "chain_no": 0,
+   "nodes": [
+    "n:ابو قاسم خلف بن قاسم ان ابو طاهر محمد بن احمد بن عبد الله بن بحير قاضي بمصر املي عليهم",
+    "r13810",
+    "r5064",
+    "r7621",
+    "r5699",
+    "r3307",
+    "r4883",
+    "r396"
+   ]
+  },
+  {
+   "record": "jamc-1438",
+   "chain_no": 0,
+   "nodes": [
+    "r16463",
+    "r28286",
+    "r13810",
+    "r5064",
+    "r7621",
+    "r5699",
+    "r3307",
+    "r4883",
+    "r396"
+   ]
+  }
+ ],
+ "common_link_candidates": {
+  "2": {
+   "candidates": [
+    {
+     "node": "r5064",
+     "label": "عبد الله بن محمد القضاعي",
+     "students": 2,
+     "students_corroborated": 2,
+     "depth": 3,
+     "single_thread_above": 5,
+     "death_year": 234,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 1,
+      "min": 301,
+      "max": 301
+     },
+     "isolation": {
+      "routes_through": 4,
+      "above": {
+       "paths": 1,
+       "single": 0,
+       "single_ratio": 0.0
+      },
+      "below": {
+       "paths": 3,
+       "single": 2,
+       "single_ratio": 0.6667
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1025",
+      "jamc-1124",
+      "jamc-1434",
+      "jamc-1438"
+     ],
+     "branches": [
+      {
+       "student": "r13810",
+       "student_label": "جعفر بن محمد الفريابي",
+       "records": [
+        "jamc-1434",
+        "jamc-1438"
+       ],
+       "works": [
+        "الاستذكار",
+        "التمهيد لابن عبد البر"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.3809,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 1,
+         "single": 0,
+         "single_ratio": 0.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r6205",
+       "student_label": "عمرو بن منصور النسائي",
+       "records": [
+        "jamc-1025",
+        "jamc-1124"
+       ],
+       "works": [
+        "السنن الكبرى للنسائي",
+        "سنن النسائى الصغرى"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.3947,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 1,
+         "single": 0,
+         "single_ratio": 0.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 0,
+         "single_ratio": 0.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": [
+    {
+     "node": "r13810",
+     "label": "جعفر بن محمد الفريابي",
+     "students": 2,
+     "students_corroborated": 0,
+     "depth": 2,
+     "single_thread_above": 0,
+     "death_year": 301,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 1,
+      "min": 367,
+      "max": 367
+     },
+     "isolation": {
+      "routes_through": 2,
+      "above": {
+       "paths": 1,
+       "single": 0,
+       "single_ratio": 0.0
+      },
+      "below": {
+       "paths": 2,
+       "single": 2,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1434",
+      "jamc-1438"
+     ]
+    }
+   ]
+  },
+  "3": {
+   "candidates": [],
+   "partial": []
+  },
+  "4": {
+   "candidates": [],
+   "partial": []
+  },
+  "2-corroborated": {
+   "min_works_per_branch": 2,
+   "candidates": [
+    {
+     "node": "r5064",
+     "label": "عبد الله بن محمد القضاعي",
+     "students": 2,
+     "students_corroborated": 2,
+     "depth": 3,
+     "single_thread_above": 5,
+     "death_year": 234,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 1,
+      "min": 301,
+      "max": 301
+     },
+     "isolation": {
+      "routes_through": 4,
+      "above": {
+       "paths": 1,
+       "single": 0,
+       "single_ratio": 0.0
+      },
+      "below": {
+       "paths": 3,
+       "single": 2,
+       "single_ratio": 0.6667
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1025",
+      "jamc-1124",
+      "jamc-1434",
+      "jamc-1438"
+     ],
+     "branches": [
+      {
+       "student": "r13810",
+       "student_label": "جعفر بن محمد الفريابي",
+       "records": [
+        "jamc-1434",
+        "jamc-1438"
+       ],
+       "works": [
+        "الاستذكار",
+        "التمهيد لابن عبد البر"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.3809,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 1,
+         "single": 0,
+         "single_ratio": 0.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r6205",
+       "student_label": "عمرو بن منصور النسائي",
+       "records": [
+        "jamc-1025",
+        "jamc-1124"
+       ],
+       "works": [
+        "السنن الكبرى للنسائي",
+        "سنن النسائى الصغرى"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.3947,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 1,
+         "single": 0,
+         "single_ratio": 0.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 0,
+         "single_ratio": 0.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  },
+  "most-corroborated": {
+   "min_works_per_branch": 2,
+   "min_corroborated_branches": 2,
+   "candidates": [
+    {
+     "node": "r5064",
+     "label": "عبد الله بن محمد القضاعي",
+     "students": 2,
+     "students_corroborated": 2,
+     "depth": 3,
+     "single_thread_above": 5,
+     "death_year": 234,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 1,
+      "min": 301,
+      "max": 301
+     },
+     "isolation": {
+      "routes_through": 4,
+      "above": {
+       "paths": 1,
+       "single": 0,
+       "single_ratio": 0.0
+      },
+      "below": {
+       "paths": 3,
+       "single": 2,
+       "single_ratio": 0.6667
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1025",
+      "jamc-1124",
+      "jamc-1434",
+      "jamc-1438"
+     ],
+     "branches": [
+      {
+       "student": "r13810",
+       "student_label": "جعفر بن محمد الفريابي",
+       "records": [
+        "jamc-1434",
+        "jamc-1438"
+       ],
+       "works": [
+        "الاستذكار",
+        "التمهيد لابن عبد البر"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.3809,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 1,
+         "single": 0,
+         "single_ratio": 0.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r6205",
+       "student_label": "عمرو بن منصور النسائي",
+       "records": [
+        "jamc-1025",
+        "jamc-1124"
+       ],
+       "works": [
+        "السنن الكبرى للنسائي",
+        "سنن النسائى الصغرى"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.3947,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 1,
+         "single": 0,
+         "single_ratio": 0.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 0,
+         "single_ratio": 0.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  }
+ }
+}

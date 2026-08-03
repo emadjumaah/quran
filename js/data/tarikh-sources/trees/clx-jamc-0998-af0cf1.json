@@ -1,0 +1,1212 @@
+{
+ "cluster": "clx-jamc-0998-af0cf1",
+ "mode": "inf",
+ "event_tags": [
+  "jamc-abibakr",
+  "kitabat-cahd-nabawi"
+ ],
+ "records": [
+  "jamc-0998",
+  "jamc-1005",
+  "jamc-1361",
+  "jamc-1364",
+  "jamc-1368"
+ ],
+ "chains_used": 5,
+ "representative": "jamc-1361",
+ "works": [
+  "تغليق التعليق  لابن حجر",
+  "صحيح البخاري",
+  "غوامض الأسماء المبهمة لابن بشكوال"
+ ],
+ "earliest_witness": {
+  "record": "jamc-0998",
+  "work_ar": "صحيح البخاري",
+  "death_ah": 256
+ },
+ "earliest_fully_settled_route": {
+  "record": "jamc-0998",
+  "work_ar": "صحيح البخاري",
+  "death_ah": 256
+ },
+ "edges_chrono_suspect": 0,
+ "terminal_branching": {
+  "node": "r7272",
+  "students": 4,
+  "terminals": [
+   "n:بن سباق ان زيد بن ثابت انصاري وكان ممن يكتب وحي",
+   "n:بن سباق ان زيد بن ثابت حدثه",
+   "r3131",
+   "r7272"
+  ]
+ },
+ "nodes": [
+  {
+   "node": "n:ابو يمان",
+   "label": "أَبُو الْيَمَانِ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أَبُو الْيَمَانِ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 0,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-1364"
+   ]
+  },
+  {
+   "node": "n:بن سباق ان زيد بن ثابت انصاري وكان ممن يكتب وحي",
+   "label": "ابْنُ السَّبَّاقِ ، أَنّ زَيْدَ بْنَ ثَابِتٍ الأَنْصَارِيَّ رَضِيَ اللَّهُ عَنْهُ وَكَانَ مِمَّنْ يَكْتُبُ الْوَحْيَ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "ابْنُ السَّبَّاقِ ، أَنّ زَيْدَ بْنَ ثَابِتٍ الأَنْصَارِيَّ رَضِيَ اللَّهُ عَنْهُ وَكَانَ مِمَّنْ يَكْتُبُ الْوَحْيَ"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 3,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-1364"
+   ]
+  },
+  {
+   "node": "n:بن سباق ان زيد بن ثابت حدثه",
+   "label": "ابْنِ السَّبَّاقِ ، أَنَّ زَيْدَ بْنَ ثَابِتٍ حَدَّثَهُ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "ابْنِ السَّبَّاقِ ، أَنَّ زَيْدَ بْنَ ثَابِتٍ حَدَّثَهُ"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 6,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1005"
+   ]
+  },
+  {
+   "node": "n:زهري",
+   "label": "الزُّهْرِيِّ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "الزُّهْرِيِّ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 2,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1364"
+   ]
+  },
+  {
+   "node": "n:شعيب",
+   "label": "شُعَيْبٌ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "شُعَيْبٌ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 1,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1364"
+   ]
+  },
+  {
+   "node": "n:عبيد بن سباق ان زيد بن ثابت وقال ليث",
+   "label": "عُبَيْدِ بْنِ السَّبَّاقِ ، أَنَّ زَيْدَ بْنَ ثَابِتٍ ، وَقَالَ اللَّيْثُ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "عُبَيْدِ بْنِ السَّبَّاقِ ، أَنَّ زَيْدَ بْنَ ثَابِتٍ ، وَقَالَ اللَّيْثُ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 3,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1005"
+   ]
+  },
+  {
+   "node": "n:محمد بن اسماعيل",
+   "label": "مُحَمَّدُ بْنُ إِسْمَاعِيلَ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "مُحَمَّدُ بْنُ إِسْمَاعِيلَ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 4,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "node": "n:محمد بن يوسف",
+   "label": "مُحَمَّدُ بْنُ يُوسُفَ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "مُحَمَّدُ بْنُ يُوسُفَ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 3,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "node": "r18078",
+   "label": "سعيد بن عثمان المصري",
+   "rawi_id": 18078,
+   "tabaka": 15,
+   "death_year": 353,
+   "raw_names": [
+    "أَبُو عَلِيِّ بْنُ السَّكَنِ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 4,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "node": "r23045",
+   "label": "عبد الله بن محمد الجهني",
+   "rawi_id": 23045,
+   "tabaka": 16,
+   "death_year": 395,
+   "raw_names": [
+    "أَبُو مُحَمَّدِ بْنُ أَسَدٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 5,
+   "depth": 1,
+   "flags": [
+    "rawi-inferred"
+   ],
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "node": "r3131",
+   "label": "زيد بن ثابت الأنصاري",
+   "rawi_id": 3131,
+   "tabaka": 1,
+   "death_year": 45,
+   "raw_names": [
+    "ابْنِ السَّبَّاقِ , أَنَّ زَيْدَ بْنَ ثَابِتٍ , حَدَّثَهُ"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-1368"
+   ]
+  },
+  {
+   "node": "r35066",
+   "label": "أحمد بن محمد التميمي",
+   "rawi_id": 35066,
+   "tabaka": 19,
+   "death_year": 467,
+   "raw_names": [
+    "أَبُو عُمَرَ أَحْمَدُ بْنُ مُحَمَّدٍ الْقَاضِي"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 6,
+   "depth": 0,
+   "flags": [
+    "rawi-inferred"
+   ],
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "node": "r4352",
+   "label": "عبد الرحمن بن خالد الفهمي",
+   "rawi_id": 4352,
+   "tabaka": 6,
+   "death_year": 127,
+   "raw_names": [
+    "عَبْدُ الرَّحْمَنِ بْنُ خَالِدٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 4,
+   "flags": [],
+   "records": [
+    "jamc-1005",
+    "jamc-1368"
+   ]
+  },
+  {
+   "node": "r6641",
+   "label": "الليث بن سعد الفهمي",
+   "rawi_id": 6641,
+   "tabaka": 7,
+   "death_year": 175,
+   "raw_names": [
+    "اللَّيْثُ"
+   ],
+   "students": 1,
+   "teachers": 2,
+   "students_corroborated": 1,
+   "single_thread_above": 0,
+   "depth": 6,
+   "flags": [],
+   "records": [
+    "jamc-0998",
+    "jamc-1361"
+   ]
+  },
+  {
+   "node": "r7272",
+   "label": "محمد بن شهاب الزهري",
+   "rawi_id": 7272,
+   "tabaka": 4,
+   "death_year": 124,
+   "raw_names": [
+    "ابْنُ شِهَابٍ",
+    "ابْنِ شِهَابٍ"
+   ],
+   "students": 4,
+   "teachers": 3,
+   "students_corroborated": 1,
+   "single_thread_above": 0,
+   "depth": 8,
+   "flags": [],
+   "records": [
+    "jamc-0998",
+    "jamc-1005",
+    "jamc-1361",
+    "jamc-1368"
+   ]
+  },
+  {
+   "node": "r7721",
+   "label": "موسى بن إسماعيل التبوذكي",
+   "rawi_id": 7721,
+   "tabaka": 9,
+   "death_year": 223,
+   "raw_names": [
+    "مُوسَى"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1005"
+   ]
+  },
+  {
+   "node": "r823",
+   "label": "إبراهيم بن سعد الزهري",
+   "rawi_id": 823,
+   "tabaka": 8,
+   "death_year": 183,
+   "raw_names": [
+    "إِبْرَاهِيمَ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1005"
+   ]
+  },
+  {
+   "node": "r8297",
+   "label": "يحيى بن بكير القرشي",
+   "rawi_id": 8297,
+   "tabaka": 10,
+   "death_year": 231,
+   "raw_names": [
+    "يَحْيَى بْنُ بُكَيْرٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 5,
+   "flags": [],
+   "records": [
+    "jamc-0998",
+    "jamc-1361"
+   ]
+  },
+  {
+   "node": "r8616",
+   "label": "يونس بن عبيد العبدي",
+   "rawi_id": 8616,
+   "tabaka": 5,
+   "death_year": 139,
+   "raw_names": [
+    "يُونُسَ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 7,
+   "flags": [],
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "node": "r8621",
+   "label": "يونس بن يزيد الأيلي",
+   "rawi_id": 8621,
+   "tabaka": 7,
+   "death_year": 159,
+   "raw_names": [
+    "يُونُسَ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-0998"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "n:ابو يمان",
+   "to": "n:شعيب",
+   "from_label": "أَبُو الْيَمَانِ",
+   "to_label": "شُعَيْبٌ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1364"
+   ]
+  },
+  {
+   "from": "n:زهري",
+   "to": "n:بن سباق ان زيد بن ثابت انصاري وكان ممن يكتب وحي",
+   "from_label": "الزُّهْرِيِّ",
+   "to_label": "ابْنُ السَّبَّاقِ ، أَنّ زَيْدَ بْنَ ثَابِتٍ الأَنْصَارِيَّ رَضِيَ اللَّهُ عَنْهُ وَكَانَ مِمَّنْ يَكْتُبُ الْوَحْيَ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1364"
+   ]
+  },
+  {
+   "from": "n:شعيب",
+   "to": "n:زهري",
+   "from_label": "شُعَيْبٌ",
+   "to_label": "الزُّهْرِيِّ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1364"
+   ]
+  },
+  {
+   "from": "n:عبيد بن سباق ان زيد بن ثابت وقال ليث",
+   "to": "r4352",
+   "from_label": "عُبَيْدِ بْنِ السَّبَّاقِ ، أَنَّ زَيْدَ بْنَ ثَابِتٍ ، وَقَالَ اللَّيْثُ",
+   "to_label": "عبد الرحمن بن خالد الفهمي",
+   "student_death_year": null,
+   "teacher_death_year": 127,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1005"
+   ]
+  },
+  {
+   "from": "n:محمد بن اسماعيل",
+   "to": "r8297",
+   "from_label": "مُحَمَّدُ بْنُ إِسْمَاعِيلَ",
+   "to_label": "يحيى بن بكير القرشي",
+   "student_death_year": null,
+   "teacher_death_year": 231,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "from": "n:محمد بن يوسف",
+   "to": "n:محمد بن اسماعيل",
+   "from_label": "مُحَمَّدُ بْنُ يُوسُفَ",
+   "to_label": "مُحَمَّدُ بْنُ إِسْمَاعِيلَ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "from": "r18078",
+   "to": "n:محمد بن يوسف",
+   "from_label": "سعيد بن عثمان المصري",
+   "to_label": "مُحَمَّدُ بْنُ يُوسُفَ",
+   "student_death_year": 353,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "from": "r23045",
+   "to": "r18078",
+   "from_label": "عبد الله بن محمد الجهني",
+   "to_label": "سعيد بن عثمان المصري",
+   "student_death_year": 395,
+   "teacher_death_year": 353,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "from": "r35066",
+   "to": "r23045",
+   "from_label": "أحمد بن محمد التميمي",
+   "to_label": "عبد الله بن محمد الجهني",
+   "student_death_year": 467,
+   "teacher_death_year": 395,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "from": "r4352",
+   "to": "r7272",
+   "from_label": "عبد الرحمن بن خالد الفهمي",
+   "to_label": "محمد بن شهاب الزهري",
+   "student_death_year": 127,
+   "teacher_death_year": 124,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1005",
+    "jamc-1368"
+   ]
+  },
+  {
+   "from": "r6641",
+   "to": "r8616",
+   "from_label": "الليث بن سعد الفهمي",
+   "to_label": "يونس بن عبيد العبدي",
+   "student_death_year": 175,
+   "teacher_death_year": 139,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "from": "r6641",
+   "to": "r8621",
+   "from_label": "الليث بن سعد الفهمي",
+   "to_label": "يونس بن يزيد الأيلي",
+   "student_death_year": 175,
+   "teacher_death_year": 159,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0998"
+   ]
+  },
+  {
+   "from": "r7272",
+   "to": "n:بن سباق ان زيد بن ثابت حدثه",
+   "from_label": "محمد بن شهاب الزهري",
+   "to_label": "ابْنِ السَّبَّاقِ ، أَنَّ زَيْدَ بْنَ ثَابِتٍ حَدَّثَهُ",
+   "student_death_year": 124,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1005"
+   ]
+  },
+  {
+   "from": "r7272",
+   "to": "n:عبيد بن سباق ان زيد بن ثابت وقال ليث",
+   "from_label": "محمد بن شهاب الزهري",
+   "to_label": "عُبَيْدِ بْنِ السَّبَّاقِ ، أَنَّ زَيْدَ بْنَ ثَابِتٍ ، وَقَالَ اللَّيْثُ",
+   "student_death_year": 124,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1005"
+   ]
+  },
+  {
+   "from": "r7272",
+   "to": "r3131",
+   "from_label": "محمد بن شهاب الزهري",
+   "to_label": "زيد بن ثابت الأنصاري",
+   "student_death_year": 124,
+   "teacher_death_year": 45,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1368"
+   ]
+  },
+  {
+   "from": "r7721",
+   "to": "r823",
+   "from_label": "موسى بن إسماعيل التبوذكي",
+   "to_label": "إبراهيم بن سعد الزهري",
+   "student_death_year": 223,
+   "teacher_death_year": 183,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1005"
+   ]
+  },
+  {
+   "from": "r823",
+   "to": "r7272",
+   "from_label": "إبراهيم بن سعد الزهري",
+   "to_label": "محمد بن شهاب الزهري",
+   "student_death_year": 183,
+   "teacher_death_year": 124,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1005"
+   ]
+  },
+  {
+   "from": "r8297",
+   "to": "r6641",
+   "from_label": "يحيى بن بكير القرشي",
+   "to_label": "الليث بن سعد الفهمي",
+   "student_death_year": 231,
+   "teacher_death_year": 175,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0998",
+    "jamc-1361"
+   ]
+  },
+  {
+   "from": "r8616",
+   "to": "r7272",
+   "from_label": "يونس بن عبيد العبدي",
+   "to_label": "محمد بن شهاب الزهري",
+   "student_death_year": 139,
+   "teacher_death_year": 124,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1361"
+   ]
+  },
+  {
+   "from": "r8621",
+   "to": "r7272",
+   "from_label": "يونس بن يزيد الأيلي",
+   "to_label": "محمد بن شهاب الزهري",
+   "student_death_year": 159,
+   "teacher_death_year": 124,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0998"
+   ]
+  }
+ ],
+ "chains": [
+  {
+   "record": "jamc-0998",
+   "chain_no": 0,
+   "nodes": [
+    "r8297",
+    "r6641",
+    "r8621",
+    "r7272"
+   ]
+  },
+  {
+   "record": "jamc-1005",
+   "chain_no": 0,
+   "nodes": [
+    "r7721",
+    "r823",
+    "r7272",
+    "n:عبيد بن سباق ان زيد بن ثابت وقال ليث",
+    "r4352",
+    "r7272",
+    "n:بن سباق ان زيد بن ثابت حدثه"
+   ]
+  },
+  {
+   "record": "jamc-1361",
+   "chain_no": 0,
+   "nodes": [
+    "r35066",
+    "r23045",
+    "r18078",
+    "n:محمد بن يوسف",
+    "n:محمد بن اسماعيل",
+    "r8297",
+    "r6641",
+    "r8616",
+    "r7272"
+   ]
+  },
+  {
+   "record": "jamc-1364",
+   "chain_no": 0,
+   "nodes": [
+    "n:ابو يمان",
+    "n:شعيب",
+    "n:زهري",
+    "n:بن سباق ان زيد بن ثابت انصاري وكان ممن يكتب وحي"
+   ]
+  },
+  {
+   "record": "jamc-1368",
+   "chain_no": 0,
+   "nodes": [
+    "r4352",
+    "r7272",
+    "r3131"
+   ]
+  }
+ ],
+ "common_link_candidates": {
+  "2": {
+   "candidates": [
+    {
+     "node": "r7272",
+     "label": "محمد بن شهاب الزهري",
+     "students": 4,
+     "students_corroborated": 1,
+     "depth": 8,
+     "single_thread_above": 0,
+     "death_year": 124,
+     "students_death_range": {
+      "students": 4,
+      "with_death_year": 4,
+      "min": 127,
+      "max": 183
+     },
+     "isolation": {
+      "routes_through": 4,
+      "above": {
+       "paths": 3,
+       "single": 2,
+       "single_ratio": 0.6667
+      },
+      "below": {
+       "paths": 4,
+       "single": 4,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-0998",
+      "jamc-1005",
+      "jamc-1361",
+      "jamc-1368"
+     ],
+     "branches": [
+      {
+       "student": "r4352",
+       "student_label": "عبد الرحمن بن خالد الفهمي",
+       "records": [
+        "jamc-1005",
+        "jamc-1368"
+       ],
+       "works": [
+        "تغليق التعليق  لابن حجر",
+        "صحيح البخاري"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.3235,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r823",
+       "student_label": "إبراهيم بن سعد الزهري",
+       "records": [
+        "jamc-1005"
+       ],
+       "works": [
+        "صحيح البخاري"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.0,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8616",
+       "student_label": "يونس بن عبيد العبدي",
+       "records": [
+        "jamc-1361"
+       ],
+       "works": [
+        "غوامض الأسماء المبهمة لابن بشكوال"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1868,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8621",
+       "student_label": "يونس بن يزيد الأيلي",
+       "records": [
+        "jamc-0998"
+       ],
+       "works": [
+        "صحيح البخاري"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1868,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  },
+  "3": {
+   "candidates": [
+    {
+     "node": "r7272",
+     "label": "محمد بن شهاب الزهري",
+     "students": 4,
+     "students_corroborated": 1,
+     "depth": 8,
+     "single_thread_above": 0,
+     "death_year": 124,
+     "students_death_range": {
+      "students": 4,
+      "with_death_year": 4,
+      "min": 127,
+      "max": 183
+     },
+     "isolation": {
+      "routes_through": 4,
+      "above": {
+       "paths": 3,
+       "single": 2,
+       "single_ratio": 0.6667
+      },
+      "below": {
+       "paths": 4,
+       "single": 4,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-0998",
+      "jamc-1005",
+      "jamc-1361",
+      "jamc-1368"
+     ],
+     "branches": [
+      {
+       "student": "r4352",
+       "student_label": "عبد الرحمن بن خالد الفهمي",
+       "records": [
+        "jamc-1005",
+        "jamc-1368"
+       ],
+       "works": [
+        "تغليق التعليق  لابن حجر",
+        "صحيح البخاري"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.3235,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r823",
+       "student_label": "إبراهيم بن سعد الزهري",
+       "records": [
+        "jamc-1005"
+       ],
+       "works": [
+        "صحيح البخاري"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.0,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8616",
+       "student_label": "يونس بن عبيد العبدي",
+       "records": [
+        "jamc-1361"
+       ],
+       "works": [
+        "غوامض الأسماء المبهمة لابن بشكوال"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1868,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8621",
+       "student_label": "يونس بن يزيد الأيلي",
+       "records": [
+        "jamc-0998"
+       ],
+       "works": [
+        "صحيح البخاري"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1868,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  },
+  "4": {
+   "candidates": [
+    {
+     "node": "r7272",
+     "label": "محمد بن شهاب الزهري",
+     "students": 4,
+     "students_corroborated": 1,
+     "depth": 8,
+     "single_thread_above": 0,
+     "death_year": 124,
+     "students_death_range": {
+      "students": 4,
+      "with_death_year": 4,
+      "min": 127,
+      "max": 183
+     },
+     "isolation": {
+      "routes_through": 4,
+      "above": {
+       "paths": 3,
+       "single": 2,
+       "single_ratio": 0.6667
+      },
+      "below": {
+       "paths": 4,
+       "single": 4,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-0998",
+      "jamc-1005",
+      "jamc-1361",
+      "jamc-1368"
+     ],
+     "branches": [
+      {
+       "student": "r4352",
+       "student_label": "عبد الرحمن بن خالد الفهمي",
+       "records": [
+        "jamc-1005",
+        "jamc-1368"
+       ],
+       "works": [
+        "تغليق التعليق  لابن حجر",
+        "صحيح البخاري"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.3235,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r823",
+       "student_label": "إبراهيم بن سعد الزهري",
+       "records": [
+        "jamc-1005"
+       ],
+       "works": [
+        "صحيح البخاري"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.0,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8616",
+       "student_label": "يونس بن عبيد العبدي",
+       "records": [
+        "jamc-1361"
+       ],
+       "works": [
+        "غوامض الأسماء المبهمة لابن بشكوال"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1868,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8621",
+       "student_label": "يونس بن يزيد الأيلي",
+       "records": [
+        "jamc-0998"
+       ],
+       "works": [
+        "صحيح البخاري"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1868,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  },
+  "2-corroborated": {
+   "min_works_per_branch": 2,
+   "candidates": [],
+   "partial": []
+  },
+  "most-corroborated": {
+   "min_works_per_branch": 2,
+   "min_corroborated_branches": 2,
+   "candidates": [],
+   "partial": []
+  }
+ }
+}

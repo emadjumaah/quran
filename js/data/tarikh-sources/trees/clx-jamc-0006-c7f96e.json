@@ -1,0 +1,2503 @@
+{
+ "cluster": "clx-jamc-0006-c7f96e",
+ "mode": "inf",
+ "event_tags": [
+  "kitabat-cahd-nabawi"
+ ],
+ "records": [
+  "jamc-0006",
+  "jamc-1161",
+  "jamc-1236",
+  "jamc-1240",
+  "jamc-1488",
+  "jamc-1489",
+  "jamc-1552",
+  "jamc-1553",
+  "jamc-1681"
+ ],
+ "chains_used": 9,
+ "representative": "jamc-1236",
+ "works": [
+  "إتحاف الخيرة المهرة بزوائد المسانيد العشرة",
+  "السنن الكبرى للبيهقي",
+  "الفقيه والمتفقه للخطيب",
+  "المصاحف",
+  "بغية الباحث عن زوائد مسند الحارث",
+  "تاريخ دمشق لابن عساكر",
+  "دلائل النبوة لأبي نعيم",
+  "دلائل النبوة للبيهقي"
+ ],
+ "earliest_witness": {
+  "record": "jamc-0006",
+  "work_ar": "المصاحف",
+  "death_ah": 316
+ },
+ "earliest_fully_settled_route": null,
+ "edges_chrono_suspect": 1,
+ "terminal_branching": {
+  "node": "n:بعض اخلاق رسول الله فقال كنت جاره فكان",
+  "students": 2,
+  "terminals": [
+   "n:بعض اخلاق رسول الله فقال كنت جاره فكان",
+   "n:بعض اخلاق رسول الله فقال كنت جاره فكان اذا",
+   "n:بعض اخلاق رسول الله قال كنت جاره فكان",
+   "n:بعض اخلاق نبي فقال كنت جاره فكان",
+   "n:بعض حديث رسول الله فقال",
+   "r3131"
+  ]
+ },
+ "nodes": [
+  {
+   "node": "n:ابو صالح",
+   "label": "أبو صالح",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أبو صالح"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 5,
+   "depth": 2,
+   "flags": [
+    "alias-db-override",
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "node": "n:ابو عبد الله حافظ وابو سعيد بن ابو عمرو",
+   "label": "أَبُو عَبْدِ اللَّهِ الْحَافِظُ ، وَأَبُو سَعِيدِ ابْنُ أَبِي عَمْرٍو ، قالا",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أَبُو عَبْدِ اللَّهِ الْحَافِظُ ، وَأَبُو سَعِيدِ ابْنُ أَبِي عَمْرٍو ، قالا",
+    "أَبُو عَبْدِ اللَّهِ الْحَافِظُ ، وَأَبُو سَعِيدِ بْنُ أَبِي عَمْرٍو"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 2,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1489",
+    "jamc-1553"
+   ]
+  },
+  {
+   "node": "n:ابو عثمان وليد بن ابو وليد ان سليمان بن خارجه بن زيد بن ثابت حدثه",
+   "label": "أَبُو عُثْمَانَ الْوَلِيدُ بْنُ أَبِي الْوَلِيدِ ، أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ بْنِ زَيْدِ بْنِ ثَابِتٍ حَدَّثَهُ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أَبُو عُثْمَانَ الْوَلِيدُ بْنُ أَبِي الْوَلِيدِ ، أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ بْنِ زَيْدِ بْنِ ثَابِتٍ حَدَّثَهُ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 4,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1552"
+   ]
+  },
+  {
+   "node": "n:بعض اخلاق رسول الله فقال كنت جاره فكان",
+   "label": "بَعْضِ أَخْلاقِ رَسُولِ اللَّهِ ﷺ , فَقَالَ : كُنْتُ جَارَهُ , فَكَانَ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "بَعْضِ أَخْلاقِ رَسُولِ اللَّهِ ﷺ , فَقَالَ : كُنْتُ جَارَهُ , فَكَانَ",
+    "بَعْضِ أَخْلاقِ رَسُولِ اللَّهِ ﷺ ، فَقَالَ : كُنْتُ جَارَهُ فَكَانَ",
+    "بَعْضِ أَخْلَاقِ رَسُولِ اللَّهِ ﷺ ، فَقَالَ : كُنْتُ جَارَهُ ، فَكَانَ"
+   ],
+   "students": 2,
+   "teachers": 0,
+   "students_corroborated": 1,
+   "single_thread_above": 0,
+   "depth": 6,
+   "flags": [
+    "rawi-relational",
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-1236",
+    "jamc-1240",
+    "jamc-1488"
+   ]
+  },
+  {
+   "node": "n:بعض اخلاق رسول الله فقال كنت جاره فكان اذا",
+   "label": "بَعْضِ ، أَخْلاقِ رَسُولِ اللَّهِ ﷺ ، فَقَالَ : كُنْتُ جَارَهُ ، فَكَانَ إِذَا",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "بَعْضِ ، أَخْلاقِ رَسُولِ اللَّهِ ﷺ ، فَقَالَ : كُنْتُ جَارَهُ ، فَكَانَ إِذَا"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 7,
+   "flags": [
+    "rawi-relational",
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-1489"
+   ]
+  },
+  {
+   "node": "n:بعض اخلاق رسول الله قال كنت جاره فكان",
+   "label": "بَعْضِ ، أَخْلاقِ رَسُولِ اللَّهِ ﷺ ، قَالَ : كُنْتُ جَارَهُ ، فَكَانَ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "بَعْضِ ، أَخْلاقِ رَسُولِ اللَّهِ ﷺ ، قَالَ : كُنْتُ جَارَهُ ، فَكَانَ",
+    "بَعْضِ أَخْلاقِ رَسُولِ اللَّهِ ﷺ ، قَالَ : كُنْتُ جَارَهُ ، فَكَانَ"
+   ],
+   "students": 2,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 13,
+   "flags": [
+    "rawi-relational",
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-1553",
+    "jamc-1681"
+   ]
+  },
+  {
+   "node": "n:بعض اخلاق نبي فقال كنت جاره فكان",
+   "label": "بَعْضِ أَخْلاقِ النَّبِيِّ ﷺ ، فَقَالَ : كُنْتُ جَارَهُ ، فَكَانَ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "بَعْضِ أَخْلاقِ النَّبِيِّ ﷺ ، فَقَالَ : كُنْتُ جَارَهُ ، فَكَانَ"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 6,
+   "flags": [
+    "rawi-relational",
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-1161"
+   ]
+  },
+  {
+   "node": "n:بعض حديث رسول الله فقال",
+   "label": "بعض حديث رسول الله صلى الله عليه وسلم [فقال",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "بعض حديث رسول الله صلى الله عليه وسلم [فقال"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 7,
+   "flags": [
+    "rawi-relational",
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "node": "n:خارجه بن زيد ان نفرا ادخلوا علي ابيه زيد بن ثابت فقالوا",
+   "label": "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا أُدْخِلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا أُدْخِلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 12,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "node": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت",
+   "label": "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، قَالُوا",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، قَالُوا"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 5,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1488"
+   ]
+  },
+  {
+   "node": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+   "label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+    "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا ، دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+    "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+    "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+    "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ رَضِيَ اللَّهُ عَنْهُ ، فَقَالُوا"
+   ],
+   "students": 3,
+   "teachers": 4,
+   "students_corroborated": 1,
+   "single_thread_above": 0,
+   "depth": 6,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1161",
+    "jamc-1236",
+    "jamc-1240",
+    "jamc-1489",
+    "jamc-1681"
+   ]
+  },
+  {
+   "node": "n:خارجه بن زيد قال دخل نفر علي زيد بن ثابت فقالوا",
+   "label": "خارجة بن زيد قال: دخل نفر على زيد بن ثابت فقالوا",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "خارجة بن زيد قال: دخل نفر على زيد بن ثابت فقالوا"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 6,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "node": "n:سليمان بن خارجه بن زيد",
+   "label": "سليمان بن خارجة بن زيد",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "سليمان بن خارجة بن زيد"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 5,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "node": "n:عبد الله",
+   "label": "عبد الله",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "عبد الله"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 7,
+   "depth": 0,
+   "flags": [
+    "alias-db-override",
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "node": "n:ليث",
+   "label": "الليث",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "الليث"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 4,
+   "depth": 3,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "node": "n:محمد بن يحيي",
+   "label": "محمد بن يحيى",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "محمد بن يحيى"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 6,
+   "depth": 1,
+   "flags": [
+    "alias-db-override",
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "node": "n:وليد بن ابو وليد ان سليمان بن خارجه اخبره",
+   "label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ , أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ أَخْبَرَهُ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ , أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ أَخْبَرَهُ",
+    "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ ، أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ ، أَخْبَرَهُ",
+    "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ ، أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ أَخْبَرَهُ"
+   ],
+   "students": 1,
+   "teachers": 3,
+   "students_corroborated": 1,
+   "single_thread_above": 0,
+   "depth": 11,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1236",
+    "jamc-1240",
+    "jamc-1488",
+    "jamc-1489",
+    "jamc-1553"
+   ]
+  },
+  {
+   "node": "n:وليد بن ابو وليد ان سليمان بن خارجه بن زيد اخبره",
+   "label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ بْنِ زَيْدٍ ، أَخْبَرَهُ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ بْنِ زَيْدٍ ، أَخْبَرَهُ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 5,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1681"
+   ]
+  },
+  {
+   "node": "n:وليد بن ابو وليد ان سليمان بن خالد اخبره",
+   "label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ ، أَنَّ سُلَيْمَانَ بْنَ خَالِدٍ أَخْبَرَهُ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ ، أَنَّ سُلَيْمَانَ بْنَ خَالِدٍ أَخْبَرَهُ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 4,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1161"
+   ]
+  },
+  {
+   "node": "r10025",
+   "label": "أبو يعلى الموصلي",
+   "rawi_id": 10025,
+   "tabaka": 13,
+   "death_year": 307,
+   "raw_names": [
+    "أَبُو يَعْلَى"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1552"
+   ]
+  },
+  {
+   "node": "r10765",
+   "label": "أحمد بن يوسف العطار",
+   "rawi_id": 10765,
+   "tabaka": 15,
+   "death_year": 359,
+   "raw_names": [
+    "أَبُو بَكْرِ بْنُ خَلادٍ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1488"
+   ]
+  },
+  {
+   "node": "r14244",
+   "label": "الحارث بن أبي أسامة التميمي",
+   "rawi_id": 14244,
+   "tabaka": 12,
+   "death_year": 282,
+   "raw_names": [
+    "الْحَارِثُ بْنُ أَبِي أُسَامَةَ",
+    "الْحَارِثُ بْنُ مُحَمَّدٍ"
+   ],
+   "students": 2,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-1488",
+    "jamc-1681"
+   ]
+  },
+  {
+   "node": "r14773",
+   "label": "الحسن بن أبي بكر البزاز",
+   "rawi_id": 14773,
+   "tabaka": 17,
+   "death_year": 426,
+   "raw_names": [
+    "الْحَسَنُ بْنُ أَبِي بَكْرٍ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1681"
+   ]
+  },
+  {
+   "node": "r1764",
+   "label": "الوليد بن أبي الوليد القرشي",
+   "rawi_id": 1764,
+   "tabaka": 4,
+   "death_year": null,
+   "raw_names": [
+    "أبي عثمان الوليد بن أبي الوليد"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 4,
+   "flags": [
+    "rawi-inferred"
+   ],
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "node": "r20588",
+   "label": "عبد الرحمن بن أحمد العجلي",
+   "rawi_id": 20588,
+   "tabaka": 19,
+   "death_year": 454,
+   "raw_names": [
+    "أَبُو الْفَضْلِ الرَّازِيُّ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 5,
+   "flags": [],
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "node": "r2607",
+   "label": "خارجة بن زيد الأنصاري",
+   "rawi_id": 2607,
+   "tabaka": 3,
+   "death_year": 99,
+   "raw_names": [
+    "خَارِجَةَ بْنِ زَيْدِ بْنِ ثَابِتٍ ، قَالَ : وَفَدَ نَفَرٌ عَلَى أَبِي ، فَقَالُوا"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 5,
+   "flags": [],
+   "records": [
+    "jamc-1552"
+   ]
+  },
+  {
+   "node": "r28599",
+   "label": "محمد بن إبراهيم الأمين",
+   "rawi_id": 28599,
+   "tabaka": 22,
+   "death_year": 530,
+   "raw_names": [
+    "أَبُو سَهْلِ بْنُ سَعْدَوَيْهِ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 4,
+   "flags": [],
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "node": "r29718",
+   "label": "محمد بن عبد الله الشافعي",
+   "rawi_id": 29718,
+   "tabaka": 15,
+   "death_year": 354,
+   "raw_names": [
+    "مُحَمَّدُ بْنُ عَبْدِ اللَّهِ بْنِ إِبْرَاهِيمَ الشَّافِعِيُّ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1681"
+   ]
+  },
+  {
+   "node": "r3036",
+   "label": "زهير بن حرب الحرشي",
+   "rawi_id": 3036,
+   "tabaka": 10,
+   "death_year": 234,
+   "raw_names": [
+    "زُهَيْرٌ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1552"
+   ]
+  },
+  {
+   "node": "r30885",
+   "label": "محمد بن هارون الروياني",
+   "rawi_id": 30885,
+   "tabaka": 13,
+   "death_year": 307,
+   "raw_names": [
+    "مُحَمَّدُ بْنُ هَارُونَ ، قَالُوا"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 7,
+   "flags": [],
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "node": "r31063",
+   "label": "محمد بن يعقوب الأموي",
+   "rawi_id": 31063,
+   "tabaka": 14,
+   "death_year": 346,
+   "raw_names": [
+    "أَبُو الْعَبَّاسِ مُحَمَّدُ بْنُ يَعْقُوبَ"
+   ],
+   "students": 1,
+   "teachers": 2,
+   "students_corroborated": 1,
+   "single_thread_above": 0,
+   "depth": 3,
+   "flags": [],
+   "records": [
+    "jamc-1489",
+    "jamc-1553"
+   ]
+  },
+  {
+   "node": "r3131",
+   "label": "زيد بن ثابت الأنصاري",
+   "rawi_id": 3131,
+   "tabaka": 1,
+   "death_year": 45,
+   "raw_names": [
+    "بَعْضَ حَدِيثِ رَسُولِ اللَّهِ ﷺ ، فَقَالَ أَبِي زَيْدُ بْنُ ثَابِتٍ : كَانَ رَسُولُ اللَّهِ ﷺ"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 6,
+   "flags": [],
+   "records": [
+    "jamc-1552"
+   ]
+  },
+  {
+   "node": "r41527",
+   "label": "عبد الله بن جعفر النحوي",
+   "rawi_id": 41527,
+   "tabaka": 14,
+   "death_year": 334,
+   "raw_names": [
+    "عَبْدُ اللَّهِ بْنُ جَعْفَرِ بْنِ دُرُسْتَوَيْهِ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1161"
+   ]
+  },
+  {
+   "node": "r44998",
+   "label": "جعفر بن الفناكي",
+   "rawi_id": 44998,
+   "tabaka": 16,
+   "death_year": 383,
+   "raw_names": [
+    "جَعْفَرُ بْنُ عَبْدِ اللَّهِ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 6,
+   "flags": [],
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "node": "r46121",
+   "label": "محمد بن الفضل الفراوي",
+   "rawi_id": 46121,
+   "tabaka": 22,
+   "death_year": 530,
+   "raw_names": [
+    "أَبُو عَبْدِ اللَّهِ الْفُرَاوِيُّ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "node": "r5157",
+   "label": "عبد الله بن يزيد العدوي",
+   "rawi_id": 5157,
+   "tabaka": 9,
+   "death_year": 213,
+   "raw_names": [
+    "أَبُو عَبْدِ الرَّحْمَنِ الْمُقْرِئُ",
+    "أَبُو عَبْدِ الرَّحْمَنِ الْمُقْرِي",
+    "عَبْدُ اللَّهِ بْنُ يَزِيدَ الْمُقْرِئُ"
+   ],
+   "students": 4,
+   "teachers": 1,
+   "students_corroborated": 2,
+   "single_thread_above": 1,
+   "depth": 9,
+   "flags": [],
+   "records": [
+    "jamc-1161",
+    "jamc-1236",
+    "jamc-1240",
+    "jamc-1488",
+    "jamc-1489",
+    "jamc-1552",
+    "jamc-1553",
+    "jamc-1681"
+   ]
+  },
+  {
+   "node": "r6641",
+   "label": "الليث بن سعد الفهمي",
+   "rawi_id": 6641,
+   "tabaka": 7,
+   "death_year": 175,
+   "raw_names": [
+    "اللَّيْثُ بْنُ سَعْدٍ",
+    "لَيْثُ بْنُ سَعْدٍ"
+   ],
+   "students": 1,
+   "teachers": 4,
+   "students_corroborated": 1,
+   "single_thread_above": 0,
+   "depth": 10,
+   "flags": [],
+   "records": [
+    "jamc-1161",
+    "jamc-1236",
+    "jamc-1240",
+    "jamc-1488",
+    "jamc-1489",
+    "jamc-1552",
+    "jamc-1553",
+    "jamc-1681"
+   ]
+  },
+  {
+   "node": "r6807",
+   "label": "محمد بن إسحاق الصاغاني",
+   "rawi_id": 6807,
+   "tabaka": 11,
+   "death_year": 270,
+   "raw_names": [
+    "مُحَمَّدُ بْنُ إِسْحَاقَ"
+   ],
+   "students": 2,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 8,
+   "flags": [],
+   "records": [
+    "jamc-1489",
+    "jamc-1553"
+   ]
+  },
+  {
+   "node": "r8524",
+   "label": "يعقوب بن سفيان الفسوي",
+   "rawi_id": 8524,
+   "tabaka": 11,
+   "death_year": 277,
+   "raw_names": [
+    "يَعْقُوبُ بْنُ سُفْيَانَ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1161"
+   ]
+  },
+  {
+   "node": "r9624",
+   "label": "أحمد بن الحسين النيسابوري",
+   "rawi_id": 9624,
+   "tabaka": 19,
+   "death_year": 458,
+   "raw_names": [
+    "أَبُو بَكْرٍ الْبَيْهَقِيُّ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1553"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "n:ابو صالح",
+   "to": "n:ليث",
+   "from_label": "أبو صالح",
+   "to_label": "الليث",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "from": "n:ابو عبد الله حافظ وابو سعيد بن ابو عمرو",
+   "to": "r31063",
+   "from_label": "أَبُو عَبْدِ اللَّهِ الْحَافِظُ ، وَأَبُو سَعِيدِ ابْنُ أَبِي عَمْرٍو ، قالا",
+   "to_label": "محمد بن يعقوب الأموي",
+   "student_death_year": null,
+   "teacher_death_year": 346,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1489",
+    "jamc-1553"
+   ]
+  },
+  {
+   "from": "n:ابو عثمان وليد بن ابو وليد ان سليمان بن خارجه بن زيد بن ثابت حدثه",
+   "to": "r2607",
+   "from_label": "أَبُو عُثْمَانَ الْوَلِيدُ بْنُ أَبِي الْوَلِيدِ ، أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ بْنِ زَيْدِ بْنِ ثَابِتٍ حَدَّثَهُ",
+   "to_label": "خارجة بن زيد الأنصاري",
+   "student_death_year": null,
+   "teacher_death_year": 99,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1552"
+   ]
+  },
+  {
+   "from": "n:خارجه بن زيد ان نفرا ادخلوا علي ابيه زيد بن ثابت فقالوا",
+   "to": "n:بعض اخلاق رسول الله قال كنت جاره فكان",
+   "from_label": "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا أُدْخِلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "to_label": "بَعْضِ ، أَخْلاقِ رَسُولِ اللَّهِ ﷺ ، قَالَ : كُنْتُ جَارَهُ ، فَكَانَ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "from": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت",
+   "to": "n:بعض اخلاق رسول الله فقال كنت جاره فكان",
+   "from_label": "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، قَالُوا",
+   "to_label": "بَعْضِ أَخْلاقِ رَسُولِ اللَّهِ ﷺ , فَقَالَ : كُنْتُ جَارَهُ , فَكَانَ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1488"
+   ]
+  },
+  {
+   "from": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+   "to": "n:بعض اخلاق رسول الله فقال كنت جاره فكان",
+   "from_label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "to_label": "بَعْضِ أَخْلاقِ رَسُولِ اللَّهِ ﷺ , فَقَالَ : كُنْتُ جَارَهُ , فَكَانَ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1236",
+    "jamc-1240"
+   ]
+  },
+  {
+   "from": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+   "to": "n:بعض اخلاق رسول الله فقال كنت جاره فكان اذا",
+   "from_label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "to_label": "بَعْضِ ، أَخْلاقِ رَسُولِ اللَّهِ ﷺ ، فَقَالَ : كُنْتُ جَارَهُ ، فَكَانَ إِذَا",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1489"
+   ]
+  },
+  {
+   "from": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+   "to": "n:بعض اخلاق رسول الله قال كنت جاره فكان",
+   "from_label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "to_label": "بَعْضِ ، أَخْلاقِ رَسُولِ اللَّهِ ﷺ ، قَالَ : كُنْتُ جَارَهُ ، فَكَانَ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1681"
+   ]
+  },
+  {
+   "from": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+   "to": "n:بعض اخلاق نبي فقال كنت جاره فكان",
+   "from_label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "to_label": "بَعْضِ أَخْلاقِ النَّبِيِّ ﷺ ، فَقَالَ : كُنْتُ جَارَهُ ، فَكَانَ",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1161"
+   ]
+  },
+  {
+   "from": "n:خارجه بن زيد قال دخل نفر علي زيد بن ثابت فقالوا",
+   "to": "n:بعض حديث رسول الله فقال",
+   "from_label": "خارجة بن زيد قال: دخل نفر على زيد بن ثابت فقالوا",
+   "to_label": "بعض حديث رسول الله صلى الله عليه وسلم [فقال",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "from": "n:سليمان بن خارجه بن زيد",
+   "to": "n:خارجه بن زيد قال دخل نفر علي زيد بن ثابت فقالوا",
+   "from_label": "سليمان بن خارجة بن زيد",
+   "to_label": "خارجة بن زيد قال: دخل نفر على زيد بن ثابت فقالوا",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "from": "n:عبد الله",
+   "to": "n:محمد بن يحيي",
+   "from_label": "عبد الله",
+   "to_label": "محمد بن يحيى",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "from": "n:ليث",
+   "to": "r1764",
+   "from_label": "الليث",
+   "to_label": "الوليد بن أبي الوليد القرشي",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "from": "n:محمد بن يحيي",
+   "to": "n:ابو صالح",
+   "from_label": "محمد بن يحيى",
+   "to_label": "أبو صالح",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "from": "n:وليد بن ابو وليد ان سليمان بن خارجه اخبره",
+   "to": "n:خارجه بن زيد ان نفرا ادخلوا علي ابيه زيد بن ثابت فقالوا",
+   "from_label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ , أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ أَخْبَرَهُ",
+   "to_label": "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا أُدْخِلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "from": "n:وليد بن ابو وليد ان سليمان بن خارجه اخبره",
+   "to": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت",
+   "from_label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ , أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ أَخْبَرَهُ",
+   "to_label": "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، قَالُوا",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1488"
+   ]
+  },
+  {
+   "from": "n:وليد بن ابو وليد ان سليمان بن خارجه اخبره",
+   "to": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+   "from_label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ , أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ أَخْبَرَهُ",
+   "to_label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1236",
+    "jamc-1240",
+    "jamc-1489"
+   ]
+  },
+  {
+   "from": "n:وليد بن ابو وليد ان سليمان بن خارجه بن زيد اخبره",
+   "to": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+   "from_label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ بْنِ زَيْدٍ ، أَخْبَرَهُ",
+   "to_label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1681"
+   ]
+  },
+  {
+   "from": "n:وليد بن ابو وليد ان سليمان بن خالد اخبره",
+   "to": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+   "from_label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ ، أَنَّ سُلَيْمَانَ بْنَ خَالِدٍ أَخْبَرَهُ",
+   "to_label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1161"
+   ]
+  },
+  {
+   "from": "r10025",
+   "to": "r3036",
+   "from_label": "أبو يعلى الموصلي",
+   "to_label": "زهير بن حرب الحرشي",
+   "student_death_year": 307,
+   "teacher_death_year": 234,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1552"
+   ]
+  },
+  {
+   "from": "r10765",
+   "to": "r14244",
+   "from_label": "أحمد بن يوسف العطار",
+   "to_label": "الحارث بن أبي أسامة التميمي",
+   "student_death_year": 359,
+   "teacher_death_year": 282,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1488"
+   ]
+  },
+  {
+   "from": "r14244",
+   "to": "r5157",
+   "from_label": "الحارث بن أبي أسامة التميمي",
+   "to_label": "عبد الله بن يزيد العدوي",
+   "student_death_year": 282,
+   "teacher_death_year": 213,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1488",
+    "jamc-1681"
+   ]
+  },
+  {
+   "from": "r14773",
+   "to": "r29718",
+   "from_label": "الحسن بن أبي بكر البزاز",
+   "to_label": "محمد بن عبد الله الشافعي",
+   "student_death_year": 426,
+   "teacher_death_year": 354,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1681"
+   ]
+  },
+  {
+   "from": "r1764",
+   "to": "n:سليمان بن خارجه بن زيد",
+   "from_label": "الوليد بن أبي الوليد القرشي",
+   "to_label": "سليمان بن خارجة بن زيد",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0006"
+   ]
+  },
+  {
+   "from": "r20588",
+   "to": "r44998",
+   "from_label": "عبد الرحمن بن أحمد العجلي",
+   "to_label": "جعفر بن الفناكي",
+   "student_death_year": 454,
+   "teacher_death_year": 383,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "from": "r2607",
+   "to": "r3131",
+   "from_label": "خارجة بن زيد الأنصاري",
+   "to_label": "زيد بن ثابت الأنصاري",
+   "student_death_year": 99,
+   "teacher_death_year": 45,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1552"
+   ]
+  },
+  {
+   "from": "r28599",
+   "to": "r20588",
+   "from_label": "محمد بن إبراهيم الأمين",
+   "to_label": "عبد الرحمن بن أحمد العجلي",
+   "student_death_year": 530,
+   "teacher_death_year": 454,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "from": "r29718",
+   "to": "r14244",
+   "from_label": "محمد بن عبد الله الشافعي",
+   "to_label": "الحارث بن أبي أسامة التميمي",
+   "student_death_year": 354,
+   "teacher_death_year": 282,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1681"
+   ]
+  },
+  {
+   "from": "r3036",
+   "to": "r5157",
+   "from_label": "زهير بن حرب الحرشي",
+   "to_label": "عبد الله بن يزيد العدوي",
+   "student_death_year": 234,
+   "teacher_death_year": 213,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1552"
+   ]
+  },
+  {
+   "from": "r30885",
+   "to": "r6807",
+   "from_label": "محمد بن هارون الروياني",
+   "to_label": "محمد بن إسحاق الصاغاني",
+   "student_death_year": 307,
+   "teacher_death_year": 270,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "from": "r31063",
+   "to": "r28599",
+   "from_label": "محمد بن يعقوب الأموي",
+   "to_label": "محمد بن إبراهيم الأمين",
+   "student_death_year": 346,
+   "teacher_death_year": 530,
+   "chrono_suspect": true,
+   "records": [
+    "jamc-1553"
+   ],
+   "chrono_reason": "student-death-precedes-teacher>20"
+  },
+  {
+   "from": "r31063",
+   "to": "r6807",
+   "from_label": "محمد بن يعقوب الأموي",
+   "to_label": "محمد بن إسحاق الصاغاني",
+   "student_death_year": 346,
+   "teacher_death_year": 270,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1489"
+   ]
+  },
+  {
+   "from": "r41527",
+   "to": "r8524",
+   "from_label": "عبد الله بن جعفر النحوي",
+   "to_label": "يعقوب بن سفيان الفسوي",
+   "student_death_year": 334,
+   "teacher_death_year": 277,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1161"
+   ]
+  },
+  {
+   "from": "r44998",
+   "to": "r30885",
+   "from_label": "جعفر بن الفناكي",
+   "to_label": "محمد بن هارون الروياني",
+   "student_death_year": 383,
+   "teacher_death_year": 307,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "from": "r46121",
+   "to": "r9624",
+   "from_label": "محمد بن الفضل الفراوي",
+   "to_label": "أحمد بن الحسين النيسابوري",
+   "student_death_year": 530,
+   "teacher_death_year": 458,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1553"
+   ]
+  },
+  {
+   "from": "r5157",
+   "to": "r6641",
+   "from_label": "عبد الله بن يزيد العدوي",
+   "to_label": "الليث بن سعد الفهمي",
+   "student_death_year": 213,
+   "teacher_death_year": 175,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1161",
+    "jamc-1236",
+    "jamc-1240",
+    "jamc-1488",
+    "jamc-1489",
+    "jamc-1552",
+    "jamc-1553",
+    "jamc-1681"
+   ]
+  },
+  {
+   "from": "r6641",
+   "to": "n:ابو عثمان وليد بن ابو وليد ان سليمان بن خارجه بن زيد بن ثابت حدثه",
+   "from_label": "الليث بن سعد الفهمي",
+   "to_label": "أَبُو عُثْمَانَ الْوَلِيدُ بْنُ أَبِي الْوَلِيدِ ، أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ بْنِ زَيْدِ بْنِ ثَابِتٍ حَدَّثَهُ",
+   "student_death_year": 175,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1552"
+   ]
+  },
+  {
+   "from": "r6641",
+   "to": "n:وليد بن ابو وليد ان سليمان بن خارجه اخبره",
+   "from_label": "الليث بن سعد الفهمي",
+   "to_label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ , أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ أَخْبَرَهُ",
+   "student_death_year": 175,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1236",
+    "jamc-1240",
+    "jamc-1488",
+    "jamc-1489",
+    "jamc-1553"
+   ]
+  },
+  {
+   "from": "r6641",
+   "to": "n:وليد بن ابو وليد ان سليمان بن خارجه بن زيد اخبره",
+   "from_label": "الليث بن سعد الفهمي",
+   "to_label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ أَنَّ سُلَيْمَانَ بْنَ خَارِجَةَ بْنِ زَيْدٍ ، أَخْبَرَهُ",
+   "student_death_year": 175,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1681"
+   ]
+  },
+  {
+   "from": "r6641",
+   "to": "n:وليد بن ابو وليد ان سليمان بن خالد اخبره",
+   "from_label": "الليث بن سعد الفهمي",
+   "to_label": "الْوَلِيدِ بْنِ أَبِي الْوَلِيدِ ، أَنَّ سُلَيْمَانَ بْنَ خَالِدٍ أَخْبَرَهُ",
+   "student_death_year": 175,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1161"
+   ]
+  },
+  {
+   "from": "r6807",
+   "to": "r5157",
+   "from_label": "محمد بن إسحاق الصاغاني",
+   "to_label": "عبد الله بن يزيد العدوي",
+   "student_death_year": 270,
+   "teacher_death_year": 213,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1489",
+    "jamc-1553"
+   ]
+  },
+  {
+   "from": "r8524",
+   "to": "r5157",
+   "from_label": "يعقوب بن سفيان الفسوي",
+   "to_label": "عبد الله بن يزيد العدوي",
+   "student_death_year": 277,
+   "teacher_death_year": 213,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1161"
+   ]
+  },
+  {
+   "from": "r9624",
+   "to": "n:ابو عبد الله حافظ وابو سعيد بن ابو عمرو",
+   "from_label": "أحمد بن الحسين النيسابوري",
+   "to_label": "أَبُو عَبْدِ اللَّهِ الْحَافِظُ ، وَأَبُو سَعِيدِ ابْنُ أَبِي عَمْرٍو ، قالا",
+   "student_death_year": 458,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1553"
+   ]
+  }
+ ],
+ "chains": [
+  {
+   "record": "jamc-0006",
+   "chain_no": 0,
+   "nodes": [
+    "n:عبد الله",
+    "n:محمد بن يحيي",
+    "n:ابو صالح",
+    "n:ليث",
+    "r1764",
+    "n:سليمان بن خارجه بن زيد",
+    "n:خارجه بن زيد قال دخل نفر علي زيد بن ثابت فقالوا",
+    "n:بعض حديث رسول الله فقال"
+   ]
+  },
+  {
+   "record": "jamc-1161",
+   "chain_no": 0,
+   "nodes": [
+    "r41527",
+    "r8524",
+    "r5157",
+    "r6641",
+    "n:وليد بن ابو وليد ان سليمان بن خالد اخبره",
+    "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+    "n:بعض اخلاق نبي فقال كنت جاره فكان"
+   ]
+  },
+  {
+   "record": "jamc-1236",
+   "chain_no": 0,
+   "nodes": [
+    "r5157",
+    "r6641",
+    "n:وليد بن ابو وليد ان سليمان بن خارجه اخبره",
+    "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+    "n:بعض اخلاق رسول الله فقال كنت جاره فكان"
+   ]
+  },
+  {
+   "record": "jamc-1240",
+   "chain_no": 0,
+   "nodes": [
+    "r5157",
+    "r6641",
+    "n:وليد بن ابو وليد ان سليمان بن خارجه اخبره",
+    "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+    "n:بعض اخلاق رسول الله فقال كنت جاره فكان"
+   ]
+  },
+  {
+   "record": "jamc-1488",
+   "chain_no": 0,
+   "nodes": [
+    "r10765",
+    "r14244",
+    "r5157",
+    "r6641",
+    "n:وليد بن ابو وليد ان سليمان بن خارجه اخبره",
+    "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت",
+    "n:بعض اخلاق رسول الله فقال كنت جاره فكان"
+   ]
+  },
+  {
+   "record": "jamc-1489",
+   "chain_no": 0,
+   "nodes": [
+    "n:ابو عبد الله حافظ وابو سعيد بن ابو عمرو",
+    "r31063",
+    "r6807",
+    "r5157",
+    "r6641",
+    "n:وليد بن ابو وليد ان سليمان بن خارجه اخبره",
+    "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+    "n:بعض اخلاق رسول الله فقال كنت جاره فكان اذا"
+   ]
+  },
+  {
+   "record": "jamc-1552",
+   "chain_no": 0,
+   "nodes": [
+    "r10025",
+    "r3036",
+    "r5157",
+    "r6641",
+    "n:ابو عثمان وليد بن ابو وليد ان سليمان بن خارجه بن زيد بن ثابت حدثه",
+    "r2607",
+    "r3131"
+   ]
+  },
+  {
+   "record": "jamc-1553",
+   "chain_no": 0,
+   "nodes": [
+    "r46121",
+    "r9624",
+    "n:ابو عبد الله حافظ وابو سعيد بن ابو عمرو",
+    "r31063",
+    "r28599",
+    "r20588",
+    "r44998",
+    "r30885",
+    "r6807",
+    "r5157",
+    "r6641",
+    "n:وليد بن ابو وليد ان سليمان بن خارجه اخبره",
+    "n:خارجه بن زيد ان نفرا ادخلوا علي ابيه زيد بن ثابت فقالوا",
+    "n:بعض اخلاق رسول الله قال كنت جاره فكان"
+   ]
+  },
+  {
+   "record": "jamc-1681",
+   "chain_no": 0,
+   "nodes": [
+    "r14773",
+    "r29718",
+    "r14244",
+    "r5157",
+    "r6641",
+    "n:وليد بن ابو وليد ان سليمان بن خارجه بن زيد اخبره",
+    "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+    "n:بعض اخلاق رسول الله قال كنت جاره فكان"
+   ]
+  }
+ ],
+ "common_link_candidates": {
+  "2": {
+   "candidates": [
+    {
+     "node": "n:بعض اخلاق رسول الله قال كنت جاره فكان",
+     "label": "بَعْضِ ، أَخْلاقِ رَسُولِ اللَّهِ ﷺ ، قَالَ : كُنْتُ جَارَهُ ، فَكَانَ",
+     "students": 2,
+     "students_corroborated": 0,
+     "depth": 13,
+     "single_thread_above": 0,
+     "death_year": null,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 0,
+      "min": null,
+      "max": null
+     },
+     "isolation": {
+      "routes_through": 2,
+      "above": {
+       "paths": 1,
+       "single": 0,
+       "single_ratio": 0.0
+      },
+      "below": {
+       "paths": 2,
+       "single": 2,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [
+      "cl-on-name-node",
+      "rawi-relational",
+      "rawi-unmatched"
+     ],
+     "records": [
+      "jamc-1553",
+      "jamc-1681"
+     ],
+     "branches": [
+      {
+       "student": "n:خارجه بن زيد ان نفرا ادخلوا علي ابيه زيد بن ثابت فقالوا",
+       "student_label": "خَارِجَةَ بْنِ زَيْدٍ ، أَنَّ نَفَرًا أُدْخِلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+       "records": [
+        "jamc-1553"
+       ],
+       "works": [
+        "تاريخ دمشق لابن عساكر"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1864,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+       "student_label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+       "records": [
+        "jamc-1681"
+       ],
+       "works": [
+        "الفقيه والمتفقه للخطيب"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1864,
+       "isolation": {
+        "routes_through": 5,
+        "above": {
+         "paths": 4,
+         "single": 3,
+         "single_ratio": 0.75
+        },
+        "below": {
+         "paths": 4,
+         "single": 3,
+         "single_ratio": 0.75
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": [
+    {
+     "node": "r5157",
+     "label": "عبد الله بن يزيد العدوي",
+     "students": 4,
+     "students_corroborated": 2,
+     "depth": 9,
+     "single_thread_above": 1,
+     "death_year": 213,
+     "students_death_range": {
+      "students": 4,
+      "with_death_year": 4,
+      "min": 234,
+      "max": 282
+     },
+     "isolation": {
+      "routes_through": 8,
+      "above": {
+       "paths": 7,
+       "single": 6,
+       "single_ratio": 0.8571
+      },
+      "below": {
+       "paths": 7,
+       "single": 6,
+       "single_ratio": 0.8571
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1161",
+      "jamc-1236",
+      "jamc-1240",
+      "jamc-1488",
+      "jamc-1489",
+      "jamc-1552",
+      "jamc-1553",
+      "jamc-1681"
+     ]
+    },
+    {
+     "node": "r6807",
+     "label": "محمد بن إسحاق الصاغاني",
+     "students": 2,
+     "students_corroborated": 0,
+     "depth": 8,
+     "single_thread_above": 0,
+     "death_year": 270,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 2,
+      "min": 307,
+      "max": 346
+     },
+     "isolation": {
+      "routes_through": 2,
+      "above": {
+       "paths": 2,
+       "single": 2,
+       "single_ratio": 1.0
+      },
+      "below": {
+       "paths": 2,
+       "single": 2,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1489",
+      "jamc-1553"
+     ]
+    },
+    {
+     "node": "n:بعض اخلاق رسول الله فقال كنت جاره فكان",
+     "label": "بَعْضِ أَخْلاقِ رَسُولِ اللَّهِ ﷺ , فَقَالَ : كُنْتُ جَارَهُ , فَكَانَ",
+     "students": 2,
+     "students_corroborated": 1,
+     "depth": 6,
+     "single_thread_above": 0,
+     "death_year": null,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 0,
+      "min": null,
+      "max": null
+     },
+     "isolation": {
+      "routes_through": 3,
+      "above": {
+       "paths": 1,
+       "single": 0,
+       "single_ratio": 0.0
+      },
+      "below": {
+       "paths": 2,
+       "single": 1,
+       "single_ratio": 0.5
+      }
+     },
+     "flags": [
+      "cl-on-name-node",
+      "rawi-relational",
+      "rawi-unmatched"
+     ],
+     "records": [
+      "jamc-1236",
+      "jamc-1240",
+      "jamc-1488"
+     ]
+    },
+    {
+     "node": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+     "label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+     "students": 3,
+     "students_corroborated": 1,
+     "depth": 6,
+     "single_thread_above": 0,
+     "death_year": null,
+     "students_death_range": {
+      "students": 3,
+      "with_death_year": 0,
+      "min": null,
+      "max": null
+     },
+     "isolation": {
+      "routes_through": 5,
+      "above": {
+       "paths": 4,
+       "single": 3,
+       "single_ratio": 0.75
+      },
+      "below": {
+       "paths": 4,
+       "single": 3,
+       "single_ratio": 0.75
+      }
+     },
+     "flags": [
+      "cl-on-name-node",
+      "rawi-ambiguous"
+     ],
+     "records": [
+      "jamc-1161",
+      "jamc-1236",
+      "jamc-1240",
+      "jamc-1489",
+      "jamc-1681"
+     ]
+    },
+    {
+     "node": "r14244",
+     "label": "الحارث بن أبي أسامة التميمي",
+     "students": 2,
+     "students_corroborated": 0,
+     "depth": 2,
+     "single_thread_above": 0,
+     "death_year": 282,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 2,
+      "min": 354,
+      "max": 359
+     },
+     "isolation": {
+      "routes_through": 2,
+      "above": {
+       "paths": 2,
+       "single": 2,
+       "single_ratio": 1.0
+      },
+      "below": {
+       "paths": 2,
+       "single": 2,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1488",
+      "jamc-1681"
+     ]
+    }
+   ]
+  },
+  "3": {
+   "candidates": [
+    {
+     "node": "r5157",
+     "label": "عبد الله بن يزيد العدوي",
+     "students": 4,
+     "students_corroborated": 2,
+     "depth": 9,
+     "single_thread_above": 1,
+     "death_year": 213,
+     "students_death_range": {
+      "students": 4,
+      "with_death_year": 4,
+      "min": 234,
+      "max": 282
+     },
+     "isolation": {
+      "routes_through": 8,
+      "above": {
+       "paths": 7,
+       "single": 6,
+       "single_ratio": 0.8571
+      },
+      "below": {
+       "paths": 7,
+       "single": 6,
+       "single_ratio": 0.8571
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1161",
+      "jamc-1236",
+      "jamc-1240",
+      "jamc-1488",
+      "jamc-1489",
+      "jamc-1552",
+      "jamc-1553",
+      "jamc-1681"
+     ],
+     "branches": [
+      {
+       "student": "r14244",
+       "student_label": "الحارث بن أبي أسامة التميمي",
+       "records": [
+        "jamc-1488",
+        "jamc-1681"
+       ],
+       "works": [
+        "الفقيه والمتفقه للخطيب",
+        "دلائل النبوة لأبي نعيم"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.1636,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r3036",
+       "student_label": "زهير بن حرب الحرشي",
+       "records": [
+        "jamc-1552"
+       ],
+       "works": [
+        "تاريخ دمشق لابن عساكر"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1636,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r6807",
+       "student_label": "محمد بن إسحاق الصاغاني",
+       "records": [
+        "jamc-1489",
+        "jamc-1553"
+       ],
+       "works": [
+        "تاريخ دمشق لابن عساكر",
+        "دلائل النبوة للبيهقي"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.1024,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8524",
+       "student_label": "يعقوب بن سفيان الفسوي",
+       "records": [
+        "jamc-1161"
+       ],
+       "works": [
+        "السنن الكبرى للبيهقي"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.0714,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": [
+    {
+     "node": "n:خارجه بن زيد ان نفرا دخلوا علي ابيه زيد بن ثابت فقالوا",
+     "label": "خَارِجَةَ بْنِ زَيْدٍ , أَنَّ نَفَرًا دَخَلُوا عَلَى أَبِيهِ زَيْدِ بْنِ ثَابِتٍ ، فَقَالُوا",
+     "students": 3,
+     "students_corroborated": 1,
+     "depth": 6,
+     "single_thread_above": 0,
+     "death_year": null,
+     "students_death_range": {
+      "students": 3,
+      "with_death_year": 0,
+      "min": null,
+      "max": null
+     },
+     "isolation": {
+      "routes_through": 5,
+      "above": {
+       "paths": 4,
+       "single": 3,
+       "single_ratio": 0.75
+      },
+      "below": {
+       "paths": 4,
+       "single": 3,
+       "single_ratio": 0.75
+      }
+     },
+     "flags": [
+      "cl-on-name-node",
+      "rawi-ambiguous"
+     ],
+     "records": [
+      "jamc-1161",
+      "jamc-1236",
+      "jamc-1240",
+      "jamc-1489",
+      "jamc-1681"
+     ]
+    }
+   ]
+  },
+  "4": {
+   "candidates": [
+    {
+     "node": "r5157",
+     "label": "عبد الله بن يزيد العدوي",
+     "students": 4,
+     "students_corroborated": 2,
+     "depth": 9,
+     "single_thread_above": 1,
+     "death_year": 213,
+     "students_death_range": {
+      "students": 4,
+      "with_death_year": 4,
+      "min": 234,
+      "max": 282
+     },
+     "isolation": {
+      "routes_through": 8,
+      "above": {
+       "paths": 7,
+       "single": 6,
+       "single_ratio": 0.8571
+      },
+      "below": {
+       "paths": 7,
+       "single": 6,
+       "single_ratio": 0.8571
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1161",
+      "jamc-1236",
+      "jamc-1240",
+      "jamc-1488",
+      "jamc-1489",
+      "jamc-1552",
+      "jamc-1553",
+      "jamc-1681"
+     ],
+     "branches": [
+      {
+       "student": "r14244",
+       "student_label": "الحارث بن أبي أسامة التميمي",
+       "records": [
+        "jamc-1488",
+        "jamc-1681"
+       ],
+       "works": [
+        "الفقيه والمتفقه للخطيب",
+        "دلائل النبوة لأبي نعيم"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.1636,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r3036",
+       "student_label": "زهير بن حرب الحرشي",
+       "records": [
+        "jamc-1552"
+       ],
+       "works": [
+        "تاريخ دمشق لابن عساكر"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1636,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r6807",
+       "student_label": "محمد بن إسحاق الصاغاني",
+       "records": [
+        "jamc-1489",
+        "jamc-1553"
+       ],
+       "works": [
+        "تاريخ دمشق لابن عساكر",
+        "دلائل النبوة للبيهقي"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.1024,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8524",
+       "student_label": "يعقوب بن سفيان الفسوي",
+       "records": [
+        "jamc-1161"
+       ],
+       "works": [
+        "السنن الكبرى للبيهقي"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.0714,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  },
+  "2-corroborated": {
+   "min_works_per_branch": 2,
+   "candidates": [
+    {
+     "node": "r5157",
+     "label": "عبد الله بن يزيد العدوي",
+     "students": 4,
+     "students_corroborated": 2,
+     "depth": 9,
+     "single_thread_above": 1,
+     "death_year": 213,
+     "students_death_range": {
+      "students": 4,
+      "with_death_year": 4,
+      "min": 234,
+      "max": 282
+     },
+     "isolation": {
+      "routes_through": 8,
+      "above": {
+       "paths": 7,
+       "single": 6,
+       "single_ratio": 0.8571
+      },
+      "below": {
+       "paths": 7,
+       "single": 6,
+       "single_ratio": 0.8571
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1161",
+      "jamc-1236",
+      "jamc-1240",
+      "jamc-1488",
+      "jamc-1489",
+      "jamc-1552",
+      "jamc-1553",
+      "jamc-1681"
+     ],
+     "branches": [
+      {
+       "student": "r14244",
+       "student_label": "الحارث بن أبي أسامة التميمي",
+       "records": [
+        "jamc-1488",
+        "jamc-1681"
+       ],
+       "works": [
+        "الفقيه والمتفقه للخطيب",
+        "دلائل النبوة لأبي نعيم"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.1636,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r3036",
+       "student_label": "زهير بن حرب الحرشي",
+       "records": [
+        "jamc-1552"
+       ],
+       "works": [
+        "تاريخ دمشق لابن عساكر"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1636,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r6807",
+       "student_label": "محمد بن إسحاق الصاغاني",
+       "records": [
+        "jamc-1489",
+        "jamc-1553"
+       ],
+       "works": [
+        "تاريخ دمشق لابن عساكر",
+        "دلائل النبوة للبيهقي"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.1024,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8524",
+       "student_label": "يعقوب بن سفيان الفسوي",
+       "records": [
+        "jamc-1161"
+       ],
+       "works": [
+        "السنن الكبرى للبيهقي"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.0714,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  },
+  "most-corroborated": {
+   "min_works_per_branch": 2,
+   "min_corroborated_branches": 2,
+   "candidates": [
+    {
+     "node": "r5157",
+     "label": "عبد الله بن يزيد العدوي",
+     "students": 4,
+     "students_corroborated": 2,
+     "depth": 9,
+     "single_thread_above": 1,
+     "death_year": 213,
+     "students_death_range": {
+      "students": 4,
+      "with_death_year": 4,
+      "min": 234,
+      "max": 282
+     },
+     "isolation": {
+      "routes_through": 8,
+      "above": {
+       "paths": 7,
+       "single": 6,
+       "single_ratio": 0.8571
+      },
+      "below": {
+       "paths": 7,
+       "single": 6,
+       "single_ratio": 0.8571
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-1161",
+      "jamc-1236",
+      "jamc-1240",
+      "jamc-1488",
+      "jamc-1489",
+      "jamc-1552",
+      "jamc-1553",
+      "jamc-1681"
+     ],
+     "branches": [
+      {
+       "student": "r14244",
+       "student_label": "الحارث بن أبي أسامة التميمي",
+       "records": [
+        "jamc-1488",
+        "jamc-1681"
+       ],
+       "works": [
+        "الفقيه والمتفقه للخطيب",
+        "دلائل النبوة لأبي نعيم"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.1636,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r3036",
+       "student_label": "زهير بن حرب الحرشي",
+       "records": [
+        "jamc-1552"
+       ],
+       "works": [
+        "تاريخ دمشق لابن عساكر"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.1636,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r6807",
+       "student_label": "محمد بن إسحاق الصاغاني",
+       "records": [
+        "jamc-1489",
+        "jamc-1553"
+       ],
+       "works": [
+        "تاريخ دمشق لابن عساكر",
+        "دلائل النبوة للبيهقي"
+       ],
+       "works_count": 2,
+       "corroborated": true,
+       "sibling_divergence": 0.1024,
+       "isolation": {
+        "routes_through": 2,
+        "above": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 2,
+         "single": 2,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8524",
+       "student_label": "يعقوب بن سفيان الفسوي",
+       "records": [
+        "jamc-1161"
+       ],
+       "works": [
+        "السنن الكبرى للبيهقي"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.0714,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  }
+ }
+}

@@ -1,0 +1,2562 @@
+{
+ "cluster": "clx-jamc-0092-cc914f",
+ "mode": "inf",
+ "event_tags": [
+  "masahif-sahaba",
+  "tartib"
+ ],
+ "records": [
+  "jamc-0092",
+  "jamc-0093",
+  "jamc-0898",
+  "jamc-0954",
+  "jamc-0972",
+  "jamc-1017",
+  "jamc-1072",
+  "jamc-1111",
+  "jamc-1147",
+  "jamc-1471",
+  "jamc-1475",
+  "jamc-1538"
+ ],
+ "chains_used": 12,
+ "representative": "jamc-0092",
+ "works": [
+  "الأحاديث المختارة",
+  "الإتقان في علوم القرآن",
+  "السنن الكبرى للبيهقي",
+  "المصاحف",
+  "الوسيط في تفسير القرآن المجيد",
+  "تاريخ المدينة",
+  "جامع البيان — المقدمة",
+  "سنن أبي داود",
+  "صحيح ابن حبان",
+  "معالم التنزيل تفسير البغوي",
+  "معرفة الصحابة لأبي نعيم"
+ ],
+ "earliest_witness": {
+  "record": "jamc-0898",
+  "work_ar": "تاريخ المدينة",
+  "death_ah": 262
+ },
+ "earliest_fully_settled_route": {
+  "record": "jamc-1017",
+  "work_ar": "سنن أبي داود",
+  "death_ah": 275
+ },
+ "edges_chrono_suspect": 0,
+ "terminal_branching": {
+  "node": "r8362",
+  "students": 2,
+  "terminals": [
+   "n:بن عباس ما قلت لعثمان بن عفان ما حملكم علي",
+   "n:يزيد فارسي قال قال بن عباس قلت لعثمان بن عفان",
+   "r4883",
+   "r8362",
+   "r8690",
+   "rnabi"
+  ]
+ },
+ "nodes": [
+  {
+   "node": "n:ابو برده",
+   "label": "أبي بردة",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أبي بردة"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 5,
+   "flags": [
+    "alias-db-override",
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "node": "n:ابو حميد",
+   "label": "أبو حميد",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أبو حميد"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 6,
+   "depth": 2,
+   "flags": [
+    "alias-db-override",
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "node": "n:ابو عبيد وصابي",
+   "label": "أبو عبيد الوصابي",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أبو عبيد الوصابي"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 8,
+   "depth": 0,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "node": "n:ابو مليح",
+   "label": "أبي المليح",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "أبي المليح"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 6,
+   "flags": [
+    "alias-db-override",
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "node": "n:بن عباس ما قلت لعثمان بن عفان ما حملكم علي",
+   "label": "ابن عباس رضي الله عنهما: قلت لعثمان بن عفان رضي الله عنه: ما حملكم على",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "ابن عباس رضي الله عنهما: قلت لعثمان بن عفان رضي الله عنه: ما حملكم على"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 3,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-0898"
+   ]
+  },
+  {
+   "node": "n:عبد الله",
+   "label": "عبد الله",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "عبد الله"
+   ],
+   "students": 0,
+   "teachers": 2,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 0,
+   "flags": [
+    "alias-db-override",
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0092",
+    "jamc-0093"
+   ]
+  },
+  {
+   "node": "n:عوف",
+   "label": "عوف",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "عوف"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 1,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0898"
+   ]
+  },
+  {
+   "node": "n:فزاري",
+   "label": "الفزاري",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "الفزاري"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 5,
+   "depth": 3,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "node": "n:محمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+   "label": "مُحَمَّدٌ ابْنُ جَعْفَرٍ ، وَابْنُ أَبِي عَدِيٍّ ، وَسَهْلُ بْنُ يُوسُفَ ، قَالُوا",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "مُحَمَّدٌ ابْنُ جَعْفَرٍ ، وَابْنُ أَبِي عَدِيٍّ ، وَسَهْلُ بْنُ يُوسُفَ ، قَالُوا"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 5,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "node": "n:محمد بن حفص",
+   "label": "محمد بن حفص",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "محمد بن حفص"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 7,
+   "depth": 1,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "node": "n:يحيي بن سعيد وغندر",
+   "label": "يحيى بن سعيد، وغندر قالا",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "يحيى بن سعيد، وغندر قالا"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 0,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-0898"
+   ]
+  },
+  {
+   "node": "n:يحيي بن سعيد ومحمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+   "label": "يحيى بن سعيد، ومحمد بن جعفر، وابن أبي عدي وسهل بن يوسف قالوا",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "يحيى بن سعيد، ومحمد بن جعفر، وابن أبي عدي وسهل بن يوسف قالوا"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 2,
+   "flags": [
+    "rawi-unmatched"
+   ],
+   "records": [
+    "jamc-0092"
+   ]
+  },
+  {
+   "node": "n:يزيد فارسي قال قال بن عباس قلت لعثمان بن عفان",
+   "label": "يَزِيدَ الْفَارِسِيِّ ، قَالَ : قَالَ ابْنُ عَبَّاسٍ قُلْتُ لِعُثْمَانَ بْنِ عَفَّانَ",
+   "rawi_id": null,
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "يَزِيدَ الْفَارِسِيِّ ، قَالَ : قَالَ ابْنُ عَبَّاسٍ قُلْتُ لِعُثْمَانَ بْنِ عَفَّانَ"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 3,
+   "flags": [
+    "rawi-ambiguous"
+   ],
+   "records": [
+    "jamc-1072"
+   ]
+  },
+  {
+   "node": "r10025",
+   "label": "أبو يعلى الموصلي",
+   "rawi_id": 10025,
+   "tabaka": 13,
+   "death_year": 307,
+   "raw_names": [
+    "أَحْمَدُ بْنُ عَلِيِّ بْنِ الْمُثَنَّى"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 4,
+   "flags": [],
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "node": "r10289",
+   "label": "أحمد بن محمد العنزي",
+   "rawi_id": 10289,
+   "tabaka": 14,
+   "death_year": 340,
+   "raw_names": [
+    "أَبُو سَعِيدِ بْنُ الأَعْرَابِيِّ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1147"
+   ]
+  },
+  {
+   "node": "r10765",
+   "label": "أحمد بن يوسف العطار",
+   "rawi_id": 10765,
+   "tabaka": 15,
+   "death_year": 359,
+   "raw_names": [
+    "أَبُو بَكْرِ بْنُ خَلادٍ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1538"
+   ]
+  },
+  {
+   "node": "r14244",
+   "label": "الحارث بن أبي أسامة التميمي",
+   "rawi_id": 14244,
+   "tabaka": 12,
+   "death_year": 282,
+   "raw_names": [
+    "الْحَارِثُ بْنُ أَبِي أُسَامَةَ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1538"
+   ]
+  },
+  {
+   "node": "r1540",
+   "label": "الفضل بن الحباب الجمحي",
+   "rawi_id": 1540,
+   "tabaka": 13,
+   "death_year": 304,
+   "raw_names": [
+    "أَبُو خَلِيفَةَ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1072"
+   ]
+  },
+  {
+   "node": "r1716",
+   "label": "النضر بن شميل المازني",
+   "rawi_id": 1716,
+   "tabaka": 9,
+   "death_year": 203,
+   "raw_names": [
+    "النضر بن شميل"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-0093"
+   ]
+  },
+  {
+   "node": "r18176",
+   "label": "سعدان بن نصر الثقفي",
+   "rawi_id": 18176,
+   "tabaka": 11,
+   "death_year": 265,
+   "raw_names": [
+    "سَعْدَانُ بْنُ نَصْرٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-1147"
+   ]
+  },
+  {
+   "node": "r20664",
+   "label": "عبد الرحمن بن حمدان النصروي",
+   "rawi_id": 20664,
+   "tabaka": 18,
+   "death_year": 433,
+   "raw_names": [
+    "عَبْدُ الرَّحْمَنِ بْنُ مُحَمَّدٍ الزّمجَارِيُّ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1475"
+   ]
+  },
+  {
+   "node": "r22334",
+   "label": "عبد الله بن أبي داود السجستاني",
+   "rawi_id": 22334,
+   "tabaka": 13,
+   "death_year": 316,
+   "raw_names": [
+    "أَبُو بَكْرٍ عَبْدُ اللَّهِ بْنُ سُلَيْمَانَ بْنِ الأَشْعَثِ السِّجِسْتَانِيُّ الأَزْدِيُّ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "node": "r22580",
+   "label": "عبد الله بن عدي الجرجاني",
+   "rawi_id": 22580,
+   "tabaka": 15,
+   "death_year": 365,
+   "raw_names": [
+    "أَبُو أَحْمَدَ عَبْدُ اللَّهِ بْنُ عَدِيٍّ الْحَافِظُ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 3,
+   "flags": [],
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "node": "r23439",
+   "label": "عبد الله بن يوسف الأصبهاني",
+   "rawi_id": 23439,
+   "tabaka": 17,
+   "death_year": 409,
+   "raw_names": [
+    "أَبُو مُحَمَّدٍ عَبْدُ اللَّهِ بْنُ يُوسُفَ الأَصْبَهَانِيُّ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 3,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1147"
+   ]
+  },
+  {
+   "node": "r28400",
+   "label": "محمد بن أحمد المسلمي",
+   "rawi_id": 28400,
+   "tabaka": 19,
+   "death_year": 465,
+   "raw_names": [
+    "أَبُو جَعْفَرٍ مُحَمَّدُ بْنُ أَحْمَدَ بْنِ مُحَمَّدِ بْنِ عُمَرَ الْمَعْرُوفُ بِابْنِ الْمُسْلِمَةِ ، قِرَاءَةً عَلَيْهِ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 5,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "node": "r34997",
+   "label": "أحمد بن محمد الثعلبي",
+   "rawi_id": 34997,
+   "tabaka": 17,
+   "death_year": 427,
+   "raw_names": [
+    "أَبُو إِسْحَاقَ أَحْمَدُ بْنُ مُحَمَّدٍ إِبْرَاهِيمُ الثَّعَلِبِيُّ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 5,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "node": "r4657",
+   "label": "عبد الله بن أحمد الشيباني",
+   "rawi_id": 4657,
+   "tabaka": 12,
+   "death_year": 290,
+   "raw_names": [
+    "عَبْدُ اللَّهِ بْنُ أَحْمَدَ بْنِ حَنْبَلٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-1475"
+   ]
+  },
+  {
+   "node": "r46586",
+   "label": "أحمد بن إبراهيم الخوارزمي",
+   "rawi_id": 46586,
+   "tabaka": 18,
+   "death_year": null,
+   "raw_names": [
+    "أَبُو سَعِيدٍ أَحْمَدُ بْنُ إِبْرَاهِيمَ الشُّرَيْحِيُّ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 6,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "node": "r4883",
+   "label": "عبد الله بن العباس القرشي",
+   "rawi_id": 4883,
+   "tabaka": 1,
+   "death_year": 68,
+   "raw_names": [
+    "ابْنَ عَبَّاسٍ",
+    "ابْنُ عَبَّاسٍ ، رَضِيَ اللَّهُ عَنْهُ",
+    "ابْنُ عَبَّاسٍ ، رَضِيَ اللَّهُ عَنْهُمَا",
+    "ابْنِ عَبَّاسٍ",
+    "ابْنِ عَبَّاسٍ رَضِيَ اللَّهُ عَنْهُمَا"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 1,
+   "single_thread_above": 0,
+   "depth": 9,
+   "flags": [],
+   "records": [
+    "jamc-1017",
+    "jamc-1111",
+    "jamc-1147",
+    "jamc-1471",
+    "jamc-1538"
+   ]
+  },
+  {
+   "node": "r54112",
+   "label": "عثمان بن محمد الأدمي",
+   "rawi_id": 54112,
+   "tabaka": 0,
+   "death_year": null,
+   "raw_names": [
+    "أَبُو عَمْرٍو عُثْمَانُ بْنُ مُحَمَّدِ بْنِ الْقَاسِمِ الْبَزَّارُ الْمَعْرُوفُ بِالأَدَمِيِّ ، قِرَاءَةً عَلَيْهِ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 4,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "node": "r5422",
+   "label": "عبيد الله بن عمر الجشمي",
+   "rawi_id": 5422,
+   "tabaka": 10,
+   "death_year": 235,
+   "raw_names": [
+    "عُبَيْدُ اللَّهِ الْقَوَارِيرِيُّ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 5,
+   "flags": [],
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "node": "r5501",
+   "label": "عثمان بن عمر العبدي",
+   "rawi_id": 5501,
+   "tabaka": 9,
+   "death_year": 220,
+   "raw_names": [
+    "عُثْمَانُ بْنُ الْهَيْثَمِ الْمُؤَذِّنُ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1072"
+   ]
+  },
+  {
+   "node": "r60589",
+   "label": "علي بن محمد الخباري",
+   "rawi_id": 60589,
+   "tabaka": 16,
+   "death_year": 398,
+   "raw_names": [
+    "أَبُو الْحُسَيْنِ عَلِيُّ بْنُ مُحَمَّدِ بْنِ الْحُسَيْنِ الْجُرْجَانِيُّ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 4,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "node": "r6177",
+   "label": "عمرو بن عون السلمي",
+   "rawi_id": 6177,
+   "tabaka": 10,
+   "death_year": 225,
+   "raw_names": [
+    "عَمْرُو بْنُ عَوْنٍ"
+   ],
+   "students": 0,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 0,
+   "flags": [],
+   "records": [
+    "jamc-1017"
+   ]
+  },
+  {
+   "node": "r6256",
+   "label": "عوف بن أبي جميلة الأعرابي",
+   "rawi_id": 6256,
+   "tabaka": 6,
+   "death_year": 146,
+   "raw_names": [
+    "عوف",
+    "عوف بن أبي جميلة",
+    "عَوْفٌ",
+    "عَوْفٌ الأَعْرَابِيُّ",
+    "عَوْفٍ",
+    "عَوْفُ بْنُ أَبِي جَمِيلَةَ",
+    "عَوْفُ بْنُ أَبِي جَمِيلَةَ الأَعْرَابِيُّ"
+   ],
+   "students": 9,
+   "teachers": 2,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 7,
+   "flags": [
+    "rawi-inferred"
+   ],
+   "records": [
+    "jamc-0092",
+    "jamc-0093",
+    "jamc-1017",
+    "jamc-1072",
+    "jamc-1111",
+    "jamc-1147",
+    "jamc-1471",
+    "jamc-1475",
+    "jamc-1538"
+   ]
+  },
+  {
+   "node": "r6638",
+   "label": "الليث بن أبي سليم القرشي",
+   "rawi_id": 6638,
+   "tabaka": 6,
+   "death_year": 138,
+   "raw_names": [
+    "ليث بن أبي سليم"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 4,
+   "depth": 4,
+   "flags": [],
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "node": "r6879",
+   "label": "محمد بن بشار العبدي",
+   "rawi_id": 6879,
+   "tabaka": 10,
+   "death_year": 252,
+   "raw_names": [
+    "مُحَمَّدُ بْنُ بَشَّارٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 3,
+   "flags": [],
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "node": "r6904",
+   "label": "محمد بن جعفر الهذلي",
+   "rawi_id": 6904,
+   "tabaka": 9,
+   "death_year": 193,
+   "raw_names": [
+    "مُحَمَّدُ بْنُ جَعْفَرٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 3,
+   "flags": [],
+   "records": [
+    "jamc-1475"
+   ]
+  },
+  {
+   "node": "r8062",
+   "label": "هشيم بن بشير السلمي",
+   "rawi_id": 8062,
+   "tabaka": 7,
+   "death_year": 183,
+   "raw_names": [
+    "هُشَيْمٌ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1017"
+   ]
+  },
+  {
+   "node": "r8107",
+   "label": "هوذة بن خليفة الثقفي",
+   "rawi_id": 8107,
+   "tabaka": 9,
+   "death_year": 216,
+   "raw_names": [
+    "هَوْذَةُ بْنُ خَلِيفَةَ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 2,
+   "flags": [],
+   "records": [
+    "jamc-1538"
+   ]
+  },
+  {
+   "node": "r8115",
+   "label": "واثلة بن الأسقع الليثي",
+   "rawi_id": 8115,
+   "tabaka": 1,
+   "death_year": 85,
+   "raw_names": [
+    "واثلة بن الأسقع"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 7,
+   "flags": [],
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "node": "r82256",
+   "label": "محمد بن بشار النهاوندي",
+   "rawi_id": 82256,
+   "tabaka": 14,
+   "death_year": null,
+   "raw_names": [
+    "محمد بن بشار"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-0092"
+   ]
+  },
+  {
+   "node": "r8271",
+   "label": "يحيى بن سعيد القطان",
+   "rawi_id": 8271,
+   "tabaka": 9,
+   "death_year": 198,
+   "raw_names": [
+    "يَحْيَى بْنُ سَعِيدٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 4,
+   "flags": [],
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "node": "r8362",
+   "label": "يزيد الفارسي",
+   "rawi_id": 8362,
+   "tabaka": 4,
+   "death_year": null,
+   "raw_names": [
+    "يزيد الفارسي",
+    "يَزِيدَ الْفَارِسِيِّ",
+    "يَزِيدُ الْفَارِسِيُّ"
+   ],
+   "students": 2,
+   "teachers": 3,
+   "students_corroborated": 1,
+   "single_thread_above": 0,
+   "depth": 8,
+   "flags": [],
+   "records": [
+    "jamc-0092",
+    "jamc-0093",
+    "jamc-0898",
+    "jamc-1017",
+    "jamc-1111",
+    "jamc-1147",
+    "jamc-1471",
+    "jamc-1475",
+    "jamc-1538"
+   ]
+  },
+  {
+   "node": "r8418",
+   "label": "يزيد بن زريع العيشي",
+   "rawi_id": 8418,
+   "tabaka": 8,
+   "death_year": 182,
+   "raw_names": [
+    "يَزِيدُ بْنُ زُرَيْعٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 6,
+   "flags": [],
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "node": "r8690",
+   "label": "ابن عباس الحميري",
+   "rawi_id": 8690,
+   "tabaka": 4,
+   "death_year": null,
+   "raw_names": [
+    "ابن عباس",
+    "ابن عباس رضي الله عنه"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 5,
+   "flags": [],
+   "records": [
+    "jamc-0092",
+    "jamc-0972"
+   ]
+  },
+  {
+   "node": "r8994",
+   "label": "أحمد بن جعفر القطيعي",
+   "rawi_id": 8994,
+   "tabaka": 15,
+   "death_year": 368,
+   "raw_names": [
+    "أَحْمَدُ بْنُ جَعْفَرِ بْنِ مَالِكٍ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 2,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-1475"
+   ]
+  },
+  {
+   "node": "r970",
+   "label": "إسحاق بن منصور الكوسج",
+   "rawi_id": 970,
+   "tabaka": 11,
+   "death_year": 251,
+   "raw_names": [
+    "إسحاق بن منصور الكوسج"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 1,
+   "depth": 1,
+   "flags": [],
+   "records": [
+    "jamc-0093"
+   ]
+  },
+  {
+   "node": "r979",
+   "label": "إسحاق بن يوسف الأزرق",
+   "rawi_id": 979,
+   "tabaka": 9,
+   "death_year": 195,
+   "raw_names": [
+    "إِسْحَاقُ الأَزْرَقُ"
+   ],
+   "students": 1,
+   "teachers": 1,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 3,
+   "flags": [],
+   "records": [
+    "jamc-1147"
+   ]
+  },
+  {
+   "node": "rnabi",
+   "label": "النبي ﷺ",
+   "rawi_id": "nabi",
+   "tabaka": null,
+   "death_year": null,
+   "raw_names": [
+    "رسول الله صلى الله عليه وسلم"
+   ],
+   "students": 1,
+   "teachers": 0,
+   "students_corroborated": 0,
+   "single_thread_above": 0,
+   "depth": 8,
+   "flags": [
+    "prophet-terminus"
+   ],
+   "records": [
+    "jamc-0954"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "n:ابو برده",
+   "to": "n:ابو مليح",
+   "from_label": "أبي بردة",
+   "to_label": "أبي المليح",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "from": "n:ابو حميد",
+   "to": "n:فزاري",
+   "from_label": "أبو حميد",
+   "to_label": "الفزاري",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "from": "n:ابو عبيد وصابي",
+   "to": "n:محمد بن حفص",
+   "from_label": "أبو عبيد الوصابي",
+   "to_label": "محمد بن حفص",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "from": "n:ابو مليح",
+   "to": "r8115",
+   "from_label": "أبي المليح",
+   "to_label": "واثلة بن الأسقع الليثي",
+   "student_death_year": null,
+   "teacher_death_year": 85,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "from": "n:عبد الله",
+   "to": "r82256",
+   "from_label": "عبد الله",
+   "to_label": "محمد بن بشار النهاوندي",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0092"
+   ]
+  },
+  {
+   "from": "n:عبد الله",
+   "to": "r970",
+   "from_label": "عبد الله",
+   "to_label": "إسحاق بن منصور الكوسج",
+   "student_death_year": null,
+   "teacher_death_year": 251,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0093"
+   ]
+  },
+  {
+   "from": "n:عوف",
+   "to": "r8362",
+   "from_label": "عوف",
+   "to_label": "يزيد الفارسي",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0898"
+   ]
+  },
+  {
+   "from": "n:فزاري",
+   "to": "r6638",
+   "from_label": "الفزاري",
+   "to_label": "الليث بن أبي سليم القرشي",
+   "student_death_year": null,
+   "teacher_death_year": 138,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "from": "n:محمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+   "to": "r6256",
+   "from_label": "مُحَمَّدٌ ابْنُ جَعْفَرٍ ، وَابْنُ أَبِي عَدِيٍّ ، وَسَهْلُ بْنُ يُوسُفَ ، قَالُوا",
+   "to_label": "عوف بن أبي جميلة الأعرابي",
+   "student_death_year": null,
+   "teacher_death_year": 146,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "from": "n:محمد بن حفص",
+   "to": "n:ابو حميد",
+   "from_label": "محمد بن حفص",
+   "to_label": "أبو حميد",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "from": "n:يحيي بن سعيد وغندر",
+   "to": "n:عوف",
+   "from_label": "يحيى بن سعيد، وغندر قالا",
+   "to_label": "عوف",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0898"
+   ]
+  },
+  {
+   "from": "n:يحيي بن سعيد ومحمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+   "to": "r6256",
+   "from_label": "يحيى بن سعيد، ومحمد بن جعفر، وابن أبي عدي وسهل بن يوسف قالوا",
+   "to_label": "عوف بن أبي جميلة الأعرابي",
+   "student_death_year": null,
+   "teacher_death_year": 146,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0092"
+   ]
+  },
+  {
+   "from": "r10025",
+   "to": "r5422",
+   "from_label": "أبو يعلى الموصلي",
+   "to_label": "عبيد الله بن عمر الجشمي",
+   "student_death_year": 307,
+   "teacher_death_year": 235,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "from": "r10289",
+   "to": "r18176",
+   "from_label": "أحمد بن محمد العنزي",
+   "to_label": "سعدان بن نصر الثقفي",
+   "student_death_year": 340,
+   "teacher_death_year": 265,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1147"
+   ]
+  },
+  {
+   "from": "r10765",
+   "to": "r14244",
+   "from_label": "أحمد بن يوسف العطار",
+   "to_label": "الحارث بن أبي أسامة التميمي",
+   "student_death_year": 359,
+   "teacher_death_year": 282,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1538"
+   ]
+  },
+  {
+   "from": "r14244",
+   "to": "r8107",
+   "from_label": "الحارث بن أبي أسامة التميمي",
+   "to_label": "هوذة بن خليفة الثقفي",
+   "student_death_year": 282,
+   "teacher_death_year": 216,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1538"
+   ]
+  },
+  {
+   "from": "r1540",
+   "to": "r5501",
+   "from_label": "الفضل بن الحباب الجمحي",
+   "to_label": "عثمان بن عمر العبدي",
+   "student_death_year": 304,
+   "teacher_death_year": 220,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1072"
+   ]
+  },
+  {
+   "from": "r1716",
+   "to": "r6256",
+   "from_label": "النضر بن شميل المازني",
+   "to_label": "عوف بن أبي جميلة الأعرابي",
+   "student_death_year": 203,
+   "teacher_death_year": 146,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0093"
+   ]
+  },
+  {
+   "from": "r18176",
+   "to": "r979",
+   "from_label": "سعدان بن نصر الثقفي",
+   "to_label": "إسحاق بن يوسف الأزرق",
+   "student_death_year": 265,
+   "teacher_death_year": 195,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1147"
+   ]
+  },
+  {
+   "from": "r20664",
+   "to": "r8994",
+   "from_label": "عبد الرحمن بن حمدان النصروي",
+   "to_label": "أحمد بن جعفر القطيعي",
+   "student_death_year": 433,
+   "teacher_death_year": 368,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1475"
+   ]
+  },
+  {
+   "from": "r22334",
+   "to": "r6879",
+   "from_label": "عبد الله بن أبي داود السجستاني",
+   "to_label": "محمد بن بشار العبدي",
+   "student_death_year": 316,
+   "teacher_death_year": 252,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "from": "r22580",
+   "to": "r10025",
+   "from_label": "عبد الله بن عدي الجرجاني",
+   "to_label": "أبو يعلى الموصلي",
+   "student_death_year": 365,
+   "teacher_death_year": 307,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "from": "r23439",
+   "to": "r10289",
+   "from_label": "عبد الله بن يوسف الأصبهاني",
+   "to_label": "أحمد بن محمد العنزي",
+   "student_death_year": 409,
+   "teacher_death_year": 340,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1147"
+   ]
+  },
+  {
+   "from": "r28400",
+   "to": "r54112",
+   "from_label": "محمد بن أحمد المسلمي",
+   "to_label": "عثمان بن محمد الأدمي",
+   "student_death_year": 465,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "from": "r34997",
+   "to": "r60589",
+   "from_label": "أحمد بن محمد الثعلبي",
+   "to_label": "علي بن محمد الخباري",
+   "student_death_year": 427,
+   "teacher_death_year": 398,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "from": "r4657",
+   "to": "r6904",
+   "from_label": "عبد الله بن أحمد الشيباني",
+   "to_label": "محمد بن جعفر الهذلي",
+   "student_death_year": 290,
+   "teacher_death_year": 193,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1475"
+   ]
+  },
+  {
+   "from": "r46586",
+   "to": "r34997",
+   "from_label": "أحمد بن إبراهيم الخوارزمي",
+   "to_label": "أحمد بن محمد الثعلبي",
+   "student_death_year": null,
+   "teacher_death_year": 427,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "from": "r54112",
+   "to": "r22334",
+   "from_label": "عثمان بن محمد الأدمي",
+   "to_label": "عبد الله بن أبي داود السجستاني",
+   "student_death_year": null,
+   "teacher_death_year": 316,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "from": "r5422",
+   "to": "r8418",
+   "from_label": "عبيد الله بن عمر الجشمي",
+   "to_label": "يزيد بن زريع العيشي",
+   "student_death_year": 235,
+   "teacher_death_year": 182,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "from": "r5501",
+   "to": "r6256",
+   "from_label": "عثمان بن عمر العبدي",
+   "to_label": "عوف بن أبي جميلة الأعرابي",
+   "student_death_year": 220,
+   "teacher_death_year": 146,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1072"
+   ]
+  },
+  {
+   "from": "r60589",
+   "to": "r22580",
+   "from_label": "علي بن محمد الخباري",
+   "to_label": "عبد الله بن عدي الجرجاني",
+   "student_death_year": 398,
+   "teacher_death_year": 365,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "from": "r6177",
+   "to": "r8062",
+   "from_label": "عمرو بن عون السلمي",
+   "to_label": "هشيم بن بشير السلمي",
+   "student_death_year": 225,
+   "teacher_death_year": 183,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1017"
+   ]
+  },
+  {
+   "from": "r6256",
+   "to": "n:يزيد فارسي قال قال بن عباس قلت لعثمان بن عفان",
+   "from_label": "عوف بن أبي جميلة الأعرابي",
+   "to_label": "يَزِيدَ الْفَارِسِيِّ ، قَالَ : قَالَ ابْنُ عَبَّاسٍ قُلْتُ لِعُثْمَانَ بْنِ عَفَّانَ",
+   "student_death_year": 146,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1072"
+   ]
+  },
+  {
+   "from": "r6256",
+   "to": "r8362",
+   "from_label": "عوف بن أبي جميلة الأعرابي",
+   "to_label": "يزيد الفارسي",
+   "student_death_year": 146,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0092",
+    "jamc-0093",
+    "jamc-1017",
+    "jamc-1111",
+    "jamc-1147",
+    "jamc-1471",
+    "jamc-1475",
+    "jamc-1538"
+   ]
+  },
+  {
+   "from": "r6638",
+   "to": "n:ابو برده",
+   "from_label": "الليث بن أبي سليم القرشي",
+   "to_label": "أبي بردة",
+   "student_death_year": 138,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "from": "r6879",
+   "to": "r8271",
+   "from_label": "محمد بن بشار العبدي",
+   "to_label": "يحيى بن سعيد القطان",
+   "student_death_year": 252,
+   "teacher_death_year": 198,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "from": "r6904",
+   "to": "r6256",
+   "from_label": "محمد بن جعفر الهذلي",
+   "to_label": "عوف بن أبي جميلة الأعرابي",
+   "student_death_year": 193,
+   "teacher_death_year": 146,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1475"
+   ]
+  },
+  {
+   "from": "r8062",
+   "to": "r6256",
+   "from_label": "هشيم بن بشير السلمي",
+   "to_label": "عوف بن أبي جميلة الأعرابي",
+   "student_death_year": 183,
+   "teacher_death_year": 146,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1017"
+   ]
+  },
+  {
+   "from": "r8107",
+   "to": "r6256",
+   "from_label": "هوذة بن خليفة الثقفي",
+   "to_label": "عوف بن أبي جميلة الأعرابي",
+   "student_death_year": 216,
+   "teacher_death_year": 146,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1538"
+   ]
+  },
+  {
+   "from": "r8115",
+   "to": "rnabi",
+   "from_label": "واثلة بن الأسقع الليثي",
+   "to_label": "النبي ﷺ",
+   "student_death_year": 85,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0954"
+   ]
+  },
+  {
+   "from": "r82256",
+   "to": "n:يحيي بن سعيد ومحمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+   "from_label": "محمد بن بشار النهاوندي",
+   "to_label": "يحيى بن سعيد، ومحمد بن جعفر، وابن أبي عدي وسهل بن يوسف قالوا",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0092"
+   ]
+  },
+  {
+   "from": "r8271",
+   "to": "n:محمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+   "from_label": "يحيى بن سعيد القطان",
+   "to_label": "مُحَمَّدٌ ابْنُ جَعْفَرٍ ، وَابْنُ أَبِي عَدِيٍّ ، وَسَهْلُ بْنُ يُوسُفَ ، قَالُوا",
+   "student_death_year": 198,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1111"
+   ]
+  },
+  {
+   "from": "r8362",
+   "to": "n:بن عباس ما قلت لعثمان بن عفان ما حملكم علي",
+   "from_label": "يزيد الفارسي",
+   "to_label": "ابن عباس رضي الله عنهما: قلت لعثمان بن عفان رضي الله عنه: ما حملكم على",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0898"
+   ]
+  },
+  {
+   "from": "r8362",
+   "to": "r4883",
+   "from_label": "يزيد الفارسي",
+   "to_label": "عبد الله بن العباس القرشي",
+   "student_death_year": null,
+   "teacher_death_year": 68,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1017",
+    "jamc-1111",
+    "jamc-1147",
+    "jamc-1471",
+    "jamc-1538"
+   ]
+  },
+  {
+   "from": "r8362",
+   "to": "r8690",
+   "from_label": "يزيد الفارسي",
+   "to_label": "ابن عباس الحميري",
+   "student_death_year": null,
+   "teacher_death_year": null,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0092"
+   ]
+  },
+  {
+   "from": "r8418",
+   "to": "r6256",
+   "from_label": "يزيد بن زريع العيشي",
+   "to_label": "عوف بن أبي جميلة الأعرابي",
+   "student_death_year": 182,
+   "teacher_death_year": 146,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1471"
+   ]
+  },
+  {
+   "from": "r8994",
+   "to": "r4657",
+   "from_label": "أحمد بن جعفر القطيعي",
+   "to_label": "عبد الله بن أحمد الشيباني",
+   "student_death_year": 368,
+   "teacher_death_year": 290,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1475"
+   ]
+  },
+  {
+   "from": "r970",
+   "to": "r1716",
+   "from_label": "إسحاق بن منصور الكوسج",
+   "to_label": "النضر بن شميل المازني",
+   "student_death_year": 251,
+   "teacher_death_year": 203,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-0093"
+   ]
+  },
+  {
+   "from": "r979",
+   "to": "r6256",
+   "from_label": "إسحاق بن يوسف الأزرق",
+   "to_label": "عوف بن أبي جميلة الأعرابي",
+   "student_death_year": 195,
+   "teacher_death_year": 146,
+   "chrono_suspect": false,
+   "records": [
+    "jamc-1147"
+   ]
+  }
+ ],
+ "chains": [
+  {
+   "record": "jamc-0092",
+   "chain_no": 0,
+   "nodes": [
+    "n:عبد الله",
+    "r82256",
+    "n:يحيي بن سعيد ومحمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+    "r6256",
+    "r8362",
+    "r8690"
+   ]
+  },
+  {
+   "record": "jamc-0093",
+   "chain_no": 0,
+   "nodes": [
+    "n:عبد الله",
+    "r970",
+    "r1716",
+    "r6256",
+    "r8362"
+   ]
+  },
+  {
+   "record": "jamc-0898",
+   "chain_no": 0,
+   "nodes": [
+    "n:يحيي بن سعيد وغندر",
+    "n:عوف",
+    "r8362",
+    "n:بن عباس ما قلت لعثمان بن عفان ما حملكم علي"
+   ]
+  },
+  {
+   "record": "jamc-0954",
+   "chain_no": 0,
+   "nodes": [
+    "n:ابو عبيد وصابي",
+    "n:محمد بن حفص",
+    "n:ابو حميد",
+    "n:فزاري",
+    "r6638",
+    "n:ابو برده",
+    "n:ابو مليح",
+    "r8115",
+    "rnabi"
+   ]
+  },
+  {
+   "record": "jamc-0972",
+   "chain_no": 0,
+   "nodes": [
+    "r8690"
+   ]
+  },
+  {
+   "record": "jamc-1017",
+   "chain_no": 0,
+   "nodes": [
+    "r6177",
+    "r8062",
+    "r6256",
+    "r8362",
+    "r4883"
+   ]
+  },
+  {
+   "record": "jamc-1072",
+   "chain_no": 0,
+   "nodes": [
+    "r1540",
+    "r5501",
+    "r6256",
+    "n:يزيد فارسي قال قال بن عباس قلت لعثمان بن عفان"
+   ]
+  },
+  {
+   "record": "jamc-1111",
+   "chain_no": 0,
+   "nodes": [
+    "r28400",
+    "r54112",
+    "r22334",
+    "r6879",
+    "r8271",
+    "n:محمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+    "r6256",
+    "r8362",
+    "r4883"
+   ]
+  },
+  {
+   "record": "jamc-1147",
+   "chain_no": 0,
+   "nodes": [
+    "r23439",
+    "r10289",
+    "r18176",
+    "r979",
+    "r6256",
+    "r8362",
+    "r4883"
+   ]
+  },
+  {
+   "record": "jamc-1471",
+   "chain_no": 0,
+   "nodes": [
+    "r46586",
+    "r34997",
+    "r60589",
+    "r22580",
+    "r10025",
+    "r5422",
+    "r8418",
+    "r6256",
+    "r8362",
+    "r4883"
+   ]
+  },
+  {
+   "record": "jamc-1475",
+   "chain_no": 0,
+   "nodes": [
+    "r20664",
+    "r8994",
+    "r4657",
+    "r6904",
+    "r6256",
+    "r8362"
+   ]
+  },
+  {
+   "record": "jamc-1538",
+   "chain_no": 0,
+   "nodes": [
+    "r10765",
+    "r14244",
+    "r8107",
+    "r6256",
+    "r8362",
+    "r4883"
+   ]
+  }
+ ],
+ "common_link_candidates": {
+  "2": {
+   "candidates": [
+    {
+     "node": "r8362",
+     "label": "يزيد الفارسي",
+     "students": 2,
+     "students_corroborated": 1,
+     "depth": 8,
+     "single_thread_above": 0,
+     "death_year": null,
+     "students_death_range": {
+      "students": 2,
+      "with_death_year": 1,
+      "min": 146,
+      "max": 146
+     },
+     "isolation": {
+      "routes_through": 9,
+      "above": {
+       "paths": 4,
+       "single": 2,
+       "single_ratio": 0.5
+      },
+      "below": {
+       "paths": 9,
+       "single": 9,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [],
+     "records": [
+      "jamc-0092",
+      "jamc-0093",
+      "jamc-0898",
+      "jamc-1017",
+      "jamc-1111",
+      "jamc-1147",
+      "jamc-1471",
+      "jamc-1475",
+      "jamc-1538"
+     ],
+     "branches": [
+      {
+       "student": "n:عوف",
+       "student_label": "عوف",
+       "records": [
+        "jamc-0898"
+       ],
+       "works": [
+        "تاريخ المدينة"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.2431,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r6256",
+       "student_label": "عوف بن أبي جميلة الأعرابي",
+       "records": [
+        "jamc-0092",
+        "jamc-0093",
+        "jamc-1017",
+        "jamc-1111",
+        "jamc-1147",
+        "jamc-1471",
+        "jamc-1475",
+        "jamc-1538"
+       ],
+       "works": [
+        "الأحاديث المختارة",
+        "السنن الكبرى للبيهقي",
+        "المصاحف",
+        "الوسيط في تفسير القرآن المجيد",
+        "سنن أبي داود",
+        "معالم التنزيل تفسير البغوي",
+        "معرفة الصحابة لأبي نعيم"
+       ],
+       "works_count": 7,
+       "corroborated": true,
+       "sibling_divergence": 0.4928,
+       "isolation": {
+        "routes_through": 9,
+        "above": {
+         "paths": 4,
+         "single": 2,
+         "single_ratio": 0.5
+        },
+        "below": {
+         "paths": 9,
+         "single": 9,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": [
+    {
+     "node": "r6256",
+     "label": "عوف بن أبي جميلة الأعرابي",
+     "students": 9,
+     "students_corroborated": 0,
+     "depth": 7,
+     "single_thread_above": 0,
+     "death_year": 146,
+     "students_death_range": {
+      "students": 9,
+      "with_death_year": 7,
+      "min": 182,
+      "max": 220
+     },
+     "isolation": {
+      "routes_through": 9,
+      "above": {
+       "paths": 4,
+       "single": 2,
+       "single_ratio": 0.5
+      },
+      "below": {
+       "paths": 9,
+       "single": 9,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [
+      "rawi-inferred"
+     ],
+     "records": [
+      "jamc-0092",
+      "jamc-0093",
+      "jamc-1017",
+      "jamc-1072",
+      "jamc-1111",
+      "jamc-1147",
+      "jamc-1471",
+      "jamc-1475",
+      "jamc-1538"
+     ]
+    }
+   ]
+  },
+  "3": {
+   "candidates": [
+    {
+     "node": "r6256",
+     "label": "عوف بن أبي جميلة الأعرابي",
+     "students": 9,
+     "students_corroborated": 0,
+     "depth": 7,
+     "single_thread_above": 0,
+     "death_year": 146,
+     "students_death_range": {
+      "students": 9,
+      "with_death_year": 7,
+      "min": 182,
+      "max": 220
+     },
+     "isolation": {
+      "routes_through": 9,
+      "above": {
+       "paths": 4,
+       "single": 2,
+       "single_ratio": 0.5
+      },
+      "below": {
+       "paths": 9,
+       "single": 9,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [
+      "rawi-inferred"
+     ],
+     "records": [
+      "jamc-0092",
+      "jamc-0093",
+      "jamc-1017",
+      "jamc-1072",
+      "jamc-1111",
+      "jamc-1147",
+      "jamc-1471",
+      "jamc-1475",
+      "jamc-1538"
+     ],
+     "branches": [
+      {
+       "student": "n:محمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+       "student_label": "مُحَمَّدٌ ابْنُ جَعْفَرٍ ، وَابْنُ أَبِي عَدِيٍّ ، وَسَهْلُ بْنُ يُوسُفَ ، قَالُوا",
+       "records": [
+        "jamc-1111"
+       ],
+       "works": [
+        "الأحاديث المختارة"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.4204,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "n:يحيي بن سعيد ومحمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+       "student_label": "يحيى بن سعيد، ومحمد بن جعفر، وابن أبي عدي وسهل بن يوسف قالوا",
+       "records": [
+        "jamc-0092"
+       ],
+       "works": [
+        "المصاحف"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.2467,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r1716",
+       "student_label": "النضر بن شميل المازني",
+       "records": [
+        "jamc-0093"
+       ],
+       "works": [
+        "المصاحف"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.904,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r5501",
+       "student_label": "عثمان بن عمر العبدي",
+       "records": [
+        "jamc-1072"
+       ],
+       "works": [
+        "صحيح ابن حبان"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.5556,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r6904",
+       "student_label": "محمد بن جعفر الهذلي",
+       "records": [
+        "jamc-1475"
+       ],
+       "works": [
+        "الوسيط في تفسير القرآن المجيد"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.2095,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8062",
+       "student_label": "هشيم بن بشير السلمي",
+       "records": [
+        "jamc-1017"
+       ],
+       "works": [
+        "سنن أبي داود"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.5498,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8107",
+       "student_label": "هوذة بن خليفة الثقفي",
+       "records": [
+        "jamc-1538"
+       ],
+       "works": [
+        "معرفة الصحابة لأبي نعيم"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.2467,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8418",
+       "student_label": "يزيد بن زريع العيشي",
+       "records": [
+        "jamc-1471"
+       ],
+       "works": [
+        "معالم التنزيل تفسير البغوي"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.2095,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r979",
+       "student_label": "إسحاق بن يوسف الأزرق",
+       "records": [
+        "jamc-1147"
+       ],
+       "works": [
+        "السنن الكبرى للبيهقي"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.4626,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  },
+  "4": {
+   "candidates": [
+    {
+     "node": "r6256",
+     "label": "عوف بن أبي جميلة الأعرابي",
+     "students": 9,
+     "students_corroborated": 0,
+     "depth": 7,
+     "single_thread_above": 0,
+     "death_year": 146,
+     "students_death_range": {
+      "students": 9,
+      "with_death_year": 7,
+      "min": 182,
+      "max": 220
+     },
+     "isolation": {
+      "routes_through": 9,
+      "above": {
+       "paths": 4,
+       "single": 2,
+       "single_ratio": 0.5
+      },
+      "below": {
+       "paths": 9,
+       "single": 9,
+       "single_ratio": 1.0
+      }
+     },
+     "flags": [
+      "rawi-inferred"
+     ],
+     "records": [
+      "jamc-0092",
+      "jamc-0093",
+      "jamc-1017",
+      "jamc-1072",
+      "jamc-1111",
+      "jamc-1147",
+      "jamc-1471",
+      "jamc-1475",
+      "jamc-1538"
+     ],
+     "branches": [
+      {
+       "student": "n:محمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+       "student_label": "مُحَمَّدٌ ابْنُ جَعْفَرٍ ، وَابْنُ أَبِي عَدِيٍّ ، وَسَهْلُ بْنُ يُوسُفَ ، قَالُوا",
+       "records": [
+        "jamc-1111"
+       ],
+       "works": [
+        "الأحاديث المختارة"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.4204,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "n:يحيي بن سعيد ومحمد بن جعفر وابن ابو عدي وسهل بن يوسف",
+       "student_label": "يحيى بن سعيد، ومحمد بن جعفر، وابن أبي عدي وسهل بن يوسف قالوا",
+       "records": [
+        "jamc-0092"
+       ],
+       "works": [
+        "المصاحف"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.2467,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r1716",
+       "student_label": "النضر بن شميل المازني",
+       "records": [
+        "jamc-0093"
+       ],
+       "works": [
+        "المصاحف"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.904,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r5501",
+       "student_label": "عثمان بن عمر العبدي",
+       "records": [
+        "jamc-1072"
+       ],
+       "works": [
+        "صحيح ابن حبان"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.5556,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r6904",
+       "student_label": "محمد بن جعفر الهذلي",
+       "records": [
+        "jamc-1475"
+       ],
+       "works": [
+        "الوسيط في تفسير القرآن المجيد"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.2095,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8062",
+       "student_label": "هشيم بن بشير السلمي",
+       "records": [
+        "jamc-1017"
+       ],
+       "works": [
+        "سنن أبي داود"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.5498,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8107",
+       "student_label": "هوذة بن خليفة الثقفي",
+       "records": [
+        "jamc-1538"
+       ],
+       "works": [
+        "معرفة الصحابة لأبي نعيم"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.2467,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r8418",
+       "student_label": "يزيد بن زريع العيشي",
+       "records": [
+        "jamc-1471"
+       ],
+       "works": [
+        "معالم التنزيل تفسير البغوي"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.2095,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      },
+      {
+       "student": "r979",
+       "student_label": "إسحاق بن يوسف الأزرق",
+       "records": [
+        "jamc-1147"
+       ],
+       "works": [
+        "السنن الكبرى للبيهقي"
+       ],
+       "works_count": 1,
+       "corroborated": false,
+       "sibling_divergence": 0.4626,
+       "isolation": {
+        "routes_through": 1,
+        "above": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        },
+        "below": {
+         "paths": 1,
+         "single": 1,
+         "single_ratio": 1.0
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "partial": []
+  },
+  "2-corroborated": {
+   "min_works_per_branch": 2,
+   "candidates": [],
+   "partial": []
+  },
+  "most-corroborated": {
+   "min_works_per_branch": 2,
+   "min_corroborated_branches": 2,
+   "candidates": [],
+   "partial": []
+  }
+ }
+}
