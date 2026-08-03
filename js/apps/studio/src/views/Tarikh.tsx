@@ -164,13 +164,34 @@ export default function Tarikh() {
                   <span className="n">{c.id}</span>
                   <span className="t">{c.title}</span>
                   <GradeChip grade={c.grade} grades={data.grades} />
-                  {c.grades.length > 1 && (
+                  {c.grades.length > 1 && !c.leadWithRulings && (
                     <span className="gchip more" title="للقول أحكامٌ فرعيّةٌ بدرجاتٍ أخرى — تُقرأ داخله">
                       ودرجاتٌ أخرى ({arNum(c.grades.length - 1)})
                     </span>
                   )}
                 </div>
-                <p className="cl">{inlineMd(c.fields.claim.raw, `${c.id}-`)}</p>
+                {/* حيث يكون الحكمُ ثنائيًّا (جنسٌ ثابتٌ وأفرادٌ ظنّية) تُصدَّر البطاقةُ
+                    بشقّيه معًا لا بنصّ القول — فإفرادُ أحدهما يُخِلّ بالفهم في
+                    الاتّجاهين. والشقّان منقولان حرفًا كسائر ما يُعرض. */}
+                {c.leadWithRulings ? (
+                  <div className="split">
+                    {c.rulings.map((r, i) => (
+                      <p className="cl" key={i}>
+                        {r.grades[0] && <GradeChip grade={r.grades[0]} grades={data.grades} />}
+                        {inlineMd(r.raw, `${c.id}-r${i}-`)}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="cl">{inlineMd(c.fields.claim.raw, `${c.id}-`)}</p>
+                )}
+                {(c.readWith ?? []).map((w) => (
+                  <p className="readwith" key={w.id}>
+                    يُقرأ مع <b>{w.id} {w.title}</b>
+                    <span className="sep">·</span>
+                    الشاهدُ الوثائقيُّ فيهما واحد ({w.witness})
+                  </p>
+                ))}
               </Link>
             ))}
           </div>

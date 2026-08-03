@@ -1,0 +1,19 @@
+{
+  "ok": false,
+  "branch": "main",
+  "head": "32f8b713ecd6317d5ba530122aea40ff86b418ca",
+  "main": "32f8b713ecd6317d5ba530122aea40ff86b418ca",
+  "originMain": "32f8b713ecd6317d5ba530122aea40ff86b418ca",
+  "ahead": 0,
+  "behind": 0,
+  "localCommits": [],
+  "remoteRefs": {
+    "refs/remotes/origin/HEAD": "32f8b713ecd6317d5ba530122aea40ff86b418ca",
+    "refs/remotes/origin/main": "32f8b713ecd6317d5ba530122aea40ff86b418ca"
+  },
+  "lastPush": "32f8b71 refs/remotes/origin/main@{0}: update by push",
+  "baselineLastPush": "32f8b71 refs/remotes/origin/main@{0}: update by push",
+  "failures": [
+    "لا إيداعةَ محلّيّةً فوق origin/main — لم يُودَع شيءٌ بعد"
+  ]
+}

@@ -9,58 +9,56 @@
         "size": 20,
         "matched": 20,
         "ids": [
-          "jamc-1623",
-          "jamc-1166",
-          "jamc-1385",
-          "jamc-1384",
-          "jamc-1013",
-          "jamc-1240",
-          "jamc-1227",
-          "jamc-1230",
+          "jamc-1596",
+          "jamc-1130",
+          "jamc-1368",
+          "jamc-1364",
+          "jamc-0947",
+          "jamc-1220",
+          "jamc-1203",
+          "jamc-1209",
           "jamc-1671",
-          "jamc-0919",
-          "jamc-0989",
-          "jamc-1161",
-          "jamc-1191",
-          "jamc-1458",
+          "jamc-0685",
+          "jamc-0702",
+          "jamc-1129",
+          "jamc-1151",
+          "jamc-1434",
           "jamc-0065",
-          "jamc-1117",
-          "jamc-1405",
-          "jamc-1106",
-          "jamc-1311",
-          "jamc-1349"
+          "jamc-1089",
+          "jamc-1388",
+          "jamc-1074",
+          "jamc-1258",
+          "jamc-1311"
         ]
       },
       "allRecords": {
-        "total": 290,
-        "matched": 290
+        "total": 316,
+        "matched": 316
       }
     },
     {
       "id": "٢",
       "title": "أمانةُ الأحكام — كلُّ مقطعٍ حكميٍّ منقولٌ حرفًا، والدرجاتُ تطابق مسحًا مستقلًّا",
-      "checks": 448,
+      "checks": 602,
       "failures": [],
       "liftedSegments": 172
     },
     {
       "id": "٣",
       "title": "التتبّع — عقدة ← سجل ← نصّ بلا انقطاع، وكلُّ بطاقةٍ وثائقيّةٍ بإحالتها",
-      "checks": 5564,
+      "checks": 6089,
       "failures": [],
       "counts": {
-        "nodes": 751,
-        "nodesWithRecords": 751,
-        "edges": 795,
-        "records": 290,
+        "nodes": 828,
+        "nodesWithRecords": 828,
+        "edges": 905,
+        "records": 316,
         "chainless": 1
       },
       "chainless": [
         "clx-jamc-0907-9216d9/jamc-1251"
       ],
-      "outOfSnapshot": [
-        "د٥:clx-jamc-0668-90fe6c"
-      ],
+      "outOfSnapshot": [],
       "corpusWorks": 87
     },
     {
@@ -68,14 +66,31 @@
       "title": "الكسل — فهرسُ الأقوال لا يحمل حمولةَ عنقود",
       "checks": 4,
       "failures": [],
-      "indexBytes": 42610,
-      "clusterFiles": 18
+      "indexBytes": 43172,
+      "clusterFiles": 19
     },
     {
       "id": "٥",
       "title": "نظافةُ العرض — لا اسمَ محرِّرٍ ولا مسارَ ملفٍّ ولا بصمةَ إيداعةٍ في ملفّات العرض",
-      "checks": 33,
-      "failures": []
+      "checks": 39,
+      "failures": [],
+      "sessionCodes": {
+        "codes": 2,
+        "declared": 2
+      }
+    },
+    {
+      "id": "٦",
+      "title": "القولُ الثامن — التمييزُ الثنائيُّ مُصدَّر، و«يُقرأ مع» متبادلةٌ بأساسٍ مفحوص، ولا قوائمَ ولا طعن",
+      "checks": 18,
+      "failures": [],
+      "detail": {
+        "rulings": 2,
+        "readWith": [
+          "د٥(و١)"
+        ],
+        "listForm": 0
+      }
     }
   ],
   "failures": [],

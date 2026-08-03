@@ -3,8 +3,8 @@
  *
  * يقود Google Chrome عبر DevTools Protocol (الطريقةُ المعتمَدة في المشروع؛
  * playwright معطوبٌ في هذه البيئة)، فيثبت آليًّا:
- *   أ — **النقرتان:** من `/tarikh` نقرةٌ واحدةٌ إلى بطاقة الدعوى، ونقرةٌ ثانيةٌ
- *       على عقدةٍ في الشجرة تفتح نصَّ الرواية حرفيًّا — لكلِّ الدعاوى الثماني.
+ *   أ — **النقرتان:** من `/tarikh` نقرةٌ واحدةٌ إلى بطاقة القول، ونقرةٌ ثانيةٌ
+ *       على عقدةٍ في الشجرة تفتح نصَّ الرواية حرفيًّا — للأقوال الثمانية كلِّها.
  *   ب — **الكسل:** صفرُ طلبٍ لملفّ عنقودٍ في صدر الباب، ولا يُجلب من العناقيد
  *       إلا المفتوحُ منها بعينه.
  *   ج — نصُّ الرواية المعروض يطابق ما في ملفّ العنقود حرفًا.
@@ -99,14 +99,33 @@ try {
   await sleep(600);
   const nCards = await ev(c, "document.querySelectorAll('.tarikh .cards .card').length");
   ok(nCards === claims.claims.length, `صدرُ الباب يعرض ${nCards} بطاقةً لا ${claims.claims.length}`);
-  const nChips = await ev(c, "document.querySelectorAll('.tarikh .cards .card .gchip:not(.more)').length");
+  const nChips = await ev(c, "document.querySelectorAll('.tarikh .cards .card .row .gchip:not(.more)').length");
   ok(nChips === claims.claims.length, `شاراتُ الدرجة ${nChips} لا ${claims.claims.length} — لكلِّ بطاقةٍ شارة`);
+
+  // ——— التوجيهُ التحريريّ (قرارُ الإدارة س٧): بطاقةُ القول الثامن في متصفّحٍ حقيقيّ ———
+  for (const [i, cl] of claims.claims.entries()) {
+    const sel = `document.querySelectorAll('.tarikh .cards .card')[${i}]`;
+    if (cl.leadWithRulings) {
+      const parts = await ev(c, `${sel}.querySelectorAll('.split .cl').length`);
+      ok(parts === cl.rulings.length, `${cl.id}: بطاقتُه تُظهر ${parts} شقًّا لا ${cl.rulings.length}`);
+      const txt = await ev(c, `${sel}.textContent`);
+      for (const r of cl.rulings) {
+        const head = r.raw.replace(/\*\*/g, "").slice(0, 40);
+        ok(txt.includes(head), `${cl.id}: شقُّ الحكم غيرُ ظاهرٍ في البطاقة («${head}…»)`);
+      }
+      detail.card = { id: cl.id, parts };
+    }
+    for (const w of cl.readWith ?? []) {
+      const has = await ev(c, `${sel}.querySelector('.readwith')?.textContent ?? ''`);
+      ok(has.includes(w.id) && has.includes(w.witness), `${cl.id}: «يُقرأ مع ${w.id}» غيرُ ظاهرٍ في بطاقته`);
+    }
+  }
   const onIndex = c.requests.slice(mark).filter((u) => u.includes("tarikh-cluster-"));
   ok(onIndex.length === 0, `صدرُ الباب جلب ${onIndex.length} عنقودًا قبل طلبها`);
   detail.lazy.index = onIndex.length;
   ok(await ev(c, "!!document.querySelector('.tarikh .tl .pt')"), "لا سطرَ زمنيًّا في صدر الباب");
 
-  // ——— لكلِّ دعوى: نقرةٌ إلى صفحتها، ثمّ نقرةٌ على عقدةٍ تفتح نصَّ روايتها ———
+  // ——— لكلِّ قول: نقرةٌ إلى صفحته، ثمّ نقرةٌ على عقدةٍ تفتح نصَّ روايته ———
   for (const [i, claim] of claims.claims.entries()) {
     await c.send("Page.navigate", { url: `${BASE}/#/tarikh` });
     await until(c, "!!document.querySelector('.tarikh .cards .card')", "صدرُ الباب");
@@ -119,12 +138,19 @@ try {
     const hash = await ev(c, "decodeURIComponent(location.hash)");
     ok(hash === `#${claim.route}`, `${claim.id}: النقرةُ الأولى قادت إلى ${hash}`);
 
+    // «يُقرأ مع»: رابطٌ حيٌّ في صفحة القول يقود إلى أخيه
+    for (const w of claim.readWith ?? []) {
+      const href = await ev(c, `[...document.querySelectorAll('.tarikh .readwith a')].map((a) => a.getAttribute('href')).join(' ')`);
+      ok(href.includes(encodeURI(w.route)) || href.includes(w.route),
+        `${claim.id}: صفحتُه لا تحمل رابطَ «يُقرأ مع» إلى ${w.id}`);
+    }
+
     const clusters = claim.clusters.filter((x) => x.inSnapshot);
     const row = { id: claim.id, clusters: clusters.length, twoClicks: null, fetched: [] };
     if (clusters.length === 0) {
-      // دعوى بلا شجرة: حدودُها وما يغيّر درجتها ظاهرةٌ في الصفحة نفسِها
+      // قولٌ بلا شجرة: حدودُه وما يغيّر درجتَه ظاهرةٌ في الصفحة نفسِها
       await until(c, "!!document.querySelector('.tarikh .block .wcard')", `${claim.id}: ذيلُ الصفحة`);
-      row.twoClicks = "لا شجرةَ لهذه الدعوى في الوثيقة";
+      row.twoClicks = "لا شجرةَ لهذا القول في الوثيقة";
       detail.claims.push(row);
       continue;
     }

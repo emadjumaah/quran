@@ -2,13 +2,13 @@
  * خطُّ بناء باب «تاريخ النص» — من اللقطة المجمَّدة إلى ملفّات العرض.
  *
  * القاعدةُ الحاكمة: **لا جملةَ من عندنا.** كلُّ نصٍّ حكميٍّ في المخرجات مقطعٌ
- * منقولٌ حرفًا من `js/data/tarikh-sources/hukm/HUKM-JAMC-v1.md` (أو من الميثاق
+ * منقولٌ حرفًا من `js/data/tarikh-sources/hukm/HUKM-JAMC-v1.1.md` (أو من الميثاق
  * `METHOD.md` في شرح الدرجات الخمس وحدَه) — يُقتطع بالتحليل ولا يُعاد تحريرُه،
  * ويفحص `check-tarikh.mjs` كلَّ مقطعٍ فيُثبت أنه موجودٌ في مصدره حرفيًّا.
  *
  * المخرجات في `js/apps/studio/public/`:
- *   tarikh-claims.json          الدعاوى الثماني مهيكلةً + الدرجات + البيّنات
- *   tarikh-cluster-<id>.json    عنقودٌ كسولٌ لكلٍّ من الثمانية عشر (شجرة + نصوص)
+ *   tarikh-claims.json          الأقوال الثمانية مهيكلةً + الدرجات + البيّنات
+ *   tarikh-cluster-<id>.json    عنقودٌ كسولٌ لكلٍّ من التسعة عشر (شجرة + نصوص)
  *   tarikh-timeline.json        مرتكزات السطر الزمني الوثائقي من §١
  *   tarikh-hukm.json            الوثيقةُ الكاملة نصًّا (صفحةُ قراءة)
  *   rag-tarikh.json             نسخةُ نبراس المقروءة (بنمط كتب البيان — بلا تضمين)
@@ -24,7 +24,14 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SRC = join(ROOT, "js", "data", "tarikh-sources");
 const PUB = join(ROOT, "js", "apps", "studio", "public");
 
-const V1_PATH = join(SRC, "hukm", "HUKM-JAMC-v1.md");
+/**
+ * **مصدرُ العرض** — v1.1: تنقيحُ لسانِ الوثيقة المختومة بقرار المالك (لسانُ
+ * «ميزان الأقوال»: قولٌ يُوزن)، **بلا مساسٍ بدرجةٍ ولا بيّنةٍ ولا حدٍّ ولا بندِ
+ * «ما الذي يغيّر الدرجة»** — يشهد بذلك فرقٌ لفظيٌّ آليٌّ في مستودع التاريخ
+ * (`scripts/lisan_v1_1.py`). وv1 المختومةُ في اللقطة كما هي للمقابلة.
+ */
+const DOC_NAME = "HUKM-JAMC-v1.1.md";
+const V1_PATH = join(SRC, "hukm", DOC_NAME);
 const METHOD_PATH = join(SRC, "hukm", "METHOD.md");
 const V1 = readFileSync(V1_PATH, "utf8");
 const METHOD = readFileSync(METHOD_PATH, "utf8");
@@ -32,7 +39,7 @@ const sha256 = (s) => createHash("sha256").update(s).digest("hex");
 
 const die = (m) => { console.error(`✗ ${m}`); process.exit(1); };
 /** كلُّ مقطعٍ يخرج إلى العرض يمرّ من هنا: إمّا هو في مصدره حرفًا، أو يسقط البناء */
-function lift(text, from = V1, whence = "HUKM-JAMC-v1.md") {
+function lift(text, from = V1, whence = DOC_NAME) {
   const t = text.trim();
   if (!t) die(`مقطعٌ فارغ (${whence})`);
   if (!from.includes(t)) die(`مقطعٌ ليس في ${whence} حرفيًّا: «${t.slice(0, 70)}…»`);
@@ -164,14 +171,14 @@ function documentary() {
 }
 
 // ——————————————————————————————————————————————————————————————
-// ٥ — §٢ الدعاوى الثماني
+// ٥ — §٢ الأقوال الثمانية
 // ——————————————————————————————————————————————————————————————
 /** ترتيبُ السردية كما نصّ عليه برومبت خ٧ §٣ — وهو ترتيبُ الوثيقة نفسِه */
 const CLAIM_ORDER = ["د١", "د٢", "د٣", "د٤", "د٥", "د٦", "د٧", "د٨"];
 
-/** مفاتيحُ الفقرات المعنونة داخل كلِّ دعوى — بأسمائها كما وردت في v1 */
+/** مفاتيحُ الفقرات المعنونة داخل كلِّ قول — بأسمائها كما وردت في الوثيقة */
 const FIELDS = [
-  { key: "claim", label: "نص الدعوى" },
+  { key: "claim", label: "نص القول" },
   { key: "manqul", label: "البيّنة المنقولة" },
   { key: "wathaiqi", label: "البيّنة الوثائقية" },
   { key: "hukm", label: "الحكم" },
@@ -180,18 +187,46 @@ const FIELDS = [
 ];
 const FIELD_BY_LABEL = new Map(FIELDS.map((f) => [f.label, f]));
 
+/**
+ * **التوجيهُ التحريريُّ الملزم للقول الثامن** (قرارُ الإدارة س٧، ٣ آب ٢٠٢٦).
+ *
+ * القولُ الثامن (مصاحف الصحابة) أحسُّ ما في الباب على القارئ العامّ، وحكمُه في
+ * الوثيقة **ثنائيٌّ لا واحد**: الجنسُ ثابتٌ وثائقيًّا، والأفرادُ ظنّيةٌ تُفحص
+ * إفرادًا. فمن قرأ الشقَّ الأوّلَ وحدَه أخطأ الفهمَ في اتّجاهين معًا. فأُلزم
+ * العرضُ بثلاثة:
+ *
+ *  ١ — **بطاقتُه تُصدَّر بحكميه معًا** — لا بنصّ القول وحدَه — فيظهر التمييزُ
+ *      الثنائيُّ في السطر الأوّل. وهما منقولان حرفًا كسائر ما يُعرض: لا
+ *      نصوغ التمييزَ صياغةً، بل نُظهر ما قالته الوثيقةُ في موضعه.
+ *  ٢ — **إحالةُ «يُقرأ مع» متبادلة** بينه وبين القول الخامس: فالشاهدُ
+ *      الوثائقيُّ فيهما واحدٌ بعينه (و١ طِرس صنعاء) — يشهد في الخامس لجنس
+ *      عملية الإحلال، وفي الثامن لجنس المصاحف المخالفة وانحسارها. وأساسُ
+ *      الإحالة **مفحوصٌ في البيانات** لا مدَّعًى: كلا القولين يحيل إلى و١.
+ *  ٣ — لا قوائمَ حروفٍ إفراديّةً في البطاقة (وعائلةُ `list-form` معزولةٌ في
+ *      المصدر أصلًا)؛ ومن أراد التفصيل فمن الشجرة إلى النصوص.
+ *
+ * ولا يُصاغ في الباب ما يُوهم أنّ ثبوتَ الجنس مطعنٌ في النصّ الحاضر — تفحصه
+ * بوّابةُ النبرة في `check-tarikh.mjs`.
+ */
+const EDITORIAL = {
+  /** بطاقاتُ هذه الأقوال تُصدَّر بأحكامها لا بنصّ القول */
+  cardLeadsWithRulings: ["د٨"],
+  /** أزواجُ «يُقرأ مع» المتبادلة، وأساسُها الذي يُفحص في البيانات */
+  readWith: [{ pair: ["د٥", "د٨"], witness: "و١" }],
+};
+
 function claims() {
   const body = sections["٢"].body;
   const blocks = body.split(/^### /m).slice(1);
-  if (blocks.length !== 8) die(`§٢: توقّعنا ثمانيَ دعاوى فوجدنا ${blocks.length}`);
+  if (blocks.length !== 8) die(`§٢: توقّعنا ثمانيةَ أقوالٍ فوجدنا ${blocks.length}`);
   const out = [];
   for (const [i, block] of blocks.entries()) {
     const nl = block.indexOf("\n");
     const head = block.slice(0, nl).trim();
     const hm = head.match(/^(د[١-٨]) — (.+)$/);
-    if (!hm) die(`§٢: ترويسةُ دعوى غيرُ مفهومة: «${head}»`);
+    if (!hm) die(`§٢: ترويسةُ قولٍ غيرُ مفهومة: «${head}»`);
     const id = hm[1], title = lift(hm[2]);
-    if (id !== CLAIM_ORDER[i]) die(`§٢: ترتيبُ الدعاوى تغيّر عند ${id}`);
+    if (id !== CLAIM_ORDER[i]) die(`§٢: ترتيبُ الأقوال تغيّر عند ${id}`);
 
     // مواضعُ الفقرات المعنونة: **اسم الفقرة (تعليقٌ اختياري):**
     const rest = block.slice(nl + 1);
@@ -238,7 +273,7 @@ function claims() {
     const graded = rulings.filter((r) => r.grades.length);
     if (!graded.length) die(`${id}: حكمٌ بلا درجةٍ من الخمس`);
 
-    // معرّفاتُ العناقيد والقيود تُلتمس من كتلة الدعوى كلِّها — صيغُها لا تلتبس.
+    // معرّفاتُ العناقيد والقيود تُلتمس من كتلة القول كلِّها — صيغُها لا تلتبس.
     const clusterRefs = [...new Set([...block.matchAll(/clx-jamc-\d{4}(?:-[0-9a-f]{6})?/g)].map((x) => x[0]))];
     const qaydRefs = [...new Set([...block.matchAll(/ق-[أ-ي]/g)].map((x) => x[0]))];
     // ورموزُ البيّنة الوثائقية «و١…و٥» تُلتمس من فقرتَي الوثائقيّ والحكم وما
@@ -256,9 +291,26 @@ function claims() {
       grade: graded[0].grades[0],
       grades: [...new Set(rulings.flatMap((r) => r.grades))],
       rulingsCount: rulings.length,
+      // البطاقةُ تُصدَّر بأحكامه لا بنصّه (التوجيه التحريريّ أعلاه)
+      leadWithRulings: EDITORIAL.cardLeadsWithRulings.includes(id),
+      readWith: [],
       fields, rulings,
       clusterRefs, witnessRefs, qaydRefs,
     });
+  }
+
+  // «يُقرأ مع»: تُوصل بالمعرّف، ويُفحص أساسُها في البيانات — فإن لم يشترك
+  // القولان في الشاهد الوثائقيّ المُعلَن سقط البناء ولم تُعرض إحالةٌ بلا سند.
+  const byId = new Map(out.map((c) => [c.id, c]));
+  for (const { pair: [a, b], witness } of EDITORIAL.readWith) {
+    const ca = byId.get(a), cb = byId.get(b);
+    if (!ca || !cb) die(`«يُقرأ مع»: قولٌ مجهول في الزوج ${a}↔${b}`);
+    for (const [x, y] of [[ca, cb], [cb, ca]]) {
+      if (!x.witnessRefs.includes(witness) || !y.witnessRefs.includes(witness)) {
+        die(`«يُقرأ مع» ${a}↔${b}: الشاهدُ ${witness} ليس في بيّنتَي القولين — إحالةٌ بلا أساس`);
+      }
+      x.readWith.push({ id: y.id, title: y.title, route: y.route, witness });
+    }
   }
   return out;
 }
@@ -481,6 +533,44 @@ function buildClusters(recordsById, spansByCluster) {
 }
 
 /**
+ * **حذفُ رموز الجلسات الداخليّة من طبقة العرض — حذفٌ لا تحرير.**
+ *
+ * أمرُ المالك (٣ آب ٢٠٢٦) أن يُمحى من العرض ما لا داعيَ لنشره، ومنه رموزُ
+ * الجلسات. وقد فات خ٧ موضعان لأنّ فحصَ البوّابة كان معطوبًا (حدُّ كلمةٍ لاتينيٌّ
+ * لا يقع قبل حرفٍ عربيّ، فما كان الشرطُ يصدُق أبدًا). والموضعان **خارج نصوص
+ * الأحكام والبيّنات**: ديباجةُ §١ وعنوانُ §٤ — كلامٌ عن إجراء البحث لا عن مادّته.
+ *
+ * والطريقةُ هي طريقةُ خ٧ نفسُها في ذيل §٤: **يُحذف المقطعُ ولا يُعاد تحريرُ
+ * جملة** — ويُتحقَّق آليًّا أنّ الناتج متتاليةٌ جزئيّةٌ من الأصل بالحذف وحدَه.
+ *
+ * وبقي موضعٌ ثالثٌ **لم يُمسّ**: «— تحقق خ٦/ب» داخلَ تسبيب حكم الأعداد في
+ * القول الثاني. حذفُه من هناك تحريرٌ لحكمٍ مختوم لا تنظيفُ عرض — والوثيقةُ
+ * تُعرض ولا تُحرَّر. فتُركَ، وتعدّه البوّابةُ موضعًا مُعلَنًا واحدًا كي لا يمرّ
+ * صامتًا ولا يتكاثر، ورُفع سؤالًا للإدارة.
+ */
+const REDACTIONS = [
+  { span: " في خ٦/ب", where: "§١ · ديباجةُ البيّنة الوثائقيّة" },
+  { span: " (للمراجعة اليدوية — مستثناة من تحقق خ٦/ب الآلي)", where: "§٤ · العنوان" },
+];
+/** متتاليةٌ جزئيّة: كلُّ حرفٍ في `sub` يقع في `full` بترتيبه — أي أنّ الفرق حذفٌ محض */
+function isSubsequence(sub, full) {
+  let i = 0;
+  for (const ch of full) if (i < sub.length && sub[i] === ch) i++;
+  return i === sub.length;
+}
+function redact(text, whence = "العرض") {
+  let out = text;
+  for (const r of REDACTIONS) {
+    const n = out.split(r.span).length - 1;
+    if (n === 0) continue;
+    if (n > 1) die(`حذفٌ مُعلَنٌ ملتبس في ${whence} (${r.where}): وقع ${n} مرّةً`);
+    out = out.replace(r.span, "");
+  }
+  if (!isSubsequence(out, text)) die(`الحذفُ في ${whence} ليس حذفًا محضًا`);
+  return out;
+}
+
+/**
  * سجلُّ الإحالات للعرض العامّ: أسماءُ الدراسات وأوعيتُها كما هي، وتُقصّ منه
  * الإشارةُ إلى ملفّ محكّ المعايرة في مستودع البحث — فمساراتُ الملفّات ليست
  * مرجعًا لقارئ (أمر المالك 2026-08-03). **حذفٌ من الذيل لا تحريرٌ للنصّ:**
@@ -533,7 +623,7 @@ const claimsOut = {
   documentary: doc,
   claims: cl,
   conclusion: { title: lift(sections["٣"].title), items: numberedItems(sections["٣"].body, 3, "§٣") },
-  externalRefs: { title: lift(sections["٤"].title), raw: publicRefs() },
+  externalRefs: { title: lift(redact(sections["٤"].title, "عنوان §٤")), raw: publicRefs() },
   // سجلُّ الختم (§٥) سجلُّ تحريرٍ داخليّ بإيداعاته — لا يخرج إلى التطبيق
   clusterIndex,
   // ——— المصادرُ والمنهج: ما يراه الباحثُ ليعيد الفحص، والقارئُ ليطمئنّ ———
@@ -561,18 +651,27 @@ writeFileSync(join(PUB, "tarikh-timeline.json"), JSON.stringify(timeline(doc)));
 const bodyStart = V1.indexOf("## ٠.");
 const sealStart = V1.indexOf("## ٥.");
 if (bodyStart < 0 || sealStart < 0) die("تعذّر تحديدُ متن الوثيقة للعرض العامّ");
-const publicMd = `# ${head.title}\n\n${V1.slice(bodyStart, sealStart).trimEnd()}`
-  .replace(" — محكُّ المعايرة، انظر `plan/HOLDOUT-MOTZKI.md`.", ".");
+const publicMd = redact(
+  `# ${head.title}\n\n${V1.slice(bodyStart, sealStart).trimEnd()}`
+    .replace(" — محكُّ المعايرة، انظر `plan/HOLDOUT-MOTZKI.md`.", "."),
+  "نصّ الوثيقة للعرض",
+);
 writeFileSync(join(PUB, "tarikh-hukm.json"), JSON.stringify({
-  doc: "HUKM-JAMC-v1.md", markdown: publicMd, chars: publicMd.length,
+  doc: DOC_NAME, markdown: publicMd, chars: publicMd.length,
 }));
 
 // ——— نسخةُ نبراس: الوثيقةُ مقروءةً بمداخلَ معنونة (بنمط كتب البيان) ———
-// بلا تضمين — لا ملفَّ متّجهات ولا ربطَ أدواتٍ دلاليّة (سؤالُ بوابةٍ للإدارة).
+// بلا تضمين — لا ملفَّ متّجهات ولا ربطَ أدواتٍ دلاليّة (قرارُ الإدارة س٢: يُؤجَّل
+// حتى يُبنى حارسُ الدرجة).
+//
+// **ونظافةُ العرض تشمل هذه النسخةَ كسائرها** (خ٧-ب): كانت تحمل صدرَ التحرير
+// وسجلَّ الختم بإيداعاته — أي اسمَ المحرِّر ومساراتِ ملفّات مستودع البحث ورموزَ
+// الجلسات — وهي ممّا أمر المالكُ بمحوه من العرض (٣ آب ٢٠٢٦)، ففاتت بوّابةَ خ٧
+// لأنّها كانت تفحص ثلاثةَ ملفّاتٍ لا أربعة. فحُذف الصدرُ وسجلُّ الختم، وصار
+// المعروضُ منها متنَ الوثيقة (§٠…§٤) لا غير، وتفحصها البوّابةُ الآن معها.
 const ragEntries = [];
-ragEntries.push({ ref: `${head.title} — الصدر`, text: head.meta.map((m) => `${m.label}: ${m.raw}`).join("\n") });
 for (const n of ["٠", "١"]) {
-  ragEntries.push({ ref: `${head.title} — §${n}. ${sections[n].title}`, text: sections[n].body.trim() });
+  ragEntries.push({ ref: `${head.title} — §${n}. ${sections[n].title}`, text: redact(sections[n].body.trim(), `نبراس §${n}`) });
 }
 for (const c of cl) {
   const parts = FIELDS.filter((f) => c.fields[f.key]).map((f) => {
@@ -581,11 +680,11 @@ for (const c of cl) {
   });
   ragEntries.push({ ref: `${head.title} — ${c.id} ${c.title}`, text: parts.join("\n\n") });
 }
-for (const n of ["٣", "٤", "٥"]) {
-  ragEntries.push({ ref: `${head.title} — §${n}. ${sections[n].title}`, text: sections[n].body.trim() });
-}
+ragEntries.push({ ref: `${head.title} — §٣. ${sections["٣"].title}`, text: sections["٣"].body.trim() });
+// سجلُّ الإحالات: أسماءُ الدراسات وأوعيتُها، مقصوصًا منه مسارُ محكّ المعايرة
+ragEntries.push({ ref: `${head.title} — §٤. ${lift(redact(sections["٤"].title, "عنوان §٤"))}`, text: publicRefs() });
 writeFileSync(join(PUB, "rag-tarikh.json"), JSON.stringify(ragEntries));
 
-console.log(`✓ الدعاوى: ${cl.length} · العناقيد: ${clusterIndex.length} · السجلات: ${clusterIndex.reduce((a, c) => a + c.records, 0)}`);
+console.log(`✓ الأقوال: ${cl.length} · العناقيد: ${clusterIndex.length} · السجلات: ${clusterIndex.reduce((a, c) => a + c.records, 0)}`);
 console.log(`  الدرجات على البطاقات: ${cl.map((c) => `${c.id}:${c.grade}`).join(" · ")}`);
 console.log(`  مداخلُ نبراس: ${ragEntries.length}`);

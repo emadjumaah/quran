@@ -14,9 +14,15 @@ export interface TarikhField { label: string; note: string | null; inline: strin
 export interface TarikhRuling { raw: string; grades: GradeId[]; body: string }
 export interface TarikhClusterRef { ref: string; id: string | null; inSnapshot: boolean }
 
+/** قولٌ آخرُ يُقرأ مع هذا، وأساسُه: شاهدٌ وثائقيٌّ واحدٌ يشهد فيهما معًا */
+export interface TarikhReadWith { id: string; title: string; route: string; witness: string }
+
 export interface TarikhClaim {
   id: string; n: number; title: string; route: string;
   grade: GradeId; grades: GradeId[]; rulingsCount: number;
+  /** بطاقتُه تُصدَّر بأحكامه لا بنصّه — حيث يكون الحكمُ ثنائيًّا فيُخِلّ إفرادُ شقٍّ منه */
+  leadWithRulings?: boolean;
+  readWith?: TarikhReadWith[];
   fields: { claim: TarikhField; manqul: TarikhField; wathaiqi?: TarikhField; hukm: TarikhField; hudud?: TarikhField; yughayyir: TarikhField };
   rulings: TarikhRuling[];
   clusters: TarikhClusterRef[];

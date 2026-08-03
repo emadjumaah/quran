@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "base": "http://localhost:4173",
+  "base": "http://localhost:4183",
   "detail": {
     "claims": [
       {
@@ -15,7 +15,7 @@
       {
         "id": "د٢",
         "clusters": 0,
-        "twoClicks": "لا شجرةَ لهذه الدعوى في الوثيقة",
+        "twoClicks": "لا شجرةَ لهذا القول في الوثيقة",
         "fetched": []
       },
       {
@@ -38,7 +38,7 @@
       },
       {
         "id": "د٥",
-        "clusters": 4,
+        "clusters": 5,
         "twoClicks": "نصٌّ بطول 1302",
         "fetched": [
           "tarikh-cluster-clx-jamc-0025-048506.json"
@@ -66,16 +66,20 @@
       {
         "id": "د٨",
         "clusters": 0,
-        "twoClicks": "لا شجرةَ لهذه الدعوى في الوثيقة",
+        "twoClicks": "لا شجرةَ لهذا القول في الوثيقة",
         "fetched": []
       }
     ],
     "lazy": {
       "index": 0
     },
+    "card": {
+      "id": "د٨",
+      "parts": 2
+    },
     "doc": {
-      "rendered": 15538,
-      "source": 16733
+      "rendered": 15468,
+      "source": 16663
     }
   },
   "failures": []

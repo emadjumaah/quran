@@ -1,16 +1,23 @@
 /**
- * بوّابةُ باب «تاريخ النص» — لا عرضَ مع مخالفة.
+ * بوّابةُ باب «ملفّ جمع القرآن» — لا عرضَ مع مخالفة.
  *
- * تفحص أربعةَ بنودٍ من بوابة قبول خ٧:
+ * بنودُها الستّة:
  *   ١ — **حرفيّةُ العرض:** عيّنةُ ٢٠ روايةً ببذرةٍ ثابتة تُقابَل نصوصُها المعروضة
- *       بمصدرها في **مستودع التاريخ** حرفًا حرفًا (لا باللقطة — بالمصدر).
+ *       بمصدرها في **مستودع التاريخ** حرفًا حرفًا (لا باللقطة — بالمصدر)، ثمّ
+ *       الجملةُ كلُّها بعدها.
  *   ٢ — **أمانةُ الأحكام:** كلُّ مقطعٍ حكميٍّ في ملفّات العرض موجودٌ في
- *       `HUKM-JAMC-v1.md` حرفيًّا (وشروحُ الدرجات في `METHOD.md`)، والدرجاتُ
- *       المعروضة تطابق مسحًا مستقلًّا لنصّ v1 — وصفرُ جملةٍ تقويميّةٍ مضافة:
- *       لا يذكر كودُ الواجهة اسمَ درجةٍ ولا لفظَ نبرةٍ من عنده.
+ *       `HUKM-JAMC-v1.1.md` حرفيًّا (وشروحُ الدرجات في `METHOD.md`)، والدرجاتُ
+ *       المعروضة تطابق مسحًا مستقلًّا لنصّ v1.1 — وصفرُ جملةٍ تقويميّةٍ مضافة:
+ *       لا يذكر كودُ الواجهة اسمَ درجةٍ ولا لفظَ نبرةٍ من عنده. **ويُقابَل مصدرُ
+ *       العرض بالمختومة الأصل** فيثبت أنّ ما بينهما لفظٌ لا حكم.
  *   ٣ — **التتبّع:** كلُّ عقدةِ شجرةٍ → سجلٌّ → نصٌّ، صفرُ انقطاع؛ وكلُّ بطاقةٍ
- *       وثائقيّةٍ تحمل إحالتها في سجلّ §٤.
- *   ٤ — **الكسل:** فهرسُ الدعاوى لا يحمل حمولةَ عنقودٍ واحدة.
+ *       وثائقيّةٍ تحمل إحالتها في سجلّ §٤؛ وكلُّ إحالةِ عنقودٍ مشجَّرةٌ أو معلَنة.
+ *   ٤ — **الكسل:** فهرسُ الأقوال لا يحمل حمولةَ عنقودٍ واحدة.
+ *   ٥ — **نظافةُ العرض:** لا اسمَ محرِّرٍ ولا مسارَ ملفٍّ ولا بصمةَ إيداعةٍ ولا
+ *       رمزَ جلسةٍ في ملفّات العرض **الأربعة** (ومنها نسخةُ نبراس).
+ *   ٦ — **التوجيهُ التحريريُّ للقول الثامن** (قرارُ الإدارة س٧): التمييزُ الثنائيُّ
+ *       مُصدَّرٌ في بطاقته، وإحالةُ «يُقرأ مع» متبادلةٌ بأساسٍ مفحوص، ولا قوائمَ
+ *       حروفٍ إفراديّة، ولا لفظَ طعنٍ في النصّ الحاضر.
  *
  * التشغيل: node js/scripts/check-tarikh.mjs [--history /path/to/history]
  * يخرج بصفرٍ إن نجحت البنود كلُّها، وبواحدٍ عند أوّل مخالفة.
@@ -26,7 +33,10 @@ const VIEWS = join(ROOT, "js", "apps", "studio", "src");
 const argH = process.argv.indexOf("--history");
 const HISTORY = argH > -1 ? process.argv[argH + 1] : "/Volumes/data/new-projects/history";
 
-const V1 = readFileSync(join(SRC, "hukm", "HUKM-JAMC-v1.md"), "utf8");
+/** مصدرُ العرض منذ خ٧-ب: v1.1 — تنقيحُ لسانٍ للمختومة، لا مساسَ بحكم.
+ *  والمختومةُ الأصلُ في اللقطة أيضًا، وتُقابَل بها v1.1 في البند ٢/د. */
+const V1 = readFileSync(join(SRC, "hukm", "HUKM-JAMC-v1.1.md"), "utf8");
+const V1_SEALED = readFileSync(join(SRC, "hukm", "HUKM-JAMC-v1.md"), "utf8");
 const METHOD = readFileSync(join(SRC, "hukm", "METHOD.md"), "utf8");
 const claims = JSON.parse(readFileSync(join(PUB, "tarikh-claims.json"), "utf8"));
 
@@ -197,9 +207,13 @@ const GRADE_LABEL = {
   }
 
   // ٢/ج — صفرُ جملةٍ تقويميّةٍ مضافة: كودُ الواجهة لا يذكر درجةً ولا لفظَ نبرة
-    // ولسانُ الباب لسانُ «ميزان الأقوال»: **قولٌ** يُوزن لا دعوى تُرمى بها فئة
+    // ولسانُ الباب لسانُ «ميزان الأقوال»: **قولٌ** يُوزن لا دعوى تُرمى بها فئة.
+    // وأُلحقت بالقائمة (خ٧-ب، توجيهُ الإدارة س٧) ألفاظُ الطعن في النصّ الحاضر:
+    // فثبوتُ **جنس** مصاحف الصحابة وثائقيًّا شاهدُ قوّةٍ لحدث التوحيد لا ثغرةٌ
+    // فيه — ولا يجوز أن يوحي حرفٌ من عندنا بغير ذلك.
   const TONE = ["زعم", "يزعم", "مزاعم", "باطل", "بطلان", "فُنّدت", "فنّدت", "خرافة",
-    "مؤامرة", "أكذوبة", "قطعًا", "بلا شكّ", "لا شكّ", "دعوى", "الدعوى", "دعاوى", "الدعاوى"];
+    "مؤامرة", "أكذوبة", "قطعًا", "بلا شكّ", "لا شكّ", "دعوى", "الدعوى", "دعاوى", "الدعاوى",
+    "مطعن", "طعن", "ثغرة", "تحريف", "محرَّف", "مشكوك", "تشكيك", "ضائع", "ضياع", "نقص"];
   const files = ["views/TarikhMasadir.tsx", "components/TarikhTabs.tsx", "views/Tarikh.tsx", "views/TarikhClaim.tsx", "views/TarikhHukm.tsx",
     "components/TarikhTree.tsx", "components/TarikhFooter.tsx", "components/GradeChip.tsx",
     "lib/tarikhData.ts", "lib/tarikhMd.tsx", "lib/tarikhTheme.ts"];
@@ -217,10 +231,69 @@ const GRADE_LABEL = {
     for (const label of Object.values(GRADE_LABEL)) {
       const re = new RegExp(`(["'\`>])\\s*${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*[.،]?\\s*(["'\`<])`);
       g2.ok(!re.test(s), `${f}: اسمُ درجةٍ نصًّا قائمًا في الكود («${label}») — الدرجاتُ تأتي من البيانات وحدها`);
+      // والدرجتان المركّبتان («ثابت وثائقيًا» و«راجح بالتقاطع») ممنوعتان **أينما
+      // وقعتا** في الكود لا نصًّا قائمًا فحسب: لفظُهما لا يلتبس بصفةٍ في جملةٍ
+      // منقولة — بخلاف المفردات («محتملُ الخلط» في شرح ق-ج) فتبقى على القاعدة
+      // الأولى. (شدّدت في خ٧-ب بعد أن أفلت زرعٌ من الضبط السالب.)
+      if (label.includes(" ")) {
+        g2.ok(!s.includes(label), `${f}: اسمُ درجةٍ مركّبةٍ في الكود («${label}») — الدرجاتُ تأتي من البيانات وحدها`);
+      }
     }
     for (const t of TONE) {
       g2.ok(!hasPhrase(bag, t), `${f}: لفظُ نبرةٍ ممنوع («${t}»)`);
     }
+  }
+
+  // ٢/د — **مصدرُ العرض مقابلَ المختومة الأصل**: ما بينهما لفظٌ لا حكم.
+  // فحصٌ مستقلٌّ داخل مشكاة، لا يثق بفحص مستودع التاريخ ولا يغني عنه: لو زُحزح
+  // حرفٌ من درجةٍ أو رقمٍ أو معرّفٍ في مصدر العرض لسقط الباب هنا.
+  {
+    // المقابلةُ على **متن الوثيقة** (§٠…§٤) — وهو وحدَه ما يخرج إلى العرض.
+    // وسجلُّ الختم (§٥) سجلُّ تحريرٍ يختلف بينهما بالضرورة (فيه فقرةُ v1.1).
+    const body = (doc) => {
+      const a = doc.indexOf("## ٠."), b = doc.indexOf("## ٥.");
+      if (a < 0 || b < 0) return null;
+      return doc.slice(a, b);
+    };
+    const B_SEALED = body(V1_SEALED), B_SHOWN = body(V1);
+    g2.ok(!!B_SEALED && !!B_SHOWN, "تعذّر تحديدُ متن الوثيقتين للمقابلة");
+    const seq = (doc, re) => (doc ?? "").match(re) ?? [];
+    const INV = [
+      ["الأرقام العربية", /[٠-٩]+/g],
+      ["الأرقام اللاتينية", /\d+/g],
+      ["معرّفات العناقيد", /clx-jamc-\d{4}(?:-[0-9a-f]{6})?/g],
+      ["رموز الشواهد", /و[١-٥](?![ء-ي])/g],
+      ["رموز القيود", /ق-[أ-ي]/g],
+      ["الأعلام اللاتينية", /[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’-]+/g],
+    ];
+    for (const [name, re] of INV) {
+      const a = seq(B_SEALED, re), b = seq(B_SHOWN, re);
+      g2.ok(a.length === b.length && a.every((x, i) => x === b[i]),
+        `مصدرُ العرض خالف المختومة في تسلسل «${name}» (${a.length} ← ${b.length})`);
+    }
+    for (const label of Object.values(GRADE_LABEL)) {
+      const a = (B_SEALED ?? "").split(label).length, b = (B_SHOWN ?? "").split(label).length;
+      g2.ok(a === b, `مصدرُ العرض خالف المختومة في عددِ الدرجة «${label}» (${a - 1} ← ${b - 1})`);
+    }
+    const claimGrades = (doc) => {
+      const m = new Map();
+      for (const blk of doc.split(/^### /m).slice(1)) {
+        const cid = blk.slice(0, blk.indexOf(" ")).trim();
+        const hs = blk.search(/\*\*الحكم/);
+        if (hs < 0) continue;
+        const nx = blk.slice(hs).search(/\n\*\*(حدوده|ما الذي يغيّر الدرجة)/);
+        const hukm = blk.slice(hs, nx > -1 ? hs + nx : blk.length);
+        m.set(cid, Object.values(GRADE_LABEL).filter((l) => hukm.includes(l)).sort().join("، "));
+      }
+      return m;
+    };
+    const ca = claimGrades(B_SEALED ?? ""), cb = claimGrades(B_SHOWN ?? "");
+    g2.ok(ca.size === 8 && cb.size === 8, `أقوالُ المقابلة ${ca.size}/${cb.size} لا ٨/٨`);
+    for (const [cid, gs] of ca) {
+      g2.ok(cb.get(cid) === gs, `${cid}: درجاتُ فقرة الحكم اختلفت بين المختومة ومصدر العرض`);
+    }
+    // ولا يبقى في مصدر العرض لفظُ «دعوى» — وإلا فاللسانُ لم يُنقَّح
+    g2.ok(!/دعو[ىا]|دعاوى/.test(B_SHOWN ?? ""), "بقي لفظُ «دعوى» في متن مصدر العرض");
   }
 }
 
@@ -335,19 +408,82 @@ const g5 = gate("٥", "نظافةُ العرض — لا اسمَ محرِّرٍ 
     [/Fable|Opus 5|Sonnet|Claude/i, "اسمُ نموذجٍ أو محرِّر"],
     [/\b(data|plan|js|findings|scripts)\/[A-Za-z0-9_\-/]+\.(md|py|json|jsonl|mjs)/, "مسارُ ملفٍّ في مستودع البحث"],
     [/HUKM-JAMC-DRAFT|HOLDOUT-MOTZKI|SESSION-KH/, "اسمُ ملفٍّ داخليّ"],
-    [/\bخ[١-٩]\/[أ-ي]/, "رمزُ جلسةٍ داخليّة"],
     [/"sha256"|\b[0-9a-f]{40}\b/, "بصمةٌ أو إيداعة"],
   ];
-  for (const f of ["tarikh-claims.json", "tarikh-hukm.json", "tarikh-timeline.json"]) {
+  /**
+   * رمزُ الجلسة الداخليّة — فحصٌ **كان معطوبًا في خ٧** فمرّت أربعةُ مواضع:
+   * كان الشرطُ `\bخ…` وحدُّ الكلمة اللاتينيُّ لا يقع قبل حرفٍ عربيّ فما صدَق قطّ.
+   * صُحّح، فحُذف الرمزُ من ديباجة §١ وعنوان §٤ (حذفًا لا تحريرًا).
+   *
+   * وبقي **موضعٌ واحدٌ مُعلَنٌ لا يُحذف**: هو داخلَ تسبيب حكمِ الأعداد في القول
+   * الثاني — وحذفُه من هناك تحريرٌ لحكمٍ مختوم لا تنظيفُ عرض. فيُشترط أن يكون
+   * كلُّ موضعٍ باقٍ هو هذا بعينه: عددُ الرموز = عددُ الجملة المُعلَنة، لا أكثر.
+   */
+  const SESSION_CODE = /خ[١-٩]\/[أ-ي]/g;
+  const DECLARED = "صفر — تحقق خ٦/ب";
+  for (const f of ["tarikh-claims.json", "tarikh-hukm.json", "tarikh-timeline.json", "rag-tarikh.json"]) {
     const raw = readFileSync(join(PUB, f), "utf8");
     for (const [re, what] of INTERNAL) {
       const hit = raw.match(re);
       g5.ok(!hit, `${f}: ${what} — «${hit?.[0] ?? ""}»`);
     }
+    const codes = (raw.match(SESSION_CODE) ?? []).length;
+    const declared = raw.split(DECLARED).length - 1;
+    g5.ok(codes === declared,
+      `${f}: رمزُ جلسةٍ في غير الموضع المُعلَن (${codes} رمزًا · ${declared} مُعلَنًا)`);
+    if (f === "tarikh-claims.json") g5.g.sessionCodes = { codes, declared };
   }
   // ومعرّفاتُ السجلات لا تُعرض لقبًا: لكلِّ عنقودٍ لقبٌ من أقدم شاهدٍ فيه
   for (const c of claims.clusterIndex) {
     g5.ok(!!c.label && !/^clx-jamc-/.test(c.label), `${c.id}: لقبٌ فنّيٌّ لا اسمُ كتاب`);
+  }
+}
+
+// ——————————————————————————————————————————————————————————
+// ٦ — التوجيهُ التحريريُّ للقول الثامن (قرارُ الإدارة س٧، ٣ آب ٢٠٢٦)
+// ——————————————————————————————————————————————————————————
+const g6 = gate("٦", "القولُ الثامن — التمييزُ الثنائيُّ مُصدَّر، و«يُقرأ مع» متبادلةٌ بأساسٍ مفحوص، ولا قوائمَ ولا طعن");
+{
+  const d8 = claims.claims.find((c) => c.id === "د٨");
+  const d5 = claims.claims.find((c) => c.id === "د٥");
+  g6.ok(!!d8 && !!d5, "القولان الثامن والخامس ليسا في الفهرس");
+  if (d8 && d5) {
+    // أ — البطاقةُ تُصدَّر بشقّي الحكم، وشقّاه هما الجنسُ الثابتُ والأفرادُ الظنّية
+    g6.ok(d8.leadWithRulings === true, "د٨: بطاقتُه لا تُصدَّر بحكميه");
+    g6.ok(d8.rulings.length === 2, `د٨: أحكامُه ${d8.rulings.length} لا ٢ — التمييزُ الثنائيّ`);
+    g6.ok(d8.rulings[0]?.grades[0] === "thabit", "د٨: الشقُّ الأوّل ليس «ثابت وثائقيًا»");
+    g6.ok(d8.rulings[1]?.grades.includes("muhtamal") && d8.rulings[1]?.grades.includes("mawquf"),
+      "د٨: الشقُّ الثاني لا يحمل درجتَي الأفراد");
+    // وكلاهما منقولٌ حرفًا — لا صياغةَ تمييزٍ من عندنا
+    for (const [i, r] of d8.rulings.entries()) {
+      g6.ok(V1.includes(r.raw), `د٨: شقُّ الحكم ${i + 1} ليس في مصدر العرض حرفيًّا`);
+    }
+    // وفيه لفظُ التمييز صريحًا كما في الوثيقة
+    g6.ok(d8.rulings.some((r) => r.raw.includes("فالجنس ثابت والأفراد ظنّية")),
+      "د٨: عبارةُ التمييز الثنائيّ ليست في المعروض");
+    // ب — «يُقرأ مع» متبادلة، وأساسُها شاهدٌ وثائقيٌّ يشترك فيه القولان
+    const w8 = d8.readWith ?? [], w5 = d5.readWith ?? [];
+    g6.ok(w8.some((x) => x.id === "د٥"), "د٨: لا إحالةَ «يُقرأ مع» إلى القول الخامس");
+    g6.ok(w5.some((x) => x.id === "د٨"), "د٥: الإحالةُ غيرُ متبادلة");
+    for (const [c, ws] of [[d8, w8], [d5, w5]]) {
+      for (const w of ws) {
+        const other = claims.claims.find((x) => x.id === w.id);
+        g6.ok(!!other, `${c.id}: «يُقرأ مع» إلى قولٍ مجهول (${w.id})`);
+        g6.ok(c.witnessRefs.includes(w.witness) && !!other?.witnessRefs.includes(w.witness),
+          `${c.id}↔${w.id}: الشاهدُ ${w.witness} ليس في بيّنتَي القولين — إحالةٌ بلا أساس`);
+        g6.ok(other?.route === w.route, `${c.id}: مسارُ «يُقرأ مع» لا يطابق مسارَ القول`);
+      }
+    }
+    // ج — لا قوائمَ حروفٍ إفراديّة: `list-form` معزولةٌ في المصدر ولا تُشحن أصلًا
+    let listForm = 0;
+    for (const f of readdirSync(PUB).filter((x) => /^tarikh-cluster-.*\.json$/.test(x))) {
+      for (const r of JSON.parse(readFileSync(join(PUB, f), "utf8")).records) {
+        if ((r.flags ?? []).includes("list-form")) listForm++;
+      }
+    }
+    g6.ok(listForm === 0, `نصوصٌ تعداديّة (list-form) مشحونةٌ في العرض: ${listForm}`);
+    g6.ok(d8.clusters.length === 0, `د٨: عناقيدُ مشجَّرةٌ في بطاقته (${d8.clusters.length}) — بيّنتُه أوسامٌ وأبوابُ كتب`);
+    g6.g.detail = { rulings: d8.rulings.length, readWith: w8.map((x) => `${x.id}(${x.witness})`), listForm };
   }
 }
 

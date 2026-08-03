@@ -112,6 +112,16 @@ export const TARIKH_CSS = `
   .tarikh .card .n { font-size: .78rem; opacity: .5; font-variant-numeric: tabular-nums; }
   .tarikh .card .t { font-weight: 600; font-size: 1.05rem; flex: 1; min-width: 0; line-height: 1.7; }
   .tarikh .card .cl { margin: 6px 0 0; font-size: .92rem; line-height: 1.85; opacity: .75; }
+  /* بطاقةٌ يُصدَّر فيها شقّا الحكم معًا: يفصلهما خطٌّ خفيفٌ فيُقرآن اثنين لا واحدًا */
+  .tarikh .card .split { margin-top: 8px; }
+  .tarikh .card .split .cl { margin: 0; padding: 7px 0; opacity: .85; }
+  .tarikh .card .split .cl + .cl { border-top: 1px solid var(--line); }
+  .tarikh .card .split .cl .gchip { margin-inline-end: 8px; vertical-align: 2px; }
+  /* «يُقرأ مع» — إحالةٌ لا حكم: هادئةٌ في الذيل، ولها حدٌّ يفصلها عمّا فوقها */
+  .readwith { margin: 10px 0 0; padding-top: 8px; border-top: 1px dashed var(--line);
+    font-size: .82rem; opacity: .72; line-height: 1.85; }
+  .readwith b { font-weight: 600; }
+  .tarikh .card .readwith { margin-top: 9px; }
   @media (max-width: 620px) {
     .tarikh .card .row { row-gap: 7px; }
     .tarikh .card .t { flex-basis: 100%; }
