@@ -1,0 +1,56 @@
+{
+ "surah": 1,
+ "arid": 4,
+ "reciter": "محمود خليل الحصري — المرتّل",
+ "ayat": [
+  {
+   "key": "1:1",
+   "ayah": 1,
+   "ar": "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِيمِ",
+   "ipa": "bismi lːaːhi rːaħmaːni rːaħiːːm",
+   "husary": "a1326136a001"
+  },
+  {
+   "key": "1:2",
+   "ayah": 2,
+   "ar": "ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَـٰلَمِينَ",
+   "ipa": "ʔalħamdu lilːaːhi rabːi lʕaːlamiːːn",
+   "husary": "b7d1dbd1a641"
+  },
+  {
+   "key": "1:3",
+   "ayah": 3,
+   "ar": "ٱلرَّحۡمَـٰنِ ٱلرَّحِيمِ",
+   "ipa": "ʔarːaħmaːni rːaħiːːm",
+   "husary": "9e331c2c6362"
+  },
+  {
+   "key": "1:4",
+   "ayah": 4,
+   "ar": "مَـٰلِكِ يَوۡمِ ٱلدِّينِ",
+   "ipa": "maːliki jawmi dːiːːn",
+   "husary": "c40e415a7620"
+  },
+  {
+   "key": "1:5",
+   "ayah": 5,
+   "ar": "إِيَّاكَ نَعۡبُدُ وَإِيَّاكَ نَسۡتَعِينُ",
+   "ipa": "ʔijːaːka naʕbudu waʔijːaːka nastaʕiːːn",
+   "husary": "028c8c737050"
+  },
+  {
+   "key": "1:6",
+   "ayah": 6,
+   "ar": "ٱهۡدِنَا ٱلصِّرٰطَ ٱلۡمُسۡتَقِيمَ",
+   "ipa": "ʔihdinaː sˤːiraːtˤa lmustaqiːːm",
+   "husary": "1c486636d386"
+  },
+  {
+   "key": "1:7",
+   "ayah": 7,
+   "ar": "صِرٰطَ ٱلَّذِينَ أَنۡعَمۡتَ عَلَيۡهِمۡ غَيۡرِ ٱلۡمَغۡضُوبِ عَلَيۡهِمۡ وَلَا ٱلضَّآلِّينَ",
+   "ipa": "sˤiraːtˤa lːaðiːna ʔanʕamta ʕalajhim ɣajri lmaɣdˤuːbi ʕalajhim walaː dˤːaːːːlːiːːn",
+   "husary": "2864a36d27b3"
+  }
+ ]
+}

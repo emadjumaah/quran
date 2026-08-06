@@ -1,0 +1,42 @@
+{
+ "surah": 113,
+ "arid": 4,
+ "reciter": "محمود خليل الحصري — المرتّل",
+ "ayat": [
+  {
+   "key": "113:1",
+   "ayah": 1,
+   "ar": "قُلۡ أَعُوذُ بِرَبِّ ٱلۡفَلَقِ",
+   "ipa": "qul ʔaʕuːðu birabːi lfalaqᵊ",
+   "husary": "c29a840de4f2"
+  },
+  {
+   "key": "113:2",
+   "ayah": 2,
+   "ar": "مِن شَرِّ مَا خَلَقَ",
+   "ipa": "miⁿ ʃarːi maː xalaqᵊ",
+   "husary": "38c17ed22f45"
+  },
+  {
+   "key": "113:3",
+   "ayah": 3,
+   "ar": "وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+   "ipa": "wamiⁿ ʃarːi ɣaːsiqin ʔiðaː waqabᵊ",
+   "husary": "3d4adcf1ff05"
+  },
+  {
+   "key": "113:4",
+   "ayah": 4,
+   "ar": "وَمِن شَرِّ ٱلنَّفَّـٰثَـٰتِ فِى ٱلۡعُقَدِ",
+   "ipa": "wamiⁿ ʃarːi nː̃afːaːθaːti fiː lʕuqadᵊ",
+   "husary": "c6a522a51b9e"
+  },
+  {
+   "key": "113:5",
+   "ayah": 5,
+   "ar": "وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+   "ipa": "wamiⁿ ʃarːi ħaːsidin ʔiðaː ħasadᵊ",
+   "husary": "4618a212befb"
+  }
+ ]
+}

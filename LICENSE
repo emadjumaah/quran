@@ -29,6 +29,10 @@ DATA LICENSES (the databases built by this code embed third-party data):
   Creative Commons Attribution 3.0. https://tanzil.net
 • Tanzil translations (optional layer) — per-translation terms,
   https://tanzil.net/trans/
+• QPC Hafs tajweed-tagged script (research/qpc-hafs-tajweed.json) — published by
+  QUL / Tarteel AI; underlying script by KFGQPC. *** LICENSE NOT ESTABLISHED ***
+  Read locally by tools/quran_ipa.py; NOT redistributable and its derived output
+  is NOT shippable until resolved. See CREDITS.md for what was searched.
 
 Every data layer is recorded in the `provenance` table inside quran-kg.db.
 If you redistribute the built databases, comply with those licenses

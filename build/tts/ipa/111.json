@@ -1,0 +1,42 @@
+{
+ "surah": 111,
+ "arid": 4,
+ "reciter": "محمود خليل الحصري — المرتّل",
+ "ayat": [
+  {
+   "key": "111:1",
+   "ayah": 1,
+   "ar": "تَبَّتۡ يَدَآ أَبِى لَهَبٍ وَتَبَّ",
+   "ipa": "tabːat jadaːː ʔabiː lahabi w̃ːatabːᵊ",
+   "husary": "c723ea6e95e1"
+  },
+  {
+   "key": "111:2",
+   "ayah": 2,
+   "ar": "مَآ أَغۡنَىٰ عَنۡهُ مَالُهُۥ وَمَا كَسَبَ",
+   "ipa": "maːː ʔaɣnaː ʕanhu maːluhuː wamaː kasabᵊ",
+   "husary": "6e27d516da2f"
+  },
+  {
+   "key": "111:3",
+   "ayah": 3,
+   "ar": "سَيَصۡلَىٰ نَارًا ذَاتَ لَهَبٍ",
+   "ipa": "sajasˤlaː naːraⁿ ðaːta lahabᵊ",
+   "husary": "91e3a1934630"
+  },
+  {
+   "key": "111:4",
+   "ayah": 4,
+   "ar": "وَٱمۡرَأَتُهُۥ حَمَّالَةَ ٱلۡحَطَبِ",
+   "ipa": "wamraʔatuhuː ħamː̃aːlata lħatˤabᵊ",
+   "husary": "9e895c8b5ac2"
+  },
+  {
+   "key": "111:5",
+   "ayah": 5,
+   "ar": "فِى جِيدِهَا حَبۡلٌ مِّن مَّسَدِۭ",
+   "ipa": "fiː d͡ʒiːdihaː ħabᵊlu mː̃i mː̃asadᵊ",
+   "husary": "ba275a4fddf9"
+  }
+ ]
+}

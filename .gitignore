@@ -63,3 +63,6 @@ js/data/refs-src/
 
 # تدبّرٌ مولَّدٌ محلّيًّا — يُشظّى إلى public قبل النشر
 js/data/tadabbur/
+
+# python bytecode
+__pycache__/

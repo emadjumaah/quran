@@ -1,0 +1,28 @@
+{
+ "surah": 108,
+ "arid": 4,
+ "reciter": "محمود خليل الحصري — المرتّل",
+ "ayat": [
+  {
+   "key": "108:1",
+   "ayah": 1,
+   "ar": "إِنَّآ أَعۡطَيۡنَـٰكَ ٱلۡكَوۡثَرَ",
+   "ipa": "ʔinː̃aːː ʔaʕtˤajnaːka lkawθar",
+   "husary": "1ecea523d307"
+  },
+  {
+   "key": "108:2",
+   "ayah": 2,
+   "ar": "فَصَلِّ لِرَبِّكَ وَٱنۡحَرۡ",
+   "ipa": "fasˤalːi lirabːika wanħar",
+   "husary": "e7e9acb71c60"
+  },
+  {
+   "key": "108:3",
+   "ayah": 3,
+   "ar": "إِنَّ شَانِئَكَ هُوَ ٱلۡأَبۡتَرُ",
+   "ipa": "ʔinː̃a ʃaːniʔaka huwa lʔabᵊtar",
+   "husary": "ca4944e0fcf2"
+  }
+ ]
+}

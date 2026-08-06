@@ -4,6 +4,14 @@
  * follow the internationally-recognised colour-coded muṣḥaf scheme:
  *   أحمر مدّ · أخضر غنّة/إخفاء/إقلاب/إدغام بغنّة · رمادي إدغام بلا غنّة · أزرق قلقلة
  * Verified against known ayahs (waqf qalqalah, cross-word idghām/ikhfā/iqlāb).
+ *
+ * NOT the same engine as tools/quran_ipa.py, and deliberately so. That one reads
+ * 18 rules with madd counts (2/4/6) from a QPC tagged muṣḥaf whose data licence
+ * is unresolved (see CREDITS.md); this one derives 7 rules from the Tanzil text
+ * the app already ships, needs colours rather than durations, and stays offline.
+ * If they are ever unified, the direction is: the app consumes an exported
+ * per-letter rule layer from that tool — only once the licence is settled.
+ * Spec: docs/IPA.md §7.
  */
 export type TajwidRule = "madd" | "ghunnah" | "ikhfa" | "iqlab" | "idghamG" | "idgham" | "qalqalah";
 export interface TajwidSpan {
