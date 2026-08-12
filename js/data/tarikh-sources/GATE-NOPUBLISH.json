@@ -1,16 +1,22 @@
 {
-  "ok": true,
+  "ok": null,
+  "archived": true,
   "branch": "tarikh-v1",
-  "head": "1704ca6b436d75cfa092919fe94a813a8fcac3dc",
-  "main": "e0fee689d4c170fe82f263f6cfc611c21628ed65",
-  "originMain": "e0fee689d4c170fe82f263f6cfc611c21628ed65",
-  "ahead": 3,
-  "behind": 0,
-  "remoteRefs": {
-    "refs/remotes/origin/HEAD": "e0fee689d4c170fe82f263f6cfc611c21628ed65",
-    "refs/remotes/origin/main": "e0fee689d4c170fe82f263f6cfc611c21628ed65"
-  },
-  "lastPush": "e0fee68 refs/remotes/origin/main@{0}: update by push",
-  "baselineLastPush": "e0fee68 refs/remotes/origin/main@{0}: update by push",
-  "failures": []
+  "note": "بوّابةُ فرعِ النشر التاريخيّة: فرعُ «tarikh-v1» دُمج في main وحُذف (١٢ آب ٢٠٢٦)، فلا فحصَ يجري. الحارسُ الحيُّ العامّ: check-tarikh-nopush.mjs",
+  "lastLiveReport": {
+    "ok": true,
+    "branch": "tarikh-v1",
+    "head": "1704ca6b436d75cfa092919fe94a813a8fcac3dc",
+    "main": "e0fee689d4c170fe82f263f6cfc611c21628ed65",
+    "originMain": "e0fee689d4c170fe82f263f6cfc611c21628ed65",
+    "ahead": 3,
+    "behind": 0,
+    "remoteRefs": {
+      "refs/remotes/origin/HEAD": "e0fee689d4c170fe82f263f6cfc611c21628ed65",
+      "refs/remotes/origin/main": "e0fee689d4c170fe82f263f6cfc611c21628ed65"
+    },
+    "lastPush": "e0fee68 refs/remotes/origin/main@{0}: update by push",
+    "baselineLastPush": "e0fee68 refs/remotes/origin/main@{0}: update by push",
+    "failures": []
+  }
 }
