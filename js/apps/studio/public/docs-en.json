@@ -27,7 +27,7 @@
    "title": "The Foundation: Text and Data",
    "lead": "A single foundational principle rendered in the browser, upon which all layers are constructed.",
    "what": "The text of the Mushaf in its two scripts (Uthmani for display, and Imla'i for search and matching), along with the structure of the Surahs, Ajza', and pages, and word-by-word morphological tagging from the Quranic Arabic Corpus (QAC): Root, Lemma, Part of Speech, Number, Gender, Definiteness, Grammatical Case (I'rab), and Derivation (Ishtiqaq); for verbs: Tense, Voice (Bina'), and Form (Wazn).",
-   "how": "A deterministic builder (build_qkg.py) constructs the knowledge graph from original sources and verifies its structure with each build. Then, a transformer outputs the application database (monlite/SQLite), which is read in the browser without a server. The build fails if any of the canonical counts are incorrect.",
+   "how": "A single deterministic builder — re-run it and it yields the very same result — constructs the knowledge graph from original sources and verifies its structure with each build. Then, a transformer outputs the application database (monlite/SQLite), which is read in the browser without a server. The build fails if any of the canonical counts are incorrect.",
    "limits": "Sources are limited and declared: QAC (GPL license), Tanzil (CC BY), and the two classical lexicons. Anything not found in these sources is excluded from the computed layers.",
    "stats": [
     {

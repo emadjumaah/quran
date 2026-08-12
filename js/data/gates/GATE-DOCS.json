@@ -48,9 +48,6 @@
     "title": "Milaff Jamʿ al-Qurʾān (The Collection File)",
     "leadHead": "A notice that precedes every explanation: this section presents the history of how the Muṣ"
   },
-  "notes": [
-    "خارجَ القسم — en:data: {\"codes\":[],\"models\":[],\"paths\":[\".py\"]}",
-    "خارجَ القسم — ar:كلُّ الأقسام: {\"codes\":[],\"models\":[],\"paths\":[\".py\"]}"
-  ],
+  "notes": [],
   "failures": []
 }
