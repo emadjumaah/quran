@@ -540,7 +540,9 @@ function checkWeave(answer) {
   const tailDump = lines.slice(-6).filter((l) => /^\s*[•*-]?\s*﴿/.test(l)).length >= 3;
   return { verses: (answer.match(/﴿/g) || []).length, woven, noDump: !tailDump };
 }
-const hasAttribution = (a) => /(التفسير الميسر|تفسير السعدي|قال السعدي|السعدي|المختصر في التفسير|الجلالين|الراغب|السامرائي|العسكري|لمسات|المفردات|المقاييس|الفيروزآبادي|ابن الجوزي|الإسكافي)/.test(a);
+// أعلامُ الإسناد تُلتمس على المجرَّد أيضًا: اسمٌ مشكولٌ في الجواب كان يُقرأ
+// «بلا إسناد» فيُنقص الدرجةَ ظلمًا — والفحصُ يقيس ما وقع لا ما رُسم (ج١).
+const hasAttribution = (a) => /(التفسير الميسر|تفسير السعدي|قال السعدي|السعدي|المختصر في التفسير|الجلالين|الراغب|السامرائي|العسكري|لمسات|المفردات|المقاييس|الفيروزآبادي|ابن الجوزي|الإسكافي)/.test(bare(a));
 const mark = (ok) => (ok ? "✓" : "✗");
 
 // ——— دورة محادثة ———
@@ -718,7 +720,7 @@ if (want(7)) {
   const u1 = "أُعِدُّ ورقةً علميةً عن الصبر في القرآن — ناقشني في أهم محاورها أولًا";
   const t1 = await chatTurn([{ role: "user", text: u1 }], "ت٧/دور١: محاورة المحاور (تنظيم)");
   report(t1);
-  const stalled1 = /هل تسمح|أتسمح لي|هل تأذن/.test(t1.text);
+  const stalled1 = /هل تسمح|أتسمح لي|هل تأذن/.test(bare(t1.text));
   console.log(`  ${mark(!stalled1)} لا استئذانَ في عملٍ بحثيٍّ هو صميم مهمته`);
 
   const u2 = "حسنٌ، المحاور مقنعة — اكتب لي الآن المقدمة العلمية للورقة مستشهدًا بالآيات وبقول مفسِّر";
@@ -727,7 +729,7 @@ if (want(7)) {
     "ت٧/دور٢: المقدمة المنسوجة (معيار النجاح)",
   );
   const searched = t2.steps.some((s) => ["search_meaning", "search_passages", "search_root", "tafsir_of"].includes(s.name));
-  const stalled2 = /هل تسمح|أتسمح لي|هل تأذن|سأبدأ بالبحث أولًا.*هل/.test(t2.text);
+  const stalled2 = /هل تسمح|أتسمح لي|هل تأذن|سأبدأ بالبحث أولا.*هل/.test(bare(t2.text));
   console.log(`  ${mark(searched)} نفّذ البحث بنفسه قبل الكتابة`);
   console.log(`  ${mark(!stalled2)} لم يقف يستأذن بدل التنفيذ`);
   report(t2, { weave: true, minVerses: 2, attribution: true });

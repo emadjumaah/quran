@@ -7,7 +7,9 @@
  * usage: node js/scripts/test-bank.mjs [من,إلى]   ← نطاق أسئلة اختياري (مثل 1,8)
  */
 process.env.ASSIST_LIB = "1";
-const { chatTurn, report, db } = await import("./test-assist.mjs");
+// `bare` = تجريدُ الضبط القائم في العدّة نفسِها. وفحصُ جودةٍ يُجرى على النصّ
+// الخام يفوّت المخالفةَ المشكولة فيجامل زورًا في بنكٍ يقيس عتبةَ نشر (ج١).
+const { chatTurn, report, bare, db } = await import("./test-assist.mjs");
 
 const RANGE = process.argv[2] ? process.argv[2].split(",").map(Number) : null;
 const inRange = (n) => !RANGE || (n >= RANGE[0] && n <= RANGE[1]);
@@ -51,7 +53,7 @@ let done = 0;
 for (const item of QUESTIONS) {
   if (!inRange(item.n)) continue;
   const t = await chatTurn([{ role: "user", text: item.q }], `بنك/${item.n} (${item.type}): ${item.q.slice(0, 50)}`);
-  const stalled = /هل تسمح|أتسمح لي|هل تأذن|هل أنت مستعد/.test(t.text);
+  const stalled = /هل تسمح|أتسمح لي|هل تأذن|هل أنت مستعد/.test(bare(t.text));
   console.log(`  ${stalled ? "✗" : "✓"} لا استئذان`);
   report(t, item.opts);
   done++;
@@ -75,11 +77,11 @@ if (!RANGE || RANGE[0] <= 25) {
   for (let i = 0; i < TURNS.length; i++) {
     messages.push({ role: "user", text: TURNS[i] });
     const t = await chatTurn([...messages], `المحادثة الطويلة — دور ${i + 1}/10`);
-    const stalled = /هل تسمح|أتسمح لي|هل تأذن|هل أنت مستعد/.test(t.text);
+    const stalled = /هل تسمح|أتسمح لي|هل تأذن|هل أنت مستعد/.test(bare(t.text));
     console.log(`  ${stalled ? "✗" : "✓"} لا استئذان`);
     if (i === 8) report(t, { weave: true, minVerses: 2, attribution: true });
     else if (i === 9) {
-      const restart = t.text.length > 0 && !/الشرك|لقمان/.test(t.text);
+      const restart = t.text.length > 0 && !/الشرك|لقمان/.test(bare(t.text));
       console.log(`  ${restart ? "✗" : "✓"} التنقيح بنى على المقدمة (ذكر آية الشرك)`);
       report(t, { weave: true, attribution: true });
     } else report(t, {});
