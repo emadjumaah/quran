@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "source": "/Volumes/data/new-projects/history/plan/HOLDOUT-MOTZKI.md",
+  "target": "/Volumes/data/new-projects/quran/WORLD-FIRSTS.md",
+  "chars": {
+    "source": 540,
+    "target": 540
+  },
+  "identicalAfterWhitespaceNormalization": true,
+  "firstDiffAt": -1,
+  "separateFromOldCandidates": true,
+  "sourceUntouched": true,
+  "failures": []
+}

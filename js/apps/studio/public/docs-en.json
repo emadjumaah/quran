@@ -351,6 +351,46 @@
    ]
   },
   {
+   "id": "tarikh",
+   "title": "Milaff Jamʿ al-Qurʾān (The Collection File)",
+   "lead": "A notice that precedes every explanation: this section presents the history of how the Muṣḥaf was collected and documented — it is not a revision of the text of the Qurʾān. What is examined here is the reports and documents about the collection, not the Qurʾān itself.",
+   "what": "Eight statements on how the Muṣḥaf reached us — from the writing down of revelation in the Prophetic era to the codices of the Companions and their divergences — each carrying two bodies of evidence: transmitted evidence whose circulation is dated through its isnād tree, and documentary evidence from parchments, inscriptions, and five material witnesses. Then its grade on a declared five-rung ladder (documentarily established · preponderant by convergence · possible · suspended · outweighed), then the limits its verdict may not exceed, and an explicit clause stating what would change the grade. The section speaks the language of Mīzān al-Aqwāl: a statement is weighed, not a charge pinned on whoever made it — no researcher's name appears on a displayed statement, and the idea is examined, not its proponent.",
+   "how": "Every verdict text in the section is transmitted verbatim from a sealed verdict document produced by the Early History circle under a declared charter: a five-rung ladder of evidence (the dated material document highest, then the contemporary external source, then transmission dated by method, then convergent but undated transmission, then the late and isolated report), seven rules of examination whose first is \"date the report before you use it\", and one standard applied to all narratives alike. The document is displayed, never edited — our position toward it is that of a transmitter, not a judge. Its evidentiary material is a frozen snapshot with a provenance record and matched checksums, never a live read: nineteen isnād-tree clusters carrying 316 records in their own wording from 87 compilations, drawn from a wider corpus of 1,683 reports in 153 books. Two clicks suffice to verify: one opens the statement, and one on a node in its tree reveals the report's text verbatim as it stands in its compilation.",
+   "stats": [
+    {
+     "k": "Weighed statement",
+     "v": "8"
+    },
+    {
+     "k": "Declared grade",
+     "v": "5"
+    },
+    {
+     "k": "Isnād-tree cluster",
+     "v": "19"
+    },
+    {
+     "k": "Record in its own wording",
+     "v": "316"
+    }
+   ],
+   "limits": "A grade is a weighing verdict, reversible by new evidence — which is why every verdict closes with the clause \"what would change the grade\". And the common link dates diffusion, not origination: establishing that a report circulated in a given layer does not equal its having occurred in that layer, and the distance between the two remains a declared probability, weighed against the other indicators. Four adopted caveats are read alongside the evidence and are stated within the verdicts themselves: two identities merged into a single database row, so its date is void; a witness whose own dating is disputed, on which nothing is built alone; a candidate standing on an unnormalized name node, whose count is short; and a cluster of narrative affinity rather than a strict single-matn cluster. The section is in Arabic only so far.",
+   "links": [
+    {
+     "to": "/tarikh",
+     "label": "The collection of the Qur'an"
+    },
+    {
+     "to": "/tarikh/masadir",
+     "label": "Sources & method"
+    },
+    {
+     "to": "/tarikh/wathiqa",
+     "label": "The full document"
+    }
+   ]
+  },
+  {
    "id": "method",
    "title": "Methodology and Operational Guidelines",
    "lead": "Our methodology for verification, correction, and publication in the event of experimental failure.",

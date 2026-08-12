@@ -1,0 +1,145 @@
+{
+  "ok": true,
+  "planted": 19,
+  "caught": 19,
+  "escaped": 0,
+  "cleanAfter": {
+    "docs": true,
+    "worldFirsts": true
+  },
+  "plants": [
+    {
+      "name": "رمزُ جلسةٍ مفصولٌ بفراغ (عربيّ)",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "رمزُ جلسةٍ **ملتصقٌ بحرفٍ عربيّ** (عربيّ)",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "رمزُ جلسةٍ ملتصقٌ بآخر كلمةٍ بلا فاصل (عربيّ)",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "رمزُ جلسةٍ برقمٍ لاتينيّ (عربيّ)",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "اسمُ نموذجٍ بالعربيّة",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "اسمُ نموذجٍ باللاتينيّة (إنجليزيّ)",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "مسارُ ملفٍّ داخليٍّ (عربيّ)",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "امتدادُ ملفٍّ داخليٍّ (إنجليزيّ)",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "إسقاطُ التنبيه الثابت من صدر القسم",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "تأخيرُ التنبيه الثابت عن صدر القسم (إنجليزيّ)",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "عودةُ لسان «الدعاوى» إلى القسم",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "إسقاطُ لسان «قولٌ يُوزن»",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "إسقاطُ القسم من التوثيق الإنجليزيّ",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 3
+    },
+    {
+      "name": "إزاحةُ ترتيب القسم بين اللسانين",
+      "gate": "docs",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "تحريفُ حرفٍ واحدٍ في النصّ المنقول",
+      "gate": "wf",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "حذفُ جملةٍ من النصّ المنقول",
+      "gate": "wf",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "زيادةُ تحريرٍ فوق النصّ المنقول",
+      "gate": "wf",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "إسقاطُ سطر السياق (موضعُ الدليل)",
+      "gate": "wf",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    },
+    {
+      "name": "إسقاطُ تاريخ الإغلاق من سطر السياق",
+      "gate": "wf",
+      "planted": true,
+      "caught": true,
+      "failures": 1
+    }
+  ]
+}
