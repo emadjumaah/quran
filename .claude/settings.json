@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Volumes/data/new-projects/mishkat/check_mail.sh",
+            "timeout": 10,
+            "statusMessage": "فحص بريد مشكاة"
+          }
+        ]
+      }
+    ]
+  }
+}

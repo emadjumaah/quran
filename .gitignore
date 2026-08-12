@@ -6,7 +6,10 @@ quran-app.db
 
 # generated graph exports
 graph/
-docs/
+# docs/ يبقى محليًّا — عدا ملفَي نظام المجموعة (الخارطة وسجل البريد)
+docs/*
+!docs/MISHKAT.md
+!docs/GROUP_MAIL.md
 
 # node
 node_modules/
