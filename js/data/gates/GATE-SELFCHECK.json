@@ -1,0 +1,140 @@
+{
+  "١ العيوب المزروعة": {
+    "مزروع": 16,
+    "أفلت": [],
+    "ملاحظة": null,
+    "pass": true,
+    "عيّنات": [
+      {
+        "name": "check-tarikh/SESSION_CODE",
+        "spaced": "وذلك من عمل خ٧/ب في حينه",
+        "glued": "وذلكبخ٧/ب في حينه",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "check-tarikh/اسمُ نموذجٍ أو محرِّر",
+        "spaced": "كتبها Claude في حينه",
+        "glued": "كتبهاClaude",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "check-tarikh/مسارُ ملفٍّ في مستودع البحث",
+        "spaced": "والتفصيلُ في findings/FAHIS-PLAN.md هنا",
+        "glued": "والتفصيلُfindings/FAHIS-PLAN.md",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "check-tarikh/اسمُ ملفٍّ داخليّ",
+        "spaced": "انظر HOLDOUT-MOTZKI هناك",
+        "glued": "انظرHOLDOUT-MOTZKI",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "check-tarikh/بصمةٌ أو إيداعة",
+        "spaced": "البصمةُ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa هنا",
+        "glued": "البصمةُaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "check-tarikh/بصمةٌ — تجزئةٌ كاملة",
+        "spaced": "البصمةُ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa هنا",
+        "glued": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "wantGlued": false,
+        "why": "أربعون محرفًا هي بصمةُ الإيداعة؛ والتجزئةُ الكاملةُ تُصطاد بمفتاحها «sha256» في الفرع الأوّل من النمط نفسِه"
+      },
+      {
+        "name": "check-tarikh/لسانُ «دعوى» في مصدر العرض",
+        "spaced": "وهذه دعوى مردودة",
+        "glued": "وهذهدعوى مردودة",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "check-docs/SESSION_CODE",
+        "spaced": "وهذا من عمل خ٧ هنا",
+        "glued": "أنجزتها الجلسةخ٧",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "check-docs/MODELS (عربيّ)",
+        "spaced": "كتبها كلود في حينه",
+        "glued": "كتبهاكلود",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "check-docs/MODELS (لاتينيّ)",
+        "spaced": "Produced with Claude here",
+        "glued": "أنجزهاClaude",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "check-docs/PATHS",
+        "spaced": "والتفصيلُ في findings/A.md هنا",
+        "glued": "والتفصيلُfindings/A.md",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "fahis-lint/TONE عبر tokenize",
+        "spaced": "وهذه دعوى مردودة",
+        "glued": "وهذهدعوى مردودة",
+        "wantGlued": false,
+        "why": "الالتماسُ كلمةً تامّةً لا جزءَ كلمةٍ — تضييقٌ مقصودٌ منصوصٌ في المصدر (لا حدَّ `\\b` أصلًا هنا): وإلّا لحُظر «إبراهيم» وهو اسمُ نبيّ"
+      },
+      {
+        "name": "fahis-lint/TAFSIR_HARD عبر includes",
+        "spaced": "قال الطبري في تفسيره",
+        "glued": "قالالطبري في تفسيره",
+        "wantGlued": true,
+        "why": null
+      },
+      {
+        "name": "fahis-lint/TAFSIR_SOFT عبر tokenize",
+        "spaced": "وما في التفاسير من قول",
+        "glued": "ومافيالتفاسير من قول",
+        "wantGlued": false,
+        "why": "الالتماسُ كلمةً تامّةً لا جزءَ كلمةٍ — تضييقٌ مقصودٌ منصوصٌ في المصدر (لا حدَّ `\\b` أصلًا هنا): وإلّا لحُظر «إبراهيم» وهو اسمُ نبيّ"
+      },
+      {
+        "name": "fahis-lint/اسمُ باحثٍ مفردٌ عبر tokenize",
+        "spaced": "وقال شحرور في ذلك",
+        "glued": "وقالشحرور في ذلك",
+        "wantGlued": false,
+        "why": "الالتماسُ كلمةً تامّةً لا جزءَ كلمةٍ — تضييقٌ مقصودٌ منصوصٌ في المصدر (لا حدَّ `\\b` أصلًا هنا): وإلّا لحُظر «إبراهيم» وهو اسمُ نبيّ"
+      },
+      {
+        "name": "fahis-lint/اسمُ باحثٍ ثنائيٌّ عبر includes",
+        "spaced": "وقال محمد شحرور في ذلك",
+        "glued": "وقالمحمد شحرور في ذلك",
+        "wantGlued": true,
+        "why": null
+      }
+    ]
+  },
+  "٢ ترتيب النطاقات": {
+    "ملفّات": 281,
+    "مفحوص": 133,
+    "معكوس": [],
+    "pass": true
+  },
+  "٣ لا حدَّ كلمةٍ في البوّابات": {
+    "ملفّات": 19,
+    "مخالف": [],
+    "pass": true
+  },
+  "٤ إعلانات الحراس": {
+    "الحيّ": "js/scripts/check-tarikh-nopush.mjs",
+    "المؤرشف": "js/scripts/check-tarikh-nopublish.mjs",
+    "مخالف": [],
+    "pass": true
+  },
+  "الفحص": "اجتاز"
+}

@@ -161,6 +161,12 @@ if (process.argv.includes("--sync")) {
   if (leak.length) { console.error(`✗ تسرّب إلى نسخة العرض: ${leak.join("، ")}`); process.exit(1); }
   console.log(`✓ نُشرت نسخةُ العرض مجرَّدةً من الإسناد → ${PUB}`);
 
+  // الفاحصُ الدائم للبوّابات (ج١، عقدُ بلاغ 2026-08-12-arabic-word-boundary):
+  // قبل المسابر — إذ لا معنى لمسبارٍ أخضرَ تحرسه بوّابةٌ عمياء. يفشل صراحةً.
+  const { runSelfcheck } = await import("./gate-selfcheck.mjs");
+  const sc = await runSelfcheck();
+  if (!sc.ok) { console.error("✗ الفاحصُ الدائم للبوّابات لم يجتز — المزامنةُ لا تمرّ"); process.exit(1); }
+
   // مسابرُ الفحص (الخطّة ٧٫٥/٤٫٤): أرقامٌ معلومةُ الحكم تُعاد من القاعدة قبل أيِّ نشر
   const { runProbes } = await import("./fahis-probes.mjs");
   const pr = await runProbes();
