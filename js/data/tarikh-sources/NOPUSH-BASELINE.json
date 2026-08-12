@@ -1,9 +1,18 @@
 {
-  "recorded": "أوّلُ تشغيل (خ٧-ب)",
+  "recorded": "إعادةُ تثبيتٍ في خ٧-ج — دفَع المالكُ عملَ خ٧-ب بنفسه بعد قبوله، فتقدّم origin/main من 32f8b71 إلى 585893d. وخطُّ الأساس هذا يثبت أنّ خ٧-ج لم تدفع شيئًا.",
   "branch": "main",
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "32f8b713ecd6317d5ba530122aea40ff86b418ca",
-    "refs/remotes/origin/main": "32f8b713ecd6317d5ba530122aea40ff86b418ca"
+    "refs/remotes/origin/HEAD": "585893d8d388a1e926a71357b6bae5874a90b033",
+    "refs/remotes/origin/main": "585893d8d388a1e926a71357b6bae5874a90b033"
   },
-  "lastPush": "32f8b71 refs/remotes/origin/main@{0}: update by push"
+  "lastPush": "585893d refs/remotes/origin/main@{0}: update by push",
+  "previous": {
+    "recorded": "أوّلُ تشغيل (خ٧-ب)",
+    "branch": "main",
+    "remoteRefs": {
+      "refs/remotes/origin/HEAD": "32f8b713ecd6317d5ba530122aea40ff86b418ca",
+      "refs/remotes/origin/main": "32f8b713ecd6317d5ba530122aea40ff86b418ca"
+    },
+    "lastPush": "32f8b71 refs/remotes/origin/main@{0}: update by push"
+  }
 }

@@ -66,17 +66,22 @@
       "title": "الكسل — فهرسُ الأقوال لا يحمل حمولةَ عنقود",
       "checks": 4,
       "failures": [],
-      "indexBytes": 43172,
+      "indexBytes": 43194,
       "clusterFiles": 19
     },
     {
       "id": "٥",
       "title": "نظافةُ العرض — لا اسمَ محرِّرٍ ولا مسارَ ملفٍّ ولا بصمةَ إيداعةٍ في ملفّات العرض",
-      "checks": 39,
+      "checks": 51,
       "failures": [],
       "sessionCodes": {
         "codes": 2,
         "declared": 2
+      },
+      "humanizedPhrases": {
+        "pairs": 1,
+        "inSource": 1,
+        "inData": 4
       }
     },
     {

@@ -8,6 +8,9 @@
  *   ب — **الكسل:** صفرُ طلبٍ لملفّ عنقودٍ في صدر الباب، ولا يُجلب من العناقيد
  *       إلا المفتوحُ منها بعينه.
  *   ج — نصُّ الرواية المعروض يطابق ما في ملفّ العنقود حرفًا.
+ *   د — **عنوانُ صفحة الوثيقة** يطابق سطرَ عنوان مصدره حرفًا (استثناءُ س٩)،
+ *       و**تأنيسُ العبارة المُعلَنة يُعدّ في الصفحة المرسومة** فيساوي عددَ ورودِ
+ *       الأصل في مصدر تلك الصفحة، ولا تبقى منه بقيّةٌ غيرُ مُؤنَّسة (س١٠).
  *
  * يشترط خادمَ معاينةٍ يعمل: `cd js/apps/studio && npm run build && npm run preview`
  * التشغيل: node js/scripts/check-tarikh-ui.mjs [--url http://localhost:4173]
@@ -199,6 +202,50 @@ try {
   const hukm = JSON.parse(readFileSync(join(PUB, "tarikh-hukm.json"), "utf8"));
   ok(docLen > hukm.markdown.length * 0.7, `صفحةُ الوثيقة ناقصة: ${docLen} حرفًا من ${hukm.markdown.length}`);
   detail.doc = { rendered: docLen, source: hukm.markdown.length };
+
+  // ——— عنوانُ الوثيقة: إصدارتُها كما في مصدرها حرفًا (استثناءُ س٩) ———
+  const h1 = await ev(c, "document.querySelector('.tarikh .doc h1').textContent.trim()");
+  const srcH1 = hukm.markdown.split("\n")[0].replace(/^#\s+/, "").trim();
+  ok(h1 === srcH1, `عنوانُ صفحة الوثيقة «${h1}» لا يطابق مصدرَه «${srcH1}»`);
+  detail.title = h1;
+
+  /**
+   * ——— تأنيسُ العبارة المُعلَنة: **عدٌّ في الصفحة المرسومة** (إذنُ س١٠) ———
+   *
+   * لا يُصدَّق التأنيسُ بإعلانِ خريطةٍ في الكود: يُعدّ ما ظهر منه للعين.
+   * فلكلِّ صفحةٍ: عددُ تطبيقاته في نصّها المرسوم = عددُ ورودِ الأصل في مصدر
+   * تلك الصفحة بعينه، **وصفرُ بقيّةٍ** من الأصل في المرسوم. فلو عُطّلت
+   * الخريطةُ سقط العدُّ الأوّل، ولو تكاثرت سقط الثاني.
+   */
+  const [PH_FROM, PH_TO] = ["— تحقق خ٦/ب", "— تحقّق آليّ في مستودع البحث"];
+  const countIn = (s, needle) => s.split(needle).length - 1;
+  const domCount = async (sel, needle) =>
+    ev(c, `(document.querySelector(${JSON.stringify(sel)})?.textContent ?? "").split(${JSON.stringify(needle)}).length - 1`);
+  detail.humanized = [];
+  {
+    const srcN = countIn(hukm.markdown, PH_FROM);
+    const shown = await domCount(".tarikh .doc", PH_TO);
+    const left = await domCount(".tarikh .doc", PH_FROM);
+    ok(srcN > 0, "مصدرُ صفحة الوثيقة لا يحمل أصلَ التأنيس — الفحصُ بلا مادّة");
+    ok(shown === srcN, `صفحةُ الوثيقة: تطبيقاتُ التأنيس ${shown} وورودُ الأصل في مصدرها ${srcN}`);
+    ok(left === 0, `صفحةُ الوثيقة: بقي من الأصل ${left} موضعًا غيرَ مُؤنَّس`);
+    detail.humanized.push({ page: "wathiqa", source: srcN, shown, left });
+  }
+  {
+    // وصفحةُ القول الذي فيه الموضعُ: تُعدّ فيها بمصدر أحكامها المرسومة
+    const claim = claims.claims.find((x) => x.rulings.some((r) => r.raw.includes(PH_FROM)));
+    ok(!!claim, `لا قولَ في الفهرس يحمل «${PH_FROM}» في أحكامه`);
+    if (claim) {
+      const srcN = countIn(claim.rulings.map((r) => r.raw).join("\n"), PH_FROM);
+      await c.send("Page.navigate", { url: `${BASE}/#${claim.route}` });
+      await until(c, "!!document.querySelector('.tarikh .verdict .r')", `صفحةُ ${claim.id}`);
+      const shown = await domCount(".tarikh .verdict", PH_TO);
+      const left = await domCount(".tarikh .verdict", PH_FROM);
+      ok(shown === srcN, `${claim.id}: تطبيقاتُ التأنيس في حكمه ${shown} وورودُ الأصل في مصدره ${srcN}`);
+      ok(left === 0, `${claim.id}: بقي من الأصل ${left} موضعًا غيرَ مُؤنَّس في حكمه`);
+      detail.humanized.push({ page: claim.id, source: srcN, shown, left });
+    }
+  }
 
   c.close();
 } catch (e) {

@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "base": "http://localhost:4185",
+  "base": "http://localhost:4173",
   "detail": {
     "claims": [
       {
@@ -78,9 +78,24 @@
       "parts": 2
     },
     "doc": {
-      "rendered": 15468,
-      "source": 16663
-    }
+      "rendered": 15507,
+      "source": 16685
+    },
+    "title": "ملف جمع القرآن — وثيقة الحكم v1.1 (مختومة — تنقيح لسانٍ عن v1)",
+    "humanized": [
+      {
+        "page": "wathiqa",
+        "source": 1,
+        "shown": 1,
+        "left": 0
+      },
+      {
+        "page": "د٢",
+        "source": 1,
+        "shown": 1,
+        "left": 0
+      }
+    ]
   },
   "failures": []
 }
