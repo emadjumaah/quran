@@ -49,6 +49,9 @@ const ThematicThread = lazy(() => import("./views/ThematicThread"));
 const Learn = lazy(() => import("./views/Learn"));
 const EraabDrill = lazy(() => import("./views/EraabDrill"));
 const Assistant = lazy(() => import("./views/Assistant"));
+// مسبارٌ **مستور** تحت الفحص: لا يُدرج في التنقّل، ولا في التوثيق، ولا يُبلَّغ
+// رابطُه إلّا للفحص — حتّى يُقرَّر أمرُه بعد قياسه (findings/sawt/M1-MIHAKK.md).
+const Tatabbu = lazy(() => import("./views/Tatabbu"));
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
 import FocusExit from "./components/FocusExit";
@@ -559,6 +562,8 @@ function App() {
           <Route path="/assistant/:id" element={<Assistant />} />
           <Route path="/today" element={<Today />} />
           <Route path="/goto/:kind/:n" element={<Goto />} />
+          {/* مستور — لا يُدرج في التنقّل ولا في التوثيق حتّى يُقرَّر بعد الفحص */}
+          <Route path="/tatabbu" element={<Tatabbu />} />
         </Routes>
         </RouteBoundary>
         <NowPlayingBar />

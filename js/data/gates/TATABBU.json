@@ -1,0 +1,14 @@
+{
+  "gate": "tatabbu",
+  "ok": true,
+  "checkedAt": null,
+  "counts": {
+    "files": 7,
+    "ayahsChecked": 6236,
+    "trigramsIndexed": 52979,
+    "textUthmaniTouches": 2,
+    "declaredSplits": 5
+  },
+  "failures": [],
+  "missing": []
+}
