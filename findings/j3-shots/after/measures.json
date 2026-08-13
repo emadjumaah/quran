@@ -1,0 +1,86 @@
+{
+  "m-baqara": {
+    "viewport": 390,
+    "opening": false,
+    "pageBox": 390,
+    "textBox": 374,
+    "padInline": "8px / 8px",
+    "border": "0px",
+    "radius": "0px",
+    "boxShadow": "none",
+    "beforeContent": "none",
+    "beforeInset": "11px"
+  },
+  "m-surah-start": {
+    "viewport": 390,
+    "opening": false,
+    "pageBox": 390,
+    "textBox": 374,
+    "padInline": "8px / 8px",
+    "border": "0px",
+    "radius": "0px",
+    "boxShadow": "none",
+    "beforeContent": "none",
+    "beforeInset": "11px"
+  },
+  "m-fatiha": {
+    "viewport": 390,
+    "opening": true,
+    "pageBox": 378,
+    "textBox": 352,
+    "padInline": "12px / 12px",
+    "border": "1px",
+    "radius": "6px",
+    "boxShadow": "none",
+    "beforeContent": "\"\"",
+    "beforeInset": "5px"
+  },
+  "d-baqara": {
+    "viewport": 1440,
+    "opening": false,
+    "pageBox": 620,
+    "textBox": 548,
+    "padInline": "34px / 34px",
+    "border": "2px",
+    "radius": "8px",
+    "boxShadow": "rgb(255, 253, 249) 0px 0px 0px 4px inset, rgb(169, 126, 47) 0px 0px 0px 5px inset, rgba(36, 31, 24, 0.06) 0px 1px 3px 0p",
+    "beforeContent": "\"\"",
+    "beforeInset": "11px"
+  },
+  "d-fatiha": {
+    "viewport": 1440,
+    "opening": true,
+    "pageBox": 620,
+    "textBox": 548,
+    "padInline": "34px / 34px",
+    "border": "2px",
+    "radius": "8px",
+    "boxShadow": "rgb(255, 253, 249) 0px 0px 0px 4px inset, rgb(169, 126, 47) 0px 0px 0px 5px inset, rgb(255, 253, 249) 0px 0px 0px 9px in",
+    "beforeContent": "\"\"",
+    "beforeInset": "15px"
+  },
+  "m-settings": {
+    "viewport": 390,
+    "opening": true,
+    "pageBox": 378,
+    "textBox": 352,
+    "padInline": "12px / 12px",
+    "border": "1px",
+    "radius": "6px",
+    "boxShadow": "none",
+    "beforeContent": "\"\"",
+    "beforeInset": "5px"
+  },
+  "d-settings": {
+    "viewport": 1440,
+    "opening": true,
+    "pageBox": 620,
+    "textBox": 548,
+    "padInline": "34px / 34px",
+    "border": "2px",
+    "radius": "8px",
+    "boxShadow": "rgb(255, 253, 249) 0px 0px 0px 4px inset, rgb(169, 126, 47) 0px 0px 0px 5px inset, rgb(255, 253, 249) 0px 0px 0px 9px in",
+    "beforeContent": "\"\"",
+    "beforeInset": "15px"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "current/light": {
+    "ink": "rgb(36,31,24)",
+    "paper": "rgb(255,253,249)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 16.1,
+    "marker": "rgb(169,126,47)",
+    "markerOnPaper": 3.62,
+    "folioOnPaper": 3.62,
+    "kit": "الحالُ القائمة (ذهبيّةٌ خالصة)",
+    "theme": "light"
+  },
+  "current/sepia": {
+    "ink": "rgb(67,55,31)",
+    "paper": "rgb(247,239,221)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 10.16,
+    "marker": "rgb(154,111,36)",
+    "markerOnPaper": 3.93,
+    "folioOnPaper": 3.93,
+    "kit": "الحالُ القائمة (ذهبيّةٌ خالصة)",
+    "theme": "sepia"
+  },
+  "current/dark": {
+    "ink": "rgb(236,230,218)",
+    "paper": "rgb(29,26,22)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 13.95,
+    "marker": "rgb(211,165,88)",
+    "markerOnPaper": 7.67,
+    "folioOnPaper": 7.67,
+    "kit": "الحالُ القائمة (ذهبيّةٌ خالصة)",
+    "theme": "dark"
+  },
+  "zaytuni/light": {
+    "ink": "rgb(36,31,24)",
+    "paper": "rgb(244.60008,244.99992,239.4501)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 14.94,
+    "marker": "rgb(63,107,64)",
+    "markerOnPaper": 5.66,
+    "folioOnPaper": 5.12,
+    "kit": "أ — خضرةٌ زيتونيّةٌ هادئة",
+    "theme": "light"
+  },
+  "zaytuni/sepia": {
+    "ink": "rgb(67,55,31)",
+    "paper": "rgb(237.00006,231.699885,212.85002999999998)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 9.46,
+    "marker": "rgb(63,107,64)",
+    "markerOnPaper": 5.04,
+    "folioOnPaper": 4.56,
+    "kit": "أ — خضرةٌ زيتونيّةٌ هادئة",
+    "theme": "sepia"
+  },
+  "zaytuni/dark": {
+    "ink": "rgb(236,230,218)",
+    "paper": "rgb(34.739925,35.099985,28.57989)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 12.71,
+    "marker": "rgb(147,185,141)",
+    "markerOnPaper": 7.19,
+    "folioOnPaper": 7.19,
+    "kit": "أ — خضرةٌ زيتونيّةٌ هادئة",
+    "theme": "dark"
+  },
+  "ameeq/light": {
+    "ink": "rgb(36,31,24)",
+    "paper": "rgb(247.67997,248.260095,243.540045)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 15.37,
+    "marker": "rgb(11,95,67)",
+    "markerOnPaper": 7.22,
+    "folioOnPaper": 7.22,
+    "kit": "ب — خضرةٌ عميقةٌ مع ذهبٍ خافت",
+    "theme": "light"
+  },
+  "ameeq/sepia": {
+    "ink": "rgb(67,55,31)",
+    "paper": "rgb(239.920065,234.68007,216.379995)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 9.72,
+    "marker": "rgb(11,95,67)",
+    "markerOnPaper": 6.42,
+    "folioOnPaper": 6.42,
+    "kit": "ب — خضرةٌ عميقةٌ مع ذهبٍ خافت",
+    "theme": "sepia"
+  },
+  "ameeq/dark": {
+    "ink": "rgb(236,230,218)",
+    "paper": "rgb(29.900025,31.60011,26.100015)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 13.28,
+    "marker": "rgb(92,191,155)",
+    "markerOnPaper": 7.37,
+    "folioOnPaper": 7.37,
+    "kit": "ب — خضرةٌ عميقةٌ مع ذهبٍ خافت",
+    "theme": "dark"
+  },
+  "hiyadi/light": {
+    "ink": "rgb(36,31,24)",
+    "paper": "rgb(255,253,249)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 16.1,
+    "marker": "rgb(11,110,86)",
+    "markerOnPaper": 6.12,
+    "folioOnPaper": 6.12,
+    "kit": "ج — ورقٌ محايدٌ بعلاماتٍ خضراء",
+    "theme": "light"
+  },
+  "hiyadi/sepia": {
+    "ink": "rgb(67,55,31)",
+    "paper": "rgb(247,239,221)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 10.16,
+    "marker": "rgb(11,110,86)",
+    "markerOnPaper": 5.43,
+    "folioOnPaper": 5.43,
+    "kit": "ج — ورقٌ محايدٌ بعلاماتٍ خضراء",
+    "theme": "sepia"
+  },
+  "hiyadi/dark": {
+    "ink": "rgb(236,230,218)",
+    "paper": "rgb(29,26,22)",
+    "paperFrom": "page reader-main reader-pages",
+    "textOnPaper": 13.95,
+    "marker": "rgb(55,184,146)",
+    "markerOnPaper": 6.96,
+    "folioOnPaper": 6.96,
+    "kit": "ج — ورقٌ محايدٌ بعلاماتٍ خضراء",
+    "theme": "dark"
+  }
+}
