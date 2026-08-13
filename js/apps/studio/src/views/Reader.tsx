@@ -31,7 +31,6 @@ import { TafsirChip, TafsirPanel } from "../components/TafsirChip";
 import { AsbabChip, AsbabPanel } from "../components/AsbabChip";
 import TadabburChip, { TadabburPanel } from "../components/TadabburChip";
 import InlineOmni from "../components/InlineOmni";
-import ScrollTopFab from "../components/ScrollTopFab";
 import VerseContext from "../components/VerseContext";
 import { classOf, useKulliyat } from "../kulliyat";
 import { loadSiyaq, loadSiyaqEn, siyaqNameEn, unitOf } from "../siyaq";
@@ -124,14 +123,15 @@ function SurahSidebar({
               <span className="muted" style={{ width: 26, textAlign: "end" }}>
                 {num(s.surahNo)}
               </span>
+              {/* المقاساتُ في `theme.css` لا في JSX — ميثاقُ الوجه §٣/١ */}
               {getUILang() === "ar" ? (
-                <span className="quran" style={{ fontSize: 19, lineHeight: 1.4 }}>{s.nameAr}</span>
+                <span className="quran sb-name-ar">{s.nameAr}</span>
               ) : (
                 <>
                   {/* الإنجليزيةُ أولًا وبلونها الكامل، والعربيُّ عونًا خافتًا في الطرف
                       (أمر المالك 2026-07-29: English concentrated, Arabic as helper) */}
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink)" }}>{s.nameTranslit}</span>
-                  <span className="quran" style={{ marginInlineStart: "auto", fontSize: 16, opacity: 0.45 }}>{s.nameAr}</span>
+                  <span className="sb-name-en">{s.nameTranslit}</span>
+                  <span className="quran sb-name-aside">{s.nameAr}</span>
                 </>
               )}
             </div>
@@ -644,12 +644,37 @@ export default function Reader() {
     return () => { if (el) el.style.overflowY = ""; };
   }, [narrow, selected, verseSheet]);
 
+  /* ── **سطحُ القراءة يُفرَّغ للقرآن** (أمر المالك 2026-08-14 · ميثاقُ الوجه §١):
+     أثناء القراءة لا قشرةَ ألبتّة — لا رأسَ ولا شريطًا سفليًّا ولا زرًّا طائرًا.
+     فمن نزل في النصّ انسحبت القشرةُ، ومن صعد بالتمرير عادت. **وهذا نمطُ تطبيقات
+     القراءة الأصيل** لا حيلة: من قرأ فُرِّغت له الشاشة. ── */
+  useEffect(() => {
+    if (!narrow) return;
+    const el = mainRef.current;
+    if (!el) return;
+    let last = el.scrollTop;
+    const onScroll = () => {
+      const y = el.scrollTop;
+      const d = y - last;
+      if (Math.abs(d) < 10) return; // رجفةُ الإصبع لا تُبدّل حالًا
+      last = y;
+      document.body.classList.toggle("reading-immersive", d > 0 && y > 140);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      document.body.classList.remove("reading-immersive");
+    };
+  }, [narrow]);
+
   /** النقرُ خارج الآية يزيل تعليمَها (أمر المالك 2026-07-29) — ما لم تقع
-   *  النقرةُ على آيةٍ أو لوحتها أو أداةٍ تفاعلية. */
+   *  النقرةُ على آيةٍ أو لوحتها أو أداةٍ تفاعلية. **ويردّ القشرةَ معه**، فلمسةٌ
+   *  في هامش الصفحة مخرجٌ من التفريغ لمن لم يشأ أن يمرّر. */
   const clearOnOutside = (e: React.MouseEvent) => {
-    if (!selectedLoc) return;
     const el = e.target as HTMLElement;
     if (el.closest(".ayah-card, .mp-ayah, .ayah-panel, .word-sheet, .sheet-backdrop, .wq-overlay, button, a, input, select, .v-more-menu")) return;
+    document.body.classList.remove("reading-immersive");
+    if (!selectedLoc) return;
     setSelectedAyah(null);
   };
 
@@ -657,7 +682,11 @@ export default function Reader() {
     <div style={{ display: "flex", height: "100%", minHeight: 0, overflow: "hidden" }} onClick={clearOnOutside}>
       {!narrow && <SurahSidebar surahs={surahs} activeNo={surahNo} onPick={goTo} />}
 
-      <main ref={mainRef} className="page reader-main" style={{ flex: 1, minWidth: 0 }}>
+      <main
+        ref={mainRef}
+        className={`page reader-main${mode === "pages" ? " reader-pages" : ""}`}
+        style={{ flex: 1, minWidth: 0 }}
+      >
         {/* Mobile: ONE sticky header — surah picker (carries the name), the
             on-page search, a compact ▶, and the mode toggle. Stays under the
             app header so you switch surah / jump / change view without scrolling
@@ -810,7 +839,12 @@ export default function Reader() {
         )}
       </main>
 
-      {narrow && <ScrollTopFab scrollerRef={mainRef} />}
+      {/* **سهمُ العودة إلى الأعلى رُفع عن سطح القراءة** (حكمُ الإدارة 2026-08-14):
+          كان قرصًا أخضرَ مصمتًا ٤٤px بظلٍّ ثقيلٍ يحوم فوق المصحف — وهو من علامات
+          الويب. والحاجةُ التي وُضع لها ليست «الصعودَ إلى الأعلى» أصلًا: قارئُ
+          المصحف يريد **موضعًا** لا رأسَ قائمة، وله بابُ الانتقال، والقشرةُ تعود
+          بالتمرير صعودًا. (المكوّنُ باقٍ في `components/ScrollTopFab.tsx` إن
+          اختار المالكُ الصورةَ الثانية — خافتًا يظهر بالتمرير صعودًا.) */}
 
       {(selected || verseSheet) && (
         <>

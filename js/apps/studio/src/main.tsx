@@ -270,7 +270,7 @@ function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
   return (
     <span className="nav-more">
       <button className={`nav-more-btn${active ? " active" : ""}`} onClick={() => setOpen((v) => !v)} aria-expanded={open}>
-        {label} <span style={{ fontSize: 10 }}>▾</span>
+        {label} <span className="nav-more-caret" aria-hidden>▾</span>
       </button>
       {open && (
         <>
@@ -293,6 +293,11 @@ function Nav() {
   return (
     <nav>
       <NavLink to="/read" title={ar ? "اقرأ المصحف" : "read the Qur'an"}>{t("nav.reader")}</NavLink>
+      {/* **نبراس في التنقّل العامّ** (أمر المالك 2026-08-14): لمّا رُفع الزرُّ
+          الطائرُ عن المصحف صار البابُ يُطلب ابتداءً من ههنا — ولا يُحذف باب */}
+      <NavLink to="/assistant" title={ar ? "اسأل مشكاة: محادثةُ ذكاءٍ اصطناعيّ" : "Ask Mishkat — an AI chat"}>
+        <span className="ai-spark" aria-hidden /> {ar ? "اسأل مشكاة" : "Ask Mishkat"}
+      </NavLink>
       {groups.map((g) => (
         <NavGroup key={g.ar} label={ar ? g.ar : g.en} items={g.items} />
       ))}
@@ -349,7 +354,7 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
       <aside className="drawer" role="dialog" aria-label={ar ? "القائمة" : "menu"}>
         <div className="drawer-head">
           {/* الشعارُ فعّالٌ كالحاسوب: يفتح الرئيسيةَ ويغلق الدُّرج (أمر المالك 2026-07-29) */}
-          <NavLink to="/" onClick={onClose} className="ar" style={{ fontFamily: "var(--font-quran)", color: "var(--accent)", fontSize: 22, fontWeight: 700, textDecoration: "none" }}>مشكاة</NavLink>
+          <NavLink to="/" onClick={onClose} className="ar drawer-brand">مشكاة</NavLink>
           <button onClick={onClose} aria-label={ar ? "إغلاق" : "close"}>✕</button>
         </div>
         {/* ثلاثةٌ نُقلت من رأس الجوال إلى الدُّرج (أمر المالك 2026-08-14): المشاركةُ
@@ -362,6 +367,8 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
         </div>
         <nav className="drawer-nav" onClick={onClose}>
           <NavLink to="/read">{ar ? "المصحف" : "Reader"}</NavLink>
+          {/* بابُ نبراس ابتداءً بلا آية — بعد رفع الزرّ الطائر عن المصحف */}
+          <NavLink to="/assistant"><span className="ai-spark" aria-hidden /> {ar ? "اسأل مشكاة" : "Ask Mishkat"}</NavLink>
           {groups.map((g) => (
             <div key={g.ar} className="drawer-group">
               <div className="drawer-group-h">{ar ? g.ar : g.en}</div>
@@ -435,9 +442,13 @@ function NibrasFab() {
     // نقرةٌ تلت سحبًا لا تفتح المساعد
     if (drag.current?.moved) e.preventDefault();
   };
-  // ويُزال من صفحة التتبّع وحدَها (أمر المالك 2026-08-14): تلك صفحةُ تلاوةٍ ملءَ
-  // الشاشة لا يُزاحمها زرٌّ طائر. ولا يُمَسّ في سائر الصفحات.
-  if (loc.pathname.startsWith("/assistant") || loc.pathname.startsWith("/tatabbu")) return null;
+  // **ويُزال من فوق المصحف ومن صفحة التتبّع** (أمر المالك 2026-08-14): زرٌّ طائرٌ
+  // يحوم فوق نصّ القرآن من أظهر علامات الويب، ويؤذي الصفحةَ التي جُرِّدت لتوّها
+  // من حدودها. **ولا يُحذف البابُ ولا يُغيَّر مسارُه** — إعادةُ موضعٍ لا إلغاءُ
+  // ميزة: يدخل من أدوات الآية («اسأل عن هذه الآية» مسبوقًا بموضعه) ومن التنقّل
+  // العامّ (الرأسُ والدُّرج). ويبقى على سائر الصفحات كما كان.
+  const overMushaf = loc.pathname === "/" || loc.pathname.startsWith("/read");
+  if (overMushaf || loc.pathname.startsWith("/assistant") || loc.pathname.startsWith("/tatabbu")) return null;
   return (
     <NavLink
       ref={fabRef}

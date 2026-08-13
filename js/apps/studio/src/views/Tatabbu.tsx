@@ -129,7 +129,9 @@ export default function Tatabbu() {
   const [conditionId, setConditionId] = useState("asas");
   const [measureTime, setMeasureTime] = useState(!isAppleMobile());
   const [resume, setResume] = useState(false);
-  const [sheet, setSheet] = useState(true); // لوحُ التهيئة: مفتوحٌ عند القدوم، ثمّ بلمسةٍ على النصّ
+  // عُدّةُ التهيئة **تُفتح بطلبٍ لا بقدوم** (أمر المالك 2026-08-14، ونقضُ إقرار
+  // ص-م٢): يأتي القارئُ فيجد المصحفَ صافيًا، ومن أراد تهيئةً طلبها من الشريط.
+  const [setup, setSetup] = useState(false);
   const [asking, setAsking] = useState(false); // الإعلانُ يسبق الميكروفون
   const [consent, setConsent] = useState(() => readConsent());
 
@@ -311,7 +313,7 @@ export default function Tatabbu() {
     setReport(null);
     setReached(null);
     setCopied(null);
-    setSheet(false);
+    setSetup(false);
     const meter = new SawtMeter(win.script);
     meterRef.current = meter;
 
@@ -454,18 +456,17 @@ export default function Tatabbu() {
 
   const halNote = (h: Hal) => (h.suspended ? h.suspended : h.what);
 
-  /** النصُّ القرآنيّ — من قاعدتنا حرفًا، ولا تحويلَ في موضع العرض */
+  /** النصُّ القرآنيّ — من قاعدتنا حرفًا، ولا تحويلَ في موضع العرض.
+   *  **والنصُّ نصٌّ لا زرّ**، ولا يُخفَت ولا يُطمس: المصحفُ يُفتح صافيًا والبدءُ
+   *  من الشريط (أمر المالك 2026-08-14 — «ألغِ هذا البوب أب»). */
   const textView = () => {
     if (!script) return <div className="sawt-text sawt-text-wait" />;
     return (
       <div
-        className={`sawt-text${hal.bigger ? " sawt-big" : ""}${phase === "idle" ? " sawt-dim" : ""}`}
+        className={`sawt-text${hal.bigger ? " sawt-big" : ""}`}
         dir="rtl"
         ref={textElRef}
         data-sawt="text"
-        {...(mobile && phase !== "running"
-          ? { role: "button", tabIndex: 0, "aria-label": "التهيئة والبدء", onClick: () => setSheet(true) }
-          : {})}
       >
         {script.ayahs.map((a, ai) => (
           <p className="sawt-aya" key={`${a.surahNo}:${a.ayahNo}`}>
@@ -877,14 +878,16 @@ export default function Tatabbu() {
     );
   };
 
-  /* ═══════════════ الجوال: ملءُ الشاشة، وثلاثةٌ لا رابعَ لها ═══════════════ */
+  /* ═══════════════ الجوال: ملءُ الشاشة، وثلاثةٌ لا رابعَ لها ═══════════════
+     **ولا لوحَ عند القدوم** (أمر المالك 2026-08-14): تُفتح الصفحةُ على المصحف
+     صافيًا — لا طمسَ ولا اعتراض — والبدءُ من الشريط نفسِه. فالعددُ ثلاثةٌ كما
+     كان: النصُّ، والشريطُ (فيه أداتان و✕)، وما ينفتح عنه الشريطُ بطلبٍ لا بقدوم. */
 
   if (mobile) {
     const suspended = !!hal.suspended;
     return (
       <div className="sawt-m" data-sawt="root">
-        {textView()}
-        <div className="sawt-m-controls">
+        <div className="sawt-m-bar">
           <button
             className="sawt-x"
             data-sawt="close"
@@ -894,53 +897,69 @@ export default function Tatabbu() {
             ✕
           </button>
           {halSelect()}
+          {phase === "idle" && (
+            <button
+              className={`sawt-m-more${setup ? " on" : ""}`}
+              aria-label="المزيد — المقطعُ وعُدّةُ القياس"
+              aria-expanded={setup}
+              onClick={() => {
+                setAsking(false);
+                setSetup((v) => !v);
+              }}
+            >
+              ⋯
+            </button>
+          )}
+          {phase === "idle" && !suspended && (
+            <button
+              className="sawt-m-start"
+              onClick={() => {
+                setSetup(false);
+                requestStart();
+              }}
+              disabled={!supported || !ready}
+              data-sawt="begin"
+            >
+              {ready ? "ابدأ" : "…"}
+            </button>
+          )}
         </div>
+
+        {/* **الإعلانُ حيث يقع الفعل**: ينفتح عنه الشريطُ عند ضغط «ابدأ» — بلا
+            طمسٍ ولا صندوقٍ فوق النصّ، والموافقةُ مرّةٌ واحدةٌ محفوظةٌ كما هي */}
+        {phase === "idle" && asking && <div className="sawt-m-panel">{consentView()}</div>}
+
+        {/* عُدّةُ التهيئة — بطلبٍ لا بقدوم، تنزل من الشريط ولا تعلو المتن */}
+        {phase === "idle" && !asking && setup && (
+          <div className="sawt-m-panel" data-sawt="setup">
+            <p className="sawt-hal-name">
+              {hal.name}
+              {suspended ? " — موقوفة" : ""}
+            </p>
+            <p className="muted sawt-note">{halNote(hal)}</p>
+            {!suspended && (
+              <>
+                {pickerView()}
+                {mihakkView()}
+              </>
+            )}
+          </div>
+        )}
+
+        {phase === "idle" && !asking && !setup && (suspended || !supported) && (
+          <p className="muted sawt-hint">
+            {suspended
+              ? halNote(hal)
+              : "متصفّحُ هذا الجهاز لا يتيح التعرّفَ على الصوت — فلا يعمل التتبّعُ هنا."}
+          </p>
+        )}
+
+        {textView()}
 
         {phase === "done" && (
           <div className="sawt-sheet" role="dialog" aria-label="بعد الختام">
             <div className="sawt-sheet-in">
               {afterView()}
-            </div>
-          </div>
-        )}
-
-        {phase === "idle" && sheet && (
-          <div className="sawt-sheet" role="dialog" aria-label="التهيئة">
-            <div className="sawt-sheet-in">
-              <p className="sawt-hal-name">
-                {hal.name}
-                {suspended ? " — موقوفة" : ""}
-              </p>
-              <p className="muted sawt-note">{halNote(hal)}</p>
-              {!suspended && (
-                <>
-                  {asking ? (
-                    consentView()
-                  ) : (
-                    <button
-                      className="sawt-start"
-                      onClick={requestStart}
-                      disabled={!supported || !ready}
-                      data-sawt="begin"
-                    >
-                      {ready ? "ابدأ — ثمّ لا تلمس شيئًا" : "يُحمَّل المقطع…"}
-                    </button>
-                  )}
-                  {!supported && (
-                    <p className="sawt-note">
-                      متصفّحُ هذا الجهاز لا يتيح التعرّفَ على الصوت — فلا يعمل التتبّعُ هنا.
-                    </p>
-                  )}
-                  <details className="sawt-fold">
-                    <summary>المقطع وعُدّةُ القياس</summary>
-                    {pickerView()}
-                    {mihakkView()}
-                  </details>
-                </>
-              )}
-              <button className="sawt-copy" onClick={() => setSheet(false)}>
-                طيّ التهيئة
-              </button>
             </div>
           </div>
         )}

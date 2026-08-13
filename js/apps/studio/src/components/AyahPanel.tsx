@@ -142,6 +142,20 @@ export default function AyahPanel({
         ))}
         <span className="ap-audio"><AudioButton ayahId={gid} /></span>
         <span className="ap-collect"><CollectButton locations={[loc]} criterion={{ kind: "manual", value: loc }} label={ar ? "⊕ مجموعة" : "⊕ collect"} /></span>
+        {/* **مدخلُ نبراس من الآية** (أمر المالك 2026-08-14): زال الزرُّ الطائرُ من
+            فوق المصحف، ودخل من موضعه — والسؤالُ يذهب **مسبوقًا بموضعه**، فيصير
+            نبراس جوابًا عن آيةٍ بعينها لا محادثةً بلا سياق. */}
+        <Link
+          to={`/assistant?q=${encodeURIComponent(
+            ar
+              ? `في ${surahNameAr(ayah.surahNo)} ${num(ayah.ayahNo)}: `
+              : `On ${surahNameAr(ayah.surahNo)} ${ayah.ayahNo}: `,
+          )}`}
+          className="ap-btn ap-ask"
+          title={ar ? "اسأل مشكاة عن هذه الآية — محادثةُ ذكاءٍ اصطناعيّ" : "Ask Mishkat about this āya — an AI chat"}
+        >
+          <span className="ai-spark" aria-hidden /> {ar ? "اسأل عن هذه الآية" : "Ask about this āya"}
+        </Link>
         <Link to={`/aya/${ayah.surahNo}/${ayah.ayahNo}`} className="ap-btn ap-link">{ar ? "بطاقةُ الآية" : "Verse card"} ←</Link>
       </div>
 

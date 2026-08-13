@@ -396,6 +396,19 @@ export default function Assistant() {
   const taRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => { taRef.current?.focus(); }, [id]);
 
+  // **السؤالُ يأتي مسبوقًا بموضعه** حين يُفتح نبراس من أدوات الآية (`?q=`) —
+  // يُملأ الحقلُ ولا يُرسَل، فالقارئُ يكمل سؤالَه ويراه قبل أن يذهب.
+  const [seeded, setSeeded] = useState(false);
+  useEffect(() => {
+    if (seeded || id) return;
+    const q = new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("q");
+    if (!q) return;
+    setInput(q);
+    setSeeded(true);
+    const ta = taRef.current;
+    if (ta) { ta.focus(); ta.setSelectionRange(q.length, q.length); }
+  }, [id, seeded]);
+
   const send = async (raw?: string) => {
     const text = (raw ?? input).trim();
     // لا إرسالَ لأقل من ٣ أحرف — الزر بلونه دائمًا والحارسُ سلوكي لا شكلي
