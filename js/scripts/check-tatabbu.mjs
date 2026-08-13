@@ -1,9 +1,10 @@
 /**
- * بوّابةُ «التتبّع بالصوت» — **نصُّ المصحف يُعرض من قاعدتنا، لا من الشيفرة.**
+ * بوّابةُ «التتبّع» — **نصُّ المصحف يُعرض من قاعدتنا، لا من الشيفرة.**
  *
- * صفحةُ المسبار تعرض كلماتِ المصحف واحدةً واحدة ليجري المؤشّرُ عليها. فوجب أن
+ * صفحةُ التتبّع تعرض كلماتِ المصحف واحدةً واحدة ليجري المؤشّرُ عليها. فوجب أن
  * يُحرَس الوجهان: أن يكون المعروضُ **مأخوذًا من القاعدة حرفًا بلا تحويل**، وألّا
- * يكون في الشيفرة **حرفُ قرآنٍ مكتوبٌ بيد** يُعرض للقارئ. أربعةُ فحوص:
+ * يكون في الشيفرة **حرفُ قرآنٍ مكتوبٌ بيد** يُعرض للقارئ. ستّةُ فحوص — أربعةٌ
+ * منذ ص-م١، وزيادتان لمّا صار الاختيارُ على المصحف كلِّه (ص-م٢ §٧):
  *
  *   ١ — **لا نصَّ قرآنٍ في شيفرة المسبار**: يُنزع التعليقُ أوّلًا (شرحُ الشيفرة
  *       ليس معروضًا، وقد يقتضي الاستشهادَ بموضعٍ من المصحف)، ثمّ يُمسح ما بقي:
@@ -20,10 +21,17 @@
  *   ٤ — **مُطبِّعٌ واحدٌ على الطرفين**: شيفرةُ المسبار لا تُنشئ مطبِّعًا ثانيًا
  *       (لا صنفَ حروفٍ عربيًّا ولا تجريدَ ضبطٍ من عندها)، بل تستورد `normalizeAr`
  *       من محلِّل العربيّة. وهذا عقدُ بلاغ الحدود: المصطلحُ يمرّ بمطبِّع النصّ.
+ *   ٥ — **الاختيارُ يبلغ المصحفَ كلَّه**: كلُّ بابٍ من أبواب الاختيار — بالسورة
+ *       وبالجزء وبالصفحة ومن آيةٍ إلى آيةٍ وبالمصحف كلِّه — يستوعب **٦٢٣٦ آية**،
+ *       بلا تكرارٍ ولا خروجٍ عن ترتيب المصحف.
+ *   ٦ — **حرفيّةُ المقطع**: تُعاد قسمةُ مديات التحميل بقاعدتها الحيّة، ويُشغَّل
+ *       على كلِّ مدًى استعلامُ النافذة نفسُه، فيُطابَق ما جُمع بنصّ المصحف في
+ *       مواضعه — على كلِّ سورةٍ وجزءٍ وصفحةٍ وعلى المصحف كلِّه.
  *
- * **والمُطبِّعُ الذي تحكم به هذه البوّابةُ يُجتزأ من مصدره الحيّ** لا نسخةً
- * عنه — فلو بُدّل تبدّل المفحوصُ معه في الحال، ولو زال أعلنت البوّابةُ فقدَه.
- * والنسخةُ تشيخ في صمت.
+ * **وكلُّ ما تحكم به هذه البوّابةُ يُجتزأ من مصدره الحيّ** لا نسخةً عنه —
+ * المطبِّعُ، وشرطُ انتماء الآية إلى مقطع (`inSegment`)، وقاعدةُ اتّصال المدى
+ * (`joinsRun`) وحدُّها. فلو بُدّل واحدٌ منها تبدّل المفحوصُ معه في الحال، ولو
+ * زال أعلنت البوّابةُ فقدَه. **والنسخةُ تشيخ في صمت.**
  *
  * التشغيل: node js/scripts/check-tatabbu.mjs → js/data/gates/TATABBU.json
  */
@@ -76,7 +84,12 @@ const tokens = (s) => (normalizeAr ? normalizeAr(s).split(" ").filter(Boolean) :
 /* ═══════════ القاعدةُ التي يُعرض منها ═══════════ */
 
 const db = new DatabaseSync(join(ROOT, "quran-app.db"), { readOnly: true });
-const ayahRows = db.prepare("select data from ayahs").all().map((r) => JSON.parse(r.data));
+/** آياتُ المصحف بترتيبه — و`ord` رقمُ الآية المتّصلُ الذي به يُعرف الترتيب */
+const ayahRows = db
+  .prepare("select _id, data from ayahs")
+  .all()
+  .map((r) => ({ ...JSON.parse(r.data), ord: Number(String(r._id).slice(1)) }))
+  .sort((a, b) => a.ord - b.ord);
 const wordRows = db
   .prepare("select surahNo, ayahNo, wordNo, data from words order by surahNo, ayahNo, wordNo")
   .all();
@@ -225,6 +238,216 @@ if (!/import \{ normalizeAr, stemAr \} from "\.\.\/arabicSearch";/.test(alignSrc
   missing.push("محرّكُ المحاذاة لا يستورد المطبِّعَ من محلِّل العربيّة");
 }
 
+/* ═══════════ ٥ — الاختيارُ يبلغ المصحفَ كلَّه ═══════════ */
+
+/**
+ * صار الاختيارُ على المصحف كلِّه لا على أربعة مقاطعَ مسمّاة (ص-م٢ §١). فيُشهد
+ * ههنا أنّه **يبلغ الآياتِ كلَّها**: بالسورة، وبالجزء، وبالصفحة، ومن آيةٍ إلى
+ * آية، وبالمصحف كلِّه — **كلُّ بابٍ منها يستوعب ٦٢٣٦ آيةً لا آيةَ أقلّ**.
+ *
+ * **والشرطُ الذي يُشغَّل ههنا هو الشرطُ الحيُّ نفسُه** — يُجتزأ `inSegment` من
+ * مصدره كما يُجتزأ المطبِّع، فلا يُفحص شرطٌ غيرُ العامل. ولو بُدّل تبدّل
+ * المفحوصُ معه، ولو زال أعلنت البوّابةُ فقدَه.
+ */
+const SCRIPT_TS = join(SAWT, "script.ts");
+const scriptSrc = read(SCRIPT_TS);
+
+function liveInSegment() {
+  const m = scriptSrc.match(
+    /export function inSegment\(spec: SegmentSpec, a: AyahRef\): boolean \{\n([\s\S]*?)\n\}/,
+  );
+  if (!m) {
+    missing.push("inSegment — تعذّر اجتزاؤه من مصدره الحيّ، فلا يُفحص الاختيارُ بشرطه العامل");
+    return null;
+  }
+  return new Function("spec", "a", m[1]);
+}
+
+const inSegment = liveInSegment();
+const coverage = {};
+
+if (inSegment) {
+  const TOTAL = ayahRows.length;
+  const surahNos = [...new Set(ayahRows.map((a) => a.surahNo))];
+  const lastAyahOf = new Map();
+  for (const a of ayahRows) lastAyahOf.set(a.surahNo, Math.max(lastAyahOf.get(a.surahNo) ?? 0, a.ayahNo));
+
+  /** يجمع ما تبلغه أبوابُ الاختيار، ويشهد ألّا تُخلط آيةٌ ولا تُكرَّر داخل الباب */
+  const cover = (label, specs) => {
+    const seen = new Set();
+    let overlap = 0;
+    let outOfOrder = 0;
+    for (const spec of specs) {
+      let prev = -1;
+      for (const a of ayahRows) {
+        if (!inSegment(spec, a)) continue;
+        if (a.ord <= prev) outOfOrder++;
+        prev = a.ord;
+        if (seen.has(a.location)) overlap++;
+        seen.add(a.location);
+      }
+    }
+    coverage[label] = seen.size;
+    if (seen.size !== TOTAL) {
+      fail("الاختيارُ يبلغ المصحف", `${label}: بلغ ${seen.size} آيةً من ${TOTAL}`);
+    }
+    if (overlap) fail("الاختيارُ يبلغ المصحف", `${label}: تكرّرت ${overlap} آيةً بين مقاطعه`);
+    if (outOfOrder) fail("الاختيارُ يبلغ المصحف", `${label}: ${outOfOrder} آيةً جاءت على غير ترتيب المصحف`);
+  };
+
+  cover("بالسورة", surahNos.map((n) => ({ kind: "surahs", surahs: [n] })));
+  cover("بالجزء", [...new Set(ayahRows.map((a) => a.juz))].map((n) => ({ kind: "juz", juz: n })));
+  cover("بالصفحة", [...new Set(ayahRows.map((a) => a.page))].map((n) => ({ kind: "page", page: n })));
+  cover(
+    "من آيةٍ إلى آية",
+    surahNos.map((n) => ({ kind: "range", surahNo: n, from: 1, to: lastAyahOf.get(n) })),
+  );
+  cover("المصحف كلُّه", [{ kind: "mushaf" }]);
+
+  // ومدًى في وسط سورةٍ يقف عند حدَّيه لا يتعدّاهما
+  const mid = ayahRows.filter((a) => inSegment({ kind: "range", surahNo: 2, from: 253, to: 256 }, a));
+  if (mid.length !== 4 || mid[0].ayahNo !== 253 || mid[3].ayahNo !== 256) {
+    fail("الاختيارُ يبلغ المصحف", `مدًى في وسط سورةٍ لم يقف عند حدَّيه: ${mid.length} آية`);
+  }
+}
+
+/* ═══════════ ٦ — نصُّ المقطع يطابق نصَّ المصحف حرفًا ═══════════ */
+
+/**
+ * لا يكفي أن تكون كلماتُ الآية تجمع نصَّها (الفحصُ الثالث): فالمقطعُ لم يعُد
+ * يُبنى دَفعةً، بل تجلبه **نافذةُ التحميل** على مديات، وكلُّ مدًى استعلامٌ
+ * مقيَّدٌ **بسورةٍ واحدةٍ وحدَّي رقمِ آية**. فلو ظُنّ الاتّصالُ في غير موضعه
+ * لسقط من نصّ المقطع ما لا يُرى سقوطُه.
+ *
+ * فتُعاد ههنا **قسمةُ المديات بقاعدتها الحيّة** (`joinsRun` مجتزأةً من مصدرها،
+ * وحدُّها `MAX_RUN_AYAHS` مجتزأٌ معها)، ويُشغَّل على كلِّ مدًى **استعلامُ
+ * النافذة نفسُه** على القاعدة، ثمّ يُطابَق ما جُمع بنصّ المصحف في تلك المواضع
+ * **بترتيبه وبلا نقصٍ ولا تكرار**. ويقع ذلك على **كلِّ سورةٍ وكلِّ جزءٍ وكلِّ
+ * صفحةٍ وعلى المصحف كلِّه**.
+ */
+let segmentsChecked = 0;
+let runsChecked = 0;
+
+function liveJoinsRun() {
+  const cap = scriptSrc.match(/const MAX_RUN_AYAHS = (\d+);/);
+  const fn = scriptSrc.match(
+    /export function joinsRun\(prev: AyahRef, next: AyahRef, taken: number\): boolean \{\n([\s\S]*?)\n\}/,
+  );
+  if (!cap || !fn) {
+    missing.push("joinsRun — تعذّر اجتزاؤه من مصدره الحيّ، فلا تُفحص قسمةُ مديات التحميل");
+    return null;
+  }
+  return new Function("prev", "next", "taken", `const MAX_RUN_AYAHS = ${cap[1]};\n${fn[1]}`);
+}
+
+const joinsRun = liveJoinsRun();
+
+if (inSegment && joinsRun) {
+  /** استعلامُ النافذة بحروفه: سورةٌ واحدةٌ ومدًى من أرقام الآيات */
+  const windowQuery = db.prepare(
+    "select ayahNo, wordNo, data from words where surahNo = ? and ayahNo >= ? and ayahNo <= ?",
+  );
+
+  const literal = (label, spec) => {
+    const refs = ayahRows.filter((a) => inSegment(spec, a));
+    if (!refs.length) return;
+    segmentsChecked++;
+
+    // ١) تُقسَّم آياتُ المقطع مدياتٍ بالقاعدة الحيّة، ويُجلب كلُّ مدًى باستعلامه
+    const got = new Map();
+    let i = 0;
+    while (i < refs.length) {
+      let end = i;
+      while (end + 1 < refs.length && joinsRun(refs[end], refs[end + 1], end - i + 1)) end++;
+      runsChecked++;
+      const rows = windowQuery
+        .all(refs[i].surahNo, refs[i].ayahNo, refs[end].ayahNo)
+        .sort((x, y) => x.ayahNo - y.ayahNo || x.wordNo - y.wordNo);
+      for (const w of rows) {
+        const key = `${refs[i].surahNo}:${w.ayahNo}`;
+        const arr = got.get(key);
+        const text = JSON.parse(w.data).textUthmani;
+        if (arr) arr.push(text);
+        else got.set(key, [text]);
+      }
+      i = end + 1;
+    }
+
+    // ٢) ثمّ يُطابَق ما جُمع بنصّ المصحف في تلك المواضع بترتيبه
+    const built = [];
+    const whole = [];
+    for (const a of refs) {
+      const ws = got.get(a.location);
+      if (!ws) {
+        fail("حرفيّةُ المقطع", `${label} — سقطت ${a.location} من مديات التحميل`);
+        return;
+      }
+      built.push(tokens(ws.join(" ")).join(" "));
+      // المواضعُ المعلَنةُ في الفحص الثالث تُقاس بمفرداتها لا بنصّها
+      whole.push(
+        DECLARED_SPLITS[a.location]
+          ? tokens((wordsByAyah.get(a.location) ?? []).join(" ")).join(" ")
+          : tokens(a.textUthmani).join(" "),
+      );
+    }
+    if (built.join(" ") !== whole.join(" ")) {
+      fail("حرفيّةُ المقطع", `${label} — نصُّ المقطع لا يطابق نصَّ المصحف في مواضعه`);
+    }
+  };
+
+  for (const n of [...new Set(ayahRows.map((a) => a.surahNo))]) {
+    literal(`سورة ${n}`, { kind: "surahs", surahs: [n] });
+  }
+  for (const n of [...new Set(ayahRows.map((a) => a.juz))]) literal(`جزء ${n}`, { kind: "juz", juz: n });
+  for (const n of [...new Set(ayahRows.map((a) => a.page))]) literal(`صفحة ${n}`, { kind: "page", page: n });
+  literal("المصحف كلُّه", { kind: "mushaf" });
+
+  // ومقاطعُ المحكّ المختومة — تُقرأ من مصدرها الحيّ لا تُكتب ههنا، فهي مقاطعُ
+  // **سورٍ متفرّقةٍ** لا متّصلة، وفيها يقع أشدُّ ما تخطئ فيه قسمةُ المديات.
+  const sealedSurahs = [...scriptSrc.matchAll(/kind: "surahs", surahs: \[([\d, ]+)\]/g)].map((m) =>
+    m[1].split(",").map((x) => Number(x.trim())),
+  );
+  const sealedPages = [...scriptSrc.matchAll(/kind: "page", page: (\d+)/g)].map((m) => Number(m[1]));
+  if (!sealedSurahs.length && !sealedPages.length) {
+    missing.push("مقاطعُ المحكّ المختومة — لم تُوجد في مصدرها الحيّ (أأُلغي خيارُها؟)");
+  }
+  for (const surahs of sealedSurahs) literal(`مقطعُ محكٍّ: سورٌ ${surahs.join("+")}`, { kind: "surahs", surahs });
+  for (const p of sealedPages) literal(`مقطعُ محكٍّ: صفحة ${p}`, { kind: "page", page: p });
+}
+
+/* ═══════════ ٧ — لا تُدَّعى استقلاليّةٌ عن الشبكة ═══════════ */
+
+/**
+ * **القيدُ الذي لا يُتجاوز** (ص-م٢ §٦-٣): محرّكُ اليوم يرسل الصوتَ إلى خادم
+ * صانع المتصفّح. فلا يُقال في هذه الصفحة — **ولا في يومٍ يُنسى فيه الأمر** —
+ * إنّها تعمل بلا إنترنت، ولا إنّ الصوتَ لا يغادر الجهاز، ولا إنّ التعرّفَ يقع
+ * على الجهاز وحدَه. **فذلك لا يصحّ إلّا بالمحرّك الحرّ**، ودعواه اليومَ كذبٌ
+ * على القارئ في أحوج ما يكون إلى الصدق.
+ *
+ * وهذا الفحصُ على **النصّ المعروض** لا على التعليق: التعليقُ يشرح القيدَ فيلزمه
+ * ذكرُه. ولا حدَّ كلمةٍ (`\b`) مع العربيّة (بلاغ الحدود) — بل عباراتٌ كاملة.
+ */
+const FORBIDDEN_CLAIMS = [
+  ["بلا إنترنت", /بلا\s+إنترنت/],
+  ["دون إنترنت", /دون\s+إنترنت/],
+  ["لا يغادر الجهاز", /لا\s+يغادر\s+الجهاز/],
+  ["لا يخرج من الجهاز", /لا\s+يخرج\s+من\s+الجهاز/],
+  ["يبقى في جهازك", /يبقى\s+في\s+جهازك/],
+  ["بلا شبكة", /بلا\s+شبكة/],
+];
+
+/** النصُّ المعروضُ وحدَه: ما بين وسوم العرض ونصوصُ الصفحة، بعد نزع التعليق */
+const viewShown = stripComments(read(FILES[6][1]));
+for (const [name, re] of FORBIDDEN_CLAIMS) {
+  const m = viewShown.match(re);
+  if (m) fail("دعوى استقلالٍ عن الشبكة", `الصفحةُ تقول «${name}» — ولا يصحّ إلّا بالمحرّك الحرّ`);
+}
+
+/** وبإزائه: الإعلانُ نفسُه قائمٌ لم يُنزع */
+if (!/يرسل\s+صوتَك\s+إلى\s+خادم/.test(viewShown)) {
+  missing.push("الإعلانُ الصريحُ بأنّ الصوت يُرسل إلى خادم صانع المتصفّح — لم يُوجد في الصفحة");
+}
+
 /* ═══════════ الخلاصة ═══════════ */
 
 mkdirSync(dirname(OUT), { recursive: true });
@@ -239,6 +462,9 @@ const report = {
     trigramsIndexed: trigrams.size,
     textUthmaniTouches: touchSeen,
     declaredSplits: Object.keys(DECLARED_SPLITS).length,
+    segmentsChecked,
+    runsChecked,
+    coverage,
   },
   failures,
   missing,
@@ -249,6 +475,9 @@ const label = ok ? "خضراء" : "حمراء";
 console.log(`بوّابةُ التتبّع: ${label}`);
 console.log(
   `  ملفّات ${FILES.length} · آيات ${ayahsChecked} · ثلاثيّات ${trigrams.size} · مسُّ الرسم ${touchSeen}`,
+);
+console.log(
+  `  الاختيار: ${Object.entries(coverage).map(([k, v]) => `${k} ${v}`).join(" · ")} · مقاطعُ فُحص نصُّها ${segmentsChecked} في ${runsChecked} مدًى`,
 );
 for (const f of failures) console.log(`  ✗ [${f.check}] ${f.detail}`);
 for (const m of missing) console.log(`  ؟ ${m}`);

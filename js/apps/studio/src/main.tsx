@@ -49,8 +49,8 @@ const ThematicThread = lazy(() => import("./views/ThematicThread"));
 const Learn = lazy(() => import("./views/Learn"));
 const EraabDrill = lazy(() => import("./views/EraabDrill"));
 const Assistant = lazy(() => import("./views/Assistant"));
-// مسبارٌ **مستور** تحت الفحص: لا يُدرج في التنقّل، ولا في التوثيق، ولا يُبلَّغ
-// رابطُه إلّا للفحص — حتّى يُقرَّر أمرُه بعد قياسه (findings/sawt/M1-MIHAKK.md).
+// «التتبّع» — صار بابًا في الواجهة بأمر المالك 2026-08-14 بعد فحصه المسبارَ على
+// كروم: مدخلُه في الرأس على العرضين، وصفحتُه قائمةٌ بنفسها بلا هيكل التطبيق.
 const Tatabbu = lazy(() => import("./views/Tatabbu"));
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
@@ -137,6 +137,39 @@ function ThemeToggle() {
     >
       {isDark ? "☀" : "☾"}
     </button>
+  );
+}
+
+/** أيقونةُ التتبّع: موجُ صوتٍ يمرّ على سطر — لا ميكروفونَ، فالبابُ تتبُّعٌ لا تسجيل */
+function TatabbuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width={19} height={19} aria-hidden focusable="false">
+      <path
+        d="M3.2 12h1.6M8 8v8M12 4.8v14.4M16 8v8M19.2 12h1.6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/** مدخلُ «التتبّع» في الرأس: على الحاسوب زرٌّ بعنوانٍ وأيقونة — لا أيقونةً صمّاء —
+ *  وعلى الجوال أيقونةٌ بجوار الإعدادات (أمر المالك 2026-08-14). */
+function TatabbuButton({ iconOnly = false }: { iconOnly?: boolean }) {
+  const lang = useUILang();
+  const label = lang === "ar" ? "التتبّع" : t("nav.tatabbu");
+  return (
+    <NavLink
+      to="/tatabbu"
+      className={`tatabbu-btn${iconOnly ? " icon-only" : ""}`}
+      title={t("nav.tatabbu.hint")}
+      aria-label={label}
+    >
+      <TatabbuIcon />
+      {!iconOnly && <span>{label}</span>}
+    </NavLink>
   );
 }
 
@@ -319,7 +352,14 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
           <NavLink to="/" onClick={onClose} className="ar" style={{ fontFamily: "var(--font-quran)", color: "var(--accent)", fontSize: 22, fontWeight: 700, textDecoration: "none" }}>مشكاة</NavLink>
           <button onClick={onClose} aria-label={ar ? "إغلاق" : "close"}>✕</button>
         </div>
+        {/* ثلاثةٌ نُقلت من رأس الجوال إلى الدُّرج (أمر المالك 2026-08-14): المشاركةُ
+            والمحفوظاتُ وتبديلُ اللغة — بعنوانٍ واضحٍ فلا تُلتمس في الرأس فلا تُوجد */}
+        <div className="drawer-group-h drawer-tools-h">{ar ? "أدوات الصفحة" : "Page tools"}</div>
         <div className="drawer-share"><ShareButton compact /></div>
+        <div className="drawer-tools">
+          <BookmarksPanel />
+          <LangToggle />
+        </div>
         <nav className="drawer-nav" onClick={onClose}>
           <NavLink to="/read">{ar ? "المصحف" : "Reader"}</NavLink>
           {groups.map((g) => (
@@ -333,7 +373,6 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
           <NavLink to="/about">{ar ? "عن المشروع" : "About"}</NavLink>
         </nav>
         <div className="drawer-controls">
-          <LangToggle />
           <ThemeToggle />
         </div>
       </aside>
@@ -396,7 +435,9 @@ function NibrasFab() {
     // نقرةٌ تلت سحبًا لا تفتح المساعد
     if (drag.current?.moved) e.preventDefault();
   };
-  if (loc.pathname.startsWith("/assistant")) return null;
+  // ويُزال من صفحة التتبّع وحدَها (أمر المالك 2026-08-14): تلك صفحةُ تلاوةٍ ملءَ
+  // الشاشة لا يُزاحمها زرٌّ طائر. ولا يُمَسّ في سائر الصفحات.
+  if (loc.pathname.startsWith("/assistant") || loc.pathname.startsWith("/tatabbu")) return null;
   return (
     <NavLink
       ref={fabRef}
@@ -472,15 +513,16 @@ function App() {
           {!mobile && <Nav />}
           <span className="spacer" />
           {mobile ? (
+            /* تنظيفُ رأس الجوال (أمر المالك 2026-08-14، وهو ينسخ أمرَ 2026-07-29 في
+               تبديل اللغة): نُقلت المشاركةُ والمحفوظاتُ وتبديلُ اللغة إلى الدُّرج،
+               فلا يبقى في الرأس إلّا القائمةُ والهويّةُ والتتبّعُ والإعدادات. */
             <>
-              <ShareButton />
-              <BookmarksPanel />
-              {/* تبديلُ اللغة من رأس الجوال مباشرةً (أمر المالك 2026-07-29) */}
-              <LangToggle />
+              <TatabbuButton iconOnly />
               <SettingsPanel />
             </>
           ) : (
             <>
+              <TatabbuButton />
               <ShareButton />
               <BookmarksPanel />
               <LangToggle />

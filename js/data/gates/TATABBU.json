@@ -7,7 +7,16 @@
     "ayahsChecked": 6236,
     "trigramsIndexed": 52979,
     "textUthmaniTouches": 2,
-    "declaredSplits": 5
+    "declaredSplits": 5,
+    "segmentsChecked": 751,
+    "runsChecked": 1174,
+    "coverage": {
+      "بالسورة": 6236,
+      "بالجزء": 6236,
+      "بالصفحة": 6236,
+      "من آيةٍ إلى آية": 6236,
+      "المصحف كلُّه": 6236
+    }
   },
   "failures": [],
   "missing": []

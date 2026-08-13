@@ -54,7 +54,7 @@ const PLANTS = [
   [
     "نصُّ آيةٍ مكتوبًا في الصفحة",
     "view",
-    (s) => s.replace("<h1 className=\"sawt-h1\">التتبّع بالصوت</h1>", `<h1 className="sawt-h1">${trigramFromDb()}</h1>`),
+    (s) => s.replace("<h1 className=\"sawt-h1\">التتبّع</h1>", `<h1 className="sawt-h1">${trigramFromDb()}</h1>`),
     { check: "قرآنٌ في الشيفرة" },
   ],
   [
@@ -92,6 +92,60 @@ const PLANTS = [
     "analyzer",
     (s) => s.replace("export function normalizeAr(s: string): string {", "export function normalizeArabic(s: string): string {"),
     { missing: "normalizeAr" },
+  ],
+  // ═══ زياداتُ ص-م٢: الاختيارُ صار على المصحف كلِّه، والتحميلُ بنافذة ═══
+  [
+    "ثغرةٌ في اختيار المصحف كلِّه",
+    "script",
+    // «المصحفُ كلُّه» يُسقط سورةً واحدة — وهي ثغرةٌ لا تُرى بالعين ولا يُنبّه
+    // عليها شيءٌ في الصفحة: تُفتح الختمةُ فتنتهي دون آخرها.
+    (s) => s.replace("    case \"mushaf\":\n      return true;", "    case \"mushaf\":\n      return a.surahNo !== 114;"),
+    { check: "الاختيارُ يبلغ المصحف" },
+  ],
+  [
+    "ثغرةٌ في الاختيار بالصفحة",
+    "script",
+    (s) => s.replace("      return a.page === spec.page;", "      return a.page === spec.page && a.ayahNo !== 1;"),
+    { check: "الاختيارُ يبلغ المصحف" },
+  ],
+  [
+    "تبديلُ اسم شرط الانتماء في مصدره الحيّ",
+    "script",
+    (s) => s.replace("export function inSegment(spec: SegmentSpec, a: AyahRef): boolean {", "export function inPart(spec: SegmentSpec, a: AyahRef): boolean {"),
+    { missing: "inSegment" },
+  ],
+  [
+    "مدًى يُظنّ متّصلًا حيث لا اتّصال",
+    "script",
+    // استعلامُ النافذة مقيَّدٌ **بسورةٍ واحدةٍ وحدَّي رقمِ آية**. فلو ظُنّ
+    // الاتّصالُ حيث لا اتّصال، جاء الاستعلامُ ببعض المدى وسقط سائرُه — **ونقص
+    // من نصّ المقطع ما لا يُرى نقصُه**، وهذا أخطرُ ما في التحميل بالنوافذ.
+    (s) => s.replace("  return next.surahNo === prev.surahNo && next.ayahNo === prev.ayahNo + 1 && taken < MAX_RUN_AYAHS;", "  return taken < MAX_RUN_AYAHS;"),
+    { check: "حرفيّةُ المقطع" },
+  ],
+  [
+    "دعوى أنّ الصفحة تعمل بلا إنترنت",
+    "view",
+    (s) => s.replace("تتلو، فيجري المؤشّرُ مع صوتك في المصحف.", "تتلو، فيجري المؤشّرُ مع صوتك في المصحف بلا إنترنت."),
+    { check: "دعوى استقلالٍ عن الشبكة" },
+  ],
+  [
+    "دعوى أنّ الصوت لا يغادر الجهاز",
+    "view",
+    (s) => s.replace("ولا نحفظ نحن صوتًا، ولا نخزّنه", "وصوتُك لا يغادر الجهاز، ولا نحفظ نحن صوتًا، ولا نخزّنه"),
+    { check: "دعوى استقلالٍ عن الشبكة" },
+  ],
+  [
+    "نزعُ الإعلان من الصفحة",
+    "view",
+    (s) => s.replace("وهو يرسل صوتَك إلى خادم صانع المتصفّح", "وهو محرّكٌ للتجربة"),
+    { missing: "الإعلانُ الصريح" },
+  ],
+  [
+    "تبديلُ اسم قاعدة اتّصال المدى",
+    "script",
+    (s) => s.replace("export function joinsRun(prev: AyahRef, next: AyahRef, taken: number): boolean {", "export function joinsSpan(prev: AyahRef, next: AyahRef, taken: number): boolean {"),
+    { missing: "joinsRun" },
   ],
 ];
 

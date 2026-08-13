@@ -2398,6 +2398,19 @@ table.data tr:hover td { background: var(--panel-2); }
 .sh-manual button { border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 13px; padding: 2px 4px; }
 .drawer-share { padding: 10px 14px 4px; display: flex; }
 .drawer-share .sh-btn { flex: 1; justify-content: center; }
+/* ثلاثةٌ نُقلت من رأس الجوال إلى الدُّرج (أمر المالك 2026-08-14) بعنوانٍ واضح */
+.drawer-tools-h { padding: 12px 16px 0; }
+.drawer-tools { display: flex; gap: 8px; padding: 6px 14px 10px; flex-wrap: wrap; }
+
+/* مدخلُ «التتبّع» في الرأس: زرٌّ بعنوانٍ وأيقونة، وعلى الجوال أيقونةٌ وحدَها */
+.tatabbu-btn {
+  display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px;
+  color: var(--ink-2); background: var(--panel); font-size: 14px; white-space: nowrap;
+}
+.tatabbu-btn:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.tatabbu-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.tatabbu-btn.icon-only { padding: 7px; border-radius: 50%; }
 
 @media (max-width: 760px) {
   .topbar .sh-btn { width: 36px; height: 36px; min-width: 36px; padding: 0; }
@@ -2690,16 +2703,92 @@ table.data tr:hover td { background: var(--panel-2); }
 /* حاويةُ المحادثة مرجعُ offsetTop لرسائلها */
 .mu-thread { position: relative; }
 
-/* ═══════════ التتبّع بالصوت — مسبارٌ مستور (findings/sawt/M1-MIHAKK.md) ═══════════
-   صفحةُ تلاوةٍ لا صفحةُ تصفّح: يُخفى هيكلُ التطبيق كلُّه أثناء التلاوة، فلا يبقى
-   إلّا النصُّ والمؤشّر. والتصحيحُ ممنوعٌ أثناءها — فلا لونَ إنذارٍ ههنا البتّة:
-   المؤشّرُ بلونِ اللهجة الهادئ، وعدمُ انكشاف الكلمة في وضع الكشف هو التنبيه. */
+/* ═══════════ التتبّع — بابٌ قائمٌ بنفسه (findings/SESSION-SAWT-M2-PROMPT.md §٤) ═══════════
+   صفحةُ تلاوةٍ لا صفحةُ تصفّح: يُخفى هيكلُ التطبيق كلُّه ما دامت الصفحةُ مفتوحة
+   (`sawt-page`) لا أثناء التلاوة وحدَها — لا رأسَ ولا تبويبَ ولا دُرجَ ولا زرًّا
+   طائرًا، وزرُّ إغلاقٍ واحدٌ في الصفحة نفسِها. والتصحيحُ ممنوعٌ أثناء التلاوة —
+   فلا لونَ إنذارٍ ههنا البتّة: المؤشّرُ بلونِ اللهجة الهادئ، وعدمُ انكشاف الكلمة
+   في حال التثبيت هو التنبيه. */
+body.sawt-page .topbar,
+body.sawt-page .tabbar,
+body.sawt-page .nibras-fab,
+body.sawt-page .npb,
+body.sawt-page .focus-exit,
 body.sawt-live .topbar,
 body.sawt-live .tabbar,
 body.sawt-live .nibras-fab,
 body.sawt-live .npb,
 body.sawt-live .focus-exit { display: none; }
+body.sawt-page .app-shell,
 body.sawt-live .app-shell { grid-template-rows: 1fr; }
+body.sawt-page { overflow: hidden; }
+
+/* ── صدرُ الصفحة على الحاسوب: العنوانُ وزرُّ الإغلاق ── */
+.sawt-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sawt-x {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 50%;
+  width: 42px; height: 42px; font-size: 19px; color: var(--ink-2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex: none;
+}
+.sawt-link { background: none; border: none; padding: 0; color: var(--accent); cursor: pointer; font: inherit; text-decoration: underline; }
+
+/* ── الحالاتُ المسمّاة: حالٌ واحدةٌ تُختار باسمها فتضبط ما تحتها ── */
+.sawt-halat { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.sawt-hal {
+  display: flex; flex-direction: column; gap: 4px; text-align: start; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 12px 14px; color: var(--ink); font-family: inherit;
+}
+.sawt-hal.on { border-color: var(--accent); background: var(--accent-soft); }
+/* الموقوفةُ تُعرض رماديّةً وتحتها سببُها — تُعرض ولا تُخفى، فلا تُظنّ نسيانًا */
+.sawt-hal.off { opacity: .62; border-style: dashed; }
+.sawt-hal.off .sawt-hal-n { color: var(--muted); }
+.sawt-hal-n { font-weight: 700; font-size: 16px; }
+.sawt-hal-w { font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+.sawt-hal-name { font-family: var(--font-quran); color: var(--accent); font-size: 21px; margin: 0 0 2px; }
+
+.sawt-pick-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.sawt-mini { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
+.sawt-mini input {
+  width: 84px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+  padding: 8px 12px; color: var(--ink); font-family: inherit; font-size: 14px;
+}
+.sawt-warn-loud { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--gold); }
+.sawt-warn-acts { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+.sawt-warn-acts .sawt-start { margin: 0; }
+.sawt-reached { font-family: var(--font-quran); font-size: 26px; color: var(--accent); margin: 6px 0; }
+
+/* ═══════════ الجوال: ملءُ الشاشة، وثلاثةٌ لا رابعَ لها ═══════════
+   النصُّ هو الشاشةُ كلُّها، ومعه عنصران لا غير: قائمةُ اختيار الحال وزرُّ
+   الإغلاق. وما لزم من تهيئةٍ يُطوى في لوحٍ يُفتح بلمسةٍ على النصّ قبل البدء
+   ويختفي كلُّه عند التلاوة. */
+.sawt-m { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; }
+.sawt-m .sawt-text { flex: 1; overflow-y: auto; padding: 64px 18px 26px; }
+.sawt-m-controls {
+  position: absolute; top: 0; inset-inline: 0; display: flex; align-items: center;
+  justify-content: space-between; gap: 10px; padding: 10px 12px; pointer-events: none;
+}
+.sawt-m-controls > * { pointer-events: auto; }
+.sawt-m .sawt-x { width: 38px; height: 38px; font-size: 17px; }
+.sawt-hal-select {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+  padding: 8px 14px; color: var(--ink-2); font-family: inherit; font-size: 14px; max-width: 58vw;
+}
+/* النصُّ قبل البدء أخفتُ قليلًا — فالشاشةُ تنتظر لمستَك، ولا يُزاد لذلك عنصرٌ رابع */
+.sawt-dim { opacity: .62; }
+.sawt-big .sawt-w { font-size: 1.22em; }
+.sawt-text-wait { flex: 1; }
+
+.sawt-sheet {
+  position: absolute; inset: 0; background: color-mix(in srgb, var(--bg) 86%, transparent);
+  display: flex; align-items: flex-end; z-index: 5; backdrop-filter: blur(2px);
+}
+.sawt-sheet-in {
+  width: 100%; max-height: 88dvh; overflow-y: auto; background: var(--panel);
+  border-top: 1px solid var(--line); border-radius: 18px 18px 0 0; padding: 18px 16px 26px;
+}
+.sawt-fold { margin: 16px 0; border-top: 1px solid var(--line); padding-top: 12px; }
+.sawt-fold > summary { cursor: pointer; color: var(--ink-2); font-size: 14px; }
 
 .sawt-h1 { font-family: var(--font-quran); color: var(--accent); font-size: 30px; margin: 8px 0 4px; line-height: 1.5; }
 .sawt-h2 { font-size: 16px; color: var(--ink-2); margin: 22px 0 8px; }
@@ -2711,17 +2800,6 @@ body.sawt-live .app-shell { grid-template-rows: 1fr; }
   padding: 12px 14px; font-size: 14px; line-height: 1.9; color: var(--ink); margin: 14px 0;
 }
 .sawt-warn-hard { background: color-mix(in srgb, var(--danger) 10%, var(--panel)); border-color: var(--danger); }
-
-.sawt-modes { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-.sawt-mode {
-  display: flex; flex-direction: column; gap: 4px; text-align: start; cursor: pointer;
-  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 12px 14px; color: var(--ink); font-family: inherit;
-}
-.sawt-mode.on { border-color: var(--accent); background: var(--accent-soft); }
-.sawt-mode-name { font-weight: 700; font-size: 16px; }
-.sawt-mode-what { font-size: 13px; color: var(--ink-2); line-height: 1.7; }
-.sawt-mode-who { font-size: 12px; color: var(--muted); }
 
 .sawt-segs { display: flex; flex-wrap: wrap; gap: 8px; }
 .sawt-seg {

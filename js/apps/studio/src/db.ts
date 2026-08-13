@@ -148,6 +148,30 @@ export async function listWords(surahNo: number): Promise<WordDoc[]> {
   })) as WordDoc[];
 }
 
+/** آياتُ جزءٍ أو صفحةٍ من المصحف، بترتيب المصحف (لا السورةُ كلُّها). */
+export async function ayahsOfUnit(
+  kind: "juz" | "page",
+  n: number,
+): Promise<AyahDoc[]> {
+  const docs = (await coll("ayahs").findMany({ where: { [kind]: n } })) as AyahDoc[];
+  return docs.sort((a, b) => Number(a._id.slice(1)) - Number(b._id.slice(1)));
+}
+
+/**
+ * مفرداتُ آياتٍ متتاليةٍ من سورةٍ واحدة — **نافذةُ التحميل لا السورةُ كلُّها**.
+ * بها يُفتح المصحفُ كلُّه للتتبّع بلا أن يُحمَّل كلُّه لأجل صفحةٍ واحدة.
+ */
+export async function wordsBetween(
+  surahNo: number,
+  fromAyah: number,
+  toAyah: number,
+): Promise<WordDoc[]> {
+  const ws = (await coll("words").findMany({
+    where: { surahNo, ayahNo: { gte: fromAyah, lte: toAyah } },
+  })) as WordDoc[];
+  return ws.sort((a, b) => a.ayahNo - b.ayahNo || a.wordNo - b.wordNo);
+}
+
 export async function wordsOfAyah(
   surahNo: number,
   ayahNo: number,
