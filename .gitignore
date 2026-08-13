@@ -69,3 +69,6 @@ js/data/tadabbur/
 
 # python bytecode
 __pycache__/
+
+# تلاوات everyayah — تُجلب بـ tools/fetch_recitation.py ولا تُودَع
+audio/
