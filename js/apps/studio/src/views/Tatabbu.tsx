@@ -509,8 +509,13 @@ export default function Tatabbu() {
         </div>
 
         <div className="sawt-text" dir="rtl">
-          {script.ayahs.map((a) => (
+          {script.ayahs.map((a, ai) => (
             <p className="sawt-aya" key={`${a.surahNo}:${a.ayahNo}`}>
+              {/* فاصلُ سورةٍ حين ينتقل المقطعُ من سورةٍ إلى أخرى — كي يعرف
+                  القارئُ أين هو بلا أن يُقطع عليه سياقُ التلاوة */}
+              {(ai === 0 || script.ayahs[ai - 1].surahNo !== a.surahNo) && (
+                <span className="sawt-surah">{surahNameAr(a.surahNo)}</span>
+              )}
               {script.words.slice(a.from, a.to + 1).map((w, k) => {
                 const i = a.from + k;
                 const state = i < cursor ? "past" : i === cursor ? "now" : "next";
@@ -599,39 +604,45 @@ export default function Tatabbu() {
               هذه أرقامٌ عن <b>الآلة</b> — كم تبِعت وكم فاتها وكم تأخّرت. وليست حكمًا على
               التلاوة. الحال: <b>{r.condition}</b>.
             </p>
+            {!r.measurable && (
+              <p className="sawt-note">
+                <b>لم تقع تلاوةٌ يُقاس عليها في هذه التشغيلة</b> — فليس ما دونُ حكمًا على
+                المحكّ لا بعبورٍ ولا بإخفاق.
+              </p>
+            )}
             <table className="sawt-table">
               <tbody>
                 <tr>
                   <td>الإصابة</td>
                   <td>
-                    <b>{pct}٪</b> من {num(r.span.words)} كلمة
+                    <b>{num(pct)}٪</b> من {num(r.span.words)} كلمة
                   </td>
-                  <td className={r.verdict.hitRate ? "ok" : "no"}>
-                    {r.verdict.hitRate ? "بلغ ٩٠٪" : "دون ٩٠٪"}
+                  <td className={!r.measurable ? "" : r.verdict.hitRate ? "ok" : "no"}>
+                    {!r.measurable ? "لم يُقَس" : r.verdict.hitRate ? "بلغ ٩٠٪" : "دون ٩٠٪"}
                   </td>
                 </tr>
                 <tr>
                   <td>الاسترداد</td>
                   <td>
-                    {num(r.losses.count)} حادثة · أبعدُها {r.losses.worst ?? "—"} كلمة
+                    {num(r.losses.count)} حادثة · أبعدُها {r.losses.worst == null ? "—" : num(r.losses.worst)} كلمة
                     {r.losses.unresolved ? ` · ${r.losses.unresolved} بلا عودة` : ""}
                   </td>
-                  <td className={r.verdict.recovery ? "ok" : "no"}>
-                    {r.verdict.recovery ? "في حدّ ٣ كلمات" : "جاوز ٣ كلمات"}
+                  <td className={!r.measurable ? "" : r.verdict.recovery ? "ok" : "no"}>
+                    {!r.measurable ? "لم يُقَس" : r.verdict.recovery ? "في حدّ ٣ كلمات" : "جاوز ٣ كلمات"}
                   </td>
                 </tr>
                 <tr>
                   <td>القفزُ الكاذب</td>
                   <td>{num(r.falseJumps)}</td>
-                  <td className={r.verdict.falseJumps ? "ok" : "no"}>
-                    {r.verdict.falseJumps ? "في الحدّ" : "جاوز الحدّ"}
+                  <td className={!r.measurable ? "" : r.verdict.falseJumps ? "ok" : "no"}>
+                    {!r.measurable ? "لم يُقَس" : r.verdict.falseJumps ? "في الحدّ" : "جاوز الحدّ"}
                   </td>
                 </tr>
                 <tr>
                   <td>زمنُ الوقف</td>
                   <td>
                     {r.waqf.measured
-                      ? `وسيط ${r.waqf.median} مِث · مئين٩٠ ${r.waqf.p90} مِث`
+                      ? `وسيط ${num(r.waqf.median ?? 0)} مِث · مئين٩٠ ${num(r.waqf.p90 ?? 0)} مِث`
                       : "غير مقيسٍ آليًّا"}
                   </td>
                   <td className={r.verdict.latency == null ? "" : r.verdict.latency ? "ok" : "no"}>
@@ -646,7 +657,7 @@ export default function Tatabbu() {
                   <td>ثباتُ المحرّك</td>
                   <td>
                     انقطع واستُؤنف {num(r.restarts)} مرّة · أطولُ سكوت{" "}
-                    {r.longestSilenceMs ?? "—"} مِث
+                    {r.longestSilenceMs == null ? "—" : `${num(r.longestSilenceMs)} مِث`}
                   </td>
                   <td />
                 </tr>

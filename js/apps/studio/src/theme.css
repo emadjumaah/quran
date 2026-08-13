@@ -2789,3 +2789,4 @@ body.sawt-live .app-shell { grid-template-rows: 1fr; }
 .sawt-quiet-word { font-family: var(--font-quran); font-size: 30px; color: var(--accent); margin-bottom: 26px; }
 .sawt-select { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; color: var(--ink); font-family: inherit; font-size: 14px; }
 .sawt-hint { padding: 0 18px 14px; font-size: 13px; line-height: 1.8; text-align: center; }
+.sawt-surah { display: block; font-size: 15px; font-family: var(--font-ui); color: var(--muted); letter-spacing: .04em; margin: 26px 0 8px; }

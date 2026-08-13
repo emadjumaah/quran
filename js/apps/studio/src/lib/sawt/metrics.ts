@@ -63,6 +63,11 @@ export interface SawtReport {
    * إلى النظر لا تقريرُ خطأ.
    */
   places: { from: string; to: string; note: string }[];
+  /**
+   * أوقعت تلاوةٌ يُقاس عليها أصلًا؟ فتشغيلةٌ لم يصل فيها صوتٌ **لا تُحكم
+   * بإخفاق المحكّ** — إنّما لم يقع فيها قياسٌ البتّة، وفرقٌ بين الأمرين.
+   */
+  measurable: boolean;
   /** حكمُ المحكّ شرطًا شرطًا (ما لم يُقَس يبقى null) */
   verdict: {
     hitRate: boolean;
@@ -223,6 +228,8 @@ export class SawtMeter {
       waqf.measured && waqf.median != null && waqf.p90 != null
         ? waqf.median <= 700 && waqf.p90 <= 1200
         : null;
+    // دون خمسِ كلماتٍ لا تلاوةَ تُقاس — فلا حكمَ لا بعبورٍ ولا بإخفاق.
+    const measurable = span >= 5 && direct > 0;
     const hitRate = rate >= 0.9;
     const recovery = unresolved === 0 && (worst == null || worst <= 3);
     const falseJumps = this.confirmedFalseJumps <= 1;
@@ -245,6 +252,7 @@ export class SawtMeter {
       engine: stats(this.engineMs),
       longestSilenceMs: opts.longestSilenceMs,
       places,
+      measurable,
       verdict: {
         hitRate,
         recovery,
@@ -252,7 +260,7 @@ export class SawtMeter {
         latency: latencyVerdict,
         // ما لم يُقَس لا يُحكم فيه: يبقى الحكمُ معلّقًا (null) ولا يُكتب نجاحًا
         passed:
-          latencyVerdict == null
+          !measurable || latencyVerdict == null
             ? null
             : hitRate && recovery && falseJumps && latencyVerdict,
       },
