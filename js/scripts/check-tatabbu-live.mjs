@@ -146,6 +146,32 @@ const digits = after ? (after.innerText.match(/[0-9\\u0660-\\u0669\\u06F0-\\u06F
 return { bad, digits: digits.length, after: after ? after.innerText.replace(/\\s+/g, ' ').trim().slice(0, 80) : null };
 `;
 
+/** **عُدّةُ القياس** — كلُّ ما يقيس المحرّكَ ولا يعني القارئ (ص-م٤ §٠) */
+const MEASURE_KIT = `
+const root = document.querySelector('[data-sawt="root"]');
+if (!root) return { error: 'لا جذرَ للصفحة' };
+const seen = [];
+for (const s of ['.sawt-table', '[data-sawt="measure"]', '[data-sawt="fahs"]', '.sawt-felt']) {
+  for (const el of root.querySelectorAll(s)) {
+    const st = getComputedStyle(el);
+    if (st.display === 'none' || st.visibility === 'hidden') continue;
+    if (el.getBoundingClientRect().height < 1) continue;
+    seen.push(s);
+  }
+}
+/* وألفاظُ العُدّة في الأزرار الظاهرة — «مقاطع المحكّ» و«انسخ…» */
+const words = [];
+for (const el of root.querySelectorAll('button')) {
+  const st = getComputedStyle(el);
+  if (st.display === 'none' || st.visibility === 'hidden') continue;
+  if (el.getBoundingClientRect().height < 1) continue;
+  const t = (el.textContent || '').trim();
+  if (t.includes('المحكّ') || t.startsWith('انسخ')) words.push(t.slice(0, 20));
+}
+const digits = (root.innerText.match(/[0-9\\u0660-\\u0669\\u06F0-\\u06F9]/g) || []).length;
+return { seen: [...new Set(seen)], words: [...new Set(words)], digits };
+`;
+
 /** اختيارُ قيمةٍ في قائمةٍ بحيث تسمعها ريأكت */
 const setSelect = (sel, value) => `
 const el = document.querySelector('${sel}');
@@ -228,6 +254,59 @@ async function main() {
     return;
   }
   await cdp.until(`document.querySelector('[data-sawt="begin"]') && !document.querySelector('[data-sawt="begin"]').disabled`);
+
+  /* ═══ ٤ — سطحُ القارئ خالٍ من عُدّة القياس (ص-م٤ §٠) ═══
+     الصفحةُ وُلدت مسبارًا فبقيت لغةُ المسبار في سطحها. **والحكمُ فصلٌ لا حذف**:
+     تُنقل العُدّةُ خلف بابٍ واحدٍ مسمًّى. فيُشهد ههنا الأمران معًا:
+       (أ) أنّ **عُدّةَ التهيئة** التي يفتحها القارئُ خاليةٌ منها؛
+       (ب) وأنّها **باقيةٌ خلف الباب** إذا طُلبت — فلم تُحذف بحجّة التنظيف. */
+  await cdp.ev(click(".sawt-m-more"));
+  await sleep(600);
+  const kitClosed = await cdp.ev(MEASURE_KIT);
+  if (kitClosed.error) missing.push(kitClosed.error);
+  else if (kitClosed.seen.length || kitClosed.words.length) {
+    fail(
+      "عُدّةُ القياس في سطح القارئ",
+      `ظهر في عُدّة التهيئة: ${[...kitClosed.seen, ...kitClosed.words].join(" · ")}`,
+    );
+  } else notes.push("عُدّةُ التهيئة خاليةٌ من عُدّة القياس: لا جدولَ ولا مصفوفةَ ولا «مقاطع المحكّ» ولا نسخَ أرقام");
+
+  /* ضبطُه السالب: يُزرع جدولُ قياسٍ في سطح القارئ فيُصطاد، ثمّ يُزال فتعود خضراء */
+  await cdp.ev(`
+    const root = document.querySelector('[data-sawt="root"]');
+    const t = document.createElement('table');
+    t.id = '__plantKit'; t.className = 'sawt-table';
+    t.innerHTML = '<tbody><tr><td>الإصابة</td><td>٩٩٪</td></tr></tbody>';
+    root.appendChild(t);
+    return true;
+  `);
+  await sleep(300);
+  const kitPlanted = await cdp.ev(MEASURE_KIT);
+  await cdp.ev(`document.getElementById('__plantKit')?.remove(); return true;`);
+  await sleep(300);
+  const kitBack = await cdp.ev(MEASURE_KIT);
+  if (!kitPlanted.seen.length) fail("ضبطُ عُدّة القياس", "زُرع جدولُ قياسٍ في سطح القارئ فلم يُصطَد — والفحصُ لا يفحص");
+  else if (kitBack.seen.length) fail("ضبطُ عُدّة القياس", "بقي أثرُ الزرع بعد محوه");
+  else notes.push("ضبطٌ سالب: زُرع جدولُ قياسٍ في سطح القارئ فاصطيد، ثمّ أُزيل فعادت خضراء");
+
+  /* وبإزائه: العُدّةُ **باقيةٌ** خلف بابها — تُفتح فتظهر، ثمّ تُغلق */
+  await cdp.ev(click('[data-sawt="fahs-door"]'));
+  await sleep(600);
+  const kitOpen = await cdp.ev(MEASURE_KIT);
+  if (!kitOpen.seen.includes('[data-sawt="fahs"]') || !kitOpen.words.some((w) => w.includes("المحكّ"))) {
+    fail(
+      "عُدّةُ القياس خلف بابها",
+      `فُتح البابُ فلم تظهر العُدّة: ${JSON.stringify({ seen: kitOpen.seen, words: kitOpen.words })}`,
+    );
+  } else {
+    notes.push(
+      `فُتح البابُ فظهرت العُدّة: ${kitOpen.seen.join(" · ")} · ${kitOpen.words.join(" · ")} — فلم تُحذف، وإنّما نُقلت`,
+    );
+  }
+  await cdp.ev(click('[data-sawt="fahs-door"]'));
+  await sleep(300);
+  await cdp.ev(click(".sawt-m-more"));
+  await sleep(300);
 
   /* ═══ ١ — الإعلانُ يسبق الميكروفون ═══ */
   const before = await cdp.ev("return window.__sawtSpy;");
@@ -394,6 +473,28 @@ async function main() {
     notes.push(
       `ضبطٌ سالب: «المراجعة» بعد الختام فيها ${[...new Set(afterMuraja.bad)].length} صنفَ عنصرٍ و${afterMuraja.digits} رقمًا — فالفاحصُ يرى، وصمتُ الصلاة صمتٌ مقيس`,
     );
+  }
+
+  /* **والأرقامُ الخمسةُ خلفَ الباب نفسِه** (ص-م٤ §٠): يُشهد أنّ سطحَ ما بعد
+     الختام في «المراجعة» **قليلُ الأرقام** ما دام البابُ مغلقًا، وأنّها
+     **تنهال إذا فُتح** — فلم تُحذف عُدّةُ القياس، وإنّما صارت بطلب. */
+  const doorThere = await cdp.ev(`return !!document.querySelector('[data-sawt="fahs-door"]');`);
+  if (!doorThere) fail("الأرقامُ خلف بابها", "لا بابَ للفحص بعد الختام");
+  else {
+    await cdp.ev(click('[data-sawt="fahs-door"]'));
+    await sleep(600);
+    const opened = await cdp.ev(TASHIH);
+    const kitOut = await cdp.ev(MEASURE_KIT);
+    if (opened.digits <= afterMuraja.digits || !kitOut.seen.includes('[data-sawt="measure"]')) {
+      fail(
+        "الأرقامُ خلف بابها",
+        `فُتح البابُ فلم تظهر الأرقام (قبل ${afterMuraja.digits} · بعد ${opened.digits} · ${kitOut.seen.join(" · ")})`,
+      );
+    } else {
+      notes.push(
+        `الأرقامُ خلف بابها: بعد الختام ${afterMuraja.digits} رقمًا والبابُ مغلق، و${opened.digits} رقمًا إذا فُتح — نُقلت ولم تُحذف`,
+      );
+    }
   }
 
   ws.close();

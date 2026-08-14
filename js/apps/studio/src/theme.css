@@ -74,17 +74,52 @@ body.focus-mode .app-shell { grid-template-rows: 1fr; }
    **أثناء القراءة لا قشرةَ ألبتّة**: من نزل بالتمرير في المصحف انسحبت القشرةُ
    كلُّها — الرأسُ والشريطُ السفليُّ وشريطُ القارئ — ومن صعد أو لمس هامشَ الصفحة
    عادت. وهذا نمطُ تطبيقات القراءة الأصيل، ولا يستوطن شيءٌ فوق النصّ.
-   والرأسُ يُطوى طيًّا (كما في وضع التركيز) لأنّه صفٌّ في الشبكة لا عائم، فلو
-   أُزيح لتَرك فراغًا؛ والطيُّ يقع **في جهة الإصبع** فيُقرأ انسحابًا لا قفزة. */
+
+   ═══ **ويستوي الثلاثةُ في انزلاقٍ واحد** (رصدُ المالك ١٤ أغسطس · ص-م٤ §٥د) ═══
+   **بنصّه:** «عمليّةُ الاختفاء والظهور لحظيّة؛ هل يمكن عملها بقليلٍ من
+   الأنيميشن، مثل تويتر X؟» — والعلّةُ أنّ الأسفلَ ينزلق (`transform`) والأعلى
+   يقفز (`display: none`، **و`display` لا يقبل انتقالًا أصلًا**). وعلّةُ اختيار
+   `display` كانت أنّ الرأسَ **صفٌّ في شبكة `.app-shell`**، فلو أُزيح بالتحويل
+   لَتَرك فراغًا مكانه.
+
+   **والحلُّ: يخرج الرأسُ من صفوف الشبكة إلى طبقةٍ عليا** (`fixed`) في سطح
+   القراءة وحدَه، **ويمرّ المتنُ تحته** بحشوةٍ ثابتةٍ في أعلى وعاء التمرير:
+     • فلا يُخلّف الرأسُ فراغًا حين ينزلق — تحته نصٌّ لا بياض؛
+     • **ولا يقفز المحتوى** لحظةَ الإخفاء ولا الإظهار، لأنّ الحشوةَ لا تتحرّك
+       البتّة — والرأسُ يعلو النصَّ ويكشفه، كما يصنع X.
+   **وتوقيتٌ واحدٌ لثلاثتها**: ٢٠٠ مِث، `ease-out` عند الظهور (فيبدو سريعَ
+   الاستجابة) و`ease-in` عند الاختفاء (فيبدو هادئًا). */
 @media (max-width: 760px) {
-  body.reading-immersive .topbar { display: none; }
-  body.reading-immersive .app-shell { grid-template-rows: 1fr; }
+  /* التوقيتُ واحدٌ للثلاثة — ولا يختلف زمنٌ فيبدو أحدُها متأخّرًا */
+  .tabbar, .reader-sticky, body.reading-surface .topbar {
+    transition: transform 200ms ease-out, opacity 200ms ease-out;
+  }
+  body.reading-immersive .tabbar,
+  body.reading-immersive .reader-sticky,
+  body.reading-surface.reading-immersive .topbar { transition-timing-function: ease-in; }
+
+  /* الرأسُ طبقةٌ عليا في سطح القراءة وحدَه — وسائرُ الصفحات على حالها */
+  body.reading-surface .app-shell { grid-template-rows: 1fr; }
+  body.reading-surface .topbar {
+    position: fixed; inset-inline: 0; inset-block-start: 0; z-index: 40;
+    padding-block-start: calc(6px + env(safe-area-inset-top, 0px));
+  }
+  /* حشوةٌ **ثابتة** بمقدار الرأس: بها يمرّ النصُّ تحته ولا يقفز حين ينزلق.
+     و`--topbar-h` تُقاس من الرأس نفسِه في `main.tsx` فلا رقمَ مقدَّرٌ في الشيفرة. */
+  body.reading-surface .reader-main { padding-block-start: var(--topbar-h, 56px); }
+  body.reading-surface .reader-sticky { top: var(--topbar-h, 56px); }
+
+  body.reading-surface.reading-immersive .topbar { transform: translateY(-100%); }
   body.reading-immersive .tabbar { transform: translateY(100%); }
   body.reading-immersive .reader-sticky { transform: translateY(-125%); opacity: 0; pointer-events: none; }
-  .tabbar, .reader-sticky { transition: transform .18s ease, opacity .18s ease; }
+  /* وشريطُ القارئ يلاصق الرأسَ، فيلزمه أن يقطع مسافتَه معه كي يغيب تمامًا */
+  body.reading-surface.reading-immersive .reader-sticky {
+    transform: translateY(calc(-100% - var(--topbar-h, 56px)));
+  }
 }
+/* **و`prefers-reduced-motion` محترَمٌ كما هو**: تبقى الحالُ بلا انتقالٍ لمن طلبه */
 @media (prefers-reduced-motion: reduce) {
-  .tabbar, .reader-sticky { transition: none; }
+  .tabbar, .reader-sticky, body.reading-surface .topbar { transition: none; }
 }
 
 /* always-available way out of focus mode (the ⚙ is hidden with the top bar) */
@@ -604,22 +639,36 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
    أمرُ المالك 2026-08-14: «أريد هويّةً للمصحف في الجوال وحتّى في المتصفّح،
    بألوانٍ فيها شيءٌ من الأخضر المريح». والقواعدُ فوق الذوق:
      ١ — **لا خضرةَ في نصّ القرآن**: النصُّ حبرٌ على ورق، والخضرةُ لما حولَه
-         (رقمُ الآية · ۞ · ۩ · شريطُ السورة · رقمُ الصفحة · فاصلُ الصفحات).
+         (رقمُ الآية · ۞ · ۩ · لوحةُ السورة · رقمُ الصفحة · فاصلُ الصفحات).
      ٢ — الورقُ يميل إلى الخضرة **ميلًا لا يُرى**، راحةً للعين لا لونًا.
      ٣ — تباينُ النصّ مع ورقه **≥ ٧:١** مقيسًا في الأوضاع الثلاثة.
      ٤ — الذهبُ يبقى ولا يُلغى، ويخفّ على الجوال حيث زالت الحدود.
-   **وثلاثةُ الأطقم تُعرض ولا تُفرض** (`[data-mushaf-kit]` أدناه) — والقيمُ
-   ههنا هي الحالُ القائمةُ نفسُها، فلا يُعتمد طقمٌ قبل اختيار المالك. */
+
+   **والطقمُ المعتمدُ (ب) «عميق»** — بأمر المالك ١٤ أغسطس: خضرةٌ عميقةٌ مع ذهبٍ
+   خافت، وهو أعلى الأطقم الثلاثة تباينًا في علاماته (٧٫٢٢ فاتح · ٦٫٤٢ سبيا ·
+   ٧٫٣٧ داكن مقيسةً في ج٣). **ونُقلت قيمُه إلى `:root` وحُذفت بقيّةُ الأطقم**
+   (`zaytuni` · `hiyadi`) فلا تبقى ثلاثةٌ تُصان بعد أن حُسم الاختيار. */
 :root {
-  --mushaf-paper: var(--panel);
+  --mushaf-paper: color-mix(in srgb, var(--panel) 97%, #0b5f43);
   --mushaf-ink: var(--ink);
-  --mushaf-mark: var(--gold);      /* رقمُ الآية وعلاماتُه */
-  --mushaf-mark-soft: var(--gold-soft);
-  --mushaf-title: var(--gold);     /* شريطُ اسم السورة */
-  --mushaf-title-soft: var(--gold-soft);
-  --mushaf-folio: var(--gold);     /* رقمُ الصفحة */
-  --mushaf-rule: var(--line);      /* فاصلُ الصفحات */
-  --mushaf-frame: var(--gold);     /* الإطارُ والخطوطُ الزخرفيّة (الحاسوب) */
+  --mushaf-mark: #0b5f43;          /* رقمُ الآية وعلاماتُه */
+  --mushaf-mark-soft: color-mix(in srgb, var(--panel) 86%, #0b5f43);
+  --mushaf-title: #084c36;         /* لوحةُ اسم السورة */
+  --mushaf-title-soft: color-mix(in srgb, var(--panel) 82%, #0b5f43);
+  --mushaf-folio: #0b5f43;         /* رقمُ الصفحة */
+  --mushaf-rule: color-mix(in srgb, var(--line) 50%, #0b5f43);
+  --mushaf-frame: color-mix(in srgb, var(--gold) 45%, var(--line));
+}
+/* خضرةُ الليل أعمقُ وأخفتُ إشباعًا — ولا خضرةَ صارخةٌ في الداكن */
+:root[data-theme="dark"] {
+  --mushaf-paper: color-mix(in srgb, var(--panel) 95%, #2f8a68);
+  --mushaf-mark: #5cbf9b;
+  --mushaf-mark-soft: color-mix(in srgb, var(--panel) 84%, #2f8a68);
+  --mushaf-title: #6fcda9;
+  --mushaf-title-soft: color-mix(in srgb, var(--panel) 86%, #2f8a68);
+  --mushaf-folio: #5cbf9b;
+  --mushaf-rule: color-mix(in srgb, var(--line) 50%, #2f8a68);
+  --mushaf-frame: color-mix(in srgb, var(--gold) 45%, var(--line));
 }
 
 /* mushaf page — one page at a time, fixed proportions, illuminated frame */
@@ -691,6 +740,13 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
     padding: 12px 8px 4px;
   }
   .mushaf-page::before { content: none; }
+  /* **خطُّ المصحف يتّسع مع عرضه** (قرارُ المالك ١٤ أغسطس · ص-م٤ §٥/٤): لمّا زالت
+     الحدودُ الثلاثةُ اتّسع سطرُ النصّ ٢٧٪ — فيرتفع الأساسُ من ٢٤٫٥ إلى ٢٦px،
+     **على الجوال وحدَه، والحاسوبُ لا يتغيّر بحرف**. وسلّمُ القارئ
+     (`--quran-scale`) يضربه كما كان. */
+  .mushaf-page .quran { font-size: calc(26px * var(--quran-scale, 1)); }
+  /* ولوحةُ السورة تمتدّ إلى حافّة **سطر النصّ** لا حافّة الشاشة (§٥ج/٤) */
+  .mushaf-page .mp-surah-band { margin-inline: 0; }
   /* حدُّ الصفحة: رقمُها وفاصلٌ خفيفٌ فوقَه — علامةٌ لا صندوق */
   .mushaf-page .page-no {
     margin: 14px 26% 0; padding-top: 9px; border-top: 1px solid var(--mushaf-rule);
@@ -714,73 +770,11 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 
 /* علاماتُ المصحف تأخذ لغتَه هو — وداخلَ صفحته وحدَها، فنمطُ «آيات» لا يُمَسّ */
 .mushaf-page .ayah-marker { color: var(--mushaf-mark); }
-.mushaf-page .mp-surah-name { color: var(--mushaf-title); background: var(--mushaf-title-soft); border-color: var(--mushaf-title); }
+/* **ولا خلفيّةَ تحت الاسم** — الورقُ ورقٌ (ص-م٤ §٥ج/١): كان ههنا `background`
+   يملأ صندوقَ الاسم، فأُسقط ولم يبقَ إلّا لونُ الحبر. */
+.mushaf-page .mp-surah-name { color: var(--mushaf-title); }
 .mushaf-page .mp-rub span { color: var(--mushaf-mark); background: var(--mushaf-mark-soft); }
 .mushaf-page .mp-margin { border-bottom-color: var(--mushaf-rule); }
-
-/* ═══════════ ثلاثةُ أطقمٍ **تُعرض ولا تُفرض** (البند ٤) ═══════════
-   لا يُعتمد طقمٌ قبل اختيار المالك — فالقيمُ في `:root` أعلاه هي الحالُ
-   القائمة. وتُعاين هذه بوضع السمة على جذر الوثيقة:
-       document.documentElement.dataset.mushafKit = 'zaytuni' | 'ameeq' | 'hiyadi'
-   ومتى اختار المالكُ طقمًا نُقلت قيمُه إلى `:root` **فينتقل بسطر**.
-   وفي الأطقم الثلاثة: **لا خضرةَ في نصّ القرآن** — `--mushaf-ink` لا يُمَسّ. */
-
-/* أ — خضرةٌ زيتونيّةٌ هادئة: ورقٌ يميل ميلًا لا يُرى، وعلاماتٌ زيتونيّة */
-:root[data-mushaf-kit="zaytuni"] {
-  --mushaf-paper: color-mix(in srgb, var(--panel) 95%, #2f5d3a);
-  --mushaf-mark: #3f6b40;
-  --mushaf-mark-soft: color-mix(in srgb, var(--panel) 84%, #3f6b40);
-  --mushaf-title: #3f6b40;
-  --mushaf-title-soft: color-mix(in srgb, var(--panel) 80%, #3f6b40);
-  --mushaf-folio: #4a7148;
-  --mushaf-rule: color-mix(in srgb, var(--line) 55%, #3f6b40);
-  --mushaf-frame: color-mix(in srgb, var(--gold) 76%, #3f6b40);
-}
-/* خضرةُ الليل أعمقُ وأخفتُ إشباعًا — ولا خضرةَ صارخةٌ في الداكن */
-:root[data-theme="dark"][data-mushaf-kit="zaytuni"] {
-  --mushaf-paper: color-mix(in srgb, var(--panel) 93%, #6f9c74);
-  --mushaf-mark: #93b98d;
-  --mushaf-mark-soft: color-mix(in srgb, var(--panel) 82%, #93b98d);
-  --mushaf-title: #a3c79c;
-  --mushaf-title-soft: color-mix(in srgb, var(--panel) 84%, #93b98d);
-  --mushaf-folio: #93b98d;
-  --mushaf-rule: color-mix(in srgb, var(--line) 55%, #6f9c74);
-  --mushaf-frame: color-mix(in srgb, var(--gold) 76%, #6f9c74);
-}
-
-/* ب — خضرةٌ عميقةٌ مع ذهبٍ خافت: الخضرةُ هي اللغة، والذهبُ أثرٌ باقٍ لا سياج */
-:root[data-mushaf-kit="ameeq"] {
-  --mushaf-paper: color-mix(in srgb, var(--panel) 97%, #0b5f43);
-  --mushaf-mark: #0b5f43;
-  --mushaf-mark-soft: color-mix(in srgb, var(--panel) 86%, #0b5f43);
-  --mushaf-title: #084c36;
-  --mushaf-title-soft: color-mix(in srgb, var(--panel) 82%, #0b5f43);
-  --mushaf-folio: #0b5f43;
-  --mushaf-rule: color-mix(in srgb, var(--line) 50%, #0b5f43);
-  --mushaf-frame: color-mix(in srgb, var(--gold) 45%, var(--line));
-}
-:root[data-theme="dark"][data-mushaf-kit="ameeq"] {
-  --mushaf-paper: color-mix(in srgb, var(--panel) 95%, #2f8a68);
-  --mushaf-mark: #5cbf9b;
-  --mushaf-mark-soft: color-mix(in srgb, var(--panel) 84%, #2f8a68);
-  --mushaf-title: #6fcda9;
-  --mushaf-title-soft: color-mix(in srgb, var(--panel) 86%, #2f8a68);
-  --mushaf-folio: #5cbf9b;
-  --mushaf-rule: color-mix(in srgb, var(--line) 50%, #2f8a68);
-  --mushaf-frame: color-mix(in srgb, var(--gold) 45%, var(--line));
-}
-
-/* ج — ورقٌ محايدٌ بعلاماتٍ خضراء: الورقُ كما هو، والخضرةُ في العلامات وحدَها */
-:root[data-mushaf-kit="hiyadi"] {
-  --mushaf-paper: var(--panel);
-  --mushaf-mark: var(--accent);
-  --mushaf-mark-soft: var(--accent-soft);
-  --mushaf-title: var(--accent);
-  --mushaf-title-soft: var(--accent-soft);
-  --mushaf-folio: var(--accent);
-  --mushaf-rule: color-mix(in srgb, var(--line) 70%, var(--accent));
-  --mushaf-frame: var(--gold);
-}
 
 /* page-turn arrows below the page */
 .mushaf-pager {
@@ -839,13 +833,49 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   font-size: 15px; color: var(--muted); padding: 0 2px 6px;
   margin-bottom: 4px; border-bottom: 1px solid var(--line);
 }
-.mp-surah-band { text-align: center; margin: 4px auto 6px; }
-.mp-surah-name {
-  display: inline-block; font-size: 21px; color: var(--gold);
-  padding: 3px 30px; border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold);
-  background: var(--gold-soft); border-radius: 4px; line-height: 1.6;
+/* ═══════════ لوحةُ السورة — لا وسمَ ويبٍ (رصدُ المالك ١٤ أغسطس) ═══════════
+   **بنصّه:** «صدرُ الصفحة عند اسم السورة — لِمَ ليس مثل القرآن؟ الوحيدةُ التي
+   شكلُها خارجٌ عن المألوف». وكان ههنا شريطٌ بخطّين أفقيّين وخلفيّةٍ ملوّنةٍ
+   وزوايا مستديرة — **هيئةُ وسمٍ في واجهة ويب** (`chip`) لا هيئةُ عنوان سورةٍ
+   في مصحف؛ فبانت وحدَها غريبةً في صفحةٍ صارت مصحفًا.
+
+   **فصارت لوحةَ سورةٍ تُصنع ولا تُنسخ عن ناشرٍ بعينه** (`WAJH-CHARTER.md` §٢):
+     • إطارٌ خطٌّ رفيعٌ يمتدّ **عرضَ سطر النصّ** لا أوسع، **بلا زوايا مستديرة**
+       و**بلا خلفيّةٍ مصمتةٍ تحت الاسم** — الورقُ ورقٌ والاسمُ عليه.
+     • وزخرفٌ يسيرٌ: خطّان رفيعان في الأعلى والأسفل (الخارجيُّ أدقُّ) وشُرفتان
+       صغيرتان في الطرفين — أثرٌ لا سياج.
+     • والاسمُ بخطّ المصحف، وتحته سطرُ البيانات (مكّيّة/مدنيّة · آياتها ·
+       ترتيبُها) **بخطٍّ أدقَّ وأخفتَ فلا يزاحمه**.
+     • والهوامشُ مشدودةٌ إلى أقلِّ ما يبقي التنفّس — هيئةُ طباعةٍ لا صفحةِ ويب. */
+.mp-surah-band {
+  text-align: center;
+  margin: 2px auto 4px;
+  padding: 7px 10px 6px;
+  border-top: 1px solid var(--mushaf-title);
+  border-bottom: 1px solid var(--mushaf-title);
+  box-shadow: inset 0 2px 0 -1px var(--mushaf-title), inset 0 -2px 0 -1px var(--mushaf-title);
+  position: relative;
 }
-.mp-basmala { text-align: center; font-size: 21px; color: var(--ink-2); margin: 8px 0 2px; }
+/* شُرفتان صغيرتان في طرفَي اللوحة — زخرفٌ يسيرٌ لا إطارٌ ممتلئ */
+.mp-surah-band::before,
+.mp-surah-band::after {
+  content: "";
+  position: absolute; inset-block: -1px; width: 9px;
+  border-block: 1px solid var(--mushaf-title);
+  pointer-events: none;
+}
+.mp-surah-band::before { inset-inline-start: 0; border-inline-start: 1px solid var(--mushaf-title); }
+.mp-surah-band::after { inset-inline-end: 0; border-inline-end: 1px solid var(--mushaf-title); }
+.mp-surah-name {
+  display: block; font-size: 25px; color: var(--mushaf-title);
+  line-height: 1.5; letter-spacing: .01em;
+}
+/* البياناتُ التي تُكتب في المصحف — **مقروءةٌ من `SurahDoc` لا مكتوبةٌ بيد** */
+.mp-surah-meta {
+  display: block; font-family: var(--font-ui); font-size: 15px;
+  color: var(--mushaf-title); opacity: .78; line-height: 1.6; margin-top: 1px;
+}
+.mp-basmala { text-align: center; font-size: 22px; color: var(--ink-2); margin: 5px 0 1px; }
 .mp-mark { text-align: center; margin: 8px auto 4px; user-select: none; }
 .mp-mark span {
   display: inline-block; font-family: var(--font-quran); font-size: 14px;
@@ -3186,11 +3216,18 @@ body.sawt-page { overflow: hidden; }
   padding: 7px 15px; cursor: pointer; color: var(--ink-2); font-family: inherit; font-size: 14px;
 }
 
+/* ═══ **السردُ على هيئة المصحف** (رصدُ المالك ١٤ أغسطس · ص-م٤ §٤) ═══
+   **بنصّه:** «مُزاحٌ للوسط منصَّف… وكلُّ آيةٍ تبدأ سطرًا جديدًا — غريبٌ على نصّ
+   القرآن». **والعلّةُ** كانت ههنا: `text-align: center` مع فقرةٍ لكلّ آية.
+   **والعلاجُ يُقتبس ولا يُخترع**: نسقُ `.mushaf-page .quran` نفسُه — تسويةٌ
+   `justify` وآخرُ سطرٍ متوسّط، فيصير سيلًا متّصلًا تفصل آياتِه علاماتُها. */
 .sawt-text {
   flex: 1; padding: 16px 18px 55vh; font-family: var(--font-quran);
-  font-size: clamp(27px, 5.6vw, 42px); line-height: 2.25; text-align: center;
+  font-size: clamp(27px, 5.6vw, 42px); line-height: 2.25;
+  text-align: justify; text-align-last: center;
 }
-.sawt-aya { margin: 0 0 10px; }
+/* رأسُ السورة فاصلٌ بيّنٌ في السيل — سطرٌ لنفسه، ولا يُنصَّف معه النصّ */
+.sawt-end { height: 1px; }
 .sawt-w { transition: color 120ms linear, background-color 120ms linear; }
 .sawt-past { color: var(--muted); }
 .sawt-next { color: var(--ink); }
@@ -3230,4 +3267,70 @@ body.sawt-page { overflow: hidden; }
 .sawt-quiet-word { font-family: var(--font-quran); font-size: 30px; color: var(--accent); margin-bottom: 26px; }
 .sawt-select { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; min-height: 44px; padding: 0 14px; color: var(--ink); font-family: inherit; font-size: 15px; }
 .sawt-hint { padding: 0 18px 14px; font-size: 15px; line-height: 1.8; text-align: center; }
-.sawt-surah { display: block; font-size: 15px; font-family: var(--font-ui); color: var(--muted); letter-spacing: .04em; margin: 26px 0 8px; }
+.sawt-surah {
+  display: block; font-size: 17px; font-family: var(--font-quran);
+  color: var(--mushaf-title); letter-spacing: .02em;
+  margin: 22px auto 10px; padding: 4px 0 5px; max-width: 70%;
+  border-top: 1px solid var(--mushaf-title); border-bottom: 1px solid var(--mushaf-title);
+  text-align: center; text-align-last: center;
+}
+
+/* ═══ سطرُ «تجدّدت هيئةُ الصفحات» — يُعرض مرّةً ثمّ لا يعود (ص-م٤ §٥ب) ═══
+   **سطرٌ في الصفحة لا لوحٌ فوقها** (ميثاقُ الوجه §١٣): خفيفٌ يُهمَل بلا أثر،
+   وفيه زرٌّ واحدٌ يجرّب الهيئةَ الجديدة و`✕` يُخفيه. ولا يُبطَل به اختيارُ أحد. */
+.reader-renew {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin: 0 0 12px; padding: 10px 12px; font-size: 15px; line-height: 1.7;
+  color: var(--ink-2); background: var(--panel);
+  border: 1px solid var(--line); border-inline-start: 3px solid var(--accent);
+  border-radius: 10px;
+}
+.reader-renew > span { flex: 1 1 200px; min-width: 0; }
+.reader-renew-try {
+  min-height: 44px; padding: 0 16px; border-radius: 999px; cursor: pointer;
+  background: var(--accent-soft); border: 1px solid var(--accent);
+  color: var(--accent); font-family: inherit; font-size: 15px; font-weight: 700;
+}
+.reader-renew-skip {
+  width: 44px; height: 44px; padding: 0; border-radius: 999px; cursor: pointer;
+  background: none; border: 1px solid var(--line); color: var(--muted); font-size: 15px;
+}
+
+/* ═══ سطحُ القارئ وعُدّةُ القياس — بابٌ واحدٌ يفصلهما (ص-م٤ §٠) ═══
+   الصفحةُ وُلدت مسبارًا فبقيت لغةُ المسبار فيها. **ولا تُحذف العُدّة** — بها
+   يُقاس المحرّكان وتُعاد تشغيلاتُ المحكّ — وإنّما تُنقل خلف بابٍ مسمًّى **بلا
+   لغة أدواتٍ في اسمه**، لا يُفتح إلّا بطلب. */
+.sawt-fahs-door {
+  display: block; margin: 20px 0 0; min-height: 44px; padding: 0 18px;
+  border-radius: 999px; cursor: pointer; font-family: inherit; font-size: 15px;
+  background: transparent; border: 1px dashed var(--line); color: var(--muted);
+}
+.sawt-fahs-door.on { border-style: solid; border-color: var(--accent); color: var(--accent); }
+.sawt-fahs { margin-top: 10px; padding-top: 4px; border-top: 1px solid var(--line); }
+
+/* تصفيرُ الموضع — مخرجٌ صريحٌ لا يُخبَّأ (§٣) */
+.sawt-reset { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
+
+/* إشارةُ الالتماس — هادئةٌ في الشريط، لا شاشةَ ولا لوح (§٢/٤) */
+.sawt-seek {
+  margin: 0; padding: 4px 12px; font-size: 15px; color: var(--muted);
+  font-family: var(--font-ui); text-align: center; white-space: nowrap;
+}
+.sawt-run-bar .sawt-seek { padding: 0; }
+/* «تقبّل الله» صارت أوّلَ ما يراه القارئُ بعد الختام في الأحوال كلِّها */
+.sawt-after-word { margin: 10px 0 18px; text-align: center; }
+
+/* بنكُ تمارين الأحكام — مواضعُ في النصّ لا حكمٌ على تلاوة (ص-م٤ §٥هـ/٢) */
+.sawt-bank { margin-top: 14px; }
+.sawt-bank-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 15px;
+}
+.sawt-bank-row:last-child { border-bottom: none; }
+.sawt-bank-name { font-weight: 700; min-width: 92px; }
+.sawt-bank-spots { display: flex; flex-wrap: wrap; gap: 6px; margin-inline-start: auto; }
+.sawt-bank-spot {
+  min-height: 44px; padding: 0 12px; border-radius: 999px; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--line);
+  color: var(--ink-2); font-family: var(--font-quran); font-size: 15px;
+}

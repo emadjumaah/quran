@@ -42,6 +42,8 @@ import { EnTransBar, EnVerseLine } from "../components/EnVerse";
 import { wbwOf, type WbwEntry } from "../lib/wbw";
 
 const MODE_KEY = "quran-studio:reader-mode";
+/** أنّ سطرَ «تجدّدت هيئةُ الصفحات» عُرض — فيُعرض مرّةً ثمّ لا يعود (§٥ب) */
+const PAGES_RENEWED_KEY = "mishkat:pages-renewed-note";
 type Mode = "pages" | "ayat";
 
 /** Tracks whether the viewport is narrower than 900px. */
@@ -211,6 +213,29 @@ function Inspector({ word }: { word: WordDoc | null }) {
 
 const BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
 
+/** **بياناتُ لوحة السورة — تُقرأ من `SurahDoc` ولا تُكتب بيد** (ص-م٤ §٥ج/٢).
+ *  وهي التي تُكتب في المصحف عادةً: مكّيّةٌ أو مدنيّة، وعددُ آياتها، وترتيبُها.
+ *  **والازدحامُ أسوأُ من النقص** فلم يُزَد عليها عددُ الركوعات. */
+const surahPlateMeta = (s: SurahDoc): string =>
+  [
+    s.revelation === "Meccan" ? "مكّيّة" : "مدنيّة",
+    `آياتها ${num(s.ayahCount)}`,
+    `ترتيبُها ${num(s.surahNo)}`,
+  ].join(" · ");
+
+/**
+ * **أتُكتب البسملةُ فوق هذه السورة؟** — بشرطين **مقروءين من البيانات لا مكتوبين
+ * برقم سورة**:
+ *   ١ — `hasBismillah` في وثيقة السورة (وهو `false` في التوبة وحدَها).
+ *   ٢ — وألّا تكون **أوّلَ آيةٍ فيها** أصلًا (الفاتحة) فتُكتب مرّتين.
+ * والمقابلةُ تتسامح في التطويل (`ـ`) وحدَه، فرسمُ القاعدة يحمله ونصُّ الترويسة لا.
+ */
+const showsBismillah = (s: SurahDoc | undefined, firstAyah: AyahDoc): boolean => {
+  if (!s?.hasBismillah) return false;
+  const bare = (x: string) => x.replace(/ـ/g, "");
+  return bare(firstAyah.textUthmani) !== bare(BASMALA);
+};
+
 /** Continuous mushaf flow for one Madani page of the current surah — laid out
  *  like the printed Madina mushaf: header margin (juz · surah · hizb), surah
  *  name band + basmala where the surah begins, ۞ hizb/rub and ۩ sajda marks,
@@ -227,6 +252,7 @@ function MushafPage({
   selectedAyahNo,
   targetAyahNo,
   rubMarks,
+  surahDoc,
   opening = false,
 }: {
   page: number;
@@ -241,6 +267,8 @@ function MushafPage({
   selectedAyahNo: number | null;
   targetAyahNo: number | null;
   rubMarks: Map<number, string>;
+  /** وثيقةُ السورة التي **تبدأ** في هذه الصفحة — منها بياناتُ اللوحة والبسملة */
+  surahDoc?: SurahDoc;
   opening?: boolean;
 }) {
   const { script, tajwid, layers } = useSettings();
@@ -257,11 +285,18 @@ function MushafPage({
         <span>{ar ? "الجزء" : "Juz"} {num(first?.juz ?? 0)}</span>
         <span>{surahNameAr(surahNo)} · {ar ? "الحزب" : "Hizb"} {num(first?.hizb ?? 0)}</span>
       </div>
+      {/* **لوحةُ السورة** — تُصنع ولا تُنسخ عن ناشرٍ بعينه، وبياناتُها من
+          `SurahDoc` حرفًا. **والبسملةُ تُحذف حيث لا بسملةَ فيها** بقراءة
+          `hasBismillah` من الوثيقة نفسِها (سورةُ التوبة) — **ولا تُفترض**،
+          فكان الشرطُ رقمين مكتوبين باليد. وهي **خارجَ اللوحة على سطرها**. */}
       {startAyah && (
-        <div className="mp-surah-band">
-          <span className="mp-surah-name quran">سورة {surahNameAr(startAyah.surahNo)}</span>
-          {startAyah.surahNo !== 1 && startAyah.surahNo !== 9 && <div className="mp-basmala quran">{BASMALA}</div>}
-        </div>
+        <>
+          <div className="mp-surah-band">
+            <span className="mp-surah-name quran">سورة {surahNameAr(startAyah.surahNo)}</span>
+            {surahDoc && <span className="mp-surah-meta">{surahPlateMeta(surahDoc)}</span>}
+          </div>
+          {showsBismillah(surahDoc, startAyah) && <div className="mp-basmala quran">{BASMALA}</div>}
+        </>
       )}
       <div className="quran">
         {ayahs.map((ayah) => {
@@ -346,6 +381,24 @@ export default function Reader() {
   const switchMode = (m: Mode) => {
     setMode(m);
     localStorage.setItem(MODE_KEY, m);
+  };
+
+  /* ── **من حُبس في اختيارٍ قديمٍ يُعلَم مرّةً** (أمرُ المالك ١٤ أغسطس · ص-م٤ §٥ب) ──
+     الافتراضُ «صفحات» منذ ٢٩ يوليو، فلا عملَ فيه. **والمسألةُ خلفه**: من اختار
+     «آيات» يومئذٍ فاختيارُه محفوظٌ في جهازه، **وهيئةُ الصفحات تغيّرت جوهريًّا في
+     ج٣** — فهو محبوسٌ في رفضِ شيءٍ لم يعد قائمًا.
+       ١ — **ولا يُبطَل اختيارُ من اختار**: إبطالُه بلا إذنٍ سوءُ أدبٍ مع القارئ.
+       ٢ — **ويُعلَم مرّةً واحدة** بسطرٍ خفيفٍ **في الصفحة لا فوقها** (ميثاقُ
+           الوجه §١٣: لا لوحَ ولا طمس) يُهمَل بلا أثر.
+       ٣ — **ولا يُعرض لمن لم يبدّل قطُّ** — فهو على الافتراض الجديد أصلًا. */
+  const [renewNote, setRenewNote] = useState<boolean>(
+    () => localStorage.getItem(MODE_KEY) === "ayat" && localStorage.getItem(PAGES_RENEWED_KEY) !== "1",
+  );
+  /** **ويُعرض مرّةً ثمّ لا يعود** — سواءٌ جرّب أم لم يجرّب */
+  const dismissRenewNote = (tryPages: boolean) => {
+    localStorage.setItem(PAGES_RENEWED_KEY, "1");
+    setRenewNote(false);
+    if (tryPages) switchMode("pages");
   };
 
   const [surahs, setSurahs] = useState<SurahDoc[]>([]);
@@ -652,11 +705,24 @@ export default function Reader() {
     if (!narrow) return;
     const el = mainRef.current;
     if (!el) return;
+    // **سطحُ القراءة**: به يخرج الرأسُ إلى طبقةٍ عليا فينزلق ولا يقفز (§٥د)
+    document.body.classList.add("reading-surface");
     let last = el.scrollTop;
     const onScroll = () => {
       const y = el.scrollTop;
       const d = y - last;
-      if (Math.abs(d) < 10) return; // رجفةُ الإصبع لا تُبدّل حالًا
+      // **ولا انسحابَ عند حافّة المستند**: الارتدادُ في الطرفين يُوهم تمريرًا
+      const atEdge = y <= 0 || y + el.clientHeight >= el.scrollHeight - 4;
+      if (atEdge) {
+        last = y;
+        if (y <= 0) document.body.classList.remove("reading-immersive");
+        return;
+      }
+      // **عتبةٌ تمنع الارتجاف** (وهي سرُّ نعومة X): النزولُ لا يُخفي حتّى يبلغ
+      // ثمانيةَ بكسلات، **والصعودُ يُظهر فورًا وإن قلّ** — فردُّ القشرة أولى من
+      // حبسها، ولا يرتجف الشريطُ مع اهتزاز الإصبع.
+      if (d > 0 && d < 8) return;
+      if (d < 0 && d > -2) return;
       last = y;
       document.body.classList.toggle("reading-immersive", d > 0 && y > 140);
     };
@@ -664,6 +730,7 @@ export default function Reader() {
     return () => {
       el.removeEventListener("scroll", onScroll);
       document.body.classList.remove("reading-immersive");
+      document.body.classList.remove("reading-surface");
     };
   }, [narrow]);
 
@@ -738,6 +805,18 @@ export default function Reader() {
         )}
 
         {!loading && <WelcomeQuestions />}
+        {/* سطرُ التجديد — **في الصفحة لا فوقها**، ويُهمَل بلا أثر (§٥ب) */}
+        {!loading && renewNote && mode === "ayat" && (
+          <p className="reader-renew" data-reader="renew-note">
+            <span>تجدّدت هيئةُ الصفحات — صارت سيلَ مصحفٍ من حافّةٍ إلى حافّة.</span>
+            <button className="reader-renew-try" onClick={() => dismissRenewNote(true)}>
+              جرّبها
+            </button>
+            <button className="reader-renew-skip" onClick={() => dismissRenewNote(false)} aria-label="إخفاء">
+              ✕
+            </button>
+          </p>
+        )}
         {/* الجوال: شريطُ الترجمات تحت الصفّ اللاصق (الحاسوبُ يحمله في كتلة الرأس) */}
         {!loading && narrow && mode === "ayat" && <EnTransBar />}
         {loading ? (
@@ -775,6 +854,10 @@ export default function Reader() {
                 selectedAyahNo={selectedLoc && Number(selectedLoc.split(":")[0]) === surahNo ? Number(selectedLoc.split(":")[1]) : null}
                 targetAyahNo={displayTargetAyahNo}
                 rubMarks={rubMarks}
+                surahDoc={(() => {
+                  const st = pageAyahs.find((a) => a.ayahNo === 1);
+                  return st ? surahs.find((s) => s.surahNo === st.surahNo) : undefined;
+                })()}
                 opening={pageNo === 1 || pageNo === 2}
               />
             ))}
@@ -843,8 +926,8 @@ export default function Reader() {
           كان قرصًا أخضرَ مصمتًا ٤٤px بظلٍّ ثقيلٍ يحوم فوق المصحف — وهو من علامات
           الويب. والحاجةُ التي وُضع لها ليست «الصعودَ إلى الأعلى» أصلًا: قارئُ
           المصحف يريد **موضعًا** لا رأسَ قائمة، وله بابُ الانتقال، والقشرةُ تعود
-          بالتمرير صعودًا. (المكوّنُ باقٍ في `components/ScrollTopFab.tsx` إن
-          اختار المالكُ الصورةَ الثانية — خافتًا يظهر بالتمرير صعودًا.) */}
+          بالتمرير صعودًا. **واستقرّ القرارُ (أ) بأمر المالك ١٤ أغسطس فحُذف
+          المكوّنُ من الشجرة** — فلا يبقى ميتًا يُصان. */}
 
       {(selected || verseSheet) && (
         <>

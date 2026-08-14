@@ -476,7 +476,12 @@ function NibrasFab() {
 }
 
 /** Mobile-only bottom tab bar — thumb-reachable jumps to the key surfaces; the
- *  «المزيد» tab opens the full drawer. Hidden on desktop. */
+ *  «المزيد» tab opens the full drawer. Hidden on desktop.
+ *
+ *  **وأربعتُها أفعالُ قارئٍ لا أقسامُ موقع** (قرارُ المالك ١٤ أغسطس، الصورة «أ»):
+ *  أقرأ · أتلو · أبحث · وما وراء ذلك. والبحثُ يُطلب كلَّ يوم فله موضعُه ههنا،
+ *  **والمحفوظاتُ لها موضعُها في الدُّرج** فلا تُزاحمه. (وخرجت «الكلّيّات»
+ *  و«المواضيع» إلى التنقّل العامّ — **ولم يُحذف بابٌ ولا تغيّر مسار**.) */
 function MobileTabBar({ onMenu }: { onMenu: () => void }) {
   const loc = useLocation();
   const p = loc.pathname;
@@ -489,13 +494,13 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
         <svg viewBox="0 0 24 24" aria-hidden><path d="M4 4.5A2 2 0 0 1 6 3h5v16H6a2 2 0 0 0-2 1.2zM20 4.5A2 2 0 0 0 18 3h-5v16h5a2 2 0 0 1 2 1.2z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
         <span>{ar ? "المصحف" : "Read"}</span>
       </NavLink>
-      <NavLink to="/kulliyat" className={`tab${on("/kulliyat") || on("/aya") ? " active" : ""}`}>
-        <svg viewBox="0 0 24 24" aria-hidden><path d="M12 2 3 7l9 5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
-        <span>{ar ? "الكلّيّات" : "Kulliyyāt"}</span>
+      <NavLink to="/tatabbu" className={`tab${on("/tatabbu") ? " active" : ""}`}>
+        <TatabbuIcon />
+        <span>{ar ? "التتبّع" : t("nav.tatabbu")}</span>
       </NavLink>
-      <NavLink to="/mawadi" className={`tab${on("/mawadi") ? " active" : ""}`}>
-        <svg viewBox="0 0 24 24" aria-hidden><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
-        <span>{ar ? "المواضيع" : "Topics"}</span>
+      <NavLink to="/search" className={`tab${on("/search") ? " active" : ""}`}>
+        <svg viewBox="0 0 24 24" aria-hidden><path d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15zM21 21l-5.2-5.2" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>
+        <span>{ar ? "البحث" : "Search"}</span>
       </NavLink>
       <button className="tab" onClick={onMenu} aria-label={ar ? "القائمة" : "menu"}>
         <svg viewBox="0 0 24 24" aria-hidden><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
@@ -508,13 +513,27 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
 function App() {
   const mobile = useIsMobile();
   const [drawer, setDrawer] = useState(false);
+  const topbarRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!mobile) setDrawer(false);
   }, [mobile]);
+  /* **ارتفاعُ الرأس يُقاس من الرأس نفسِه** (ص-م٤ §٥د): في سطح القراءة يخرج
+     الرأسُ من صفوف الشبكة إلى طبقةٍ عليا، فيلزم المتنَ حشوةٌ بمقداره تمرّ تحته.
+     ولا يُكتب الرقمُ تقديرًا — يُقاس ويُتابَع مع كلّ تغيّرِ مقاس. */
+  useEffect(() => {
+    const el = topbarRef.current;
+    if (!el) return;
+    const set = () =>
+      document.documentElement.style.setProperty("--topbar-h", `${Math.round(el.getBoundingClientRect().height)}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   return (
     <HashRouter>
       <div className="app-shell">
-        <header className="topbar">
+        <header className="topbar" ref={topbarRef}>
           {mobile && (
             <button className="menu-btn" onClick={() => setDrawer(true)} aria-label={getUILang() === "ar" ? "القائمة" : "menu"}>
               ☰

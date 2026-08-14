@@ -44,16 +44,27 @@ try {
   }
   // `script.ts` يمسّ قاعدةَ المتصفّح فلا يُحمَّل ههنا؛ ومستوردُه في `metrics`
   // مستوردُ نوعٍ يُمحى عند التجريد — فيُكتفى بجذعٍ فارغٍ يرضي المحلّل.
-  writeFileSync(join(tmp, "script.ts"), "export type SawtScript = { id: string; title: string; words: { location: string }[] };\n");
+  writeFileSync(join(tmp, "script.ts"), "export type SawtScript = { id: string; title: string; words: { location: string }[] };\nexport type AyahRef = { surahNo: number; ayahNo: number; juz: number; page: number };\n");
+  // **وفهرسُ الالتقاط يُحمَّل حيًّا كما هو** — ولا يُبدَّل منه إلّا مستوردُ
+  // القاعدة (فهي شأنُ المتصفّح)، وبانيه `IltiqatIndex` صافٍ لا يمسّها.
+  writeFileSync(join(tmp, "db.ts"), "export async function allAyahs() { return []; }\n");
+  writeFileSync(
+    join(tmp, "iltiqat.ts"),
+    readFileSync(join(SAWT, "iltiqat.ts"), "utf8")
+      .replaceAll('from "../../db"', 'from "./db.ts"')
+      .replaceAll('from "../arabicSearch"', 'from "./arabicSearch.ts"')
+      .replaceAll('from "./script"', 'from "./script.ts"'),
+  );
 
   const align = await import(pathToFileURL(join(tmp, "align.ts")).href);
   const metrics = await import(pathToFileURL(join(tmp, "metrics.ts")).href);
-  await run(align, metrics);
+  const iltiqat = await import(pathToFileURL(join(tmp, "iltiqat.ts")).href);
+  await run(align, metrics, iltiqat);
 } finally {
   rmSync(tmp, { recursive: true, force: true });
 }
 
-async function run(align, metrics) {
+async function run(align, metrics, iltiqat) {
   const { DEFAULT_ALIGN, alignUtterance, speechTokens } = align;
   const { SawtMeter } = metrics;
 
@@ -137,6 +148,8 @@ async function run(align, metrics) {
   }
 
   const withNorm = (words) => words.map((w) => ({ ...w, norm: speechTokens(w.text)[0] ?? "" }));
+  /** رموزُ نصٍّ بالمطبِّع الحيّ نفسِه — تُستعمل في مسابر الالتقاط */
+  const tokensOf = (t) => speechTokens(t);
 
   /* ═══════════ المشاهدُ ═══════════ */
   const cases = [];
@@ -227,6 +240,129 @@ async function run(align, metrics) {
     const toks = fakeEngine(repeated, {});
     const { cursor, report } = feed(script, toks, 0);
     check("ترجيعٌ وتكرار", "لا قهقرة · وبلوغُ الآخر", `الموضع ${cursor}/${script.length} · قفزٌ كاذب ${report.falseJumps}`, cursor === script.length && report.falseJumps === 0);
+  }
+
+  /* ═══════════ ٨ — الالتقاطُ من أيّ آية (ص-م٤ §٢) ═══════════
+     **مسابرُ بدءٍ من مواضعَ بعيدةٍ متفرّقة** والمؤشّرُ في أوّل المصحف: يُوجَد
+     الصحيحُ ولا قفزَ كاذب · **وثلاثيّةٌ مكرّرةٌ عمدًا** فلا يُقفَز حتّى تنحصر ·
+     **وضبطٌ سالبٌ**: ثلاثيّةٌ مضلِّلةٌ تُزرع فيُشهد أنّ الحارسَ يمنع القفز.
+     والفهرسُ **الحيُّ نفسُه** يُبنى ههنا على المصحف كلِّه من القاعدة. */
+  {
+    const { IltiqatIndex, judge, NEAR_WORDS } = iltiqat;
+    const t0 = Date.now();
+    const index = new IltiqatIndex(
+      ayahRows
+        .slice()
+        .sort((a, b) => a.surahNo - b.surahNo || a.ayahNo - b.ayahNo)
+        .map((a) => ({ surahNo: a.surahNo, ayahNo: a.ayahNo, juz: a.juz, page: a.page, text: a.textUthmani })),
+    );
+    const buildMs = Date.now() - t0;
+    const all = () => true;
+    /** رموزُ مدًى من كلمات المصحف كما يخرجها المحرّكُ (بلا تشويش) */
+    const say = (s, a, from, count) =>
+      wordRows
+        .filter((w) => w.surahNo === s && w.ayahNo === a && w.wordNo >= from && w.wordNo < from + count)
+        .map((w) => speechTokens(w.text)[0])
+        .filter(Boolean);
+
+    /** المنتظرُ يُحسب من القاعدة نفسِها لا يُكتب رقمًا — والكلماتُ تُعدّ من نصّ
+        الآيات لا من جدول المفردات، فبينهما خمسةُ مواضعَ تختلف قسمتُها (وهي
+        المستثناةُ المعلَنةُ في بوّابة التتبّع). */
+    const wantWords = ayahRows.reduce((n, a) => n + tokensOf(a.textUthmani).length, 0);
+    const wantTri = (() => {
+      const set = new Set();
+      for (const a of ayahRows) {
+        const t = tokensOf(a.textUthmani);
+        for (let i = 0; i + 2 < t.length; i++) set.add(t.slice(i, i + 3).join(" "));
+      }
+      return set.size;
+    })();
+    check(
+      "فهرسُ الالتقاط يُبنى على المصحف كلِّه",
+      `كلماتٌ ${wantWords} · ثلاثيّاتٌ ${wantTri}`,
+      `كلمات ${index.wordCount} · ثلاثيّات ${index.trigramCount} · بُني في ${buildMs} مِث`,
+      index.wordCount === wantWords && index.trigramCount === wantTri,
+    );
+
+    // مواضعُ بعيدةٌ متفرّقة — والمؤشّرُ في أوّل المصحف (الفاتحة، الموضع ٠)
+    for (const [name, s, a] of [["أوّلُ الكهف", 18, 1], ["وسطُ النساء", 4, 90], ["آخرُ الملك", 67, 30]]) {
+      const toks = say(s, a, 1, 7);
+      const v = judge(index, toks, all, 0);
+      check(
+        `التقاطٌ من ${name}`,
+        `قفزٌ إلى ${s}:${a}:1`,
+        v.kind === "jump" ? `${v.hit.location}` : `الحكم: ${v.kind}${v.kind === "many" ? ` (${v.count})` : ""}`,
+        v.kind === "jump" && v.hit.surahNo === s && v.hit.ayahNo === a && v.hit.wordNo === 1,
+      );
+    }
+
+    // **ثلاثيّةٌ مكرّرةٌ عمدًا**: مطلعُ آيةٍ تتكرّر بحروفها في سورةٍ واحدة —
+    // تُخرج مواضعَ فلا يُقفَز؛ ثمّ تُضمّ كلماتٌ تالية فتنحصر بواحد.
+    {
+      const repeated = ayahRows.filter((x) => x.surahNo === 55);
+      const counts = new Map();
+      for (const x of repeated) {
+        const k = tokensOf(x.textUthmani).slice(0, 3).join(" ");
+        counts.set(k, (counts.get(k) ?? 0) + 1);
+      }
+      const [key, times] = [...counts.entries()].sort((x, y) => y[1] - x[1])[0];
+      const v = judge(index, key.split(" "), all, 0);
+      check(
+        "ثلاثيّةٌ مكرّرةٌ لا يُقفَز عليها",
+        `مواضعُ لا تنحصر (تكرّرت ${times} مرّة)`,
+        `الحكم: ${v.kind}${v.kind === "many" ? ` (${v.count})` : ""}`,
+        v.kind === "many" && v.count > 1,
+      );
+      // **وبضمّ ما بعدها تنحصر بواحد**: والآيةُ المكرّرةُ مكرّرةٌ بتمامها، فلا
+      // يضيّقها إلّا ما **يليها** في المصحف — وهو ما يفعله القارئُ إذ يمضي.
+      const one = repeated.find((x) => tokensOf(x.textUthmani).slice(0, 3).join(" ") === key);
+      const after = repeated.find((x) => x.ayahNo === one.ayahNo + 1);
+      const wide = [...tokensOf(one.textUthmani), ...tokensOf(after.textUthmani).slice(0, 5)];
+      const v2 = judge(index, wide, all, 0);
+      check(
+        "ثمّ تنحصر بضمّ ما بعدها",
+        `قفزٌ إلى ${one.location}:1`,
+        v2.kind === "jump" ? v2.hit.location : `الحكم: ${v2.kind}${v2.kind === "many" ? ` (${v2.count})` : ""}`,
+        v2.kind === "jump" && v2.hit.surahNo === one.surahNo && v2.hit.ayahNo === one.ayahNo,
+      );
+    }
+
+    // **الترجيعُ لا يُلتقَط**: ما وقع في جوار المؤشّر يتولّاه المحلّيُّ
+    {
+      const near = say(18, 1, 1, 7);
+      const at = index.flatOf("18:1:1");
+      const v = judge(index, near, all, at + 3);
+      check(
+        "ترجيعٌ في الجوار لا يُقفَز عليه",
+        `الحكم: قريب (دون ${NEAR_WORDS} كلمة)`,
+        `الحكم: ${v.kind}`,
+        v.kind === "near",
+      );
+    }
+
+    // **ويعمل داخل المقطع المختار**: موضعٌ خارجَه لا يُلتقَط
+    {
+      const toks = say(18, 1, 1, 7);
+      const v = judge(index, toks, (a) => a.surahNo === 2, 0);
+      check("لا يُلتقَط ما خرج عن المقطع", "الحكم: لا شيء", `الحكم: ${v.kind}`, v.kind === "none");
+    }
+
+    // **الضبطُ السالب**: ثلاثيّةٌ مضلِّلةٌ تُزرع — رموزٌ ليست من المصحف تُلحق
+    // بثلاثيّةٍ صحيحة، فيُشهد أنّ التحقّقَ من الكلمات كلِّها يمنع القفز.
+    {
+      const toks = [...say(18, 1, 1, 3), "زعموا", "كذبا", "مفترى", "ليس", "منه"];
+      const v = judge(index, toks, all, 0);
+      check(
+        "ضبطٌ سالب: ثلاثيّةٌ مضلِّلة",
+        "لا قفزَ — الرموزُ لا تطابق موضعًا",
+        `الحكم: ${v.kind}`,
+        v.kind === "none",
+      );
+      // وبإزائه بريءٌ لا يُصطاد: الرموزُ الصحيحةُ نفسُها تُلتقَط
+      const clean = say(18, 1, 1, 8);
+      const v2 = judge(index, clean, all, 0);
+      check("وبريءٌ لا يُمنع", "قفزٌ إلى 18:1:1", v2.kind === "jump" ? v2.hit.location : v2.kind, v2.kind === "jump");
+    }
   }
 
   /* ═══════════ الخلاصة ═══════════ */

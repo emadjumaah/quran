@@ -40,11 +40,18 @@ import {
   SEALED_SEGMENTS,
   WINDOW_AHEAD,
   WINDOW_WORDS,
+  inSegment,
   openSegment,
   type SawtScript,
   type SawtWindow,
   type SegmentSpec,
 } from "../lib/sawt/script";
+import {
+  judge,
+  loadIltiqat,
+  type IltiqatHit,
+  type IltiqatIndex,
+} from "../lib/sawt/iltiqat";
 import {
   HALAT,
   findHal,
@@ -70,6 +77,7 @@ import { OnDeviceRecognizer, onDeviceAvailable } from "../lib/sawt/onDeviceRecog
 import { isAppleMobile, startVad, type VadHandle } from "../lib/sawt/vad";
 import {
   CONDITIONS,
+  clearMark,
   deviceName,
   isStandalone,
   listRuns,
@@ -79,12 +87,27 @@ import {
   type SawtRunRow,
 } from "../lib/sawt/runs";
 import { surahNameAr } from "../db";
+import { TAJWID, tajwidWords, type TajwidRule } from "../tajwid";
+import TAJWID_BANK from "../lib/sawt/tajwid-bank.json";
 import "../styles/sawt-engine.css";
 import { num } from "../i18n";
 
 type Phase = "idle" | "running" | "done";
 /** أبوابُ الاختيار على المصحف كلِّه، ومعها مقاطعُ المحكّ المختومة */
 type Pick = "mihakk" | "surah" | "juz" | "page" | "range" | "mushaf";
+
+/**
+ * **إشعالُ الأحكام** — مفتاحُه محفوظٌ، وافتراضُه **مطفأ في «الصلاة»** (لا زينةَ
+ * تشغل المصلّي) ومشعَلٌ حيث اختاره القارئ (ص-م٤ §٥هـ/١).
+ */
+const AHKAM_KEY = "sawt.ahkam.v1";
+const readAhkam = (): boolean => {
+  try {
+    return localStorage.getItem(AHKAM_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
 
 /** كم نتيجةً مختومةً يقف عندها المؤشّرُ قبل أن يمضيَ من تلقائه */
 const STALL_BEFORE_ADVANCE = 3;
@@ -142,6 +165,18 @@ export default function Tatabbu() {
   // عُدّةُ التهيئة **تُفتح بطلبٍ لا بقدوم** (أمر المالك 2026-08-14، ونقضُ إقرار
   // ص-م٢): يأتي القارئُ فيجد المصحفَ صافيًا، ومن أراد تهيئةً طلبها من الشريط.
   const [setup, setSetup] = useState(false);
+  /**
+   * **بابُ الفحص** (ص-م٤ §٠) — الصفحةُ وُلدت مسبارًا فبقيت لغةُ المسبار فيها:
+   * مقاطعُ المحكّ وعُدّةُ القياس ومصفوفةُ الأحوال وقياسُ الزمن ونسخُ الأرقام.
+   * **وكان ذلك صوابَه يومئذٍ** وقد أدّى غرضَه؛ **واليومَ صار البابُ للناس،
+   * وعُدّةُ القياس ليست لهم**. فيُفصل السطحان فصلًا تامًّا: **لا تُحذف العُدّة**
+   * — فبها يُقاس المحرّكان وتُعاد تشغيلاتُ المحكّ — بل **تُنقل خلف بابٍ واحدٍ
+   * لا يُفتح إلّا بطلب**. وميزانُ القبول: أن يفتح القارئُ فلا يرى إلّا ما يعنيه،
+   * ولا يظنّ نفسَه في تجربةٍ معمليّة.
+   */
+  const [fahs, setFahs] = useState(false);
+  /** **إشعالُ الأحكام السبعة** بمحرّكنا الحرّ — §٥هـ */
+  const [ahkam, setAhkam] = useState(readAhkam);
   const [asking, setAsking] = useState(false); // الإعلانُ يسبق الميكروفون
   // **المحرّكُ يُسأل عنه مرّةً واحدةً ولا يُختار عن القارئ خفيةً** (ص-م٣ §٤):
   // أحدُهما يُخرج صوتَه، والآخرُ ينزّل ٨٣ م.ب من شبكته — وكلاهما ثمنٌ لا يُدفع
@@ -165,6 +200,8 @@ export default function Tatabbu() {
   const [slow, setSlow] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [runs, setRuns] = useState<SawtRunRow[]>([]);
+  /** **إشارةٌ هادئةٌ في الشريط**: يلتمس موضعَك — لا شاشةَ ولا لوح (§٢/٤) */
+  const [seeking, setSeeking] = useState(false);
 
   const winRef = useRef<SawtWindow | null>(null);
   const recRef = useRef<RecognizerPort | null>(null);
@@ -180,8 +217,22 @@ export default function Tatabbu() {
   const waqfTimerRef = useRef<number | null>(null);
   const currentElRef = useRef<HTMLSpanElement | null>(null);
   const textElRef = useRef<HTMLDivElement | null>(null);
+  /** طرفُ المحمَّل — يُرقَب فتنمو النافذةُ **قبل** أن يبلغه القارئ (§١/١) */
+  const endElRef = useRef<HTMLDivElement | null>(null);
+  /** فهرسُ الالتقاط الشامل — يُبنى عند البدء لا عند الإقلاع (§٢) */
+  const iltiqatRef = useRef<IltiqatIndex | null>(null);
+  /** آخرُ ما وصل من رموزٍ مختومة — بها يُلتمس الموضعُ حين تخيب المحاذاةُ القريبة */
+  const recentRef = useRef<string[]>([]);
+  /** كم مرّةً التُقط موضعٌ بعيد — يُعرض في عُدّة القياس لا في سطح القارئ */
+  const relocsRef = useRef(0);
+  /** المقطعُ المختارُ كما هو الآن — تقرؤه المحاذاةُ الحيّةُ فلا تتقادم في إغلاق */
+  const specRef = useRef<SegmentSpec | null>(null);
+  /** حالُ الالتماس مرآةً في مرجع — فلا تُعاد الحالُ في كلّ نتيجةٍ بلا تغيّر */
+  const seekingRef = useRef(false);
 
-  const mark = useMemo(() => readMark(), [phase]);
+  /** يُعاد قراءةُ العلامة عند كلّ ختامٍ **وعند محوها بيد القارئ** (§٣) */
+  const [markTick, setMarkTick] = useState(0);
+  const mark = useMemo(() => readMark(), [phase, markTick]);
   /** أيقوم في هذا الجهاز محرّكٌ أصلًا؟ — أحدُهما يكفي */
   const supported = webSpeechAvailable() || onDeviceAvailable();
   /** أمتاحٌ كلُّ محرّكٍ بحدته — فلا يُعرض خيارٌ لا يعمل ولا يُكتم عذرُه */
@@ -229,6 +280,7 @@ export default function Tatabbu() {
   /** من أين يبدأ: من الموضع المختار، أو من آخر موضعٍ محفوظ */
   const from = (hal.resumes || resume) && mark ? mark.location : null;
   const specKey = JSON.stringify(spec);
+  specRef.current = spec;
 
   /* ── فتحُ نافذة العمل: ما يُتلى الآنَ وما حوله، لا المصحفُ كلُّه ── */
   useEffect(() => {
@@ -260,6 +312,31 @@ export default function Tatabbu() {
     });
   }, [cursor, growth]);
 
+  /* ── **ولا يُوهَم القارئُ أنّ الاختيارَ ناقص** (رصدُ المالك ١٤ أغسطس · §١/١) ──
+     «اخترتُ المصحفَ كلَّه فلم يُفتح إلّا قسمٌ منه» — وهو **نافذةُ العمل بحكم
+     التصميم والأداء**، لا نقصٌ في الاختيار. فيبقى التحميلُ نافذةً، **ولكن
+     التمريرَ يمتدّ إلى ما بعدها فتنمو تلقائيًّا قبل أن يبلغ طرفَها لا عندَه** —
+     فلا يقف السردُ في يده. والرقيبُ `IntersectionObserver` بهامشٍ سخيّ، فيصلح
+     للجوال (وعاءٌ يمرّر) وللحاسوب (الصفحةُ تمرّر) بلا فرق. */
+  useEffect(() => {
+    const el = endElRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        const win = winRef.current;
+        if (!win || !win.more) return;
+        void win.grow(win.script.words.length + WINDOW_WORDS).then((grew) => {
+          if (grew) setGrowth((g) => g + 1);
+        });
+      },
+      // **قبل الطرف لا عنده**: يُنبَّه ومسافةُ شاشةٍ ونصفٍ باقيةٌ أمام القارئ
+      { root: null, rootMargin: "0px 0px 150% 0px", threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ready, growth]);
+
   const script = winRef.current?.script ?? null;
   const wordCount = script ? script.words.length : 0;
 
@@ -286,6 +363,29 @@ export default function Tatabbu() {
   }, []);
 
   useEffect(() => () => stopAll(), [stopAll]);
+
+  /* ═══════════════ الالتقاطُ من أيّ آية (§٢) ═══════════════
+     **والمحلّيُّ أوّلًا دائمًا**: لا يُستدعى هذا إلّا حين تخيب المحاذاةُ القريبة
+     — فهو مخرجٌ عند الضياع لا محرّكُ تتبّع. وإذا انحصر الموضعُ بواحدٍ بعيدٍ
+     **أُعيد فتحُ المقطع عنده**، فينمو المصحفُ من موضع القارئ لا من أوّل ما فُتح.
+     **والمِسطرةُ تُستأنف من هناك**: أرقامُ القياس تصف الشوطَ الأخير، وعددُ
+     الالتقاطات مقيَّدٌ معها — فلا يُنسَب إلى تشغيلةٍ رقمٌ لمقطعٍ آخر. */
+  const relocate = useCallback(async (hit: IltiqatHit) => {
+    const specNow = specRef.current;
+    if (!specNow) return;
+    const { win, startWord } = await openSegment(specNow, hit.location);
+    winRef.current = win;
+    cursorRef.current = startWord;
+    anchorRef.current = startWord;
+    stallRef.current = 0;
+    recentRef.current = [];
+    relocsRef.current += 1;
+    seekingRef.current = false;
+    meterRef.current = new SawtMeter(win.script);
+    setCursor(startWord);
+    setGrowth((g) => g + 1);
+    setSeeking(false);
+  }, []);
 
   /* ── الختام ── */
   const finish = useCallback(() => {
@@ -328,6 +428,8 @@ export default function Tatabbu() {
     autoRef.current = 0;
     stallRef.current = 0;
     lastAdvanceRef.current = 0;
+    relocsRef.current = 0;
+    recentRef.current = [];
     setHeard(false);
     setSlow(false);
     setFelt(null);
@@ -335,8 +437,21 @@ export default function Tatabbu() {
     setReached(null);
     setCopied(null);
     setSetup(false);
+    setFahs(false);
+    seekingRef.current = false;
+    setSeeking(false);
     const meter = new SawtMeter(win.script);
     meterRef.current = meter;
+
+    // **فهرسُ الالتقاط يُبنى عند البدء لا عند الإقلاع** (§٢/٦): من قاعدة المصحف
+    // التي في الجهاز، فلا بايتَ يُنزَّل له. وإن تعثّر بقي التتبّعُ محلّيًّا كما كان.
+    void loadIltiqat()
+      .then((ix) => {
+        iltiqatRef.current = ix;
+      })
+      .catch(() => {
+        iltiqatRef.current = null;
+      });
 
     // الشاشةُ تبقى: القارئُ لا يلمس شيئًا بعد التكبير
     try {
@@ -382,28 +497,63 @@ export default function Tatabbu() {
       setHeard(true);
       const tokens = speechTokens(r.text);
       if (!tokens.length) return;
+      // **النافذةُ تُقرأ من مرجعها لا من إغلاق**: بعد الالتقاط تُستبدل النافذةُ
+      // كلُّها، فلو أُمسك بها ههنا لبقيت المحاذاةُ على مقطعٍ هُجر.
+      const live = winRef.current ?? win;
+      const gauge = meterRef.current ?? meter;
       const before = anchorRef.current;
-      const step = alignUtterance(win.norms, tokens, before, DEFAULT_ALIGN);
+      const step = alignUtterance(live.norms, tokens, before, DEFAULT_ALIGN);
       if (step.cursor !== cursorRef.current) {
         cursorRef.current = step.cursor;
         setCursor(step.cursor);
         lastAdvanceRef.current = performance.now();
-        requestAnimationFrame(() => meter.noteEngineLatency(performance.now() - r.at));
+        requestAnimationFrame(() => gauge.noteEngineLatency(performance.now() - r.at));
       }
       // المِسطرةُ تُغذّى بالمختوم وحدَه: الجزئيُّ يُراجَع وينمو، فلو حُسب
       // لتضاعفت الكلمةُ الواحدةُ مرارًا.
       if (!r.isFinal) return;
-      meter.commit(step, before);
+      gauge.commit(step, before);
       if (step.cursor > before) {
         stallRef.current = 0;
         anchorRef.current = step.cursor;
+        recentRef.current = [];
+        if (seekingRef.current) {
+          seekingRef.current = false;
+          setSeeking(false);
+        }
         return;
       }
       // **المضيُّ عند الشكّ**: وقف المؤشّرُ وما زال الصوتُ يصل. فلا نَحبِس
       // قارئًا لعلّه مصيبٌ والمحرّكُ هو المخطئ — نمضي كلمةً. والكلمةُ الممضيُّ
       // عنها تبقى غيرَ مطابقةٍ في الحساب، فلا يُشترى المضيُّ برقمٍ كاذب.
       stallRef.current += 1;
-      if (stallRef.current >= STALL_BEFORE_ADVANCE && before < win.norms.length) {
+      // **ثمّ يُلتمس الموضعُ في المقطع كلِّه** — بعد أن خابت المحاذاةُ القريبة،
+      // وقبل أن يمضيَ المؤشّرُ كلمةً بلا مطابقة. وهو الترتيبُ المنصوص: المحلّيُّ
+      // أوّلًا، والشاملُ عند خيبته.
+      recentRef.current = [...recentRef.current, ...tokens].slice(-9);
+      if (stallRef.current >= STALL_BEFORE_ADVANCE) {
+        const ix = iltiqatRef.current;
+        const specNow = specRef.current;
+        if (ix && specNow && recentRef.current.length >= 4) {
+          const w = live.script.words[Math.min(cursorRef.current, live.script.words.length - 1)];
+          const at = w ? ix.flatOf(w.location) : null;
+          const v = judge(ix, recentRef.current, (a) => inSegment(specNow, a), at);
+          if (v.kind === "jump") {
+            void relocate(v.hit);
+            return;
+          }
+          // **والانتظارُ خيرٌ من قفزةٍ كاذبة**: مواضعُ لم تنحصر ⇒ يُنتظر ما
+          // يضيّقها، ولا يُقفَز. وتُعلَن الحالُ بإشارةٍ هادئةٍ لا بلوح.
+          if (v.kind === "many") {
+            if (!seekingRef.current) {
+              seekingRef.current = true;
+              setSeeking(true);
+            }
+            return;
+          }
+        }
+      }
+      if (stallRef.current >= STALL_BEFORE_ADVANCE && before < live.norms.length) {
         stallRef.current = 0;
         autoRef.current += 1;
         const next = before + 1;
@@ -415,7 +565,7 @@ export default function Tatabbu() {
     });
     rec.start();
     setPhase("running");
-  }, [measureTime, engineId]);
+  }, [measureTime, engineId, relocate]);
 
   /**
    * **الإعلانُ يسبق الميكروفون.** لا يُشغَّل التقاطٌ ولا يُفتح مجرًى صوتيٌّ
@@ -509,6 +659,12 @@ export default function Tatabbu() {
 
   const halNote = (h: Hal) => (h.suspended ? h.suspended : h.what);
 
+  /**
+   * **وافتراضُ الإشعال مطفأ في «الصلاة»** (§٥هـ/١) — لا زينةَ تشغل المصلّي،
+   * ولو كان القارئُ قد أشعلها في غيرها. ومُشعَلٌ حيث اختاره.
+   */
+  const showAhkam = ahkam && halId !== "salat";
+
   /** النصُّ القرآنيّ — من قاعدتنا حرفًا، ولا تحويلَ في موضع العرض.
    *  **والنصُّ نصٌّ لا زرّ**، ولا يُخفَت ولا يُطمس: المصحفُ يُفتح صافيًا والبدءُ
    *  من الشريط (أمر المالك 2026-08-14 — «ألغِ هذا البوب أب»). */
@@ -521,35 +677,61 @@ export default function Tatabbu() {
         ref={textElRef}
         data-sawt="text"
       >
-        {script.ayahs.map((a, ai) => (
-          <p className="sawt-aya" key={`${a.surahNo}:${a.ayahNo}`}>
-            {/* فاصلُ سورةٍ حين ينتقل المقطعُ من سورةٍ إلى أخرى — كي يعرف
-                القارئُ أين هو بلا أن يُقطع عليه سياقُ التلاوة */}
-            {(ai === 0 || script.ayahs[ai - 1].surahNo !== a.surahNo) && (
-              <span className="sawt-surah">{surahNameAr(a.surahNo)}</span>
-            )}
-            {script.words.slice(a.from, a.to + 1).map((w, k) => {
-              const i = a.from + k;
-              const state = i < cursor ? "past" : i === cursor ? "now" : "next";
-              const hidden = hal.text === "veiled" && i >= cursor;
-              // **الفاصلُ خارجَ صندوق الكلمة**: كان بياضُ الفصل داخلَ الوسم، فكان
-              // تظليلُ المؤشّر يمتدّ عليه حتّى يلاصق حرفَ جارته (عيبُ الفحص الحيّ
-              // ١٤ أغسطس). فأُخرج، فصار **التظليلُ محصورًا في كلمته** وبقي النصُّ
-              // المعروضُ حرفًا حرفًا كما هو — كلمةٌ ثمّ بياضٌ ثمّ كلمة.
-              return (
-                <Fragment key={w.location}>
-                  <span
-                    ref={i === cursor ? currentElRef : undefined}
-                    className={`sawt-w sawt-${state}${hidden ? " sawt-veil" : ""}`}
-                  >
-                    {w.text}
-                  </span>{" "}
-                </Fragment>
-              );
-            })}
-            <span className="ayah-marker">﴿{num(a.ayahNo)}﴾</span>
-          </p>
-        ))}
+        {/* ═══ **السردُ على هيئة المصحف** (رصدُ المالك ١٤ أغسطس · §٤) ═══
+            كان كلُّ آيةٍ فقرةً منصَّفةً تبدأ سطرًا جديدًا — «غريبٌ على نصّ
+            القرآن». **والعلاجُ يُقتبس ولا يُخترع**: نسقُ `.mushaf-page .quran`
+            نفسُه — **سيلٌ متّصلٌ** بتسوية `justify` وآخرُ سطرٍ متوسّط، والآياتُ
+            تفصلها **علاماتُها** في مواضعها، ورأسُ السورة فاصلٌ بيّن.
+            **ولم يُكسر بهذا شيء**: مواضعُ الكلمات ومسارُ المؤشّر والحجابُ
+            كلُّها **على الكلمة لا على الفقرة**، فبقيت كما هي حرفًا. */}
+        {script.ayahs.map((a, ai) => {
+          const words = script.words.slice(a.from, a.to + 1);
+          // **إشعالُ الأحكام السبعة بمحرّكنا الحرّ** (§٥هـ): يُحسب من رسم
+          // المصحف عندنا، بلا بياناتٍ خارجيّة — والمقاديرُ ليست ههنا.
+          const colored = showAhkam ? tajwidWords(words.map((w) => w.text)) : null;
+          return (
+            <Fragment key={`${a.surahNo}:${a.ayahNo}`}>
+              {/* فاصلُ سورةٍ حين ينتقل المقطعُ من سورةٍ إلى أخرى — كي يعرف
+                  القارئُ أين هو بلا أن يُقطع عليه سياقُ التلاوة */}
+              {(ai === 0 || script.ayahs[ai - 1].surahNo !== a.surahNo) && (
+                <div className="sawt-surah">{surahNameAr(a.surahNo)}</div>
+              )}
+              {words.map((w, k) => {
+                const i = a.from + k;
+                const state = i < cursor ? "past" : i === cursor ? "now" : "next";
+                const hidden = hal.text === "veiled" && i >= cursor;
+                const spans = colored?.[k];
+                // **الفاصلُ خارجَ صندوق الكلمة**: كان بياضُ الفصل داخلَ الوسم، فكان
+                // تظليلُ المؤشّر يمتدّ عليه حتّى يلاصق حرفَ جارته (عيبُ الفحص الحيّ
+                // ١٤ أغسطس). فأُخرج، فصار **التظليلُ محصورًا في كلمته** وبقي النصُّ
+                // المعروضُ حرفًا حرفًا كما هو — كلمةٌ ثمّ بياضٌ ثمّ كلمة.
+                return (
+                  <Fragment key={w.location}>
+                    <span
+                      ref={i === cursor ? currentElRef : undefined}
+                      className={`sawt-w sawt-${state}${hidden ? " sawt-veil" : ""}`}
+                    >
+                      {spans
+                        ? spans.map((s, si) =>
+                            s.rule ? (
+                              <span key={si} className={TAJWID[s.rule].cls} title={TAJWID[s.rule].ar}>
+                                {s.text}
+                              </span>
+                            ) : (
+                              <span key={si}>{s.text}</span>
+                            ),
+                          )
+                        : /* الكلمةُ كما هي، بلا تحويلٍ في موضع العرض */ <>{w.text}</>}
+                    </span>{" "}
+                  </Fragment>
+                );
+              })}
+              <span className="ayah-marker">﴿{num(a.ayahNo)}﴾</span>{" "}
+            </Fragment>
+          );
+        })}
+        {/* طرفُ المحمَّل — يُرقَب فتنمو النافذةُ قبل أن يبلغه القارئ (§١/١) */}
+        <div ref={endElRef} className="sawt-end" aria-hidden />
       </div>
     );
   };
@@ -643,7 +825,11 @@ export default function Tatabbu() {
     </div>
   );
 
-  /** اختيارُ المقطع على المصحف كلِّه */
+  /**
+   * اختيارُ المقطع على المصحف كلِّه — **وهذا سطحُ القارئ** (§٠): المقطعُ والحالُ
+   * وابدأ وموضعي، **ولا مقاطعَ محكٍّ ولا عُدّةَ قياس**. و«مقاطعُ المحكّ» تُعرض
+   * في بابها إذا فُتح، فلا تُحذف ولا تُعرض على من لا يعنيه أمرُها.
+   */
   const pickerView = () => (
     <>
       <div className="sawt-segs">
@@ -654,7 +840,7 @@ export default function Tatabbu() {
             ["page", "صفحة"],
             ["range", "من آيةٍ إلى آية"],
             ["mushaf", "المصحف كلُّه"],
-            ["mihakk", "مقاطع المحكّ"],
+            ...(fahs ? ([["mihakk", "مقاطع المحكّ"]] as [Pick, string][]) : []),
           ] as [Pick, string][]
         ).map(([k, label]) => (
           <button
@@ -749,12 +935,164 @@ export default function Tatabbu() {
           </span>
         </label>
       )}
+      {/* ═══ **تصفيرُ الموضع** (رصدُ المالك ١٤ أغسطس · §٣) ═══
+          «يُجبرني على المكان الذي وصلتُ إليه… ولا يُصفَّر». **فالمخرجُ صريحٌ لا
+          يُخبَّأ**، ونتيجتُه فوريّة. **ولا ينقض هذا قاعدةَ «لكلّ حالٍ موضعُه»**
+          الآتيةَ في ج٤: هذا يمحو موضعَ هذه الحال لا مواضعَ الأحوال كلِّها. */}
+      {mark && (
+        <div className="sawt-reset" data-sawt="reset">
+          <button
+            className="sawt-seg"
+            data-sawt="reset-start"
+            onClick={() => {
+              setResume(false);
+              if (hal.resumes) setHalId("murajaa");
+            }}
+          >
+            ابدأ من أوّل المقطع
+          </button>
+          <button
+            className="sawt-seg"
+            data-sawt="reset-clear"
+            onClick={() => {
+              clearMark();
+              setResume(false);
+              setMarkTick((t) => t + 1);
+            }}
+          >
+            امحُ موضعي المحفوظ
+          </button>
+        </div>
+      )}
+      {/* **إشعالُ الأحكام** — يُضبط بمفتاحٍ ههنا، وافتراضُه مطفأ في «الصلاة» (§٥هـ) */}
+      <label className="sawt-check">
+        <input
+          type="checkbox"
+          data-sawt="ahkam"
+          checked={ahkam}
+          onChange={(e) => {
+            setAhkam(e.target.checked);
+            try {
+              localStorage.setItem(AHKAM_KEY, e.target.checked ? "1" : "0");
+            } catch {
+              /* الجهازُ قد يمنع التخزين */
+            }
+          }}
+        />
+        <span>
+          إشعالُ أحكام التجويد في النصّ — تُعرض <b>محسوبةً من رسم المصحف</b> عندنا.{" "}
+          <b>
+            وأمّا قياسُ مقادير المدّ ومعايرةُ تلاوتك فينتظران ثبوتَ رخصةِ مرجعهما وعرضَهما على
+            مختصٍّ في التجويد.
+          </b>
+        </span>
+      </label>
     </>
   );
 
-  /** الأحوالُ المقيسة وقياسُ الزمن — عُدّةُ المحكّ، تبقى كما خُتمت */
-  const mihakkView = () => (
-    <>
+  /** مصفوفةُ الأحوال — من عُدّة القياس، لا تُعرض إلّا خلف بابها */
+  const matrix = CONDITIONS.map((c) => {
+    const rows = runs.filter((x) => x.conditionId === c.id);
+    return { c, last: rows.length ? rows[rows.length - 1] : null };
+  });
+  const matrixText = [
+    `مصفوفةُ الأحوال — ${deviceName()}${isStandalone() ? " (تطبيقٌ مثبَّت)" : " (لسانُ المتصفّح)"}`,
+    ...matrix.map(({ c, last }) =>
+      last
+        ? `${c.name}: إصابة ${last.hitPct}٪ · قفزٌ كاذب ${last.falseJumps} · ${last.segmentTitle} (${last.words} كلمة)`
+        : `${c.name}: لم يُقَس`,
+    ),
+  ].join("\n");
+
+  /**
+   * **سحبُ الإذن — يبقى في سطح القارئ ولا يُنقل خلف باب** (§٠): فهو حقُّ قارئٍ
+   * في أمر صوته، لا عُدّةُ قياس. وموضعُه حيث يُهيّئ لا حيث يُفحَص.
+   */
+  const consentLine = () =>
+    consent ? (
+      <p className="muted sawt-note">
+        أذِنتَ بالميكروفون في {arDate(consent.at)} —{" "}
+        <button
+          className="sawt-link"
+          onClick={() => {
+            clearConsent();
+            setConsent(null);
+          }}
+        >
+          اسحب الإذن
+        </button>
+      </p>
+    ) : null;
+
+  /**
+   * **بنكُ تمارين الأحكام** (§٥هـ/٢) — «أين يقع الإخفاء؟ وأيسرُ مواضعه للتمرين؟»
+   *
+   * مولَّدٌ **بمحرّكنا الحرّ** على رسم المصحف في خطوة بناءٍ حتميّة، **ولا يحمل
+   * من المرجع الموقوف شيئًا**. **والحدُّ**: هذه مواضعُ **في النصّ** لا حكمٌ على
+   * تلاوة أحد — لا صوابَ ولا خطأ، ولا مقدارَ ولا نسبة.
+   */
+  const bankView = () => (
+    <div className="sawt-bank" data-sawt="bank">
+      <h2 className="sawt-h2">أين تقع الأحكام؟</h2>
+      <p className="muted sawt-note">
+        مواضعُ محسوبةٌ من رسم المصحف عندنا. <b>تُعرض على النصّ، ولا يُحكم على تلاوتك.</b>
+      </p>
+      {(Object.keys(TAJWID) as TajwidRule[]).map((rule) => {
+        const row = TAJWID_BANK.rules[rule as keyof typeof TAJWID_BANK.rules];
+        if (!row) return null;
+        return (
+          <div className="sawt-bank-row" key={rule}>
+            <span className={`sawt-bank-name ${TAJWID[rule].cls}`}>{TAJWID[rule].ar}</span>
+            <span className="muted">{num(row.total)} موضعًا</span>
+            <span className="sawt-bank-spots">
+              {row.easiest.slice(0, 4).map((e) => {
+                const [s, a] = e.at.split(":").map(Number);
+                return (
+                  <button
+                    key={e.at}
+                    className="sawt-bank-spot"
+                    onClick={() => {
+                      setPick("range");
+                      setSurahNo(s);
+                      setRangeFrom(a);
+                      setRangeTo(a);
+                      setAhkam(true);
+                    }}
+                  >
+                    {surahNameAr(s)} {num(a)}
+                  </button>
+                );
+              })}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  /** زرُّ الباب الواحد — **بلا لغة أدوات** في اسمه (§٠) */
+  const fahsDoor = () => (
+    <button
+      className={`sawt-fahs-door${fahs ? " on" : ""}`}
+      data-sawt="fahs-door"
+      aria-expanded={fahs}
+      onClick={() => setFahs((v) => !v)}
+    >
+      للفحص
+    </button>
+  );
+
+  /**
+   * **عُدّةُ القياس — خلف بابٍ واحدٍ مسمًّى** (§٠).
+   *
+   * الصفحةُ وُلدت مسبارًا بمحكٍّ مختوم، فكان سطحُها سطحَ قياس: مقاطعُ المحكّ،
+   * وحالُ القراءة المقيسة، وقياسُ الزمن، ومصفوفةُ الأحوال، ونسخُ الأرقام.
+   * **وذلك كان صوابَه يومئذٍ وقد أدّى غرضَه** — واليومَ صار البابُ للناس.
+   * **فلا تُحذف العُدّة**: بها يُقاس المحرّكان وتُعاد تشغيلاتُ المحكّ كما خُتمت
+   * — وإنّما تُنقل ههنا، لا تُعرض إلّا لمن طلبها.
+   */
+  const fahsView = () => (
+    <div className="sawt-fahs" data-sawt="fahs">
       <h2 className="sawt-h2">حالُ القراءة المقيسة</h2>
       <p className="muted sawt-note">
         حكمُ العبور على <b>حال الأساس</b> وحدَها. وما سواها يُقاس ليُعرف حدُّ الباب — لا ليُسقط
@@ -781,21 +1119,42 @@ export default function Tatabbu() {
           المحرّك، ولا يُسجَّل صوت)
         </span>
       </label>
-      {consent && (
+      <p className="muted sawt-note">
+        و«مقاطعُ المحكّ» تظهر في أبواب الاختيار ما دام هذا البابُ مفتوحًا — فتُعاد تشغيلةُ
+        المحكّ كما خُتمت.
+      </p>
+      <div className="sawt-card">
+        <h2 className="sawt-h2">مصفوفةُ الأحوال — ما قيس على هذا الجهاز</h2>
         <p className="muted sawt-note">
-          أذِنتَ بالميكروفون في {arDate(consent.at)} —{" "}
-          <button
-            className="sawt-link"
-            onClick={() => {
-              clearConsent();
-              setConsent(null);
-            }}
-          >
-            اسحب الإذن
-          </button>
+          {deviceName()} · {isStandalone() ? "تطبيقٌ مثبَّت" : "لسانُ المتصفّح"}
         </p>
-      )}
-    </>
+        <table className="sawt-table">
+          <tbody>
+            {matrix.map(({ c, last }) => (
+              <tr key={c.id}>
+                <td>
+                  {c.name}
+                  {c.priority ? " ★" : ""}
+                </td>
+                <td>
+                  {last ? (
+                    <>
+                      إصابة <b>{last.hitPct}٪</b> · قفزٌ كاذب {num(last.falseJumps)}
+                    </>
+                  ) : (
+                    <span className="muted">لم يُقَس</span>
+                  )}
+                </td>
+                <td className="muted">{last ? last.segmentTitle : ""}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <button className="sawt-copy" onClick={() => copy("matrix", matrixText)}>
+          {copied === "matrix" ? "نُسخت" : "انسخ المصفوفة"}
+        </button>
+      </div>
+    </div>
   );
 
   /* ═══════════════ ما بعد الختام ═══════════════ */
@@ -820,15 +1179,17 @@ export default function Tatabbu() {
         `أطولُ سكوت: ${r.longestSilenceMs ?? "—"} مِث`,
         felt ? `إحساسُ القارئ بالزمن: ${felt}` : null,
         `زمنُ فتح المقطع: ${openMs ?? "—"} مِث`,
+        `الالتقاطُ من موضعٍ بعيد: ${relocsRef.current} مرّة`,
         `المدّة: ${Math.round(r.durationMs / 1000)} ثانية`,
       ]
         .filter(Boolean)
         .join("\n")
     : "";
 
+  /** **الأرقامُ الخمسةُ بعد الختام — خلف الباب نفسِه** (§٠): عُدّةُ قياسٍ لا خبرُ قارئ */
   const measureView = () =>
     r ? (
-      <div className="sawt-card">
+      <div className="sawt-card" data-sawt="measure">
         <h2 className="sawt-h2">قياسُ التتبّع</h2>
         <p className="muted sawt-note">
           هذه أرقامٌ عن <b>الآلة</b> — كم تبِعت وكم فاتها وكم تأخّرت. وليست حكمًا على التلاوة.
@@ -945,7 +1306,11 @@ export default function Tatabbu() {
       </div>
     ) : null;
 
-  /** بعد الختام — وفي «الصلاة» صمتٌ تامّ: كلمةٌ واحدةٌ وعودة، لا رقمَ ولا موضع */
+  /**
+   * **ما بعد الختام صار للقارئ** (§٠): «تقبّل الله» وموضعُك ومواضعُ للنظر —
+   * **والأرقامُ الخمسةُ خلفَ الباب نفسِه**، لا تُعرض إلّا لمن طلبها.
+   * وفي «الصلاة» صمتٌ تامّ: كلمةٌ واحدةٌ وعودة، لا رقمَ ولا موضع.
+   */
   const afterView = () => {
     if (hal.after === "silent") {
       return (
@@ -959,8 +1324,8 @@ export default function Tatabbu() {
     }
     return (
       <div data-sawt="after">
-        <h1 className="sawt-h1">بعد الختام</h1>
-        {hal.after === "mark" && reached && (
+        <p className="sawt-quiet-word sawt-after-word">تقبّل الله</p>
+        {reached && (
           <div className="sawt-card">
             <h2 className="sawt-h2">بلغتَ</h2>
             <p className="sawt-reached">{reached}</p>
@@ -969,12 +1334,17 @@ export default function Tatabbu() {
             </p>
           </div>
         )}
-        {measureView()}
         {hal.after === "places" && placesView()}
-        {engineDetail && <p className="muted sawt-note">خبرُ المحرّك: {engineDetail}</p>}
         <button className="sawt-start" onClick={() => setPhase("idle")}>
           تلاوةٌ أخرى
         </button>
+        {fahsDoor()}
+        {fahs && (
+          <>
+            {measureView()}
+            {engineDetail && <p className="muted sawt-note">خبرُ المحرّك: {engineDetail}</p>}
+          </>
+        )}
       </div>
     );
   };
@@ -987,7 +1357,7 @@ export default function Tatabbu() {
   if (mobile) {
     const suspended = !!hal.suspended;
     return (
-      <div className="sawt-m" data-sawt="root">
+      <div className="sawt-m" data-sawt="root" data-sawt-state={engineState}>
         <div className="sawt-m-bar">
           <button
             className="sawt-x"
@@ -1046,7 +1416,10 @@ export default function Tatabbu() {
             {!suspended && (
               <>
                 {pickerView()}
-                {mihakkView()}
+                {halId === "ard" && bankView()}
+                {consentLine()}
+                {fahsDoor()}
+                {fahs && fahsView()}
               </>
             )}
           </div>
@@ -1070,6 +1443,12 @@ export default function Tatabbu() {
           </div>
         )}
 
+        {/* **إشارةُ الالتماس**: هادئةٌ في موضع الشريط — لا شاشةَ ولا لوح (§٢/٤).
+            وهي **خبرٌ عن الآلة لا تصحيحٌ للقارئ**، فتجري في الأحوال كلِّها. */}
+        {phase === "running" && seeking && (
+          <p className="sawt-seek" data-sawt="seek">يلتمس موضعك…</p>
+        )}
+
         {phase === "running" && hal.after !== "silent" && slow && !heard && (
           <p className="muted sawt-hint">
             لم يصل صوتٌ بعدُ. إن طال ذلك فأنهِ، ثمّ أطفئ «قياسَ زمن التتبّع» وأعد البدء.
@@ -1084,10 +1463,11 @@ export default function Tatabbu() {
   if (phase === "running") {
     const cur = script?.words[Math.min(cursor, wordCount - 1)];
     return (
-      <div className="sawt-run" data-sawt="root">
+      <div className="sawt-run" data-sawt="root" data-sawt-state={engineState}>
         <div className="sawt-run-bar">
           <span className="sawt-where">{cur ? `${surahNameAr(cur.surahNo)} ${num(cur.ayahNo)}` : "—"}</span>
           <span className={`sawt-dot sawt-dot-${engineState}`} aria-label="حالُ الإصغاء" />
+          {seeking && <span className="sawt-seek" data-sawt="seek">يلتمس موضعك…</span>}
           {hal.text === "veiled" && (
             <button className="sawt-skip" onClick={skipOne}>
               تجاوز
@@ -1121,21 +1501,8 @@ export default function Tatabbu() {
     );
   }
 
-  const matrix = CONDITIONS.map((c) => {
-    const rows = runs.filter((x) => x.conditionId === c.id);
-    return { c, last: rows.length ? rows[rows.length - 1] : null };
-  });
-  const matrixText = [
-    `مصفوفةُ الأحوال — ${deviceName()}${isStandalone() ? " (تطبيقٌ مثبَّت)" : " (لسانُ المتصفّح)"}`,
-    ...matrix.map(({ c, last }) =>
-      last
-        ? `${c.name}: إصابة ${last.hitPct}٪ · قفزٌ كاذب ${last.falseJumps} · ${last.segmentTitle} (${last.words} كلمة)`
-        : `${c.name}: لم يُقَس`,
-    ),
-  ].join("\n");
-
   return (
-    <div className="page sawt" data-sawt="root">
+    <div className="page sawt" data-sawt="root" data-sawt-state={engineState}>
       <div className="page-narrow">
         <div className="sawt-top">
           <h1 className="sawt-h1">التتبّع</h1>
@@ -1210,39 +1577,14 @@ export default function Tatabbu() {
                   الشاشةُ مضاءةً ويتبعك التمريرُ وحدَه.
                 </p>
 
-                {mihakkView()}
+                {halId === "ard" && bankView()}
 
-                <div className="sawt-card">
-                  <h2 className="sawt-h2">مصفوفةُ الأحوال — ما قيس على هذا الجهاز</h2>
-                  <p className="muted sawt-note">
-                    {deviceName()} · {isStandalone() ? "تطبيقٌ مثبَّت" : "لسانُ المتصفّح"}
-                  </p>
-                  <table className="sawt-table">
-                    <tbody>
-                      {matrix.map(({ c, last }) => (
-                        <tr key={c.id}>
-                          <td>
-                            {c.name}
-                            {c.priority ? " ★" : ""}
-                          </td>
-                          <td>
-                            {last ? (
-                              <>
-                                إصابة <b>{last.hitPct}٪</b> · قفزٌ كاذب {num(last.falseJumps)}
-                              </>
-                            ) : (
-                              <span className="muted">لم يُقَس</span>
-                            )}
-                          </td>
-                          <td className="muted">{last ? last.segmentTitle : ""}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <button className="sawt-copy" onClick={() => copy("matrix", matrixText)}>
-                    {copied === "matrix" ? "نُسخت" : "انسخ المصفوفة"}
-                  </button>
-                </div>
+                {consentLine()}
+
+                {/* **بابُ الفحص وحده** (§٠): عُدّةُ القياس كلُّها خلفه — مقاطعُ
+                    المحكّ ومصفوفةُ الأحوال وقياسُ الزمن ونسخُ الأرقام. */}
+                {fahsDoor()}
+                {fahs && fahsView()}
               </>
             )}
           </>

@@ -15,9 +15,10 @@
  * القارئ (`SawtWindow`). والفهرسةُ الأولى مِن عِدّة السور لا من وثائق الآيات،
  * فلا يُقرأ من القاعدة إلّا ما يُتلى.
  */
-import { ayahsOfUnit, listSurahs, wordsBetween } from "../../db";
-import type { AyahDoc, WordDoc } from "../../types";
+import { listSurahs, wordsBetween } from "../../db";
+import type { WordDoc } from "../../types";
 import { normalizeAr } from "../arabicSearch";
+import BOUNDS from "./mushaf-bounds.json";
 
 /** كلمةٌ من المصحف في مسار التلاوة */
 export interface SawtWord {
@@ -107,18 +108,47 @@ export function inSegment(spec: SegmentSpec, a: AyahRef): boolean {
 }
 
 /**
+ * **خريطةُ حدود الصفحة والجزء** — أوّلُ آيةٍ من كلّ صفحةٍ ومن كلّ جزء، مولَّدةٌ
+ * بخطوةِ بناءٍ حتميّةٍ (`js/scripts/build-mushaf-bounds.mjs`) ومحروسةٌ ببوّابة
+ * التتبّع على الآيات كلِّها. **أرقامٌ لا نصّ** — أربعةُ آلافٍ من البايتات تُستورد
+ * مع الحزمة فلا طلبَ شبكةٍ ولا انتظار.
+ */
+const BOUND_UNITS: Record<"page" | "juz", [number, number][]> = {
+  page: BOUNDS.pages as [number, number][],
+  juz: BOUNDS.juz as [number, number][],
+};
+
+/** آياتُ المصحف بترتيبه، مبنيّةً من عِدّة السور وحدَها (١١٤ صفًّا) */
+async function mushafOrder(): Promise<{ surahNo: number; ayahNo: number }[]> {
+  const surahs = await listSurahs();
+  const out: { surahNo: number; ayahNo: number }[] = [];
+  for (const s of surahs) for (let n = 1; n <= s.ayahCount; n++) out.push({ surahNo: s.surahNo, ayahNo: n });
+  return out;
+}
+
+/**
  * فهرسةُ المقطع: إحالاتُ آياته بترتيب المصحف **بلا تحميل كلماتها**.
  *
- * والسورُ والمدياتُ والمصحفُ كلُّه تُفهرس من عِدّة السور (١١٤ صفًّا) لا من
- * وثائق الآيات — فلا يُقرأ من القاعدة شيءٌ لا يُتلى. والصفحةُ والجزءُ وحدَهما
- * يستدعيان آياتِهما (بضعَ عشراتٍ لا غير) لأنّ حدَّهما ليس في عِدّة السور.
+ * **وكلُّها اليومَ تُفهرس من عِدّة السور** (١١٤ صفًّا) لا من وثائق الآيات — فلا
+ * يُقرأ من القاعدة شيءٌ لا يُتلى. وكانت الصفحةُ والجزءُ يستدعيان آياتِهما لأنّ
+ * حدَّهما ليس في عِدّة السور، **فكانا أبطأ من المصحف كلِّه** (٣٢٩ و٣٠١ مِث
+ * مقابل ١٥٦ — قياسُ ص-م٢ §٥‑١)؛ فصار حدُّهما يُقرأ من الخريطة المحفوظة.
  */
 export async function planSegment(spec: SegmentSpec): Promise<AyahRef[]> {
   if (spec.kind === "page" || spec.kind === "juz") {
-    const docs: AyahDoc[] = await ayahsOfUnit(spec.kind, spec.kind === "page" ? spec.page : spec.juz);
-    return docs
-      .map((d) => ({ surahNo: d.surahNo, ayahNo: d.ayahNo, juz: d.juz, page: d.page }))
-      .filter((a) => inSegment(spec, a));
+    const n = spec.kind === "page" ? spec.page : spec.juz;
+    const bounds = BOUND_UNITS[spec.kind];
+    const first = bounds[n - 1];
+    if (!first) return [];
+    const next = bounds[n];
+    const all = await mushafOrder();
+    const at = (b: [number, number]) => all.findIndex((a) => a.surahNo === b[0] && a.ayahNo === b[1]);
+    const from = at(first);
+    if (from < 0) return [];
+    const to = next ? at(next) : all.length;
+    return all
+      .slice(from, to < 0 ? all.length : to)
+      .map((a) => ({ ...a, juz: spec.kind === "juz" ? n : 0, page: spec.kind === "page" ? n : 0 }));
   }
   const surahs = await listSurahs();
   const out: AyahRef[] = [];

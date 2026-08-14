@@ -22,7 +22,7 @@
  */
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -135,19 +135,33 @@ async function session({ offline, label }) {
     agree: await clickWhen('[data-sawt="agree"]', 8000),
   };
 
+  /** **حالُ الإصغاء تُقرأ من جذر الصفحة لا من نقطةٍ في شريط** — عيبٌ في التسيير
+      اصطيد في ص-م٤: كانت تُقرأ من `.sawt-dot`، **وهي لا تُرسم إلّا على الحاسوب**،
+      والفحصُ يقيس على عرض ٣٩٠ — فكان ينتظر ما لا يظهر أبدًا فيُقيَّد إخفاقًا
+      للمحرّك وليس منه. و`data-sawt-state` على الجذر يستوي فيه العرضان. */
   const t0 = Date.now();
   let ready = false;
   for (let i = 0; i < 400; i++) {
-    const state = await evaluate(`document.querySelector('.sawt-dot')?.className ?? ""`);
-    if (typeof state === "string" && state.includes("sawt-dot-listening")) { ready = true; listeningAt = Date.now(); break; }
+    const state = await evaluate(
+      `(document.querySelector('[data-sawt="root"]')?.getAttribute('data-sawt-state') ?? "") + " " + (document.querySelector('.sawt-dot')?.className ?? "")`,
+    );
+    if (typeof state === "string" && (state.includes("listening") || state.includes("sawt-dot-listening"))) {
+      ready = true;
+      listeningAt = Date.now();
+      break;
+    }
     await sleep(1000);
   }
   const readyMs = ready ? Date.now() - t0 : null;
 
-  // يُترك يسمع، ثمّ يُقاس تقدّمُ المؤشّر على كلمات المصحف
+  /** يُترك يسمع، ثمّ يُقاس تقدّمُ المؤشّر على كلمات المصحف.
+      **والمهلةُ ثلاثُ دقائقَ لا دقيقة** (شُدّت في ص-م٤): المحرّكُ الحرُّ يعالج
+      **نافذةً كاملةً في كلّ استدلال** (٦ ثوانٍ + ٢٫٧–٣٫٨ للاستدلال — مقيسٌ في
+      ص-م٣ §٤)، فدقيقةٌ لا تكفي لثماني كلماتٍ ببنيته. **والشرطُ لم يُرخَ**، وإنّما
+      أُعطي القياسُ زمنَه: الرقمُ ثمانٍ كما كان. */
   let advanced = 0;
   if (ready) {
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 36; i++) {
       await sleep(5000);
       advanced = (await evaluate(`document.querySelectorAll('.sawt-past').length`)) ?? 0;
       if (advanced >= 8) break;
@@ -158,6 +172,12 @@ async function session({ offline, label }) {
   await sleep(800);
   return { label, offline, clicks, ready, readyMs, advanced, requestsTotal: requests.length, duringListening: duringListening.map((r) => r.url).slice(0, 10), duringListeningCount: duringListening.length };
 }
+
+/** **الملفُّ الشخصيُّ يُمحى قبل التشغيلة الأولى** — وإلّا بدأت من خزانةٍ خلّفتها
+    جلسةٌ سابقة (محرّكٌ مختارٌ وإذنٌ محفوظ) فتخطّت الفحصُ لوحَي الاختيار والإذن
+    **فلم يعد يقيس ما وُضع له**. والتشغيلةُ الثانيةُ ترثه عمدًا: به يُخزَّن
+    النموذجُ فتعمل الثانيةُ والشبكةُ مقطوعة. */
+rmSync(PROFILE, { recursive: true, force: true });
 
 const warm = await session({ offline: false, label: "تشغيلةُ التخزين" });
 const cold = await session({ offline: true, label: "تشغيلةُ الانقطاع" });

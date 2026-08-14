@@ -54,8 +54,11 @@ const FILES = [
   ["recognizer", join(SAWT, "recognizer.ts")],
   ["vad", join(SAWT, "vad.ts")],
   ["runs", join(SAWT, "runs.ts")],
+  ["iltiqat", join(SAWT, "iltiqat.ts")],
   ["view", join(ROOT, "js", "apps", "studio", "src", "views", "Tatabbu.tsx")],
 ];
+/** موضعُ ملفّ الصفحة في `FILES` — تُقرأ منه فحوصُ العرض */
+const VIEW = FILES.length - 1;
 
 const failures = [];
 const missing = [];
@@ -146,21 +149,35 @@ const ALLOWED_TOUCH = [
 ];
 
 let touchSeen = 0;
+/** ومسُّ كلِّ ملفٍّ على حِدة — فالجملةُ تُخفي فقدَ الواحد */
+const touchByFile = {};
 for (const [name, path] of FILES) {
   const lines = stripComments(read(path)).split("\n");
   lines.forEach((raw, i) => {
     const line = raw.trim();
     if (!line.includes("textUthmani")) return;
     touchSeen++;
+    touchByFile[name] = (touchByFile[name] ?? 0) + 1;
     if (!ALLOWED_TOUCH.some((re) => re.test(line))) {
       fail("حرفيّةُ المعروض", `${name}:${i + 1} — ${line}`);
     }
   });
 }
 if (touchSeen === 0) missing.push("لم يُمَسَّ textUthmani في شيفرة المسبار — أزال أحدٌ مصدرَ النصّ؟");
+/**
+ * **ولا يُقاس المسُّ بالجملة** (ضبطٌ سالبٌ أفلت في ص-م٤ فشُدّ الفحص): لمّا زِيد
+ * ملفُّ الالتقاط — وفيه مسٌّ مأذونٌ للرسم — صار قطعُ مصدر النصّ من **بانِي
+ * المقطع** يمرّ خضراءَ لأنّ الجملةَ باقية. فيُشترط على كلِّ **مصدرٍ للنصّ**
+ * باسمه أن يبقى مأخوذًا من القاعدة.
+ */
+for (const src of ["script", "iltiqat"]) {
+  if (!touchByFile[src]) {
+    missing.push(`لم يُمَسَّ textUthmani في «${src}» — أزال أحدٌ مصدرَ النصّ من القاعدة؟`);
+  }
+}
 
 /** والعرضُ نفسُه: الكلمةُ تُطبع كما هي، بلا تحويلٍ في موضع العرض */
-const viewSrc = stripComments(read(FILES[6][1]));
+const viewSrc = stripComments(read(FILES[VIEW][1]));
 if (!/\{w\.text\}/.test(viewSrc)) {
   missing.push("موضعُ عرض الكلمة في الصفحة — لم يُوجد {w.text}");
 }
@@ -415,6 +432,75 @@ if (inSegment && joinsRun) {
   for (const p of sealedPages) literal(`مقطعُ محكٍّ: صفحة ${p}`, { kind: "page", page: p });
 }
 
+/* ═══════════ ٨ — خريطةُ حدود الصفحة والجزء تطابق القاعدة ═══════════ */
+
+/**
+ * صار فهرسُ الصفحة والجزء يُبنى من **خريطةٍ محفوظة** (`mushaf-bounds.json`) لا
+ * من وثائق الآيات — تعجيلًا مقيسًا (٣٢٩ و٣٠١ مِث ⇒ نحوُ ١٥٦). **وخريطةٌ لا
+ * تُقابَل بالقاعدة تشيخ في صمت** كما تشيخ النسخة. فيُشهد ههنا أنّ ما تخرجه
+ * **يطابق حدودَ القاعدة آيةً آيةً على الآيات كلِّها**: كلُّ صفحةٍ وكلُّ جزء.
+ *
+ * وضبطُه السالب: تُزحزح حدُّ صفحةٍ واحدةٍ في نسخةٍ من الخريطة فيُصطاد الخللُ.
+ */
+const boundsPath = join(SAWT, "mushaf-bounds.json");
+let boundsChecked = { pages: 0, juz: 0 };
+try {
+  const BOUNDS = JSON.parse(read(boundsPath));
+  /** ترتيبُ المصحف مبنيًّا من عِدّة السور — كما تبنيه `planSegment` بالضبط */
+  const surahAyahs = new Map();
+  for (const a of ayahRows) surahAyahs.set(a.surahNo, Math.max(surahAyahs.get(a.surahNo) ?? 0, a.ayahNo));
+  const order = [];
+  for (const s of [...surahAyahs.keys()].sort((x, y) => x - y)) {
+    for (let n = 1; n <= surahAyahs.get(s); n++) order.push(`${s}:${n}`);
+  }
+  const at = (b) => order.indexOf(`${b[0]}:${b[1]}`);
+
+  /** ما تخرجه الخريطةُ لوحدةٍ واحدة، بالمنطق الحيِّ نفسِه */
+  const fromBounds = (list, n) => {
+    const first = list[n - 1];
+    if (!first) return null;
+    const from = at(first);
+    if (from < 0) return null;
+    const next = list[n];
+    const to = next ? at(next) : order.length;
+    return order.slice(from, to < 0 ? order.length : to);
+  };
+
+  const compare = (label, list, key) => {
+    const units = [...new Set(ayahRows.map((a) => a[key]))].sort((x, y) => x - y);
+    if (units.length !== list.length) {
+      fail("خريطةُ الحدود", `${label}: في الخريطة ${list.length} وفي القاعدة ${units.length}`);
+      return 0;
+    }
+    let ok = 0;
+    for (const n of units) {
+      const want = ayahRows.filter((a) => a[key] === n).map((a) => a.location);
+      const got = fromBounds(list, n);
+      if (!got || got.join("|") !== want.join("|")) {
+        fail("خريطةُ الحدود", `${label} ${n}: الخريطةُ تخالف القاعدة (${got ? got.length : "—"} مقابل ${want.length})`);
+        continue;
+      }
+      ok++;
+    }
+    return ok;
+  };
+
+  boundsChecked = {
+    pages: compare("صفحة", BOUNDS.pages, "page"),
+    juz: compare("جزء", BOUNDS.juz, "juz"),
+  };
+
+  // **الضبطُ السالب**: تُزحزح حدُّ صفحةٍ واحدةٍ فيُشهد أنّ الفحص يصطاده
+  const shifted = BOUNDS.pages.map((b, i) => (i === 41 ? BOUNDS.pages[i + 1] : b));
+  const before = failures.length;
+  compare("صفحةٌ مزحزحةٌ (ضبطٌ سالب)", shifted, "page");
+  const caught = failures.length > before;
+  failures.length = before;
+  if (!caught) fail("خريطةُ الحدود", "زُحزح حدُّ صفحةٍ فلم يُصطَد — والفحصُ لا يفحص");
+} catch (e) {
+  missing.push(`خريطةُ حدود الصفحة والجزء — تعذّرت قراءتُها: ${e.message}`);
+}
+
 /* ═══════════ ٧ — لا تُدَّعى استقلاليّةٌ عن الشبكة ═══════════ */
 
 /**
@@ -437,7 +523,7 @@ const FORBIDDEN_CLAIMS = [
 ];
 
 /** النصُّ المعروضُ وحدَه: ما بين وسوم العرض ونصوصُ الصفحة، بعد نزع التعليق */
-const viewShown = stripComments(read(FILES[6][1]));
+const viewShown = stripComments(read(FILES[VIEW][1]));
 for (const [name, re] of FORBIDDEN_CLAIMS) {
   const m = viewShown.match(re);
   if (m) fail("دعوى استقلالٍ عن الشبكة", `الصفحةُ تقول «${name}» — ولا يصحّ إلّا بالمحرّك الحرّ`);
@@ -476,10 +562,12 @@ const report = {
     ayahsChecked,
     trigramsIndexed: trigrams.size,
     textUthmaniTouches: touchSeen,
+    textUthmaniByFile: touchByFile,
     declaredSplits: Object.keys(DECLARED_SPLITS).length,
     segmentsChecked,
     runsChecked,
     coverage,
+    boundsChecked,
   },
   failures,
   missing,
@@ -493,6 +581,9 @@ console.log(
 );
 console.log(
   `  الاختيار: ${Object.entries(coverage).map(([k, v]) => `${k} ${v}`).join(" · ")} · مقاطعُ فُحص نصُّها ${segmentsChecked} في ${runsChecked} مدًى`,
+);
+console.log(
+  `  خريطةُ الحدود: ${boundsChecked.pages} صفحةً و${boundsChecked.juz} جزءًا طابقت القاعدةَ آيةً آيةً — وضبطُها السالب اصطاد الزحزحة`,
 );
 for (const f of failures) console.log(`  ✗ [${f.check}] ${f.detail}`);
 for (const m of missing) console.log(`  ؟ ${m}`);

@@ -3,10 +3,14 @@
   "ok": true,
   "checkedAt": null,
   "counts": {
-    "files": 7,
+    "files": 8,
     "ayahsChecked": 6236,
     "trigramsIndexed": 52979,
-    "textUthmaniTouches": 2,
+    "textUthmaniTouches": 3,
+    "textUthmaniByFile": {
+      "script": 2,
+      "iltiqat": 1
+    },
     "declaredSplits": 5,
     "segmentsChecked": 751,
     "runsChecked": 1174,
@@ -16,6 +20,10 @@
       "بالصفحة": 6236,
       "من آيةٍ إلى آية": 6236,
       "المصحف كلُّه": 6236
+    },
+    "boundsChecked": {
+      "pages": 604,
+      "juz": 30
     }
   },
   "failures": [],
