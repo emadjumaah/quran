@@ -1,0 +1,439 @@
+{
+  "gate": "هيئةُ المصحف — الخطُّ والتباينُ ووزنُ الحبر (ج٥)",
+  "ok": false,
+  "at": "2026-08-14T06:17:45.472Z",
+  "limits": {
+    "textContrast": 7,
+    "markContrast": 4.5
+  },
+  "notes": [
+    "افتراضُ خطّ المصحف عائلةٌ مشحونةٌ عندنا: «Amiri Quran»",
+    "خطُّ المصحف حيًّا (شهادةُ المحرّك): «Scheherazade New» 1245 حرفًا — كلُّها من خطوطنا المشحونة (isCustomFont)",
+    "والعائلةُ الغالبةُ عينُ افتراض settings.ts: «scheherazade» ⇒ «Scheherazade New»",
+    "ملفّاتُ الخطوط طُلبت وحُمِّلت: scheherazade.woff2 → 200",
+    "تباينُ نصّ المصحف ≥ 7:١ في 12 حالةً — أدناه 9.72",
+    "تباينُ العلامات ≥ 4.5:١ في 36 قياسًا — أدناه 6.42",
+    "أوسعُ فجوةٍ بين كلمتين: 29.2px (صفحةٌ متّصلة · فاتح) · وسيطُها 13.61 · متوسّطُها 14.21 · تفاوتُها (انحرافٌ معياريّ) 5.9",
+    "وزنُ الحبر (صفحةٌ متّصلة · فاتح): بكسلاتٌ داكنة 6.99٪ · كثافةٌ متوسّطة 7.77٪",
+    "ضبطٌ سالبٌ حيّ: وأُزيل الزرعُ فعاد الخطُّ المشحون — قياسٌ مستقرّ · خُفِّت لونُ العلامة فاصطيد نقصُ التباين (1.71 < 4.5) · وعاد بعد الإزالة (7.22) · مُطَّ السطرُ فرصد المقياسُ الاتّساع (أوسعُ فجوةٍ 29.2 → 37.2px) · وعادت بعد الإزالة (29.2px) · وبريءٌ لم يُصطَد: خطٌّ غريبٌ في هامش الصفحة لا يمسّ نصَّ المصحف"
+  ],
+  "failures": [
+    {
+      "check": "رخصةُ خطٍّ مشحونٍ غيرُ مقيَّدة",
+      "detail": "kfgqpc-hafs.woff2 — لا ذِكرَ له في CREDITS.md"
+    },
+    {
+      "check": "رخصةُ خطٍّ مشحونٍ غيرُ مقيَّدة",
+      "detail": "scheherazade.woff2 — لا ذِكرَ له في CREDITS.md"
+    },
+    {
+      "check": "ضبطٌ سالب",
+      "detail": "عُطِّل الشحنُ فلم تُصطَد السقطةُ إلى خطّ النظام"
+    }
+  ],
+  "missing": [],
+  "platformFonts": [
+    {
+      "family": "Scheherazade New",
+      "glyphs": 1245,
+      "custom": true
+    }
+  ],
+  "fontFiles": [
+    {
+      "url": "/fonts/scheherazade.woff2",
+      "status": 200,
+      "mime": "font/woff2"
+    }
+  ],
+  "contrast": [
+    {
+      "theme": "فاتح",
+      "place": "صفحةٌ متّصلة",
+      "نصّ": 15.37,
+      "علامةُ الآية": 7.22,
+      "اسمُ السورة": 9.41,
+      "رقمُ الصفحة": 7.22,
+      "۞": null
+    },
+    {
+      "theme": "فاتح",
+      "place": "صفحةٌ تبدأ فيها سورة",
+      "نصّ": 15.37,
+      "علامةُ الآية": 7.22,
+      "اسمُ السورة": 9.41,
+      "رقمُ الصفحة": 7.22,
+      "۞": null
+    },
+    {
+      "theme": "فاتح",
+      "place": "الفاتحة",
+      "نصّ": 15.37,
+      "علامةُ الآية": 7.22,
+      "اسمُ السورة": 9.41,
+      "رقمُ الصفحة": 7.22,
+      "۞": null
+    },
+    {
+      "theme": "فاتح",
+      "place": "آيةٌ معلَّمة",
+      "نصّ": 15.37,
+      "علامةُ الآية": 7.22,
+      "اسمُ السورة": 9.41,
+      "رقمُ الصفحة": 7.22,
+      "۞": null
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "صفحةٌ متّصلة",
+      "نصّ": 9.72,
+      "علامةُ الآية": 6.42,
+      "اسمُ السورة": 8.36,
+      "رقمُ الصفحة": 6.42,
+      "۞": null
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "صفحةٌ تبدأ فيها سورة",
+      "نصّ": 9.72,
+      "علامةُ الآية": 6.42,
+      "اسمُ السورة": 8.36,
+      "رقمُ الصفحة": 6.42,
+      "۞": null
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "الفاتحة",
+      "نصّ": 9.72,
+      "علامةُ الآية": 6.42,
+      "اسمُ السورة": 8.36,
+      "رقمُ الصفحة": 6.42,
+      "۞": null
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "آيةٌ معلَّمة",
+      "نصّ": 9.72,
+      "علامةُ الآية": 6.42,
+      "اسمُ السورة": 8.36,
+      "رقمُ الصفحة": 6.42,
+      "۞": null
+    },
+    {
+      "theme": "داكن",
+      "place": "صفحةٌ متّصلة",
+      "نصّ": 13.28,
+      "علامةُ الآية": 7.37,
+      "اسمُ السورة": 8.63,
+      "رقمُ الصفحة": 7.37,
+      "۞": null
+    },
+    {
+      "theme": "داكن",
+      "place": "صفحةٌ تبدأ فيها سورة",
+      "نصّ": 13.28,
+      "علامةُ الآية": 7.37,
+      "اسمُ السورة": 8.63,
+      "رقمُ الصفحة": 7.37,
+      "۞": null
+    },
+    {
+      "theme": "داكن",
+      "place": "الفاتحة",
+      "نصّ": 13.28,
+      "علامةُ الآية": 7.37,
+      "اسمُ السورة": 8.63,
+      "رقمُ الصفحة": 7.37,
+      "۞": null
+    },
+    {
+      "theme": "داكن",
+      "place": "آيةٌ معلَّمة",
+      "نصّ": 13.28,
+      "علامةُ الآية": 7.37,
+      "اسمُ السورة": 8.63,
+      "رقمُ الصفحة": 7.37,
+      "۞": null
+    }
+  ],
+  "ink": [
+    {
+      "theme": "فاتح",
+      "place": "صفحةٌ متّصلة",
+      "darkRatio": 0.0699,
+      "meanInk": 0.0777,
+      "paperLum": 248
+    },
+    {
+      "theme": "فاتح",
+      "place": "صفحةٌ تبدأ فيها سورة",
+      "darkRatio": 0.0685,
+      "meanInk": 0.0646,
+      "paperLum": 248
+    },
+    {
+      "theme": "فاتح",
+      "place": "الفاتحة",
+      "darkRatio": 0.0678,
+      "meanInk": 0.0797,
+      "paperLum": 248
+    },
+    {
+      "theme": "فاتح",
+      "place": "آيةٌ معلَّمة",
+      "darkRatio": 0.0701,
+      "meanInk": 0.0863,
+      "paperLum": 248
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "صفحةٌ متّصلة",
+      "darkRatio": 0.067,
+      "meanInk": 0.0699,
+      "paperLum": 235
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "صفحةٌ تبدأ فيها سورة",
+      "darkRatio": 0.0658,
+      "meanInk": 0.0569,
+      "paperLum": 235
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "الفاتحة",
+      "darkRatio": 0.0649,
+      "meanInk": 0.0723,
+      "paperLum": 235
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "آيةٌ معلَّمة",
+      "darkRatio": 0.0671,
+      "meanInk": 0.0733,
+      "paperLum": 235
+    },
+    {
+      "theme": "داكن",
+      "place": "صفحةٌ متّصلة",
+      "darkRatio": 0,
+      "meanInk": 0,
+      "paperLum": 31
+    },
+    {
+      "theme": "داكن",
+      "place": "صفحةٌ تبدأ فيها سورة",
+      "darkRatio": 0,
+      "meanInk": 0.0092,
+      "paperLum": 31
+    },
+    {
+      "theme": "داكن",
+      "place": "الفاتحة",
+      "darkRatio": 0,
+      "meanInk": 0.0004,
+      "paperLum": 31
+    },
+    {
+      "theme": "داكن",
+      "place": "آيةٌ معلَّمة",
+      "darkRatio": 0,
+      "meanInk": 0,
+      "paperLum": 31
+    }
+  ],
+  "gaps": [
+    {
+      "theme": "فاتح",
+      "place": "صفحةٌ متّصلة",
+      "n": 24,
+      "lines": 8,
+      "max": 29.2,
+      "mean": 14.21,
+      "sd": 5.9,
+      "median": 13.61,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "فاتح",
+      "place": "صفحةٌ تبدأ فيها سورة",
+      "n": 99,
+      "lines": 24,
+      "max": 25,
+      "mean": 12.57,
+      "sd": 4.57,
+      "median": 11.64,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "فاتح",
+      "place": "الفاتحة",
+      "n": 17,
+      "lines": 7,
+      "max": 24.7,
+      "mean": 18.58,
+      "sd": 6.12,
+      "median": 18.83,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "فاتح",
+      "place": "آيةٌ معلَّمة",
+      "n": 24,
+      "lines": 8,
+      "max": 29.2,
+      "mean": 14.21,
+      "sd": 5.9,
+      "median": 13.61,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "صفحةٌ متّصلة",
+      "n": 24,
+      "lines": 8,
+      "max": 29.2,
+      "mean": 14.21,
+      "sd": 5.9,
+      "median": 13.61,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "صفحةٌ تبدأ فيها سورة",
+      "n": 99,
+      "lines": 24,
+      "max": 25,
+      "mean": 12.57,
+      "sd": 4.57,
+      "median": 11.64,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "الفاتحة",
+      "n": 17,
+      "lines": 7,
+      "max": 24.7,
+      "mean": 18.58,
+      "sd": 6.12,
+      "median": 18.83,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "ورقيّ",
+      "place": "آيةٌ معلَّمة",
+      "n": 24,
+      "lines": 8,
+      "max": 29.2,
+      "mean": 14.21,
+      "sd": 5.9,
+      "median": 13.61,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "داكن",
+      "place": "صفحةٌ متّصلة",
+      "n": 24,
+      "lines": 8,
+      "max": 29.2,
+      "mean": 14.21,
+      "sd": 5.9,
+      "median": 13.61,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "داكن",
+      "place": "صفحةٌ تبدأ فيها سورة",
+      "n": 99,
+      "lines": 24,
+      "max": 25,
+      "mean": 12.57,
+      "sd": 4.57,
+      "median": 11.64,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "داكن",
+      "place": "الفاتحة",
+      "n": 17,
+      "lines": 7,
+      "max": 24.7,
+      "mean": 18.58,
+      "sd": 6.12,
+      "median": 18.83,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    },
+    {
+      "theme": "داكن",
+      "place": "آيةٌ معلَّمة",
+      "n": 24,
+      "lines": 8,
+      "max": 29.2,
+      "mean": 14.21,
+      "sd": 5.9,
+      "median": 13.61,
+      "align": {
+        "textAlign": "justify",
+        "lastLine": "center",
+        "lineHeight": "52px",
+        "wordSpacing": "0px"
+      }
+    }
+  ]
+}

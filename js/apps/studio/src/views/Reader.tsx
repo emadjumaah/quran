@@ -298,7 +298,11 @@ function MushafPage({
           {showsBismillah(surahDoc, startAyah) && <div className="mp-basmala quran">{BASMALA}</div>}
         </>
       )}
-      <div className="quran">
+      {/* **كتلةُ متن المصحف وحدَها** — واسمُها `mp-text` صريحٌ لا يُلتبس: كان
+          `.mushaf-page .quran` يلتقط معه **اسمَ السورة والبسملة** (وكلاهما
+          `.quran` داخلَ الصفحة)، فتسري عليهما تسويةُ المتن ومقاسُه بأقوى من
+          قواعدهما. فصار للمتن اسمُه، ولكلٍّ حكمُه. */}
+      <div className="quran mp-text">
         {ayahs.map((ayah) => {
           const rub = rubMarks.get(ayah.ayahNo);
           const ws = wordsByAyah.get(ayah.ayahNo) ?? [];
@@ -345,7 +349,10 @@ function MushafPage({
                   style={{ cursor: "pointer" }}
                   onClick={() => onAyahMarker(ayah)}
                 >
-                  ﴿{num(ayah.ayahNo)}﴾
+                  {/* **الرقمُ وحدَه** — والقوسان المزخرفان كانا يقومان مقامَ
+                      الميداليّة، وقد صارت الميداليّةُ مرسومةً في `theme.css`
+                      حول الرقم. (وفي نمط «آيات» وسائرِ المواضع يبقى `﴿…﴾`.) */}
+                  {num(ayah.ayahNo)}
                 </span>{" "}
               </span>
               {selectedAyahNo === ayah.ayahNo && selectedExtras}

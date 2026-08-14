@@ -1,10 +1,23 @@
 /* Quran Studio design system */
 @import "@fontsource/amiri-quran";
 
-/* selectable Quran typefaces (Tanzil-recommended, all render Uthmani correctly
-   with proper mark positioning). Lazily fetched only when chosen. */
+/* ═══════════ خطوطُ المصحف — **ما نشحنه نحن، لا ما نرجو أن يكون في الجهاز** ═══════════
+   ثلاثةٌ يختار منها القارئ، **وكلُّها مشحونةٌ معنا** فلا يسقط الرسمُ إلى خطّ
+   نظامٍ عامٍّ على جهازٍ ليس فيه خطُّ مصحف (وهو حالُ عامّة الهواتف):
+     • **«أميري قرآن»** — من حزمة `@fontsource/amiri-quran`، تُشحن مع البناء،
+       **وهو الافتراض** (`settings.ts`) لثلاثٍ مقيسةٍ هناك، أوّلُها أنّ رخصتَه
+       وحدَها ثابتةٌ نظيفة (OFL 1.1 بلا اسمٍ محجوز — `CREDITS.md` §٦).
+     • **خطُّ المجمَّع (KFGQPC Hafs)** و**شهرزاد** — يُشحنان من `public/fonts/`
+       ولا يُجلبان إلّا إذا اختارهما القارئ. **وحالُ رخصتيهما مقيَّدةٌ بحرفها في
+       `CREDITS.md`** (§٧ و§٨) — ولا يُدَّعى فيهما ما لم يثبت.
+
+   **وسلسلةُ الاحتياط أسماؤنا نحن** لا أسماءُ خطوطٍ نرجوها مثبَّتةً في الجهاز:
+   كانت تبدأ بـ«KFGQPC Uthmanic Script HAFS» و«Scheherazade New» — وهما اسما
+   خطّين **مثبَّتين على الجهاز**، لا اسمَي خطّينا المشحونَين. فما كان يُشحن كان
+   يُتخطّى، وما كان يُرجى لم يكن موجودًا. */
 @font-face { font-family: "KFGQPC Hafs"; src: url("/fonts/kfgqpc-hafs.woff2") format("woff2"); font-display: swap; }
 @font-face { font-family: "Scheherazade Q"; src: url("/fonts/scheherazade.woff2") format("woff2"); font-display: swap; }
+:root[data-quran-font="amiri"] { --font-quran: "Amiri Quran", "KFGQPC Hafs", "Scheherazade Q", serif; }
 :root[data-quran-font="kfgqpc"] { --font-quran: "KFGQPC Hafs", "Amiri Quran", serif; }
 :root[data-quran-font="scheherazade"] { --font-quran: "Scheherazade Q", "Amiri Quran", serif; }
 
@@ -25,7 +38,9 @@
   --danger: #a33a2a;
   --radius: 12px;
   --shadow: 0 1px 3px rgb(36 31 24 / 0.06), 0 4px 16px rgb(36 31 24 / 0.05);
-  --font-quran: "Amiri Quran", "KFGQPC Uthmanic Script HAFS", "Scheherazade New", serif;
+  /* **الافتراضُ قبل أن يعمل شيءٌ من جافاسكربت** — وهو عينُ افتراض `settings.ts`
+     كي لا يُرسَم أوّلُ إطارٍ بخطٍّ ثمّ يُقلَب إلى غيره (وثبةٌ يراها القارئ). */
+  --font-quran: "Amiri Quran", "KFGQPC Hafs", "Scheherazade Q", serif;
   --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 [data-theme="dark"] {
@@ -627,12 +642,15 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 .ayah-marker {
   font-size: 0.7em; color: var(--gold); margin: 0 6px; user-select: none;
 }
-/* آية جامعة — a subtle gold pill + ✦ so principle-verses stand out on the page */
-.ayah-marker.jamia {
-  background: var(--gold-soft); border-radius: 7px; padding: 1px 5px;
-  box-shadow: inset 0 0 0 1px var(--gold);
-}
-.ayah-marker.jamia::before { content: "✦"; font-size: 0.85em; margin-inline-end: 3px; }
+/* ═══════════ الآيةُ الكلّيّة: **حبرٌ يتميّز، لا صندوقٌ يقطع السطر** ═══════════
+   **بنصّ المالك (١٤ أغسطس، ولقطةٌ من هاتفه):** إطاران ذهبيّان حول ﴿٥﴾ و﴿٦﴾
+   «**يبدوان شارتَي تطبيق**». وكان ههنا حقًّا **صندوقٌ**: خلفيّةٌ ذهبيّةٌ وزوايا
+   مستديرةٌ وإطارٌ داخليٌّ ونجمةُ ✦ قبل الرقم — أي **وسمُ واجهةٍ (`chip`) في متن
+   مصحف**، يقطع السطرَ ويزاحم الرسم.
+   **فسقط الصندوقُ كلُّه**، وبقي التمييزُ **في لون الحبر وحدَه** — وهو ما تفعله
+   المصاحفُ حين تميّز موضعًا: تغيّر الحبر لا تبني حوله سياجًا. **ووسمُ طبقتنا
+   (الكلّيّات) لا يُزاحم الرسم**، وخبرُه في وصف العلامة (`title`) لمن سأل. */
+.ayah-marker.jamia { color: var(--gold); }
 
 /* ═══════════ هويّةُ المصحف — طقمٌ واحدٌ يُبدَّل من موضعٍ واحد ═══════════
    أمرُ المالك 2026-08-14: «أريد هويّةً للمصحف في الجوال وحتّى في المتصفّح،
@@ -649,25 +667,39 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
    (`zaytuni` · `hiyadi`) فلا تبقى ثلاثةٌ تُصان بعد أن حُسم الاختيار. */
 :root {
   --mushaf-paper: color-mix(in srgb, var(--panel) 97%, #0b5f43);
-  --mushaf-ink: var(--ink);
+  /* **حبرُ المصحف أدكنُ من حبر الواجهة** (رصدُ المالك ١٤ أغسطس: «تُقرأ الصفحةُ
+     رماديّةً لا سوداء»). كان `var(--ink)` — أي حبرَ الواجهة نفسَه، وهو مُلطَّفٌ
+     عمدًا لأنّه يقع في بطاقاتٍ وقوائم. **وصفحةُ المصحف حبرٌ على ورق**، فلها
+     لونُها هي. **والتباينُ يرتفع ولا ينخفض** فلا يُشترى الغنى منه (§٢/٤). */
+  --mushaf-ink: #15100a;
   --mushaf-mark: #0b5f43;          /* رقمُ الآية وعلاماتُه */
+  --mushaf-jamia: #7a5410;         /* علامةُ الآية الكلّيّة — ذهبٌ داكنٌ يُقرأ */
   --mushaf-mark-soft: color-mix(in srgb, var(--panel) 86%, #0b5f43);
   --mushaf-title: #084c36;         /* لوحةُ اسم السورة */
   --mushaf-title-soft: color-mix(in srgb, var(--panel) 82%, #0b5f43);
   --mushaf-folio: #0b5f43;         /* رقمُ الصفحة */
   --mushaf-rule: color-mix(in srgb, var(--line) 50%, #0b5f43);
-  --mushaf-frame: color-mix(in srgb, var(--gold) 45%, var(--line));
+  /* **الغنى مطلوبٌ لا الشحوب** (البرومبت §١): كان الإطارُ ٤٥٪ ذهبًا فبدا رماديًّا
+     مصفرًّا، فصار ٦٠٪ — ذهبٌ يُرى، وهو زخرفُ حاسوبٍ لا يمسّ نصًّا فلا يخصمه حدٌّ. */
+  --mushaf-frame: color-mix(in srgb, var(--gold) 60%, var(--line));
 }
 /* خضرةُ الليل أعمقُ وأخفتُ إشباعًا — ولا خضرةَ صارخةٌ في الداكن */
 :root[data-theme="dark"] {
   --mushaf-paper: color-mix(in srgb, var(--panel) 95%, #2f8a68);
+  --mushaf-ink: #f4efe5;           /* أنصعُ من حبر الواجهة — والتباينُ يرتفع */
   --mushaf-mark: #5cbf9b;
+  --mushaf-jamia: #dcae5e;
   --mushaf-mark-soft: color-mix(in srgb, var(--panel) 84%, #2f8a68);
   --mushaf-title: #6fcda9;
   --mushaf-title-soft: color-mix(in srgb, var(--panel) 86%, #2f8a68);
   --mushaf-folio: #5cbf9b;
   --mushaf-rule: color-mix(in srgb, var(--line) 50%, #2f8a68);
-  --mushaf-frame: color-mix(in srgb, var(--gold) 45%, var(--line));
+  --mushaf-frame: color-mix(in srgb, var(--gold) 60%, var(--line));
+}
+/* الورقيُّ (سبيا): حبرٌ دافئٌ داكنٌ يوافق ورقَه — لا أسودَ زجاجيًّا عليه */
+:root[data-theme="sepia"] {
+  --mushaf-ink: #241a06;
+  --mushaf-jamia: #6d4a0c;
 }
 
 /* mushaf page — one page at a time, fixed proportions, illuminated frame */
@@ -699,12 +731,27 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   opacity: 0.45;
   pointer-events: none;
 }
-.mushaf-page .quran {
+/* ═══════════ متنُ المصحف — **وحدَه** (رصدُ ج٥) ═══════════
+   كانت هذه القواعدُ على `.mushaf-page .quran`، **وفي الصفحة ثلاثةُ عناصرَ تحمل
+   `quran`**: المتنُ واسمُ السورة والبسملة. وقوّةُ المحدِّد (٠،٢،٠) تغلب قواعدَ
+   الاسم والبسملة (٠،١،٠) — **فكان مقاسُ الاسم ٢٦px لا ٢٥px، ومقاسُ البسملة
+   ٢٦px لا ٢٢px**، وكانت تسويةُ المتن تسري عليهما. فصار للمتن اسمُه `mp-text`. */
+.mushaf-page .mp-text {
   text-align: justify;
   text-align-last: center;
   font-size: calc(24.5px * var(--quran-scale, 1));
   line-height: 2.0;
+  /* نَفَسٌ **ثابتٌ** بين الكلمات — لا مطّاطٌ كالذي تصنعه التسوية. وهو من الرسم
+     لا من التسوية، فلا يتفاوت من سطرٍ إلى سطر. */
+  word-spacing: 0.08em;
 }
+/* **وحشوةُ الكلمة لا تُزاحم السطر**: `.quran .w` تأخذ ٣px يمنةً ويسرةً لأجل
+   تظليل الاختيار — وهي ٦px تُقتطع من عرض السطر عن كلِّ كلمة، أي نحو ٤٢px من
+   ٣٧٤ في سطرٍ من سبعِ كلماتٍ (١١٪). فتُردّ إلى الرسم بهامشٍ سالبٍ يساويها:
+   **التظليلُ يبقى كما هو، ويسقط ثمنُه في التنضيد** — فتتّسع الأسطرُ لكلماتٍ
+   أكثر، ويقلّ ما يبقى للتسوية أن تمطّه. (وفي نمط «آيات» وفي التتبّع لا يُمَسّ
+   شيء — القاعدةُ داخلَ صفحة المصحف وحدَها.) */
+.mushaf-page .mp-text .w { margin-inline: -3px; }
 .mushaf-page .page-no {
   text-align: center;
   color: var(--mushaf-folio);
@@ -743,7 +790,21 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
      الحدودُ الثلاثةُ اتّسع سطرُ النصّ ٢٧٪ — فيرتفع الأساسُ من ٢٤٫٥ إلى ٢٦px،
      **على الجوال وحدَه، والحاسوبُ لا يتغيّر بحرف**. وسلّمُ القارئ
      (`--quran-scale`) يضربه كما كان. */
-  .mushaf-page .quran { font-size: calc(26px * var(--quran-scale, 1)); }
+  .mushaf-page .mp-text {
+    font-size: calc(26px * var(--quran-scale, 1));
+    /* ═══ **يزول المطُّ** (رصدُ المالك ١٤ أغسطس: «تبدو قليلًا بلا روح») ═══
+       `justify` يسوّي السطرَ **بشدّ المسافات بين الكلمات** — والمصحفُ المطبوعُ
+       يسوّي بالتطويل وبتقدير الصانع. وعلى سطرٍ ضيّقٍ (٣٧٤px) لا يحمل إلّا خمسًا
+       إلى سبعِ كلماتٍ، يقع فائضُ السطر كلُّه على أربع فجواتٍ أو خمس — **فتخرج
+       فجواتٌ واسعةٌ متفاوتة، وهي عينُ ما رآه المالك**. وقد قِيست قبلُ (٣٩٠px):
+       أوسعُ فجوةٍ ٢٩٫٢px ووسيطُها ١٣٫٦ وتفاوتُها ٥٫٩ — أي أنّ الفراغَ بين
+       الكلمتين يبلغ **ضِعفَي** المسافة الطبيعيّة وأكثر.
+       **فتُترك التسويةُ على الجوال وحدَه** ويرجع السطرُ إلى محاذاته الطبيعيّة
+       يمينًا، **والحاسوبُ يبقى مُسوّى** — فسطرُه ٥٤٨px يحمل ضِعفَ الكلمات
+       فيقلّ نصيبُ الفجوة من الفائض. **وآخرُ السطر يبقى متوسّطًا** فتُختم
+       الصفحةُ خِتامَ مصحفٍ لا خِتامَ فقرة. */
+    text-align: right;
+  }
   /* ولوحةُ السورة تمتدّ إلى حافّة **سطر النصّ** لا حافّة الشاشة (§٥ج/٤) */
   .mushaf-page .mp-surah-band { margin-inline: 0; }
   /* حدُّ الصفحة: رقمُها وفاصلٌ خفيفٌ فوقَه — علامةٌ لا صندوق */
@@ -767,8 +828,47 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   .reader-main.reader-pages .reader-sticky { background: var(--mushaf-paper); }
 }
 
-/* علاماتُ المصحف تأخذ لغتَه هو — وداخلَ صفحته وحدَها، فنمطُ «آيات» لا يُمَسّ */
-.mushaf-page .ayah-marker { color: var(--mushaf-mark); }
+/* ═══════════ ميداليّةُ الآية — تُصنع عندنا ولا تُنسخ عن ناشر ═══════════
+   (`WAJH-CHARTER.md` §٢: لا يُحاكى مصحفٌ مطبوعٌ بعينه؛ والمقتبَسُ **تقليدُ
+   الصنعة** وهو مشاعٌ متوارث.) كان رقمُ الآية قوسين ورقمًا (`﴿٥﴾`) يجريان في
+   السطر كأيّ حرف؛ **وعلامةُ الآية في المصحف ميداليّةٌ** — دائرةٌ حولها أشعّةٌ
+   ورقمٌ في وسطها. فرُسمت ههنا **بمقنَّعٍ (`mask`) من صورةٍ متّجهةٍ من عندنا**،
+   لونُها `currentColor` **فتتبع لونَ العلامة في الأوضاع الثلاثة** ولا تُكتب
+   ثلاثَ مرّات، **ووزنُها على السلك بضعُ مئاتٍ من البايتات** لا ملفَّ صورة.
+
+   • **الرقمُ في الوسط ولا يقلّ عن ١٥px** (ميثاقُ الوجه) — `0.62em` من ٢٦px.
+   • **والصورةُ تتمدّد مع الصندوق** (`100% 100%`) فتتّسع الميداليّةُ لرقمٍ من
+     ثلاث خاناتٍ ولا تخنقه — وهو صنيعُ المصاحف المطبوعة نفسِه.
+   • **وتُرسم خلف الرقم لا فوقه**: `isolation` تُنشئ سياقًا مستقلًّا فيقع
+     المقنَّعُ (`z-index: -1`) فوق خلفيّة العلامة وتحت رقمها. */
+.mushaf-page .mp-ayah > .ayah-marker {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  min-width: 1.95em;
+  height: 1.95em;
+  padding-inline: 0.3em;
+  margin: 0 0.16em;
+  font-family: var(--font-ui);
+  font-size: 0.62em;
+  line-height: 1.95em;
+  text-align: center;
+  vertical-align: 0.26em;
+  font-variant-numeric: tabular-nums;
+  color: var(--mushaf-mark);
+}
+.mushaf-page .mp-ayah > .ayah-marker::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23000' stroke-width='5' stroke-linecap='round'%3E%3Ccircle cx='50' cy='50' r='38'/%3E%3Cpath d='M92 50H99M50 92V99M8 50H1M50 8V1M79.7 79.7 84.6 84.6M20.3 79.7 15.4 84.6M20.3 20.3 15.4 15.4M79.7 20.3 84.6 15.4'/%3E%3C/g%3E%3C/svg%3E") no-repeat center / 100% 100%;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23000' stroke-width='5' stroke-linecap='round'%3E%3Ccircle cx='50' cy='50' r='38'/%3E%3Cpath d='M92 50H99M50 92V99M8 50H1M50 8V1M79.7 79.7 84.6 84.6M20.3 79.7 15.4 84.6M20.3 20.3 15.4 15.4M79.7 20.3 84.6 15.4'/%3E%3C/g%3E%3C/svg%3E") no-repeat center / 100% 100%;
+  pointer-events: none;
+}
+/* والكلّيّةُ حبرٌ ذهبيٌّ داكنٌ **مقيسُ التباين** — لا صندوقَ ولا نجمة */
+.mushaf-page .mp-ayah > .ayah-marker.jamia { color: var(--mushaf-jamia); }
 /* **ولا خلفيّةَ تحت الاسم** — الورقُ ورقٌ (ص-م٤ §٥ج/١): كان ههنا `background`
    يملأ صندوقَ الاسم، فأُسقط ولم يبقَ إلّا لونُ الحبر. */
 .mushaf-page .mp-surah-name { color: var(--mushaf-title); }
@@ -865,8 +965,10 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 }
 .mp-surah-band::before { inset-inline-start: 0; border-inline-start: 1px solid var(--mushaf-title); }
 .mp-surah-band::after { inset-inline-end: 0; border-inline-end: 1px solid var(--mushaf-title); }
+/* **ويتبع سلّمَ القارئ** (`--quran-scale`): كان يتبعه عرَضًا لأنّ قاعدةَ المتن
+   كانت تغلبه، فلمّا فُصل المتنُ باسمِه صار ذلك منصوصًا لا عارضًا (ج٥) */
 .mp-surah-name {
-  display: block; font-size: 25px; color: var(--mushaf-title);
+  display: block; font-size: calc(25px * var(--quran-scale, 1)); color: var(--mushaf-title);
   line-height: 1.3; letter-spacing: .01em;
 }
 /* البياناتُ التي تُكتب في المصحف — **مقروءةٌ من `SurahDoc` لا مكتوبةٌ بيد** */
@@ -874,7 +976,12 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   display: block; font-family: var(--font-ui); font-size: 15px;
   color: var(--mushaf-title); opacity: .78; line-height: 1.4; margin-top: 0;
 }
-.mp-basmala { text-align: center; font-size: 22px; line-height: 1.5; color: var(--ink-2); margin: 0; }
+/* البسملةُ حبرُ المصحف لا حبرٌ ثانويّ — كانت `--ink-2` (رماديّةً) فصارت من لون
+   العنوان، فهي سطرُ افتتاحٍ لا هامش. وتتبع سلّمَ القارئ كأختِها. */
+.mp-basmala {
+  text-align: center; font-size: calc(23px * var(--quran-scale, 1));
+  line-height: 1.55; color: var(--mushaf-title); margin: 0;
+}
 .mp-mark { text-align: center; margin: 8px auto 4px; user-select: none; }
 .mp-mark span {
   display: inline-block; font-family: var(--font-quran); font-size: 14px;
@@ -886,10 +993,16 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 /* الآيةُ المقصودةُ في صفحة المصحف — **والقاعدةُ واحدةٌ لا قاعدتان**: كان ههنا
    انتشارٌ ٣px يقع على حروف الآية المجاورة (وسردُ المصحف متّصلٌ لا فقرات)، وهو
    عينُ عيب `.sawt-now`. اصطادته بوّابةُ الميثاق حين حُرست القاعدةُ آليًّا. */
+/* **شريطٌ يمتدّ عرضَ السطر، لا صندوقٌ حول كلمات** (البرومبت §١، واقتباسُ هيئةِ
+   الشريط من صورة المالك — **ولونُه لونُنا القائمُ لا يُبدَّل**، بأمره نصًّا).
+   و`clone` كانت تُعيد رسمَ حواشي الصندوق على كلّ سطرٍ فيبدو صناديقَ متتابعة؛
+   و`slice` تشقّ الخلفيّةَ على الأسطر **فتبلغ حافّةَ السطر** — وهي هيئةُ التظليل
+   في المصحف. والحاشيةُ حينئذٍ في طرفَي الآية لا في كلّ سطر، **فلا يقع لونٌ على
+   حرفٍ من آيةٍ مجاورة** (وهي العلّةُ التي حُرست في ص-م٤). */
 .mp-ayah.target {
   background: var(--accent-soft);
   padding-inline: 3px; margin-inline: -3px;
-  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  -webkit-box-decoration-break: slice; box-decoration-break: slice;
 }
 
 
