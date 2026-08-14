@@ -149,12 +149,13 @@ export default function OfflineReadiness() {
   }
 
   /* ── ما يُقال للقارئ عن كلّ استعمال ── */
-  /** سببُ وقف «العَرْض» يُقرأ من مصدره لا يُكتب ههنا ثانيةً — فلا تختلف
-   *  اللوحةُ عن الصفحة إن غيّرته الإدارةُ يومًا */
+  /** أسبابُ الوقف تُقرأ من مصدرها لا تُكتب ههنا ثانيةً — فلا تختلف اللوحةُ عن
+   *  الصفحة إن غُيّرت يومًا */
   const ard = HALAT.find((h) => h.id === "ard");
+  const talqin = HALAT.find((h) => h.id === "talqin");
   const readyNames = readyUnits.map((s) => unitLabel(s, ar)).join(ar ? "، " : ", ");
 
-  const uses: { name: string; ok: boolean | "partial" | "suspended"; line: string }[] = [
+  const uses: { name: string; ok: boolean | "partial" | "suspended"; line: string; sub?: string }[] = [
     {
       name: ar ? "القراءة" : "Reading",
       ok: layers.shell,
@@ -191,6 +192,16 @@ export default function OfflineReadiness() {
             : ar
               ? "يحتاج إنترنت — ولم يُنزَّل شيءٌ من التلاوة بعد"
               : "Needs a connection — no recitation downloaded yet",
+      /**
+       * **ولا يُقال «جاهز» لبابٍ لم يُفتح.** السماعُ من المنزَّل يعمل الآن،
+       * **وأمّا أن يتبع المؤشّرُ تلاوةَ القارئ المحقَّق فبابٌ موقوف** — وسببُه
+       * يُقرأ من موضعه لا يُكتب ههنا، فإن صُوّب هناك صُوّب ههنا معه.
+       */
+      sub: talqin?.suspended
+        ? ar
+          ? `وأمّا متابعةُ المؤشّر لتلاوة قارئٍ محقَّق فبابٌ لم يُفتح بعد: ${talqin.suspended}.`
+          : `Cursor-follows-the-reciter is a mode not yet open: ${talqin.suspended}.`
+        : undefined,
     },
     {
       name: ar ? "العَرْض (أحكام التجويد)" : "ʿArḍ (tajwīd rulings)",
@@ -254,6 +265,7 @@ export default function OfflineReadiness() {
             <span className="tlw-mark">{mark(u.ok)}</span>
             <span>
               <b>{u.name}:</b> {u.line}
+              {u.sub && <span className="tlw-sub-line">{u.sub}</span>}
             </span>
           </li>
         ))}

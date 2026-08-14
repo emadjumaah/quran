@@ -153,6 +153,14 @@
   color: var(--ink-2);
 }
 
+/* بابٌ لم يُفتح بعدُ يُذكر تحت سطره — لا يُخلط بالجاهز ولا يُكتم */
+.tlw-sub-line {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--set-fs-note);
+  color: var(--ink-2);
+}
+
 .tlw-ok {
   font-size: var(--set-fs-note);
   font-weight: 700;
