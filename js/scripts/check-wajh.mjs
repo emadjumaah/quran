@@ -144,7 +144,10 @@ function staticChecks() {
      مثلُه) يرسم **صفيحةً** خارج الصندوق؛ أمّا إزاحةٌ بلا غبشٍ ولا انتشارٍ فخطٌّ
      تحت الكلمة لا صفيحةٌ عليها — فتبقى مأذونة، وكذلك `inset` فهو داخلَ الصندوق.
      ويُقاس على الشيفرة لا على الشاشة: القاعدةُ تُقرأ من `theme.css` نفسِها. */
-  const QURAN_GLYPH = /(^|[\s,>+~])\.(sawt-w|sawt-now|sawt-past|sawt-next|sawt-veil|mp-ayah|sel-ayah|quran|ws-ayah-text|ayah-marker)\b/;
+  // **ولا حدَّ كلمةٍ (`\b`) في سكربتات البوّابات** (بلاغُ الحدود 2026-08-12،
+  // والفاحصُ الدائمُ يحرسه): الحدودُ تُكتب صريحةً — ههنا «ما بعده ليس حرفَ اسمِ
+  // صنفٍ» فلا تُخلط `.quran` بـ`.quran-x`.
+  const QURAN_GLYPH = /(^|[\s,>+~])\.(sawt-w|sawt-now|sawt-past|sawt-next|sawt-veil|mp-ayah|sel-ayah|quran|ws-ayah-text|ayah-marker)(?![a-zA-Z0-9_-])/;
   /** كتلُ القواعد: التعبيرُ لا يلتقط إلّا كتلةً بلا أقواسٍ داخلها، فلا تُشوّشه `@media` */
   const cssBlocks = (src) =>
     [...src.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
@@ -154,7 +157,7 @@ function staticChecks() {
   /** ظِلٌّ يرسم صفيحةً خارج الصندوق: غيرُ `inset` وله غبشٌ أو انتشارٌ غيرُ صفر */
   const plateShadow = (value) => {
     const v = value.trim();
-    if (v === "none" || /\binset\b/.test(v)) return null;
+    if (v === "none" || /(^|[\s(])inset([\s)]|$)/.test(v)) return null;
     // تُقرأ الأطوالُ المتصدّرةُ بترتيبها (إزاحتان · غبشٌ · انتشار) ويُوقَف عند
     // أوّل ما ليس طولًا — فلا تُقرأ أرقامُ اللون (`rgb(0 0 0 / .3)`) أطوالًا.
     // **والصفرُ بلا وحدة** صحيحٌ في CSS وهو الغالبُ عندنا (`0 0 0 4px`).

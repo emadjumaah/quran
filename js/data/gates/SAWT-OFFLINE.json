@@ -1,0 +1,24 @@
+{
+  "gate": "sawt-offline",
+  "ok": false,
+  "warm": {
+    "label": "تشغيلةُ التخزين",
+    "offline": false,
+    "ready": false,
+    "readyMs": null,
+    "advanced": 0,
+    "requestsTotal": 15,
+    "duringListening": [],
+    "duringListeningCount": 0
+  },
+  "cold": {
+    "label": "تشغيلةُ الانقطاع",
+    "offline": true,
+    "ready": false,
+    "readyMs": null,
+    "advanced": 0,
+    "requestsTotal": 14,
+    "duringListening": [],
+    "duringListeningCount": 0
+  }
+}
