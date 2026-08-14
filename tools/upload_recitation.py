@@ -115,16 +115,57 @@ def verify(reciters):
     return 1 if bad else 0
 
 
+def sample(reciters, n):
+    """مقابلةُ المرفوع بالمانيفست **من خارجٍ**: تُنزَّل عيّنةٌ من المستودع العامّ
+    **بلا رمز** — كما ينزّلها قارئُ التطبيق — وتُقابَل تجزئتُها بالمانيفست.
+    **وما خالف يُرفض** — فلا تُدّعى جاهزيّةٌ لملفٍّ لم يثبت أنّه هو."""
+    import hashlib
+    import random
+    import urllib.request
+
+    bad = 0
+    for r in reciters:
+        tsv = DATA / f"audio-files.{r}.tsv"
+        if not tsv.exists():
+            print(f"⚠ {r}: لا سجلَّ ملفّاتٍ — يُتخطّى")
+            continue
+        rows = {}
+        for ln in tsv.read_text(encoding="utf-8").splitlines()[1:]:
+            k, b, sha = ln.split("\t")
+            rows[k] = (int(b), sha)
+        random.seed(0)
+        keys = ["1:1", "2:255", "36:1", "78:1", "114:6"]
+        keys = [k for k in keys if k in rows]
+        keys += random.sample(sorted(rows), min(n, len(rows)))
+        ok = 0
+        for k in keys:
+            s, a = (int(x) for x in k.split(":"))
+            url = f"https://huggingface.co/datasets/{REPO}/resolve/main/{r}/{s:03d}{a:03d}.mp3"
+            data = urllib.request.urlopen(url, timeout=60).read()
+            want_b, want_sha = rows[k]
+            good = len(data) == want_b and hashlib.sha256(data).hexdigest() == want_sha
+            ok += good
+            if not good:
+                print(f"  ✗ {r} {k}: خالفَ المانيفست — يُرفض ويُعاد")
+        bad += len(keys) - ok
+        print(f"{r}: {ok}/{len(keys)} مطابقٌ من المستودع العامّ (بلا رمز)")
+    return 1 if bad else 0
+
+
 def main():
     ap = argparse.ArgumentParser(description="رفعُ التلاوة إلى مستودع البيانات")
     ap.add_argument("--card", action="store_true", help="البطاقةُ والمانيفست وحدها")
     ap.add_argument("--reciter", action="append", help="يُكرَّر")
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--verify", action="store_true")
+    ap.add_argument("--sample", type=int, metavar="ع",
+                    help="ينزّل عيّنةً من المستودع العامّ بلا رمز ويقابل تجزئتَها")
     ap.add_argument("--workers", type=int, default=8)
     a = ap.parse_args()
 
-    reciters = a.reciter or (RECITERS if (a.all or a.verify) else [])
+    reciters = a.reciter or (RECITERS if (a.all or a.verify or a.sample) else [])
+    if a.sample:
+        return sample(reciters, a.sample)
     if a.verify:
         return verify(reciters)
     if a.card:
