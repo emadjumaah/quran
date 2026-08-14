@@ -344,6 +344,15 @@ async function main() {
   if (!running) fail("الإعلانُ يسبق الميكروفون", "أُذن ولم يبدأ الالتقاط");
   notes.push(`بعد الموافقة: محرّكات ${afterAgree.recognizers} · تشغيل ${afterAgree.starts}`);
 
+  /* **وفهرسُ الالتقاط الشامل يُبنى في الجهاز — يُقاس ولا يُقدَّر** (ص-م٤ §٢/٦):
+     لا وزنَ له على السلك ألبتّة (لا أصلَ يُنزَّل — يُبنى من قاعدة المصحف التي
+     في الجهاز)، وإنّما وزنُه **زمنُ بنائه**، ويُقرأ من الصفحة بعد أوّل بدء. */
+  const ixMs = await cdp.until(`document.querySelector('[data-sawt="root"]').dataset.sawtIltiqat`, 25000)
+    ? await cdp.ev(`return document.querySelector('[data-sawt="root"]').dataset.sawtIltiqat;`)
+    : null;
+  if (!ixMs) missing.push("لم يُبنَ فهرسُ الالتقاط الشامل في الصفحة — أو لم يُقَس زمنُه");
+  else notes.push(`فهرسُ الالتقاط الشامل بُني في الجهاز في ${ixMs} مِث — **ولا بايتَ له على السلك**: مبنيٌّ من قاعدة المصحف التي عنده`);
+
   /* ═══ ٢ — تجريدُ الجوال: ثلاثةٌ لا رابعَ لها ═══ */
   await sleep(500);
   const shot = await cdp.ev(VISIBLE_CONTROLS);

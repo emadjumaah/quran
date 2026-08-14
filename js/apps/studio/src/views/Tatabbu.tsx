@@ -202,6 +202,8 @@ export default function Tatabbu() {
   const [runs, setRuns] = useState<SawtRunRow[]>([]);
   /** **إشارةٌ هادئةٌ في الشريط**: يلتمس موضعَك — لا شاشةَ ولا لوح (§٢/٤) */
   const [seeking, setSeeking] = useState(false);
+  /** زمنُ بناء فهرس الالتقاط — **يُقاس ولا يُقدَّر** (§٢/٦)، وتقرؤه البوّابةُ الحيّة */
+  const [iltiqatMs, setIltiqatMs] = useState<number | null>(null);
 
   const winRef = useRef<SawtWindow | null>(null);
   const recRef = useRef<RecognizerPort | null>(null);
@@ -445,9 +447,11 @@ export default function Tatabbu() {
 
     // **فهرسُ الالتقاط يُبنى عند البدء لا عند الإقلاع** (§٢/٦): من قاعدة المصحف
     // التي في الجهاز، فلا بايتَ يُنزَّل له. وإن تعثّر بقي التتبّعُ محلّيًّا كما كان.
+    const tIx = performance.now();
     void loadIltiqat()
       .then((ix) => {
         iltiqatRef.current = ix;
+        setIltiqatMs(Math.round(performance.now() - tIx));
       })
       .catch(() => {
         iltiqatRef.current = null;
@@ -1357,7 +1361,7 @@ export default function Tatabbu() {
   if (mobile) {
     const suspended = !!hal.suspended;
     return (
-      <div className="sawt-m" data-sawt="root" data-sawt-state={engineState}>
+      <div className="sawt-m" data-sawt="root" data-sawt-state={engineState} data-sawt-iltiqat={iltiqatMs ?? ""}>
         <div className="sawt-m-bar">
           <button
             className="sawt-x"
@@ -1463,7 +1467,7 @@ export default function Tatabbu() {
   if (phase === "running") {
     const cur = script?.words[Math.min(cursor, wordCount - 1)];
     return (
-      <div className="sawt-run" data-sawt="root" data-sawt-state={engineState}>
+      <div className="sawt-run" data-sawt="root" data-sawt-state={engineState} data-sawt-iltiqat={iltiqatMs ?? ""}>
         <div className="sawt-run-bar">
           <span className="sawt-where">{cur ? `${surahNameAr(cur.surahNo)} ${num(cur.ayahNo)}` : "—"}</span>
           <span className={`sawt-dot sawt-dot-${engineState}`} aria-label="حالُ الإصغاء" />
@@ -1502,7 +1506,7 @@ export default function Tatabbu() {
   }
 
   return (
-    <div className="page sawt" data-sawt="root" data-sawt-state={engineState}>
+    <div className="page sawt" data-sawt="root" data-sawt-state={engineState} data-sawt-iltiqat={iltiqatMs ?? ""}>
       <div className="page-narrow">
         <div className="sawt-top">
           <h1 className="sawt-h1">التتبّع</h1>

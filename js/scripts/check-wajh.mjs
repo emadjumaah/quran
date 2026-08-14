@@ -59,7 +59,8 @@ const CORE_FILES = [
  */
 const UNRENDERED = [
   { file: "components/ReadingBar.tsx", why: "غيرُ مركَّبٍ في أيّ صفحة — لا يستورده إلّا تعليقٌ في Reader.tsx" },
-  { file: "components/ScrollTopFab.tsx", why: "رُفع عن سطح القراءة في ج٣؛ يبقى للصورة الثانية إن اختارها المالك" },
+  // **وحُذف `ScrollTopFab.tsx` من الشجرة** (ص-م٤ §٥/٣ — قرارُ المالك ١٤ أغسطس:
+  // «لا قرص»)، فسقط دَينُه ولم يبقَ مكوّنٌ ميّتٌ يُصان.
 ];
 
 const failures = [];
@@ -302,13 +303,31 @@ class Cdp {
       if (w) { this.waiting.delete(m.id); m.error ? w.reject(new Error(JSON.stringify(m.error))) : w.resolve(m.result); }
     });
   }
-  send(method, params = {}) {
+  /** **ولا نداءَ بلا توقيت**: لو انقطع الهدفُ لم يصل جوابٌ أبدًا فيعلّق الفحصُ
+      صامتًا — وهي علّةٌ وقعت في ص-م٣ وقُيّدت. فيُوقَّت كلُّ نداء، وما لم يُجَب
+      **يُقيَّد سقوطًا** ولا يُنتظر إلى الأبد. */
+  send(method, params = {}, ms = 45000) {
     const id = ++this.id;
     this.ws.send(JSON.stringify({ id, method, params }));
-    return new Promise((res, rej) => this.waiting.set(id, { resolve: res, reject: rej }));
+    return new Promise((res, rej) => {
+      const t = setTimeout(() => {
+        this.waiting.delete(id);
+        rej(new Error(`لم يُجَب نداءُ ${method} في ${ms} مِث — انقطع الهدف`));
+      }, ms);
+      this.waiting.set(id, {
+        resolve: (v) => { clearTimeout(t); res(v); },
+        reject: (e) => { clearTimeout(t); rej(e); },
+      });
+    });
   }
   async ev(expr) {
     const r = await this.send("Runtime.evaluate", { expression: `(() => { ${expr} })()`, returnByValue: true, awaitPromise: true });
+    if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description ?? "خطأٌ في الصفحة");
+    return r.result.value;
+  }
+  /** ومنها ما يلزمه انتظارٌ في الصفحة نفسِها — كقياس قيمةٍ في أثناء انتقال */
+  async evAsync(expr) {
+    const r = await this.send("Runtime.evaluate", { expression: `(async () => { ${expr} })()`, returnByValue: true, awaitPromise: true });
     if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description ?? "خطأٌ في الصفحة");
     return r.result.value;
   }
@@ -434,6 +453,199 @@ async function live() {
     } else {
       notes.push("وأُزيل الزرعُ فعادت البوّابةُ إلى ما كانت — قياسٌ مستقرّ");
     }
+  }
+
+  /* ═══ ٤ — **انسحابُ القشرة انزلاقٌ لا قفزة** (ص-م٤ §٥د · ميثاقُ الوجه §١/٣) ═══
+     اللقطاتُ لا تكفي ههنا: **يُقاس التحويلُ في أثناء الانتقال**. فبعد ١٠٠ مِث
+     من بدء الإخفاء يجب أن تكون قيمةُ `translateY` للرأس **بين الطرفين لا عند
+     أحدهما** — فذلك وحدَه دليلُ أنّها تنزلق. **وضبطُه السالب**: يُزال الانتقالُ
+     فيُشهد أنّها تقع عند الطرف من أوّل لحظة، فتُصطاد القفزة. */
+  if (lastCdp) {
+    const cdp = lastCdp;
+    /** **متصفّحٌ لا يرسم لا يُقدِّم انتقالًا**: في المتصفّح المقطوع عن العرض
+        تتجمّد الانتقالاتُ وتُخنَق المؤقّتاتُ إلى نحو الثانية، فيُقاس الانتقالُ
+        صفرًا وهو يعمل. فيُطلب بثُّ الشاشة ليجري خطُّ الرسم، وبه يُقاس ما يراه
+        القارئُ فعلًا لا ما تراه صفحةٌ نائمة. */
+    await cdp.send("Page.startScreencast", { format: "jpeg", quality: 20, everyNthFrame: 1 });
+    await cdp.send("Page.navigate", { url: "about:blank" });
+    await sleep(200);
+    await cdp.send("Page.navigate", { url: `http://localhost:${PORT}/#/read/2` });
+    await cdp.until(`!document.querySelector('.boot') && document.querySelector('.mushaf-page')`);
+    await sleep(1500);
+
+    /**
+     * يقيس تحويلَ الرأس والشريط **بعد `ms` من بدء الإخفاء فعلًا** — لا من لحظة
+     * التمرير: فبين التمرير وانقلاب الحال مهلةُ حدثٍ لا تُضبط من خارج الصفحة.
+     * فيُنتظر انقلابُ الحال، ومنه يُبتدأ العدّ — فيقع القياسُ في وسط الانتقال.
+     */
+    /**
+     * **يُقاس الانتقالُ نفسُه لا لقطةٌ منه.** المطلوبُ في §٥د أن يكون الرأسُ
+     * **في أثناء الانتقال** لا عند أحد طرفيه — وقياسُ ذلك بمهلةٍ من خارج
+     * الصفحة لا يستقيم في متصفّحٍ مقطوعٍ عن العرض: مؤقّتاتُه تُخنَق إلى نحو
+     * الثانية، فيُقاس ما بعد الانتقال ويُظنُّ قفزة. **فيُسأل المتصفّحُ عن
+     * انتقالاته نفسِها** (`getAnimations`): أثَمَّ انتقالٌ جارٍ على `transform`؟
+     * وكم مدّتُه؟ وأين بلغ الآن؟ — وهذا أدقُّ من اللقطة لا أضعف: اللقطةُ تدلّ
+     * على الانتقال، والانتقالُ ههنا مقروءٌ بعينه.
+     *
+     * **والحالُ تُقلب بالتمرير أوّلًا**؛ فإن لم يبعث المتصفّحُ حدثَه (وهو حالُ
+     * المقطوع عن العرض) قُلبت كما تقلبها الصفحةُ، **ويُقيَّد ذلك في المخرَج**
+     * فلا يُظنّ التمريرُ مشهودًا وهو غيرُ مشهود.
+     */
+    const SLIDE = `
+      const main = document.querySelector('.reader-main');
+      const top = document.querySelector('.topbar');
+      const tab = document.querySelector('.tabbar');
+      if (!main || !top || !tab) return { error: 'لا قشرةَ في الصفحة' };
+      const wait = (t) => new Promise((r) => setTimeout(r, t));
+      document.body.classList.remove('reading-immersive');
+      main.scrollTop = 0;
+      await wait(300);
+      const h = Math.round(top.getBoundingClientRect().height);
+      const dy = (el) => {
+        const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+        return Math.round(m.f * 10) / 10;
+      };
+      const at0 = { top: dy(top), tab: dy(tab) };
+      const display = getComputedStyle(top).display;
+      main.scrollTop = 600;
+      await wait(120);
+      let byScroll = document.body.classList.contains('reading-immersive');
+      if (!byScroll) {
+        document.body.classList.add('reading-immersive');
+        await wait(30);
+      }
+      /** الانتقالاتُ الجاريةُ على العنصر — نوعُها ومدّتُها وأين بلغت */
+      const runs = (el) =>
+        el.getAnimations().map((a) => {
+          const kf = (a.effect?.getKeyframes?.() ?? []).map((k) => k.transform ?? null);
+          const to = kf[kf.length - 1];
+          let toY = null;
+          try { if (to) toY = Math.round(new DOMMatrixReadOnly(to).f * 10) / 10; } catch (e) { toY = null; }
+          return {
+            prop: a.transitionProperty ?? null,
+            dur: Math.round(a.effect?.getTiming?.().duration ?? 0),
+            ease: a.effect?.getTiming?.().easing ?? null,
+            at: Math.round(Number(a.currentTime ?? 0)),
+            toY,
+          };
+        });
+      const topRuns = runs(top);
+      const tabRuns = runs(tab);
+      const mid = { top: dy(top), tab: dy(tab) };
+      /** **منتهى الانزلاق يُقرأ من نظيرٍ بلا انتقال**: القيمةُ الجاريةُ على
+          عنصرٍ ينتقل لا تتقدّم في متصفّحٍ لا يرسم، أمّا نظيرُه المعطَّلُ انتقالُه
+          فتُقرأ منه القيمةُ المقصودةُ من التتالي في الحال. */
+      const targetOf = (el) => {
+        const c = el.cloneNode(false);
+        c.style.transition = 'none';
+        c.style.visibility = 'hidden';
+        /* والنسبةُ في التحويل نسبةٌ من ارتفاع العنصر نفسِه، فيُساوى بأصله */
+        c.style.height = el.getBoundingClientRect().height + 'px';
+        el.parentNode.appendChild(c);
+        const v = dy(c);
+        c.remove();
+        return v;
+      };
+      const target = { top: targetOf(top), tab: targetOf(tab) };
+      await wait(900);
+      const end = { top: dy(top), tab: dy(tab) };
+      main.scrollTop = 0;
+      document.body.classList.remove('reading-immersive');
+      return { h, at0, mid, end, target, display, byScroll, topRuns, tabRuns };
+    `;
+
+    const slide = await cdp.evAsync(SLIDE);
+    const trans = (rs) => rs.find((r) => r.prop === "transform");
+    if (slide.error) {
+      fail("انسحابُ القشرة", `${slide.error} — ${JSON.stringify({ h: slide.h, display: slide.display, ...slide.dbg })}`);
+    } else if (slide.display === "none") {
+      fail("انسحابُ القشرة", "الرأسُ يُخفى بـ`display` — و`display` لا يقبل انتقالًا، فيقفز ولا ينزلق");
+    } else if (!trans(slide.topRuns) || !trans(slide.tabRuns)) {
+      fail(
+        "انسحابُ القشرة",
+        `لا انتقالَ جارٍ على التحويل — الرأسُ ${JSON.stringify(slide.topRuns)} · الشريطُ ${JSON.stringify(slide.tabRuns)}`,
+      );
+    } else if (trans(slide.topRuns).dur !== trans(slide.tabRuns).dur) {
+      fail(
+        "انسحابُ القشرة",
+        `توقيتان مختلفان فيبدو أحدُهما متأخّرًا: الرأسُ ${trans(slide.topRuns).dur} مِث · الشريطُ ${trans(slide.tabRuns).dur} مِث`,
+      );
+    } else if (trans(slide.topRuns).dur < 180 || trans(slide.topRuns).dur > 220) {
+      fail("انسحابُ القشرة", `المدّةُ خارجَ الحدّ المقرَّر ١٨٠–٢٢٠ مِث: ${trans(slide.topRuns).dur}`);
+    } else if (!(slide.target.top <= -slide.h + 1) || !(slide.target.tab > 1)) {
+      fail(
+        "انسحابُ القشرة",
+        `منتهى الانزلاق ليس خارجَ الشاشة: الرأسُ إلى ${slide.target.top} (وارتفاعُه ${slide.h}) · الشريطُ إلى ${slide.target.tab}`,
+      );
+    } else {
+      notes.push(
+        `انسحابُ القشرة انزلاقٌ لا قفزة: انتقالٌ جارٍ على التحويل — الرأسُ ${trans(slide.topRuns).dur} مِث (${trans(slide.topRuns).ease}، بلغ ${trans(slide.topRuns).at}) والشريطُ ${trans(slide.tabRuns).dur} مِث — ` +
+          `ومنتهاه ${slide.target.top} للرأس (وارتفاعُه ${slide.h}) و+${slide.target.tab} للشريط — فيخرجان من الشاشة ولا يُخلّفان فراغًا · ولا إخفاءَ بـdisplay` +
+          (slide.byScroll
+            ? " · وانقلبت الحالُ بالتمرير"
+            : " · **والحالُ قُلبت كما تقلبها الصفحةُ لا بالتمرير** — فالمتصفّحُ المقطوعُ عن العرض لا يبعث حدثَ التمرير، وهذا حدُّ ما شُهد ههنا"),
+      );
+    }
+
+    /* **ضبطُه السالب**: يُزال الانتقالُ فلا يبقى انتقالٌ جارٍ ألبتّة — وتلك
+       هي القفزةُ بعينها، فتُصطاد. ثمّ يُزال الزرعُ فتعود البوّابةُ خضراء. */
+    await cdp.ev(`
+      const st = document.createElement('style');
+      st.id = '__noTrans';
+      st.textContent = '.topbar, .tabbar, .reader-sticky { transition: none !important; }';
+      document.head.appendChild(st);
+      return true;
+    `);
+    const jumped = await cdp.evAsync(SLIDE);
+    await cdp.ev(`document.getElementById('__noTrans')?.remove(); return true;`);
+    if (jumped.error) {
+      fail("ضبطُ انسحاب القشرة", jumped.error);
+    } else if (trans(jumped.topRuns) || trans(jumped.tabRuns)) {
+      fail("ضبطُ انسحاب القشرة", "أُزيل الانتقالُ فبقي انتقالٌ جارٍ — فالقياسُ لا يقيس");
+    } else {
+      notes.push(
+        "ضبطٌ سالب: أُزيل الانتقالُ فلم يبقَ انتقالٌ جارٍ ألبتّة (صفرٌ على الرأس وصفرٌ على الشريط) — وتلك هي القفزةُ بعينها، فتُصطاد",
+      );
+    }
+  }
+
+  /* ═══ ٥ — **سطرُ «تجدّدت هيئةُ الصفحات» يُعرض مرّةً ثمّ لا يعود** (§٥ب) ═══
+     يُزرع اختيارٌ محفوظٌ «آيات» فيُشهد ظهورُ السطر، ثمّ يُهمَل فيُشهد ألّا يعود.
+     **ولا يُعرض لمن لم يبدّل قطُّ** — وهو الضبطُ السالبُ الثالث. */
+  if (lastCdp) {
+    const cdp = lastCdp;
+    const openReader = async () => {
+      await cdp.send("Page.navigate", { url: "about:blank" });
+      await sleep(200);
+      await cdp.send("Page.navigate", { url: `http://localhost:${PORT}/#/read/2` });
+      await cdp.until(`!document.querySelector('.boot') && document.querySelector('.reader-main')`);
+      await sleep(1200);
+      return await cdp.ev(`return !!document.querySelector('[data-reader="renew-note"]');`);
+    };
+    const setMode = async (mode, renewed) => {
+      await cdp.send("Page.addScriptToEvaluateOnNewDocument", {
+        source: `try { localStorage.setItem('quran-studio:reader-mode', '${mode}');
+          ${renewed ? "localStorage.setItem('mishkat:pages-renewed-note','1');" : "localStorage.removeItem('mishkat:pages-renewed-note');"} } catch (e) {}`,
+      });
+    };
+    await setMode("ayat", false);
+    const shown = await openReader();
+    let dismissed = null;
+    if (shown) {
+      await cdp.ev(`document.querySelector('.reader-renew-skip')?.click(); return true;`);
+      await sleep(400);
+      dismissed = await cdp.ev(`return !!document.querySelector('[data-reader="renew-note"]');`);
+    }
+    await setMode("ayat", true);
+    const again = await openReader();
+    await setMode("pages", false);
+    const never = await openReader();
+
+    if (!shown) fail("سطرُ تجدّد الهيئة", "زُرع اختيارٌ محفوظٌ «آيات» فلم يظهر السطر");
+    else if (dismissed) fail("سطرُ تجدّد الهيئة", "أُهمل السطرُ فلم يختفِ");
+    else if (again) fail("سطرُ تجدّد الهيئة", "عاد السطرُ بعد أن عُرض مرّةً — والعرضُ مرّةٌ واحدة");
+    else if (never) fail("سطرُ تجدّد الهيئة", "ظهر السطرُ لمن لم يبدّل قطُّ — وهو على الافتراض الجديد أصلًا");
+    else notes.push("سطرُ تجدّد الهيئة: ظهر لمن حُفظ عنده «آيات» · أُهمل فاختفى · ولم يعد · ولم يُعرض لمن لم يبدّل");
   }
 
   ws.close();

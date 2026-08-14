@@ -107,15 +107,14 @@ body.focus-mode .app-shell { grid-template-rows: 1fr; }
   /* حشوةٌ **ثابتة** بمقدار الرأس: بها يمرّ النصُّ تحته ولا يقفز حين ينزلق.
      و`--topbar-h` تُقاس من الرأس نفسِه في `main.tsx` فلا رقمَ مقدَّرٌ في الشيفرة. */
   body.reading-surface .reader-main { padding-block-start: var(--topbar-h, 56px); }
-  body.reading-surface .reader-sticky { top: var(--topbar-h, 56px); }
+  /* **ولا تُحتسب مسافةُ الرأس مرّتين**: حشوةُ الوعاء تُنزل صندوقَ محتواه بمقدار
+     الرأس، ولاصقُ الطفل يُقاس من صندوق المحتوى لا من حافّة الوعاء — فلو زِيد
+     عليه `top` بمقدار الرأس لَنزل مقدارَه مرّتين، وذلك عيبٌ بانَ في اللقطة. */
+  body.reading-surface .reader-sticky { top: 0; }
 
   body.reading-surface.reading-immersive .topbar { transform: translateY(-100%); }
   body.reading-immersive .tabbar { transform: translateY(100%); }
   body.reading-immersive .reader-sticky { transform: translateY(-125%); opacity: 0; pointer-events: none; }
-  /* وشريطُ القارئ يلاصق الرأسَ، فيلزمه أن يقطع مسافتَه معه كي يغيب تمامًا */
-  body.reading-surface.reading-immersive .reader-sticky {
-    transform: translateY(calc(-100% - var(--topbar-h, 56px)));
-  }
 }
 /* **و`prefers-reduced-motion` محترَمٌ كما هو**: تبقى الحالُ بلا انتقالٍ لمن طلبه */
 @media (prefers-reduced-motion: reduce) {
@@ -830,8 +829,8 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
    وإنّما رُفع مقاسُه إلى الحدّ المعلَن (١٥px) وفاءً بالميثاق */
 .mp-margin {
   display: flex; justify-content: space-between; align-items: center;
-  font-size: 15px; color: var(--muted); padding: 0 2px 6px;
-  margin-bottom: 4px; border-bottom: 1px solid var(--line);
+  font-size: 15px; color: var(--muted); padding: 0 2px 2px;
+  margin-bottom: 0; border-bottom: 1px solid var(--line);
 }
 /* ═══════════ لوحةُ السورة — لا وسمَ ويبٍ (رصدُ المالك ١٤ أغسطس) ═══════════
    **بنصّه:** «صدرُ الصفحة عند اسم السورة — لِمَ ليس مثل القرآن؟ الوحيدةُ التي
@@ -849,8 +848,8 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
      • والهوامشُ مشدودةٌ إلى أقلِّ ما يبقي التنفّس — هيئةُ طباعةٍ لا صفحةِ ويب. */
 .mp-surah-band {
   text-align: center;
-  margin: 2px auto 4px;
-  padding: 7px 10px 6px;
+  margin: 0 auto 2px;
+  padding: 3px 10px 2px;
   border-top: 1px solid var(--mushaf-title);
   border-bottom: 1px solid var(--mushaf-title);
   box-shadow: inset 0 2px 0 -1px var(--mushaf-title), inset 0 -2px 0 -1px var(--mushaf-title);
@@ -868,14 +867,14 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 .mp-surah-band::after { inset-inline-end: 0; border-inline-end: 1px solid var(--mushaf-title); }
 .mp-surah-name {
   display: block; font-size: 25px; color: var(--mushaf-title);
-  line-height: 1.5; letter-spacing: .01em;
+  line-height: 1.3; letter-spacing: .01em;
 }
 /* البياناتُ التي تُكتب في المصحف — **مقروءةٌ من `SurahDoc` لا مكتوبةٌ بيد** */
 .mp-surah-meta {
   display: block; font-family: var(--font-ui); font-size: 15px;
-  color: var(--mushaf-title); opacity: .78; line-height: 1.6; margin-top: 1px;
+  color: var(--mushaf-title); opacity: .78; line-height: 1.4; margin-top: 0;
 }
-.mp-basmala { text-align: center; font-size: 22px; color: var(--ink-2); margin: 5px 0 1px; }
+.mp-basmala { text-align: center; font-size: 22px; line-height: 1.5; color: var(--ink-2); margin: 0; }
 .mp-mark { text-align: center; margin: 8px auto 4px; user-select: none; }
 .mp-mark span {
   display: inline-block; font-family: var(--font-quran); font-size: 14px;
