@@ -26,7 +26,7 @@
  * البتّةَ إنّها تعمل بلا إنترنت ولا إنّ الصوتَ لا يغادر الجهاز** — فذلك لا يصحّ
  * إلّا بالمحرّك الحرّ على الجهاز.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DEFAULT_ALIGN, alignUtterance, speechTokens } from "../lib/sawt/align";
 import { SawtMeter, type SawtReport } from "../lib/sawt/metrics";
@@ -479,14 +479,19 @@ export default function Tatabbu() {
               const i = a.from + k;
               const state = i < cursor ? "past" : i === cursor ? "now" : "next";
               const hidden = hal.text === "veiled" && i >= cursor;
+              // **الفاصلُ خارجَ صندوق الكلمة**: كان بياضُ الفصل داخلَ الوسم، فكان
+              // تظليلُ المؤشّر يمتدّ عليه حتّى يلاصق حرفَ جارته (عيبُ الفحص الحيّ
+              // ١٤ أغسطس). فأُخرج، فصار **التظليلُ محصورًا في كلمته** وبقي النصُّ
+              // المعروضُ حرفًا حرفًا كما هو — كلمةٌ ثمّ بياضٌ ثمّ كلمة.
               return (
-                <span
-                  key={w.location}
-                  ref={i === cursor ? currentElRef : undefined}
-                  className={`sawt-w sawt-${state}${hidden ? " sawt-veil" : ""}`}
-                >
-                  {w.text}{" "}
-                </span>
+                <Fragment key={w.location}>
+                  <span
+                    ref={i === cursor ? currentElRef : undefined}
+                    className={`sawt-w sawt-${state}${hidden ? " sawt-veil" : ""}`}
+                  >
+                    {w.text}
+                  </span>{" "}
+                </Fragment>
               );
             })}
             <span className="ayah-marker">﴿{num(a.ayahNo)}﴾</span>

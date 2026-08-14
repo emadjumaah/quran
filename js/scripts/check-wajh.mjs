@@ -137,6 +137,50 @@ function staticChecks() {
   if (absent.length) fail("رموزُ الميثاق الساكنة", `غائبة: ${absent.join(" · ")}`);
   else notes.push("الرموزُ الأربعةُ حاضرة: tap-highlight · overscroll-behavior · safe-area-inset · theme-color");
 
+  /* ── **لا يُرسم شيءٌ خارجَ صندوق حرفٍ قرآنيّ** (§١٣) ──
+     أُضيفت هذه القاعدةُ إلى الميثاق بعد عيبٍ رصده المالكُ في الفحص الحيّ
+     (١٤ أغسطس): ظِلٌّ بانتشار ٤px تحت مؤشّر التتبّع كان **يمدّ لونًا مصمتًا فوق
+     أوّل الكلمة التالية**، والكلماتُ في المصحف متقاربة. والانتشارُ (والغَبَشُ
+     مثلُه) يرسم **صفيحةً** خارج الصندوق؛ أمّا إزاحةٌ بلا غبشٍ ولا انتشارٍ فخطٌّ
+     تحت الكلمة لا صفيحةٌ عليها — فتبقى مأذونة، وكذلك `inset` فهو داخلَ الصندوق.
+     ويُقاس على الشيفرة لا على الشاشة: القاعدةُ تُقرأ من `theme.css` نفسِها. */
+  const QURAN_GLYPH = /(^|[\s,>+~])\.(sawt-w|sawt-now|sawt-past|sawt-next|sawt-veil|mp-ayah|sel-ayah|quran|ws-ayah-text|ayah-marker)\b/;
+  /** كتلُ القواعد: التعبيرُ لا يلتقط إلّا كتلةً بلا أقواسٍ داخلها، فلا تُشوّشه `@media` */
+  const cssBlocks = (src) =>
+    [...src.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
+      sel: m[1].split("\n").filter((l) => l.trim()).pop().trim(),
+      body: m[2],
+    }));
+  /** ظِلٌّ يرسم صفيحةً خارج الصندوق: غيرُ `inset` وله غبشٌ أو انتشارٌ غيرُ صفر */
+  const plateShadow = (value) => {
+    const v = value.trim();
+    if (v === "none" || /\binset\b/.test(v)) return null;
+    // تُقرأ الأطوالُ المتصدّرةُ بترتيبها (إزاحتان · غبشٌ · انتشار) ويُوقَف عند
+    // أوّل ما ليس طولًا — فلا تُقرأ أرقامُ اللون (`rgb(0 0 0 / .3)`) أطوالًا.
+    // **والصفرُ بلا وحدة** صحيحٌ في CSS وهو الغالبُ عندنا (`0 0 0 4px`).
+    const lens = [];
+    for (const part of v.split(/\s+/)) {
+      const m = /^(-?\d*\.?\d+)(px|rem|em)?$/.exec(part);
+      if (!m) break;
+      lens.push(Number(m[1]));
+    }
+    if (lens.length < 3) return null;
+    const blur = lens[2] ?? 0;
+    const spread = lens[3] ?? 0;
+    if (blur === 0 && spread === 0) return null;
+    return `غبش ${blur} · انتشار ${spread}`;
+  };
+  const glyphPaint = [];
+  for (const { sel, body } of cssBlocks(readFileSync(join(SRC, "theme.css"), "utf8"))) {
+    if (!QURAN_GLYPH.test(" " + sel)) continue;
+    const sh = body.match(/box-shadow\s*:\s*([^;]+)/);
+    if (!sh) continue;
+    const why = plateShadow(sh[1]);
+    if (why) glyphPaint.push(`${sel} — ${why}`);
+  }
+  if (glyphPaint.length) fail("رسمٌ خارجَ صندوق حرفٍ قرآنيّ", glyphPaint.join(" · "));
+  else notes.push("لا ظِلَّ يرسم صفيحةً خارجَ صندوق حرفٍ قرآنيّ (§١٣) — فُحصت قواعدُ theme.css كلُّها");
+
   /* ── ضبطٌ سالبٌ ساكن: يُزرع `confirm` في ملفٍّ أساسيٍّ ذهنيًّا (بلا كتابةٍ على القرص) ── */
   const planted = stripComments(`function x() { if (confirm("زرع")) return 1; }`);
   if (!DIALOG.test(planted)) fail("ضبطُ الفحص الساكن", "زُرع `confirm` فلم يصطده التعبيرُ — والفحصُ لا يفحص");
@@ -144,7 +188,28 @@ function staticChecks() {
   if (!FS.test(plantedFs)) fail("ضبطُ الفحص الساكن", "زُرع رقمُ خطٍّ فلم يُصطَد");
   const plantedComment = stripComments(`/* لا يُكتب confirm( ههنا */\nconst a = 1;`);
   if (DIALOG.test(plantedComment)) fail("ضبطُ الفحص الساكن", "اصطاد الفاحصُ ذِكرًا في تعليقٍ — فحصٌ يُحمِّر البريء");
-  notes.push("ضبطٌ سالبٌ ساكن: زُرع `confirm` ورقمُ خطٍّ فاصطيدا، وذِكرٌ في تعليقٍ فلم يُصطَد");
+
+  /* وضبطُ قاعدة «لا يُرسم خارجَ الصندوق»: يُزرع الانتشارُ فيُصطاد، ويُزرع البريءُ
+     فلا يُصطاد — **وزرعٌ لا أثرَ له ليس ضبطًا** (قاعدةُ الإدارة 2026-08-13). */
+  const glyphPlants = [
+    [".sawt-now { box-shadow: 0 0 0 4px var(--accent-soft); }", true, "انتشارٌ على كلمة التتبّع"],
+    [".mp-ayah.target { box-shadow: 0 0 0 3px var(--accent-soft); }", true, "انتشارٌ على آية المصحف"],
+    [".quran .w { box-shadow: 0 0 8px rgb(0 0 0 / .3); }", true, "غبشٌ على كلمة قرآن"],
+    [".sel-ayah .w:hover { box-shadow: 0 1.5px 0 var(--accent); }", false, "خطٌّ تحت الكلمة بلا غبشٍ ولا انتشار"],
+    [".ayah-marker.jamia { box-shadow: inset 0 0 0 1px var(--gold); }", false, "ظِلٌّ داخلَ الصندوق"],
+    [".card { box-shadow: 0 14px 44px rgb(0 0 0 / .18); }", false, "بطاقةٌ ليست حرفَ قرآن"],
+  ];
+  for (const [css, shouldCatch, why] of glyphPlants) {
+    const [{ sel, body }] = cssBlocks(css);
+    const caught = QURAN_GLYPH.test(" " + sel) && plateShadow(body.match(/box-shadow\s*:\s*([^;]+)/)[1]) != null;
+    if (caught !== shouldCatch) {
+      fail("ضبطُ الفحص الساكن", shouldCatch ? `زُرع ${why} فلم يُصطَد` : `اصطاد الفاحصُ بريئًا: ${why}`);
+    }
+  }
+  notes.push(
+    "ضبطٌ سالبٌ ساكن: زُرع `confirm` ورقمُ خطٍّ فاصطيدا، وذِكرٌ في تعليقٍ فلم يُصطَد؛ " +
+      "وثلاثةُ رسومٍ خارجَ صندوق الحرف فاصطيدت، وثلاثةٌ بريئةٌ (خطٌّ · `inset` · بطاقة) فلم تُصطَد",
+  );
 }
 
 /* ═══════════════ ٢+٣ — مقيسًا في المتصفّح ═══════════════ */

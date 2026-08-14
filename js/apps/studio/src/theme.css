@@ -854,7 +854,14 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 .mp-rub span { color: var(--gold); background: var(--gold-soft); }
 .mp-sajda span { color: var(--accent); background: var(--accent-soft); letter-spacing: 0.02em; }
 .mp-ayah { border-radius: 8px; }
-.mp-ayah.target { background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
+/* الآيةُ المقصودةُ في صفحة المصحف — **والقاعدةُ واحدةٌ لا قاعدتان**: كان ههنا
+   انتشارٌ ٣px يقع على حروف الآية المجاورة (وسردُ المصحف متّصلٌ لا فقرات)، وهو
+   عينُ عيب `.sawt-now`. اصطادته بوّابةُ الميثاق حين حُرست القاعدةُ آليًّا. */
+.mp-ayah.target {
+  background: var(--accent-soft);
+  padding-inline: 3px; margin-inline: -3px;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
 
 
 /* الجوامع — محكم→تفصيل network view */
@@ -2489,10 +2496,18 @@ table.data tr:hover td { background: var(--panel-2); }
 /* تحديدُ الآية بالنقر في فراغها (قرار المالك 2026-07-21): خضرةٌ هادئةٌ تُعلم
    القارئَ أيَّ آيةٍ تعمل عليها الأدواتُ والمودال — في الوضعين معًا. */
 .ayah-card { padding: 8px 12px 10px; border-radius: var(--radius); margin-bottom: 20px; cursor: default; }
-.ayah-card.sel-ayah, .mp-ayah.sel-ayah {
+/* **البطاقةُ صندوقٌ قائمٌ بنفسه، والآيةُ في سيل المصحف ليست كذلك** — فحلقةُ
+   التحديد تصلح للأولى وتقع على حروف جارتها في الثانية (قاعدةُ الميثاق: لا يُرسم
+   شيءٌ خارجَ صندوق حرفٍ قرآنيّ). فافترقتا: حلقةٌ للبطاقة، وحشوٌ داخليٌّ للآية. */
+.ayah-card.sel-ayah {
   background: var(--accent-soft);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 10px;
+}
+.mp-ayah.sel-ayah {
+  background: var(--accent-soft); border-radius: 10px;
+  padding-inline: 3px; margin-inline: -3px;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
 .mp-ayah { cursor: pointer; }
 
@@ -2693,9 +2708,14 @@ table.data tr:hover td { background: var(--panel-2); }
 .drawer-tools-h { padding: 12px 16px 0; }
 .drawer-tools { display: flex; gap: 8px; padding: 6px 14px 10px; flex-wrap: wrap; }
 
-/* مدخلُ «التتبّع» في الرأس: زرٌّ بعنوانٍ وأيقونة، وعلى الجوال أيقونةٌ وحدَها */
+/* مدخلُ «التتبّع» في الرأس: زرٌّ بعنوانٍ وأيقونة، وعلى الجوال أيقونةٌ وحدَها.
+   **و`justify-content` ههنا شرطٌ لا زينة**: هذا العنصرُ رابطٌ لا زرّ، فلا تصيبه
+   قاعدةُ `.topbar > button` التي فيها التمركز — وعلى الجوال يُفرض عليه ٤٤×٤٤px
+   بحشوٍ صفر (مرّتين: `max-width: 760px` و`430px`)، فتلتصق الأيقونةُ بأوّل المحور
+   ما لم تُمركَز ههنا في المصدر. (عيبٌ رصده المالكُ في الفحص الحيّ ١٤ أغسطس؛
+   وكانت الأيقونةُ ١٩px في صندوقٍ ٤٤px بفجوة ٢٤/١ بدل ١٢٫٥/١٢٫٥.) */
 .tatabbu-btn {
-  display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none;
   border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px;
   color: var(--ink-2); background: var(--panel); font-size: 14px; white-space: nowrap;
 }
@@ -3174,11 +3194,22 @@ body.sawt-page { overflow: hidden; }
 .sawt-w { transition: color 120ms linear, background-color 120ms linear; }
 .sawt-past { color: var(--muted); }
 .sawt-next { color: var(--ink); }
-/* المؤشّرُ هادئ: لهجةٌ لا إنذار — ولا أحمرَ في هذه الصفحة ألبتّة */
-.sawt-now { color: var(--accent); background: var(--accent-soft); border-radius: 6px; box-shadow: 0 0 0 4px var(--accent-soft); }
+/* المؤشّرُ هادئ: لهجةٌ لا إنذار — ولا أحمرَ في هذه الصفحة ألبتّة.
+   **ولا يُرسم شيءٌ خارجَ صندوق حرفٍ قرآنيّ** (ميثاقُ الوجه — وبوّابتُه تحرسه):
+   كان ههنا `box-shadow` بانتشار ٤px يمدُّ لونًا مصمتًا **فوق أوّل الكلمة التالية**
+   (مقيسًا: صندوقُ المؤشّر ينتهي عند ٢٨١٫٩ وجارتُه تبدأ عندها، فالأربعةُ تقع على
+   حرفها) — عيبٌ رصده المالكُ في الفحص الحيّ ١٤ أغسطس. فصار التنفُّسُ **حشوًا داخل
+   الصندوق**، ويُقابله هامشٌ سالبٌ مساوٍ **فلا يزحف السطرُ كلّما تقدّم المؤشّر** —
+   والزحفُ في نصٍّ يُتلى أسوأُ من التظليل. و`box-decoration-break: clone` لتسلمَ
+   الكلمةُ المنقسمةُ على سطرين. */
+.sawt-now {
+  color: var(--accent); background: var(--accent-soft); border-radius: 6px;
+  padding-inline: 3px; margin-inline: -3px;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
 /* الحجابُ في وضع الكشف: يبقى موضعُ الكلمة وطولُها ولا يُقرأ حرفُها */
 .sawt-veil { color: transparent; border-bottom: 2px dotted var(--line); }
-.sawt-veil.sawt-now { background: transparent; box-shadow: none; border-bottom-color: var(--accent); }
+.sawt-veil.sawt-now { background: transparent; border-bottom-color: var(--accent); }
 
 /* ── بعد الختام ── */
 .sawt-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin: 14px 0; }
