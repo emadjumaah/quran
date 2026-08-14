@@ -1,0 +1,79 @@
+/**
+ * أنماطُ اختيار المحرّك ومؤشّرِ تنزيله — في ملفٍّ مستقلٍّ عن `theme.css`
+ * (شرطُ ص-م٣ §٥ب) فلا تنتفخ الورقةُ الجامعةُ بكلّ بابٍ جديد.
+ *
+ * ولا لونَ جديدًا ولا مقاسَ خطٍّ مكتوبًا بيد: كلُّه من رموز الميثاق القائمة.
+ */
+
+.sawt-engines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0 6px;
+}
+
+/* بطاقةُ المحرّك: اسمٌ ثمّ سطرُ الصدق ثمّ نفعُه وثمنُه — لا شيءَ مطويّ */
+.sawt-engine-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: start;
+  padding: 12px 14px;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.sawt-engine-card:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.sawt-engine-card.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.sawt-engine-card:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.sawt-engine-name {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 16px;
+}
+.sawt-engine-line {
+  font-size: 15px;
+  line-height: 1.7;
+}
+.sawt-engine-good,
+.sawt-engine-cost {
+  font-size: 15px;
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+
+/* سطرُ «المحرّكُ الآن» تحت زرّ البدء — خبرٌ لا زينة، وزرُّ تبديلٍ في متنه */
+.sawt-engine-now {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.sawt-engine-swap {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+.sawt-engine-swap:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

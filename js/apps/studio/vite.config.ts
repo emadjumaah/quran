@@ -222,7 +222,11 @@ export default defineConfig({
         // first visit regardless of which views a reader ever opens. They cache
         // on first use of their view via the json runtimeCaching rule below.
         globPatterns: ["**/*.{js,css,html,svg,png,woff,woff2,wasm}"],
-        globIgnores: ["**/quran-app.db", "**/*.bin", "**/*.xlsx"],
+        // عُدّةُ تشغيل التتبّع (ort-wasm) ٢٣٫٦ م.ب على القرص و٥٫٧ مضغوطةً — ولا
+        // تُفرض على كلّ زائرٍ في التثبيت؛ يخزّنها عاملُ الخدمة **عند أوّل
+        // استعمالٍ لصفحة التتبّع** بقاعدة `sawt-runtime` أدناه، فتعمل بعدها بلا
+        // اتّصال. (المنطقُ نفسُه المعمولُ به في ملفّات البيانات الجانبيّة.)
+        globIgnores: ["**/quran-app.db", "**/*.bin", "**/*.xlsx", "**/ort-wasm-*.wasm"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
@@ -232,6 +236,17 @@ export default defineConfig({
             options: {
               cacheName: "qkg-data",
               expiration: { maxEntries: 6 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // عُدّةُ تشغيل المحرّك الحرّ — تُخزَّن عند أوّل تشغيلٍ للتتبّع، فيعمل
+            // بعده بلا اتّصال (والنموذجُ نفسُه يخزّنه المحرّكُ في خزانة المتصفّح).
+            urlPattern: /ort-wasm-[^/]*\.wasm(\?.*)?$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "sawt-runtime",
+              expiration: { maxEntries: 4 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },

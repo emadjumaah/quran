@@ -28,6 +28,7 @@ const P = {
   align: join(SAWT, "align.ts"),
   script: join(SAWT, "script.ts"),
   view: join(ROOT, "js", "apps", "studio", "src", "views", "Tatabbu.tsx"),
+  engines: join(SAWT, "engines.ts"),
   analyzer: join(ROOT, "js", "apps", "studio", "src", "lib", "arabicSearch.ts"),
 };
 
@@ -66,7 +67,8 @@ const PLANTS = [
   [
     "تحويلٌ في موضع عرض الكلمة",
     "view",
-    (s) => s.replace("{w.text}{\" \"}", "{w.text.replace(\"a\", \"b\")}{\" \"}"),
+    // صار البياضُ خارجَ وسم الكلمة (ص-م٣ §٥ج) فيُزرع على الصورة الجديدة
+    (s) => s.replace("{w.text}", "{w.text.replace(\"a\", \"b\")}"),
     { check: "حرفيّةُ المعروض" },
   ],
   [
@@ -136,10 +138,18 @@ const PLANTS = [
     { check: "دعوى استقلالٍ عن الشبكة" },
   ],
   [
-    "نزعُ الإعلان من الصفحة",
-    "view",
-    (s) => s.replace("وهو يرسل صوتَك إلى خادم صانع المتصفّح", "وهو محرّكٌ للتجربة"),
+    // صار موضعُ الإعلان `engines.ts` منذ ص-م٣: السطرُ يُكتب مع محرّكه، والصفحةُ
+    // تعرضه. فيُزرع النزعُ حيث صار لا حيث كان.
+    "نزعُ الإعلان من وصف المحرّك",
+    "engines",
+    (s) => s.replace("يرسل صوتَك إلى خادم صانع المتصفّح", "محرّكٌ للتجربة"),
     { missing: "الإعلانُ الصريح" },
+  ],
+  [
+    "نزعُ سطر المحرّك من الإعلان قبل الميكروفون",
+    "view",
+    (s) => s.replace("{engine?.privacyLine}", "{null}"),
+    { missing: "سطرَ صدق المحرّك" },
   ],
   [
     "تبديلُ اسم قاعدة اتّصال المدى",

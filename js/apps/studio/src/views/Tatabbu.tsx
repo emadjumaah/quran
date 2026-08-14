@@ -58,6 +58,15 @@ import {
   type Hal,
   type HalId,
 } from "../lib/sawt/halat";
+import {
+  ENGINES,
+  findEngine,
+  readEngineChoice,
+  saveEngineChoice,
+  type EngineDescriptor,
+  type EngineId,
+} from "../lib/sawt/engines";
+import { OnDeviceRecognizer, onDeviceAvailable } from "../lib/sawt/onDeviceRecognizer";
 import { isAppleMobile, startVad, type VadHandle } from "../lib/sawt/vad";
 import {
   CONDITIONS,
@@ -70,6 +79,7 @@ import {
   type SawtRunRow,
 } from "../lib/sawt/runs";
 import { surahNameAr } from "../db";
+import "../styles/sawt-engine.css";
 import { num } from "../i18n";
 
 type Phase = "idle" | "running" | "done";
@@ -133,7 +143,13 @@ export default function Tatabbu() {
   // ص-م٢): يأتي القارئُ فيجد المصحفَ صافيًا، ومن أراد تهيئةً طلبها من الشريط.
   const [setup, setSetup] = useState(false);
   const [asking, setAsking] = useState(false); // الإعلانُ يسبق الميكروفون
-  const [consent, setConsent] = useState(() => readConsent());
+  // **المحرّكُ يُسأل عنه مرّةً واحدةً ولا يُختار عن القارئ خفيةً** (ص-م٣ §٤):
+  // أحدُهما يُخرج صوتَه، والآخرُ ينزّل ٨٣ م.ب من شبكته — وكلاهما ثمنٌ لا يُدفع
+  // نيابةً عنه. فما دام لم يجب، لا يُشغَّل ميكروفون.
+  const [engineId, setEngineId] = useState<EngineId | null>(() => readEngineChoice());
+  const [askingEngine, setAskingEngine] = useState(false);
+  const engine: EngineDescriptor | null = engineId ? findEngine(engineId) : null;
+  const [consent, setConsent] = useState(() => (engineId ? readConsent(engineId) : null));
 
   const [ready, setReady] = useState(false);
   const [growth, setGrowth] = useState(0);
@@ -166,7 +182,10 @@ export default function Tatabbu() {
   const textElRef = useRef<HTMLDivElement | null>(null);
 
   const mark = useMemo(() => readMark(), [phase]);
-  const supported = webSpeechAvailable();
+  /** أيقوم في هذا الجهاز محرّكٌ أصلًا؟ — أحدُهما يكفي */
+  const supported = webSpeechAvailable() || onDeviceAvailable();
+  /** أمتاحٌ كلُّ محرّكٍ بحدته — فلا يُعرض خيارٌ لا يعمل ولا يُكتم عذرُه */
+  const engineUsable = (e: EngineDescriptor) => (e.onDevice ? onDeviceAvailable() : webSpeechAvailable());
   const condition = CONDITIONS.find((c) => c.id === conditionId) ?? CONDITIONS[0];
 
   useEffect(() => setRuns(listRuns()), [phase]);
@@ -298,7 +317,9 @@ export default function Tatabbu() {
   }, [stopAll, waqfMeasured, condition]);
 
   /* ── البدء: لمسةٌ واحدة، ثمّ لا لمسَ البتّة ── */
-  const begin = useCallback(async () => {
+  // **المحرّكُ يُمرَّر لا يُقرأ من الحال**: من اختار محرّكًا الآن بدأ به الآن —
+  // وحالُ رياكت تتأخّر إلى إعادة الرسم، فلو قُرئت لبدأ بالمحرّك السابق.
+  const begin = useCallback(async (engineOverride?: EngineId) => {
     const win = winRef.current;
     if (!win) return;
     const at = cursorRef.current;
@@ -346,7 +367,12 @@ export default function Tatabbu() {
       }
     }
 
-    const rec = new WebSpeechRecognizer("ar-SA");
+    // **تبديلُ المحرّك لا يمسّ سطرًا ممّا بعده**: الواجهةُ واحدة، والمحاذاةُ
+    // لا تعلم أيُّهما يعمل (عقدُ ص-م١، وهو ما جعل هذه الجلسة استبدالَ تنفيذٍ
+    // لا بناءَ باب).
+    const rec: RecognizerPort = findEngine(engineOverride ?? engineId ?? "browser-speech").onDevice
+      ? new OnDeviceRecognizer()
+      : new WebSpeechRecognizer("ar-SA");
     recRef.current = rec;
     rec.onState((s, detail) => {
       setEngineState(s);
@@ -389,28 +415,55 @@ export default function Tatabbu() {
     });
     rec.start();
     setPhase("running");
-  }, [measureTime]);
+  }, [measureTime, engineId]);
 
   /**
    * **الإعلانُ يسبق الميكروفون.** لا يُشغَّل التقاطٌ ولا يُفتح مجرًى صوتيٌّ
-   * حتّى يُقرأ الإعلانُ ويقع الإذنُ الصريح — وهذا هو المدخلُ الوحيدُ إلى البدء.
+   * حتّى يُختار المحرّكُ ويُقرأ إعلانُه ويقع الإذنُ الصريح — وهذا هو المدخلُ
+   * الوحيدُ إلى البدء.
    */
   const requestStart = useCallback(() => {
-    // الموافقةُ مرّةٌ واحدة، والإعلانُ في كلِّ حالٍ على حدة
-    if (!readConsent() || !declaredIn().includes(halId)) {
+    // ١) المحرّكُ أوّلًا: لا يُبدأ بمحرّكٍ لم يخترْه القارئ
+    if (!engineId || !engineUsable(findEngine(engineId))) {
+      setAskingEngine(true);
+      return;
+    }
+    // ٢) **والصلاةُ بالحرّ وحدَه** (قرارُ الإدارة، وبندُ ص-م٣ §٤-٣): لا يُفتح
+    //    وضعُ الصلاة بمحرّكٍ يُخرج صوتَ المصلّي إلى خادمٍ ثالثٍ بحال.
+    if (halId === "salat" && !findEngine(engineId).fitsSalat) {
+      setAskingEngine(true);
+      return;
+    }
+    // ٣) الموافقةُ مرّةٌ واحدةٌ **لكلّ محرّك**، والإعلانُ في كلِّ حالٍ على حدة
+    if (!readConsent(engineId) || !declaredIn().includes(halId)) {
       setAsking(true);
       return;
     }
     void begin();
-  }, [begin, halId]);
+  }, [begin, halId, engineId]);
 
   const agreeAndStart = useCallback(() => {
-    saveConsent();
+    if (!engineId) return;
+    saveConsent(engineId);
     noteDeclared(halId);
-    setConsent(readConsent());
+    setConsent(readConsent(engineId));
     setAsking(false);
-    void begin();
-  }, [begin, halId]);
+    void begin(engineId);
+  }, [begin, halId, engineId]);
+
+  /** اختيارُ المحرّك — يُحفظ، وتُستأنف طريقُ البدء من حيث وقفت */
+  const chooseEngine = useCallback(
+    (id: EngineId) => {
+      saveEngineChoice(id);
+      setEngineId(id);
+      setConsent(readConsent(id));
+      setAskingEngine(false);
+      // الإذنُ لا يُورَّث بين محرّكين، فيُعاد الإعلانُ لهذا المحرّك
+      if (!readConsent(id) || !declaredIn().includes(halId)) setAsking(true);
+      else void begin(id);
+    },
+    [begin, halId],
+  );
 
   /* ── «تجاوز»: رخصةٌ كي لا يَحبِس التتبّعُ قارئًا مصيبًا (في التثبيت وحدَه) ── */
   const skipOne = useCallback(() => {
@@ -526,14 +579,13 @@ export default function Tatabbu() {
    */
   const consentView = () => (
     <div className="sawt-warn" role="alertdialog" aria-label="قبل تشغيل الميكروفون" data-sawt="consent">
-      <b>قبل تشغيل الميكروفون:</b> هذه الصفحة تستعمل محرّكَ التعرّف المدمج في المتصفّح،
-      <b> وهو يرسل صوتَك إلى خادم صانع المتصفّح</b> (غوغل في كروم، وآبل في سفاري) ليحوّله إلى
-      نصّ. ولا نحفظ نحن صوتًا، ولا نخزّنه، ولا يصل إلى خوادمنا منه شيء.
-      {halId === "salat" && (
+      {/* **سطرُ الصدق يُجلب من وصف المحرّك المختار** ولا يُكتب ههنا: عبارةٌ واحدةٌ
+          في الصفحة تصلح لأحد المحرّكين وتكذب على الآخر (ص-م٣ §٤). */}
+      <b>قبل تشغيل الميكروفون:</b> التعرّفُ يجري <b>{engine?.label ?? "—"}</b> —{" "}
+      {engine?.privacyLine} ولا نحفظ نحن صوتًا، ولا نخزّنه، ولا يصل إلى خوادمنا منه شيء.
+      {halId === "salat" && engine && !engine.onDevice && (
         <p className="sawt-warn-loud">
-          <b>وأنت تختار «الصلاة»</b> — فاعلم أنّ صوتَ تلاوتك في صلاتك يمرّ بخادم صانع
-          المتصفّح ما دام هذا المحرّكُ هو العامل. وحتّى يقوم المحرّكُ الحرُّ على الجهاز نفسِه،
-          هذا حالُه ولا يُكتم.
+          <b>وأنت تختار «الصلاة»</b> — وهذا المحرّكُ لا يصلح لها.
         </p>
       )}
       <div className="sawt-warn-acts">
@@ -542,6 +594,50 @@ export default function Tatabbu() {
         </button>
         <button className="sawt-copy" onClick={() => setAsking(false)}>
           لا
+        </button>
+      </div>
+    </div>
+  );
+
+  /**
+   * **السؤالُ الواحدُ عن المحرّك** — يُعرض مرّةً ويُحفظ جوابُه، **وبلا ترجيحٍ
+   * خفيٍّ لأحدهما**: لكلٍّ سطرُ صدقه ونفعُه وثمنُه مكتوبةً بالأرقام، والقارئُ
+   * يختار على بيّنة. ولا تنزيلَ صامتٌ ولا إجبارَ على انتظار.
+   */
+  const engineChoiceView = () => (
+    <div className="sawt-warn" role="alertdialog" aria-label="اختيار المحرّك" data-sawt="engine-choice">
+      <b>بأيِّ محرّكٍ يتتبّع؟</b>
+      {halId === "salat" && (
+        <p className="sawt-warn-loud">
+          وضعُ الصلاة لا يُفتح إلّا بالمحرّك الذي يعمل على جهازك — فصوتُ المصلّي لا يخرج إلى
+          طرفٍ ثالثٍ بحال.
+        </p>
+      )}
+      <div className="sawt-engines">
+        {ENGINES.map((e) => {
+          const usable = engineUsable(e);
+          const blocked = halId === "salat" && !e.fitsSalat;
+          return (
+            <button
+              key={e.id}
+              className={`sawt-engine-card${engineId === e.id ? " on" : ""}`}
+              onClick={() => chooseEngine(e.id)}
+              disabled={!usable || blocked}
+              data-sawt={`engine-${e.id}`}
+            >
+              <span className="sawt-engine-name">{e.label}</span>
+              <span className="sawt-engine-line">{e.privacyLine}</span>
+              <span className="sawt-engine-good">{e.benefit}</span>
+              <span className="sawt-engine-cost">{e.cost}</span>
+              {!usable && <span className="sawt-engine-cost">ولا يعمل على هذا الجهاز</span>}
+              {blocked && usable && <span className="sawt-engine-cost">ولا يُفتح به وضعُ الصلاة</span>}
+            </button>
+          );
+        })}
+      </div>
+      <div className="sawt-warn-acts">
+        <button className="sawt-copy" onClick={() => setAskingEngine(false)}>
+          ليس الآن
         </button>
       </div>
     </div>
@@ -934,8 +1030,13 @@ export default function Tatabbu() {
             طمسٍ ولا صندوقٍ فوق النصّ، والموافقةُ مرّةٌ واحدةٌ محفوظةٌ كما هي */}
         {phase === "idle" && asking && <div className="sawt-m-panel">{consentView()}</div>}
 
+        {/* والمحرّكُ يُسأل عنه قبل الإعلان — فالإعلانُ نفسُه يتبع المحرّك */}
+        {phase === "idle" && !asking && askingEngine && (
+          <div className="sawt-m-panel">{engineChoiceView()}</div>
+        )}
+
         {/* عُدّةُ التهيئة — بطلبٍ لا بقدوم، تنزل من الشريط ولا تعلو المتن */}
-        {phase === "idle" && !asking && setup && (
+        {phase === "idle" && !asking && !askingEngine && setup && (
           <div className="sawt-m-panel" data-sawt="setup">
             <p className="sawt-hal-name">
               {hal.name}
@@ -1070,6 +1171,8 @@ export default function Tatabbu() {
 
                 {asking ? (
                   consentView()
+                ) : askingEngine ? (
+                  engineChoiceView()
                 ) : (
                   <button
                     className="sawt-start"
@@ -1079,6 +1182,15 @@ export default function Tatabbu() {
                   >
                     {ready ? "ابدأ — ثمّ لا تلمس شيئًا" : "يُحمَّل المقطع…"}
                   </button>
+                )}
+                {/* والمحرّكُ المختارُ ظاهرٌ لا مخبوء، ويُبدَّل من موضعه */}
+                {engine && (
+                  <p className="muted sawt-note sawt-engine-now">
+                    المحرّك: <b>{engine.label}</b> — {engine.privacyLine}{" "}
+                    <button className="sawt-engine-swap" onClick={() => setAskingEngine(true)}>
+                      بدِّله
+                    </button>
+                  </p>
                 )}
                 {!supported && (
                   <div className="sawt-warn sawt-warn-hard">

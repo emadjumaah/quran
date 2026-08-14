@@ -125,24 +125,27 @@ export interface SawtConsent {
   engine: string;
 }
 
-export const ENGINE_ID = "browser-speech";
-
-export function readConsent(): SawtConsent | null {
+/**
+ * **والإذنُ لمحرّكٍ بعينه لا للصفحة.** صار عندنا محرّكان يختلف حالُ الصوت
+ * فيهما اختلافًا جوهريًّا، فمن أذِن لمحرّكٍ يُخرج صوتَه **لا يُورَّث إذنُه**
+ * لغيره ولا العكس — يُسأل لكلٍّ مرّةً واحدة.
+ */
+export function readConsent(engine: string): SawtConsent | null {
   try {
     const raw = localStorage.getItem(CONSENT_KEY);
     if (!raw) return null;
     const c = JSON.parse(raw) as SawtConsent;
-    return c && c.engine === ENGINE_ID ? c : null;
+    return c && c.engine === engine ? c : null;
   } catch {
     return null;
   }
 }
 
-export function saveConsent(): void {
+export function saveConsent(engine: string): void {
   try {
     localStorage.setItem(
       CONSENT_KEY,
-      JSON.stringify({ at: new Date().toISOString(), engine: ENGINE_ID } satisfies SawtConsent),
+      JSON.stringify({ at: new Date().toISOString(), engine } satisfies SawtConsent),
     );
   } catch {
     /* لا شيء */
