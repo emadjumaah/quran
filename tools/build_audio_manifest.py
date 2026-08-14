@@ -226,6 +226,14 @@ def main():
     (OUT / "audio-manifest.json").write_text(
         json.dumps(man, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"\n✓ {OUT / 'audio-manifest.json'}")
+
+    # نسخةُ التطبيق — تُخدَم ساكنةً فتقرؤها لوحةُ الجاهزيّة **بلا إنترنت**.
+    # مضغوطةٌ بلا مسافاتٍ لأنّها تُنزَّل في شبكة القارئ لا تُقرأ بعينه.
+    pub = ROOT / "js" / "apps" / "studio" / "public" / "audio-manifest.json"
+    if pub.parent.is_dir():
+        pub.write_text(json.dumps(man, ensure_ascii=False,
+                                  separators=(",", ":")) + "\n", encoding="utf-8")
+        print(f"✓ {pub} ({pub.stat().st_size / 1024:.0f} ك.ب)")
     return 0
 
 

@@ -20,6 +20,9 @@ import { RECITERS, reloadForReciter, setLivePlaybackRate } from "./AudioButton";
 import { TAFSIR_SOURCES } from "../books";
 import { TAJWID_LEGEND } from "../tajwid";
 import { getUILang, num, useUILang } from "../i18n";
+import OfflineReadiness from "./OfflineReadiness";
+import RecitationCredit from "./RecitationCredit";
+import "../styles/sawt-tilawa.css";
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -214,17 +217,15 @@ export default function SettingsPanel() {
                   ]}
                 />
               </Row>
+              {/* الإسنادُ ظاهرٌ حيث تُختار التلاوة — شرطُ رخصةٍ لا تحسين */}
+              <RecitationCredit source={RECITERS[s.reciter]?.everyayah ? "everyayah" : "cdn"} />
             </Group>
 
-            {/* **مكانٌ مقصودٌ محجوزٌ باسمه** للوحة «جاهزيّة العمل بلا إنترنت»
-                التي تأتي في جلسةٍ تالية (`SESSION-SAWT-M0-PROMPT.md`) — فلا
-                تُحشر لاحقًا في تصميمٍ لم يُتّسع لها. */}
+            {/* **المكانُ الذي حُجز باسمه** قد عُمر: لوحةُ «جاهزيّة العمل بلا
+                إنترنت» — وكلُّ ما فيها **مقروءٌ من الخزانة لحظتَه** لا موعودٌ
+                بالقول. */}
             <Group title={ar ? "جاهزيّة العمل بلا إنترنت" : "Offline readiness"}>
-              <p className="set-note set-reserved">
-                {ar
-                  ? "موضعٌ محجوزٌ — تُبنى عُدّتُه في جلسةٍ تالية، ولا يُقال ههنا اليومَ إنّ شيئًا يعمل بلا إنترنت."
-                  : "Reserved — its controls are built in a later session; nothing here claims offline support today."}
-              </p>
+              <OfflineReadiness />
             </Group>
 
             {/* ── وما يندر يُطوى تحت «المزيد» مفتوحًا بلمسة ── */}

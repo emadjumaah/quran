@@ -1,7 +1,11 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { getSettings } from "../settings";
 import { useReading } from "../reading";
+import { LAST_AYAH, locationOf, pad3 } from "../lib/sawt/mushafIndex";
+import { mirrorOf, offlineObjectUrl } from "../lib/sawt/tilawa";
+import RecitationCredit, { type CreditSource } from "./RecitationCredit";
+import "../styles/sawt-tilawa.css";
 
 /**
  * Recitation playback — Shaykh Mahmoud Khalil al-Husary (murattal), 64 kbps,
@@ -14,7 +18,6 @@ import { useReading } from "../reading";
  * The global NowPlayingBar always offers stop/next wherever the user goes.
  */
 const CDN_ROOT = "https://cdn.islamic.network/quran/audio";
-const LAST_AYAH = 6236;
 
 /** Reciters. Two verse-by-verse sources, both streamed straight from origin —
  *  the browser handles HTTP Range; audio is not routed through the SW:
@@ -39,26 +42,65 @@ export const RECITERS: Record<string, { ed?: string; br?: number; everyayah?: st
   jibreel: { ed: "ar.muhammadjibreel", br: 128, ar: "محمد جبريل", en: "Muḥammad Jibrīl" },
   basfar: { ed: "ar.abdullahbasfar", br: 64, ar: "عبد الله بصفر", en: "Abdullāh Baṣfar" },
   ayyoub: { ed: "ar.muhammadayyoub", br: 128, ar: "محمد أيوب", en: "Muḥammad Ayyūb" },
+  /**
+   * **مصحفُ المعلّم** — تلاوةٌ تُلقِّن: إيقاعٌ بطيءٌ بيّنٌ وسكتاتُ الترديد
+   * محفوظة. زِيدت لأنّها **التلاوةُ التي بُني لها بابُ التلقين**، ولم تكن
+   * معروضةً من قبلُ في شيءٍ من المصادر الحيّة. ولم يُبدَّل بها قارئٌ قائم.
+   */
+  husary_muallim: {
+    everyayah: "Husary_Muallim_128kbps",
+    ar: "الحصري — مصحف المعلّم",
+    en: "al-Ḥuṣarī — Muʿallim (teaching)",
+  },
 };
-
-// canonical Ḥafṣ ayah-count per sura — maps a global ayah id (1..6236) to
-// sura:ayah for everyayah's file names (also the numbering the CDN's global index uses).
-const AYAH_COUNTS = [7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
-const SURAH_OFFSET = [0];
-for (let i = 0; i < AYAH_COUNTS.length; i++) SURAH_OFFSET.push(SURAH_OFFSET[i] + AYAH_COUNTS[i]);
-const pad3 = (n: number) => String(n).padStart(3, "0");
 
 const reciterOf = () => RECITERS[getSettings().reciter] ?? RECITERS.husary;
 /** mp3 URL for a global ayah id (1..6236), per the current reciter's source. */
 function audioUrl(id: number): string {
   const r = reciterOf();
   if (r.everyayah) {
-    let s = 1;
-    while (s < 114 && id > SURAH_OFFSET[s]) s++;
-    return `https://everyayah.com/data/${r.everyayah}/${pad3(s)}${pad3(id - SURAH_OFFSET[s - 1])}.mp3`;
+    const [s, a] = locationOf(id);
+    return `https://everyayah.com/data/${r.everyayah}/${pad3(s)}${pad3(a)}.mp3`;
   }
   return `${CDN_ROOT}/${r.br}/${r.ed}/${id}.mp3`;
 }
+
+/**
+ * **التلاوةُ المنزَّلةُ تُقدَّم على الشبكة — ولا يُبدَّل مصدرٌ حيّ.**
+ *
+ * ولا يقع هذا إلّا لقارئٍ **ثبت بالقياس** أنّ مرآتَنا تسجيلُه بعينه (انظر
+ * `lib/sawt/tilawa.ts`)؛ ومن نزّل جزءًا سمعه من جهازه بلا إنترنت، ومن لم
+ * يُنزّل شيئًا لم يتغيّر عليه شيء.
+ *
+ * **والتسخينُ قبل الضغط لا بعده**: زرُّ الآية يُهيّئ رابطَها عند ظهوره، فيبقى
+ * التشغيلُ عند الضغط **متزامنًا في نَفَس اللمسة** — فلا تُكسر سياسةُ التشغيل
+ * على آبل (`play()` بعد `await` تُرفض هناك).
+ */
+const offlineUrls = new Map<number, string>();
+const warming = new Set<number>();
+async function warmOffline(id: number): Promise<void> {
+  if (id < 1 || id > LAST_AYAH || offlineUrls.has(id) || warming.has(id)) return;
+  if (!mirrorOf(getSettings().reciter)) return;
+  warming.add(id);
+  const [s, a] = locationOf(id);
+  const url = await offlineObjectUrl(getSettings().reciter, s, a);
+  if (url) {
+    if (offlineUrls.size > 40) clearOffline(id);
+    offlineUrls.set(id, url);
+  }
+  warming.delete(id);
+}
+/** لا يُبقى إلّا جوارُ الموضع — وروابطُ الكائنات تُردّ للجامع صراحةً */
+function clearOffline(around = 0): void {
+  for (const [k, u] of offlineUrls) {
+    if (!around || Math.abs(k - around) > 20) {
+      URL.revokeObjectURL(u);
+      offlineUrls.delete(k);
+    }
+  }
+}
+/** ما يُشغَّل فعلًا لهذه الآية: المنزَّلُ ثمّ المجلوبُ مسبقًا ثمّ الشبكة */
+const srcFor = (id: number) => offlineUrls.get(id) ?? prefetched.get(id) ?? audioUrl(id);
 
 /** الجلبُ المسبق للآية التالية (2026-07-29، رصد المالك: التلاوةُ تتوقف بعد
  *  آيةٍ أو اثنتين والشاشةُ مطفأة): iOS يعلّق شبكةَ الصفحة عند إطفاء الشاشة،
@@ -69,6 +111,9 @@ const prefetched = new Map<number, string>();
 let prefetching = new Set<number>();
 async function prefetchAyah(id: number): Promise<void> {
   if (id < 1 || id > LAST_AYAH || prefetched.has(id) || prefetching.has(id)) return;
+  // المنزَّلُ يُغني عن الجلب — ولا يُطلب من الشبكة ما هو في الجهاز
+  await warmOffline(id);
+  if (offlineUrls.has(id)) return;
   prefetching.add(id);
   try {
     const res = await fetch(audioUrl(id), { mode: "cors" });
@@ -151,6 +196,7 @@ export function setLivePlaybackRate(rate: number) {
  *  the change is heard at once (keeps continuous/repeat/range state). */
 export function reloadForReciter() {
   clearPrefetch(); // مخزونُ الجلب بصوت القارئ السابق
+  clearOffline(); // ومنزَّلُ القارئ السابق كذلك — ولا يُسمع صوتٌ بغير اسمه
   if (playersPair) playersPair[1 - curIdx].removeAttribute("src"); // احتياطيٌّ بصوتٍ قديم
   if (currentId && player && !player.paused) start(currentId);
 }
@@ -190,7 +236,7 @@ function ensurePair(): HTMLAudioElement {
 function primeStandby(nextId: number) {
   if (!playersPair || nextId < 1 || nextId > LAST_AYAH) return;
   const standby = playersPair[1 - curIdx];
-  const target = prefetched.get(nextId) ?? audioUrl(nextId);
+  const target = srcFor(nextId);
   if (standby.src !== target) {
     standby.src = target;
     standby.load();
@@ -250,7 +296,7 @@ function start(id: number) {
       retried = true;
       window.setTimeout(() => {
         if (currentId !== id) return;
-        pl.src = prefetched.get(id) ?? audioUrl(id);
+        pl.src = srcFor(id);
         void pl.play().catch(() => { if (currentId === id) stopAudio(); });
       }, 1200);
       return;
@@ -260,8 +306,8 @@ function start(id: number) {
   // إن كان هذا المشغّلُ حُضِّر بهذه الآية سلفًا (تناوبُ الاحتياطي) — بأيِّ
   // صورةٍ من صورتيها blob أو رابطًا — فلا نعيد التعيين كي يبقى مخزونُه المحمَّل
   const direct = audioUrl(id);
-  const blob = prefetched.get(id);
-  if (pl.src !== direct && !(blob && pl.src === blob)) pl.src = blob ?? direct;
+  const ready = offlineUrls.get(id) ?? prefetched.get(id);
+  if (pl.src !== direct && !(ready && pl.src === ready)) pl.src = ready ?? direct;
   pl.preload = "auto";
   // loading a new src resets the rate to defaultPlaybackRate — set both
   pl.defaultPlaybackRate = getSettings().speed;
@@ -278,6 +324,8 @@ function start(id: number) {
     void prefetchAyah(id + 1).then(() => { if (currentId === id) primeStandby(id + 1); });
     void prefetchAyah(id + 2);
     primeStandby(id + 1);
+  } else {
+    void warmOffline(id + 1); // آيةٌ واحدةٌ تكفي التنقّلَ بالزرّ
   }
   notify();
   void updateMediaSession(id);
@@ -348,6 +396,10 @@ export function next() {
 export default function AudioButton({ ayahId, preview: isPreview = false }: { ayahId: number; preview?: boolean }) {
   useUILang();
   const playing = usePlayingId() === ayahId;
+  // يُهيَّأ المنزَّلُ عند ظهور الزرّ لا عند ضغطه — فتبقى اللمسةُ متّصلةً بالتشغيل
+  useEffect(() => {
+    void warmOffline(ayahId);
+  }, [ayahId]);
   return (
     <button
       className="chip"
@@ -360,36 +412,57 @@ export default function AudioButton({ ayahId, preview: isPreview = false }: { ay
   );
 }
 
+/** من أين تُسمع الآيةُ الجارية — يُقال بصدقٍ في سطر الإسناد */
+function sourceOfNow(): CreditSource {
+  if (currentId && offlineUrls.has(currentId)) return "downloaded";
+  return reciterOf().everyayah ? "everyayah" : "cdn";
+}
+
 /** Fixed mini player shown whenever recitation is playing. */
 export function NowPlayingBar() {
   useUILang();
   const id = usePlayingId();
   const { selected } = useReading();
+  const [showCredit, setShowCredit] = useState(false);
   // when an ayah is selected the reading dock is shown and carries its own
   // transport — don't stack a second fixed bar over it (they used to collide).
   if (id === 0 || selected) return null;
   const loc = currentLocation;
+  const ar = getUILang() === "ar";
   return (
-    <div className="card npb">
-      <span
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 999,
-          background: "var(--accent)",
-          animation: "pulse 1.2s ease-in-out infinite",
-        }}
-      />
-      <span style={{ fontWeight: 600, color: "var(--accent)" }}>
-        {getUILang() === "ar" ? "تلاوة" : "Reciting"}
-        {loc ? ` · ${num(loc.split(":")[1])}` : ""}
-      </span>
-      <button className="chip" style={{ border: "none", cursor: "pointer" }} onClick={() => next()} title="⏭">
-        ⏭
-      </button>
-      <button className="chip" style={{ border: "none", cursor: "pointer" }} onClick={stopAudio} title={t("stop")}>
-        ◼ {t("stop")}
-      </button>
+    <div className="card npb npb-credited">
+      <div className="npb-row">
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 999,
+            background: "var(--accent)",
+            animation: "pulse 1.2s ease-in-out infinite",
+          }}
+        />
+        <span style={{ fontWeight: 600, color: "var(--accent)" }}>
+          {ar ? "تلاوة" : "Reciting"}
+          {loc ? ` · ${num(loc.split(":")[1])}` : ""}
+        </span>
+        {/* الإسنادُ في موضع السماع — شرطُ الرخصة، ويُفتح بلمسةٍ ولا يُخفى */}
+        <button
+          className="chip npb-src"
+          style={{ border: "none", cursor: "pointer" }}
+          onClick={() => setShowCredit((v) => !v)}
+          aria-expanded={showCredit}
+          title={ar ? "مصدر التلاوة وإسنادها" : "Recitation source & attribution"}
+        >
+          {ar ? "المصدر" : "Source"}
+        </button>
+        <button className="chip" style={{ border: "none", cursor: "pointer" }} onClick={() => next()} title="⏭">
+          ⏭
+        </button>
+        <button className="chip" style={{ border: "none", cursor: "pointer" }} onClick={stopAudio} title={t("stop")}>
+          ◼ {t("stop")}
+        </button>
+      </div>
+      {showCredit && <RecitationCredit source={sourceOfNow()} className="npb-cr" />}
     </div>
   );
 }
