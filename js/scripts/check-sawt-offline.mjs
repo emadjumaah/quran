@@ -16,7 +16,9 @@
  * المحرّكُ يستنجد بخادمٍ لَما تقدّم مؤشّرٌ ولَظهر الإخفاق.
  *
  * التشغيل: node js/scripts/check-sawt-offline.mjs <path-to-wav>
- *   (الملفُّ: تلاوةٌ ١٦ك أحاديّة. يُبنى `dist` قبله بـ`pnpm build`.)
+ *   (الملفُّ: تلاوةٌ ١٦ك أحاديّة **لمقطع الصفحة الافتراضيّ — الفاتحة**، وإلّا
+ *   قُرئ غيرُ ما هو معروضٌ فلم يتقدّم مؤشّرٌ ولا يدلّ ذلك على عيبٍ في المحرّك.
+ *   ويُبنى `dist` قبله بـ`pnpm build`.)
  */
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
@@ -90,7 +92,15 @@ async function session({ offline, label }) {
       requests.push({ url: m.params.request.url, at: Date.now(), afterListening: listeningAt != null });
     }
   });
-  const send = (method, params = {}) => new Promise((r) => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
+  /** **ولا انتظارَ بلا حدّ**: لو انقطع الهدفُ لم يصل جوابٌ أبدًا — فيُوقَّت كلُّ
+      نداء، ويُعدّ ما لم يُجَب سقوطًا يُقيَّد لا تعليقًا صامتًا. */
+  const send = (method, params = {}, ms = 20000) =>
+    new Promise((r) => {
+      const i = ++id;
+      const t = setTimeout(() => { pending.delete(i); r({ timedOut: true }); }, ms);
+      pending.set(i, (m) => { clearTimeout(t); r(m); });
+      ws.send(JSON.stringify({ id: i, method, params }));
+    });
   const evaluate = async (expression) => {
     const r = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
     return r.result?.result?.value;

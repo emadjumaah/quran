@@ -1097,6 +1097,14 @@ export default function Tatabbu() {
             أنهيت
           </button>
         </div>
+        {/* **ولا تنزيلَ صامت** (ص-م٣ §٤): المحرّكُ الحرُّ ينزّل نموذجَه مرّةً
+            واحدةً وقد تطول، فيُقال ما يجري وكم بلغ — سطرٌ هادئٌ تحت الشريط لا
+            لوحٌ يعلو المتن. ويسري في الصلاة كما في غيرها: إخبارٌ لا تصحيح. */}
+        {(engineState === "starting" || engineState === "restarting") && engineDetail && (
+          <p className="muted sawt-hint" data-sawt="engine-progress">
+            {engineDetail}
+          </p>
+        )}
         {textView()}
         {hal.after !== "silent" && slow && !heard && (
           <p className="muted sawt-hint">

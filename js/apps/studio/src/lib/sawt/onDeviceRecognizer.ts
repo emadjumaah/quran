@@ -30,6 +30,8 @@ export const MODEL_DTYPE = "q4";
 /** طولُ النافذة وما يُبقى منها للتي تليها — بالثواني */
 const WINDOW_S = 6;
 const OVERLAP_S = 1.2;
+/** أقصى ما يُمسَك من صوتٍ في الذاكرة إن أبطأ الجهازُ — ثمّ يُقصُّ أقدمُه */
+const MAX_HELD_S = 24;
 const RATE = 16000;
 
 /** أمتاحٌ هذا المحرّكُ على هذا الجهاز؟ (يُسأل قبل عرضه خيارًا) */
@@ -162,6 +164,25 @@ export class OnDeviceRecognizer implements RecognizerPort {
   private push(chunk: Float32Array) {
     this.buf.push(chunk);
     this.bufLen += chunk.length;
+    // **سقفٌ لا يُتجاوز**: إن كان الجهازُ أبطأَ من الزمن الحقيقيّ تراكم الصوتُ ما
+    // دام المحرّكُ مشغولًا — فيُقصُّ أقدمُه فلا تنتفخ الذاكرةُ ولا يزداد التأخّرُ
+    // بلا حدّ، **ولا يُمسَك من الصوت أكثرُ ممّا يُقرأ**. والفائتُ يُفقد ولا
+    // يُدَّعى: تأخّرُ المؤشّر خيرٌ من مؤشّرٍ يجري في ماضٍ بعيد.
+    if (this.bufLen > MAX_HELD_S * RATE) {
+      const drop = this.bufLen - MAX_HELD_S * RATE;
+      let dropped = 0;
+      while (dropped < drop && this.buf.length) {
+        const head = this.buf[0];
+        if (head.length <= drop - dropped) {
+          dropped += head.length;
+          this.buf.shift();
+        } else {
+          this.buf[0] = head.subarray(drop - dropped);
+          dropped = drop;
+        }
+      }
+      this.bufLen -= dropped;
+    }
     if (this.bufLen < WINDOW_S * RATE || this.busy || !this.ready) return;
     const window = new Float32Array(this.bufLen);
     let at = 0;
