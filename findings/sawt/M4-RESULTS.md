@@ -61,7 +61,10 @@
 قارئٍ في أمر صوته لا عُدّةُ قياس.
 
 اللقطات: `m4-shots/m-tatabbu-setup-before.png` ⇔ `…-after.png` ·
-`m-tatabbu-surface-*.png` · `m-tatabbu-fahs-after.png`.
+`m-tatabbu-surface-*.png` · `m-tatabbu-fahs-after.png` ·
+**و`d-tatabbu-surface-after.png`** — وفيها سطحُ الحاسوب كلُّه: الأحوالُ (و«العَرْض»
+خارجةٌ من الرماديّ بحدِّها منصوصًا، و«التلقين» وحدَها موقوفةٌ بسببها) · وأبوابُ
+الاختيار بلا «مقاطع المحكّ» · ومفتاحُ الأحكام · و«للفحص» وحدَه في الذيل.
 
 ### §١ — المصحفُ كلُّه يُفتح فعلًا
 
