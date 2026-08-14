@@ -149,8 +149,9 @@ export default function OfflineReadiness() {
   }
 
   /* ── ما يُقال للقارئ عن كلّ استعمال ── */
+  /** سببُ وقف «العَرْض» يُقرأ من مصدره لا يُكتب ههنا ثانيةً — فلا تختلف
+   *  اللوحةُ عن الصفحة إن غيّرته الإدارةُ يومًا */
   const ard = HALAT.find((h) => h.id === "ard");
-  const talqin = HALAT.find((h) => h.id === "talqin");
   const readyNames = readyUnits.map((s) => unitLabel(s, ar)).join(ar ? "، " : ", ");
 
   const uses: { name: string; ok: boolean | "partial" | "suspended"; line: string }[] = [
@@ -172,14 +173,18 @@ export default function OfflineReadiness() {
     },
     {
       name: ar ? "الاستماع والتلقين" : "Listening & talqīn",
-      ok: talqin?.suspended ? "suspended" : readyUnits.length ? "partial" : false,
-      line: talqin?.suspended
-        ? talqin.suspended
-        : readyUnits.length
-          ? ar
-            ? `جاهزٌ لـ: ${readyNames} — وغيرُها يحتاج إنترنت`
-            : `Ready for: ${readyNames} — anything else needs a connection`
-          : !read
+      /**
+       * **يُحكم بما في الجهاز، لا بحال بابٍ آخر.** وحالُ «التلقين» في صفحة
+       * التتبّع بابٌ لم يُبنَ بعد وسببُ وقفه المكتوبُ هناك **قد بطَل برفع
+       * التلاوة اليوم** — فلا يُنقل ههنا سببٌ لم يعد صادقًا. والسماعُ من
+       * المنزَّل يعمل الآن، وهو ما يُقاس.
+       */
+      ok: readyUnits.length ? "partial" : false,
+      line: readyUnits.length
+        ? ar
+          ? `جاهزٌ لـ: ${readyNames} — وغيرُها يحتاج إنترنت`
+          : `Ready for: ${readyNames} — anything else needs a connection`
+        : !read
             ? ar
               ? "لم يُعلَم — تعذّرت قراءةُ وصف التلاوة"
               : "Unknown — the recitation index could not be read"
