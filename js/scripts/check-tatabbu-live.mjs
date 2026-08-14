@@ -236,6 +236,18 @@ async function main() {
   }
   await cdp.ev(click('[data-sawt="begin"]'));
   await sleep(700);
+  // **والمحرّكُ يُسأل عنه قبل الإعلان** (ص-م٣ §٤): لا يُختار عن القارئ محرّكٌ
+  // يُخرج صوتَه ولا محرّكٌ ينزّل من شبكته — ولا ميكروفونَ قبل جوابه.
+  const engineAsked = await cdp.ev(`return !!document.querySelector('[data-sawt="engine-choice"]');`);
+  const atEngineAsk = await cdp.ev("return window.__sawtSpy;");
+  if (!engineAsked) fail("المحرّكُ يُسأل عنه", "ضُغط «ابدأ» ولم يُسأل عن المحرّك");
+  if (atEngineAsk.recognizers !== 0 || atEngineAsk.getUserMedia !== 0) {
+    fail("المحرّكُ يُسأل عنه", "فُتح بابُ صوتٍ قبل اختيار المحرّك");
+  }
+  if (engineAsked) notes.push("السؤالُ عن المحرّك يسبق الإعلانَ والميكروفونَ معًا");
+  // ويُختار الشبكيُّ ههنا عمدًا: الحرُّ ينزّل نموذجًا ٨٣ م.ب فلا يُحمَّل ذلك بوّابةً
+  await cdp.ev(click('[data-sawt="engine-browser-speech"]'));
+  await sleep(700);
   const atAsk = await cdp.ev("return window.__sawtSpy;");
   const consentShown = await cdp.ev(`return !!document.querySelector('[data-sawt="consent"]');`);
   if (atAsk.recognizers !== 0 || atAsk.starts !== 0 || atAsk.getUserMedia !== 0) {
@@ -305,6 +317,22 @@ async function main() {
   const beforeSalat = await cdp.ev("return window.__sawtSpy;");
   await cdp.ev(click('[data-sawt="begin"]'));
   await sleep(700);
+  // **والصلاةُ لا تُفتح بمحرّكٍ يُخرج الصوت** (ص-م٣ §٤-٣): والمختارُ إلى الآن
+  // هو الشبكيّ — فيلزم أن يُردَّ إلى السؤال، وأن تكون بطاقتُه معطَّلةً فيه.
+  const salatBlocked = await cdp.ev(`return !!document.querySelector('[data-sawt="engine-choice"]');`);
+  const netCardOff = await cdp.ev(
+    `const b = document.querySelector('[data-sawt="engine-browser-speech"]'); return !!b && b.disabled;`,
+  );
+  if (!salatBlocked) fail("الصلاةُ بالحرّ وحدَه", "دخلت «الصلاة» بالمحرّك الشبكيّ ولم تُردَّ إلى اختيار المحرّك");
+  else if (!netCardOff) fail("الصلاةُ بالحرّ وحدَه", "بطاقةُ المحرّك الشبكيّ ليست معطَّلةً في «الصلاة»");
+  else notes.push("«الصلاة» بالمحرّك الشبكيّ: تُردّ إلى السؤال وبطاقتُه معطَّلةٌ فيه");
+  const atSalatBlock = await cdp.ev("return window.__sawtSpy;");
+  if (atSalatBlock.getUserMedia !== beforeSalat.getUserMedia) {
+    fail("الصلاةُ بالحرّ وحدَه", "فُتح مجرًى صوتيٌّ في «الصلاة» قبل اختيار محرّكٍ يصلح لها");
+  }
+  // ثمّ يُختار الحرُّ فيُعاد الإعلانُ له — والإذنُ لا يُورَّث بين محرّكين
+  await cdp.ev(click('[data-sawt="engine-on-device"]'));
+  await sleep(700);
   const atSalatAsk = await cdp.ev("return window.__sawtSpy;");
   const salatDeclared = await cdp.ev(`return !!document.querySelector('[data-sawt="consent"]');`);
   if (!salatDeclared) {
@@ -346,6 +374,11 @@ async function main() {
   await cdp.ev(`document.querySelector('[data-sawt="text"]')?.click(); return true;`);
   await sleep(300);
   await cdp.ev(click('[data-sawt="begin"]'));
+  // صار المحرّكُ «على الجهاز» بعد الصلاة، والإعلانُ يُعاد لكلّ حالٍ على حدة
+  await sleep(700);
+  if (await cdp.ev(`return !!document.querySelector('[data-sawt="agree"]');`)) {
+    await cdp.ev(click('[data-sawt="agree"]'));
+  }
   await cdp.until(`!document.querySelector('[data-sawt="begin"]')`, 8000);
   await sleep(500);
   await cdp.ev(click('[data-sawt="close"]'));
