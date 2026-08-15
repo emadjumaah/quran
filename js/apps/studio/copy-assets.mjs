@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
+import { copyOrt } from "./ort-assets.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PUB = path.join(HERE, "public");
@@ -32,4 +33,11 @@ if (fs.existsSync(emb)) {
 } else {
   console.warn("quran-embeddings.bin missing — Meaning search disabled (run export-embeddings.mjs)");
 }
+/** عُدّةُ تشغيل المحرّك الحرّ من الرزمة المثبَّتة إلى أصلنا — لا من شبكة طرفٍ ثالث */
+const ort = copyOrt();
+const mb = (n) => (n / 1024 / 1024).toFixed(1);
+console.log(
+  `ort runtime → public/ort/ : ${ort.map((r) => `${r.file} ${mb(r.bytes)}MB${r.copied ? " (copied)" : ""}`).join(", ")}`,
+);
+
 console.log("assets copied to public/");

@@ -17,6 +17,8 @@ dist/
 # generated at build time by copy-assets.mjs (icon.svg etc. stay tracked)
 js/apps/studio/public/quran-app.db
 js/apps/studio/public/quran-embeddings.bin
+# عُدّةُ تشغيل المحرّك الحرّ — تُنسخ من الرزمة المثبَّتة في كلّ بناء (ort-assets.mjs)
+js/apps/studio/public/ort/
 
 # originals kept out of version control (large PDFs etc.)
 archive/research/

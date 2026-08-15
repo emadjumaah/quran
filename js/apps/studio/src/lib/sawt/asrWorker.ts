@@ -13,10 +13,36 @@
 
 import { pipeline, env, type AutomaticSpeechRecognitionPipeline } from "@huggingface/transformers";
 
+/**
+ * **أصلُنا لعُدّة التشغيل** (ص٣ §١أ) — ينسخها البناءُ من الرزمة المثبَّتة إلى
+ * `public/ort/` (انظر `ort-assets.mjs`). والرمزُ ههنا وهناك واحد.
+ */
+const ORT_BASE = "/ort/";
+
+/**
+ * **اسمُ الملفّ يُؤخذ من اختيار الرزمة، والأصلُ وحدَه يُبدَّل.**
+ *
+ * `transformers.js` يختار للمتصفّح عُدّتَه (لسفاري `ort-wasm-simd-threaded.*`،
+ * ولغيرها نظيرتُها بـ`asyncify`) ثمّ **يجلبها من jsdelivr — شبكةِ طرفٍ ثالث**.
+ * فلا نُنازعه الاختيارَ — إذ الصيغةُ الجافا تُقرَن بثنائيّتها ولا يُخلط زوجٌ
+ * بزوج — بل نأخذ **اسمَ ما اختار** ونضعه على أصلنا. وبه يصير كلُّ ما يطلبه
+ * المحرّكُ من عندنا، فلا يسقط الإقلاعُ صامتًا على هاتفٍ خلف حاجزٍ أو خنق.
+ */
+const ortFile = (v: unknown, dflt: string) => {
+  const name = String(v ?? "").split("/").pop() ?? "";
+  return /^ort-wasm-simd-threaded(\.[a-z]+)?\.(mjs|wasm)$/.test(name) ? name : dflt;
+};
+
 const wasm = env.backends.onnx.wasm;
 if (wasm) {
   /** خيطٌ واحد: تعدُّدُ الخيوط يشترط ترويسات عزلٍ لا نملكها في استضافةٍ ساكنة */
   wasm.numThreads = 1;
+  const chosen = wasm.wasmPaths as { mjs?: unknown; wasm?: unknown } | string | undefined;
+  const picked = typeof chosen === "object" && chosen ? chosen : {};
+  wasm.wasmPaths = {
+    mjs: ORT_BASE + ortFile(picked.mjs, "ort-wasm-simd-threaded.mjs"),
+    wasm: ORT_BASE + ortFile(picked.wasm, "ort-wasm-simd-threaded.wasm"),
+  };
 }
 env.allowLocalModels = false;
 env.useBrowserCache = true;
@@ -37,9 +63,11 @@ const errName = (e: unknown) => String((e as Error)?.name ?? "") || String((e as
  * - **SIMD**: عُدّةُ التشغيل المشحونةُ اليومَ `ort-wasm-simd-threaded` **ولا
  *   نظيرَ لها بلا SIMD** — فمن لم يكن في متصفّحه SIMD لم يُقلع محرّكُنا الحرّ
  *   ألبتّة، ويكون هذا سببَه المسمّى.
- * - **مصدرُ عُدّة التشغيل**: `transformers.js` يضع لها مسارًا **من شبكة طرفٍ
- *   ثالث** (jsdelivr) ما لم يُحدَّد غيرُه — فيُقيَّد أصلُه بنصّه، إذ تعذُّرُ
- *   جلبِه عطبٌ لا يظهر في تنزيل النموذج ولا في الميكروفون.
+ * - **مصدرُ عُدّة التشغيل**: كانت تُجلب من شبكة طرفٍ ثالث (jsdelivr) بافتراض
+ *   الرزمة، **وصارت من أصلنا** `/ort/` (ص٣ §١أ). والسطرُ يبقى **مقيسًا لا
+ *   موعودًا**: يُقرأ الأصلُ المضبوطُ فعلًا فيُقال أهو أصلُنا أم طرفٌ ثالث —
+ *   **وهو شاهدُ صاحب الهاتف**، إذ تعذُّرُ جلبِ العُدّة عطبٌ لا يظهر في تنزيل
+ *   النموذج ولا في الميكروفون.
  * - **الخزانة والخيوط والعتاد**: أقائمةٌ خزانةُ المتصفّح (وبها يُحفظ النموذجُ
  *   وعُدّةُ التشغيل فيعمل الباب بلا اتّصال)؟ وأمتاحةٌ الذاكرةُ المشتركة؟ وأفيه
  *   `navigator.gpu` أصلًا (وهو غيرُ مشروطٍ عندنا، إذ الافتراضُ `wasm`)؟
@@ -64,8 +92,10 @@ function probeRuntime() {
   stage(`عُدّةُ التشغيل: ${parts.join(" · ")}`);
   try {
     const paths = (wasm as unknown as { wasmPaths?: string | { wasm?: string; mjs?: string } })?.wasmPaths;
-    const url = typeof paths === "string" ? paths : (paths?.wasm ?? "—");
-    stage(`مصدرُ عُدّة التشغيل: ${String(url).replace(/^(https?:\/\/[^/]+).*$/, "$1") || "أصلُنا"}`);
+    const url = String((typeof paths === "string" ? paths : paths?.wasm) ?? "—");
+    const host = url.match(/^https?:\/\/([^/]+)/)?.[1];
+    const file = url.split("/").pop() || url;
+    stage(`مصدرُ عُدّة التشغيل: ${host ? `طرفٌ ثالث — ${host}` : `أصلُنا ${ORT_BASE}`} · ${file}`);
   } catch {
     stage("مصدرُ عُدّة التشغيل: لا يُقرأ");
   }

@@ -15,14 +15,17 @@
  *   ٥ — **ولا يُحبَس قارئٌ في خيارٍ لا يعمل** (ص-م٥، على بلاغ المالك): التبديلُ
  *       متاحٌ من موضعين · ورجوعٌ تلقائيٌّ بمهلةٍ معلَنةٍ يُخبَر به · والصلاةُ
  *       مستثناةٌ منه · والإذنُ لا يُورَّث فيه · وحالُ المحرّك معروضة.
+ *   ٦ — **وعُدّةُ التشغيل من أصلنا** (ص٣ §٣): لا طرفَ ثالثًا في ضبطها ولا في
+ *       ناتج البناء، والأربعةُ حاضرةٌ في `public/ort/` مطابقةً للرزمة المثبَّتة.
  *
  * ولا `\b` مع العربيّة (بلاغُ الحدود 2026-08-12) — بل عباراتٌ كاملة.
  *
  * التشغيل: node js/scripts/check-sawt-engine.mjs → js/data/gates/SAWT-ENGINE.json
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ORT_DIR, ORT_FILES, ortSource, sha256 } from "../apps/studio/ort-assets.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SRC = join(ROOT, "js", "apps", "studio", "src");
@@ -286,6 +289,96 @@ if (!fiveBad) {
   );
 }
 
+/* ═══════════ ٦ — عُدّةُ المحرّك من أصلنا لا من شبكة طرفٍ ثالث (ص٣ §٣) ═══════════
+   بلاغُ المالك المتكرّر: «المحرّك الداخلي لا يعمل». وعلّتُه المقيسة: `transformers.js`
+   يجلب عُدّةَ التشغيل (`ort-wasm-simd-threaded*`) من jsdelivr ما لم يُضبط غيرُه —
+   **وتعذُّرُ جلبِها عطبٌ صامت** لا يظهر في تنزيل النموذج ولا في الميكروفون. فبابان:
+
+     أ — **لا طرفَ ثالثًا في ضبط العُدّة**: المصدرُ يضبط الملفّين من أصلنا
+         (`/ort/`)، ولا مضيفَ خارجيًّا في ضبطه. **وناتجُ البناء يشهد**: أنّى ذُكرت
+         العُدّةُ في حزمةٍ مبنيّةٍ فأصلُنا معها — فافتراضُ الرزمة (jsdelivr) يبقى
+         نصًّا في حزمة المورّد، **وضبطُنا يعلوه**؛ فإن غاب ضبطُنا وبقي افتراضُهم
+         فتلك هي العلّةُ عائدةً.
+     ب — **والعُدّةُ حاضرة**: `public/ort/` بعد النسخ يحوي الأربعةَ بأسمائها،
+         وتجزئتُها تطابق نظيرتَها في الرزمة المثبَّتة — **حسابٌ مباشرٌ لا ETag**. */
+
+/** ضبطُ الملفّين من أصلنا — كلاهما من `ORT_BASE` */
+const ORT_SET_OURS = /wasmPaths\s*=\s*\{[\s\S]{0,240}mjs:\s*ORT_BASE[\s\S]{0,240}wasm:\s*ORT_BASE/;
+/** ومضيفٌ خارجيٌّ في ضبط العُدّة نفسِه */
+const ORT_THIRD_PARTY = /wasmPaths\s*=\s*[^;]{0,400}https?:\/\//;
+/** وأصلُنا معرَّفٌ بنصّه لا بالظنّ */
+const ORT_BASE_DECL = /const ORT_BASE = "\/ort\/"/;
+
+const workerSrc = stripComments(read("lib/sawt/asrWorker.ts"));
+if (!ORT_BASE_DECL.test(workerSrc)) {
+  fail("أصلُ العُدّة", "عاملُ التعرّف لا يعرّف `ORT_BASE = \"/ort/\"` — فمن أين تُجلب العُدّة؟");
+} else if (!ORT_SET_OURS.test(workerSrc)) {
+  fail("ضبطُ العُدّة", "`wasmPaths` لا يُضبط من أصلنا للملفّين معًا (mjs و wasm)");
+}
+if (ORT_THIRD_PARTY.test(workerSrc)) {
+  fail("طرفٌ ثالثٌ في عُدّة المحرّك", "ضبطُ `wasmPaths` في العامل يحمل مضيفًا خارجيًّا");
+}
+
+/** ناتجُ البناء: كلُّ حزمةٍ تذكر العُدّةَ يجب أن يكون أصلُنا فيها */
+const DIST = join(ROOT, "js", "apps", "studio", "dist");
+let distOk = 0;
+let distBad = 0;
+if (existsSync(DIST)) {
+  const walk = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (/\.(js|mjs)$/.test(e.name)) {
+        const body = readFileSync(p, "utf8");
+        if (!body.includes("ort-wasm-simd-threaded")) continue;
+        if (body.includes('"/ort/') || body.includes("'/ort/") || body.includes("`/ort/")) {
+          distOk++;
+        } else {
+          distBad++;
+          fail(
+            "الناتجُ يجلب العُدّةَ من طرفٍ ثالث",
+            `${relative(ROOT, p)}: تُذكر العُدّةُ ولا أثرَ لأصلنا — فيسري افتراضُ الرزمة (jsdelivr)`,
+          );
+        }
+      }
+    }
+  };
+  walk(DIST);
+  if (!distBad) {
+    notes.push(
+      distOk
+        ? `ناتجُ البناء: ${distOk} حزمةً تذكر عُدّةَ التشغيل وأصلُنا مضبوطٌ فيها (وافتراضُ المورّد يبقى نصًّا لا يُطلب)`
+        : "ناتجُ البناء: لا حزمةَ تذكر عُدّةَ التشغيل — لم يُفحص",
+    );
+  }
+} else {
+  notes.push("ناتجُ البناء لم يُفحص: لا `dist` (تُبنى ثمّ يُعاد الفحص)");
+}
+
+/** والعُدّةُ حاضرةٌ مطابقة */
+const ortRows = [];
+if (!existsSync(ORT_DIR)) {
+  fail("عُدّةُ التشغيل غائبة", "`public/ort/` غيرُ موجود — لم يُنفَّذ نسخُ البناء (copy-assets.mjs)");
+} else {
+  for (const f of ORT_FILES) {
+    const dst = join(ORT_DIR, f);
+    if (!existsSync(dst)) {
+      fail("ملفٌّ من العُدّة غائب", `${f} ليس في public/ort/`);
+      continue;
+    }
+    const here = sha256(dst);
+    const there = sha256(ortSource(f));
+    if (here !== there) fail("عُدّةٌ شائخة", `${f}: تجزئتُه ${here} وتجزئةُ الرزمة ${there}`);
+    else {
+      const b = statSync(dst).size;
+      ortRows.push(`${f} ${b >= 1048576 ? `${(b / 1048576).toFixed(1)}م.ب` : `${Math.round(b / 1024)}ك.ب`}`);
+    }
+  }
+  if (ortRows.length === ORT_FILES.length) {
+    notes.push(`عُدّةُ التشغيل من أصلنا مطابقةً للرزمة: ${ortRows.join(" · ")}`);
+  }
+}
+
 /* ═══════════ الضبطُ السالب — زرعٌ ذهنيٌّ بلا كتابةٍ على القرص ═══════════ */
 
 const plants = [
@@ -320,6 +413,27 @@ const plants = [
   ["إذنٌ مطلقٌ لا يكفي", FALLBACK_CONSENT, "if (readConsent(engineId)) {", false],
   ["استثناءُ منع الإذن", FALLBACK_DENIED, 'if (engineState === "denied") return;', true],
   ["عطبٌ لا يُستثنى", FALLBACK_DENIED, 'if (engineState === "error") return;', false],
+  // وضبطُ باب العُدّة (ص٣ §٣): يُزرع ضبطٌ لمسار jsdelivr فيُصطاد، ويُبرَّأ ضبطُ أصلِنا
+  [
+    "ضبطُ العُدّة على طرفٍ ثالث",
+    ORT_THIRD_PARTY,
+    'wasm.wasmPaths = { mjs: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.26.0/dist/ort-wasm-simd-threaded.mjs", wasm: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.26.0/dist/ort-wasm-simd-threaded.wasm" };',
+    true,
+  ],
+  [
+    "ضبطٌ من أصلنا لا يُحسب طرفًا ثالثًا",
+    ORT_THIRD_PARTY,
+    'wasm.wasmPaths = {\n  mjs: ORT_BASE + ortFile(picked.mjs, "ort-wasm-simd-threaded.mjs"),\n  wasm: ORT_BASE + ortFile(picked.wasm, "ort-wasm-simd-threaded.wasm"),\n};',
+    false,
+  ],
+  ["ذِكرُ jsdelivr في تعليقٍ ليس ضبطًا", ORT_THIRD_PARTY, stripComments("/* كانت تُجلب من jsdelivr */\nconst a = 1;"), false],
+  [
+    "ضبطُ الملفّين من أصلنا",
+    ORT_SET_OURS,
+    'wasm.wasmPaths = {\n  mjs: ORT_BASE + ortFile(picked.mjs, "a.mjs"),\n  wasm: ORT_BASE + ortFile(picked.wasm, "a.wasm"),\n};',
+    true,
+  ],
+  ["ضبطُ ملفٍّ واحدٍ لا يكفي", ORT_SET_OURS, 'wasm.wasmPaths = { mjs: ORT_BASE + "a.mjs" };', false],
 ];
 for (const [name, re, sample, shouldCatch] of plants) {
   if (re.test(sample) !== shouldCatch) {
