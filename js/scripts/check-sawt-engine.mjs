@@ -327,7 +327,11 @@ if (existsSync(DIST)) {
   const walk = (dir) => {
     for (const e of readdirSync(dir, { withFileTypes: true })) {
       const p = join(dir, e.name);
-      if (e.isDirectory()) walk(p);
+      // `dist/ort/` هي العُدّةُ المشحونةُ نفسُها — أصلُنا بعينه، لا حزمةً تطلبها
+      if (e.isDirectory()) {
+        if (dir === DIST && e.name === "ort") continue;
+        walk(p);
+      }
       else if (/\.(js|mjs)$/.test(e.name)) {
         const body = readFileSync(p, "utf8");
         if (!body.includes("ort-wasm-simd-threaded")) continue;
