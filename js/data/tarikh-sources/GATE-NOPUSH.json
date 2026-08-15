@@ -1,19 +1,19 @@
 {
   "ok": true,
   "branch": "main",
-  "head": "d0e5e58d89eec8002aa41565fd2c76ccd94b0155",
-  "main": "d0e5e58d89eec8002aa41565fd2c76ccd94b0155",
-  "originMain": "f5f5ed2ede7d73b08193084bf05c9b17470f557d",
+  "head": "74ddd654c7d80bdeb3e0ecad225359902a81d9d8",
+  "main": "74ddd654c7d80bdeb3e0ecad225359902a81d9d8",
+  "originMain": "607adf9c69b574cfda907355320748433fd0bba4",
   "ahead": 1,
   "behind": 0,
   "localCommits": [
-    "d0e5e58 إدارة: يُعاد تثبيتُ خطّ أساس «لا دفع» بعد دفعة قبول الليلة"
+    "74ddd65 إدارة: يُعاد تثبيتُ خطّ أساس «لا دفع» بعد دفعة قبول ج٩"
   ],
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "f5f5ed2ede7d73b08193084bf05c9b17470f557d",
-    "refs/remotes/origin/main": "f5f5ed2ede7d73b08193084bf05c9b17470f557d"
+    "refs/remotes/origin/HEAD": "607adf9c69b574cfda907355320748433fd0bba4",
+    "refs/remotes/origin/main": "607adf9c69b574cfda907355320748433fd0bba4"
   },
-  "lastPush": "f5f5ed2 refs/remotes/origin/main@{0}: update by push",
-  "baselineLastPush": "f5f5ed2 refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "607adf9 refs/remotes/origin/main@{0}: update by push",
+  "baselineLastPush": "607adf9 refs/remotes/origin/main@{0}: update by push",
   "failures": []
 }

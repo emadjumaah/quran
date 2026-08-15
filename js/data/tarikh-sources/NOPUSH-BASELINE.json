@@ -1,18 +1,18 @@
 {
-  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول الليلة (f5f5ed2) — بالإذن الدائم: دُفعت ص٣ وج٨ وج٤ وقبولُ الإدارة ليفحص المالكُ المحرّكَ والشكلَ والدمجَ على هاتفه.",
+  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ج٩ (607adf9) — بالإذن الدائم: أُصلح المنشورُ المعطوب (اللوحاتُ المنهارةُ بالرأس المتحوِّل · ورقةُ ⋯ · قفزُ التتبّع · الميكروفون يفتح على صفحة القارئ).",
   "branch": "main",
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "f5f5ed2ede7d73b08193084bf05c9b17470f557d",
-    "refs/remotes/origin/main": "f5f5ed2ede7d73b08193084bf05c9b17470f557d"
+    "refs/remotes/origin/HEAD": "607adf9c69b574cfda907355320748433fd0bba4",
+    "refs/remotes/origin/main": "607adf9c69b574cfda907355320748433fd0bba4"
   },
-  "lastPush": "f5f5ed2 refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "607adf9 refs/remotes/origin/main@{0}: update by push",
   "previous": {
-    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ج٦٧ (66eea81) — بالإذن الدائم: دُفع ص-م٦ وج٦٧ وأعمالُ الإدارة (تسويةُ مهلة live وإصلاحُ قياس القشرة) ليفحص المالكُ الشكلَ الجديد على هاتفه.",
+    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول الليلة (f5f5ed2) — بالإذن الدائم: دُفعت ص٣ وج٨ وج٤ وقبولُ الإدارة ليفحص المالكُ المحرّكَ والشكلَ والدمجَ على هاتفه.",
     "branch": "main",
     "remoteRefs": {
-      "refs/remotes/origin/HEAD": "66eea815c88f495bc1a8c43edda33a03a173a4ad",
-      "refs/remotes/origin/main": "66eea815c88f495bc1a8c43edda33a03a173a4ad"
+      "refs/remotes/origin/HEAD": "f5f5ed2ede7d73b08193084bf05c9b17470f557d",
+      "refs/remotes/origin/main": "f5f5ed2ede7d73b08193084bf05c9b17470f557d"
     },
-    "lastPush": "66eea81 refs/remotes/origin/main@{0}: update by push"
+    "lastPush": "f5f5ed2 refs/remotes/origin/main@{0}: update by push"
   }
 }
