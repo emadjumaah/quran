@@ -109,15 +109,30 @@ body.focus-mode .app-shell { grid-template-rows: 1fr; }
      • **ولا يقفز المحتوى** لحظةَ الإخفاء ولا الإظهار، لأنّ الحشوةَ لا تتحرّك
        البتّة — والرأسُ يعلو النصَّ ويكشفه، كما يصنع X.
    **وتوقيتٌ واحدٌ لثلاثتها**: ٢٠٠ مِث، `ease-out` عند الظهور (فيبدو سريعَ
-   الاستجابة) و`ease-in` عند الاختفاء (فيبدو هادئًا). */
+   الاستجابة) و`ease-in` عند الاختفاء (فيبدو هادئًا).
+
+   ═══ **ثمّ صار الانسحابُ مقترنًا بالسكرول** (ج٨ §٣ — نصُّ المالك: نمطُ X حرفيًّا) ═══
+   **بنصّه:** «أريد الأنيميشن للهيدر والفوتر مثل تطبيق X: يتحرّك مع سرعة السكرول
+   وبالاتجاه مع حركته حتّى يختفي ويعود بنفس الطريقة». وكان القائمُ **عتبةً**:
+   نزولٌ يبلغ ثمانيةَ بكسلاتٍ ⇒ يغيب كلَّه دفعةً، وصعودٌ ⇒ يعود كلَّه دفعةً —
+   **حالان لا اقتران**، فالإصبعُ يحرّك حالًا لا يحرّك الرأس.
+
+   **فصار مقدارُ الانسحاب رقمًا متّصلًا** (`--shell-p` من ٠ إلى ١) يضربه كلُّ
+   عنصرٍ في **ارتفاعِ نفسِه** — فالرأسُ يخرج بارتفاعه والشريطُ السفليُّ بارتفاعه
+   وإن اختلفا. **والقياسُ في `Reader.tsx`**: كلُّ إطارٍ يزيد المقدارَ بمقدار
+   حركة الإصبع ويحصره بين الطرفين، **بلا انتقالٍ في أثناء السحب** (`shell-drag`)
+   — فالحركةُ حركةُ الإصبع بمقدارها وسرعتها واتّجاهها. **وعند سكونه** يُلتقط
+   إلى أقرب طرفٍ بانتقال ٢٠٠ مِث، فلا يبقى نصفَ ظاهر. */
 @media (max-width: 760px) {
-  /* التوقيتُ واحدٌ للثلاثة — ولا يختلف زمنٌ فيبدو أحدُها متأخّرًا */
-  .tabbar, .reader-sticky, body.reading-surface .topbar {
+  /* التوقيتُ واحدٌ للاثنين — ولا يختلف زمنٌ فيبدو أحدُهما متأخّرًا.
+     **وهو زمنُ الالتقاط** (١٥٠–٢٠٠ مِث) لا زمنُ السحب: السحبُ بلا انتقالٍ ألبتّة. */
+  .tabbar, body.reading-surface .topbar {
     transition: transform 200ms ease-out, opacity 200ms ease-out;
   }
   body.reading-immersive .tabbar,
-  body.reading-immersive .reader-sticky,
   body.reading-surface.reading-immersive .topbar { transition-timing-function: ease-in; }
+  /* **والإصبعُ يحرّكه بلا وسيط**: ما دامت أحداثُ التمرير جاريةً لا انتقالَ البتّة */
+  body.shell-drag .tabbar, body.shell-drag.reading-surface .topbar { transition: none; }
 
   /* **وفي سطح القراءة يُطوى اسمُ الهويّة ويبقى هلالُها** (ج٨ §٢ب): لمّا صارت
      أدواتُ المصحف في الرأس الواحد ضاق الصفُّ على ٣٩٠px — والاسمُ مكرَّرٌ في
@@ -132,18 +147,19 @@ body.focus-mode .app-shell { grid-template-rows: 1fr; }
   /* حشوةٌ **ثابتة** بمقدار الرأس: بها يمرّ النصُّ تحته ولا يقفز حين ينزلق.
      و`--topbar-h` تُقاس من الرأس نفسِه في `main.tsx` فلا رقمَ مقدَّرٌ في الشيفرة. */
   body.reading-surface .reader-main { padding-block-start: var(--topbar-h, 56px); }
-  /* **ولا تُحتسب مسافةُ الرأس مرّتين**: حشوةُ الوعاء تُنزل صندوقَ محتواه بمقدار
-     الرأس، ولاصقُ الطفل يُقاس من صندوق المحتوى لا من حافّة الوعاء — فلو زِيد
-     عليه `top` بمقدار الرأس لَنزل مقدارَه مرّتين، وذلك عيبٌ بانَ في اللقطة. */
-  body.reading-surface .reader-sticky { top: 0; }
 
-  body.reading-surface.reading-immersive .topbar { transform: translateY(-100%); }
-  body.reading-immersive .tabbar { transform: translateY(100%); }
-  body.reading-immersive .reader-sticky { transform: translateY(-125%); opacity: 0; pointer-events: none; }
+  /* **مقدارُ الانسحاب واحدٌ، وكلٌّ يضربه في ارتفاعه** — فالنسبةُ في `translateY`
+     نسبةٌ من ارتفاع العنصر نفسِه، فيخرج كلُّ واحدٍ بمقداره لا بمقدار جاره. */
+  body.reading-surface .topbar { transform: translateY(calc(-100% * var(--shell-p, 0))); }
+  .tabbar { transform: translateY(calc(100% * var(--shell-p, 0))); }
+  /* **والمنتهى منتهًى**: من بلغ الطرفَ غاب كلَّه — والصنفُ يبقى علامةَ الحال
+     لمن يقرؤها (وبه يُقاس الانتقالُ نفسُه في بوّابة الميثاق). */
+  body.reading-immersive { --shell-p: 1; }
 }
-/* **و`prefers-reduced-motion` محترَمٌ كما هو**: تبقى الحالُ بلا انتقالٍ لمن طلبه */
+/* **و`prefers-reduced-motion` محترَمٌ كما هو**: لا اقترانَ ولا انتقال — إظهارٌ
+   وإخفاءٌ عند الطرفين وحدَهما (والقياسُ في `Reader.tsx` يوافقه). */
 @media (prefers-reduced-motion: reduce) {
-  .tabbar, .reader-sticky, body.reading-surface .topbar { transition: none; }
+  .tabbar, body.reading-surface .topbar { transition: none; }
 }
 
 /* always-available way out of focus mode (the ⚙ is hidden with the top bar) */

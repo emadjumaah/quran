@@ -842,35 +842,70 @@ export default function Reader() {
     const el = mainRef.current;
     if (!el) return;
     // **سطحُ القراءة**: به يخرج الرأسُ إلى طبقةٍ عليا فينزلق ولا يقفز (§٥د)
-    document.body.classList.add("reading-surface");
+    const body = document.body;
+    body.classList.add("reading-surface");
+    const root = document.documentElement;
+    /* **ولمن طلب تقليلَ الحركة**: لا اقترانَ ولا التقاط — الطرفان وحدَهما */
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let p = 0; // مقدارُ الانسحاب: ٠ ظاهرٌ كلُّه · ١ غائبٌ كلُّه
     let last = el.scrollTop;
+    let pending = 0; // ما تجمّع من حركة الإصبع ولمّا يُطبَّق بعد
+    let raf = 0;
+    let rest = 0;
+    const setP = (v: number) => {
+      p = v;
+      root.style.setProperty("--shell-p", String(v));
+      body.classList.toggle("reading-immersive", v >= 0.999);
+    };
+    /** **الالتقاط عند السكون**: إلى أقرب طرفٍ بانتقال القشرة، فلا يبقى نصفَ ظاهر */
+    const snap = () => {
+      body.classList.remove("shell-drag");
+      setP(p >= 0.5 ? 1 : 0);
+    };
+    /** إطارٌ واحدٌ لكلّ رسم: ما تجمّع من الحركة يُحوَّل إلى مقدارٍ ويُحصر بين الطرفين */
+    const frame = () => {
+      raf = 0;
+      const h = parseFloat(getComputedStyle(root).getPropertyValue("--topbar-h")) || 56;
+      const d = pending;
+      pending = 0;
+      setP(Math.min(1, Math.max(0, p + d / h)));
+    };
     const onScroll = () => {
       const y = el.scrollTop;
       const d = y - last;
-      // **ولا انسحابَ عند حافّة المستند**: الارتدادُ في الطرفين يُوهم تمريرًا
-      const atEdge = y <= 0 || y + el.clientHeight >= el.scrollHeight - 4;
-      if (atEdge) {
-        last = y;
-        if (y <= 0) document.body.classList.remove("reading-immersive");
+      last = y;
+      // **أعلى الصفحة: ظاهرٌ دائمًا** — ومن بلغ القاعَ فارتدادُه ليس تمريرًا
+      if (y <= 0) {
+        pending = 0;
+        window.clearTimeout(rest);
+        body.classList.remove("shell-drag");
+        setP(0);
         return;
       }
-      // **وحدثٌ بلا حركةٍ لا يُبدّل حالًا**: يقع أحيانًا حدثُ تمريرٍ وفرقُه صفر
-      // (استقرارُ التمرير، أو حدثٌ مُعادٌ من غير حركة) — ولو مُرَّ به لَحُسب
-      // «لا نزول» فعادت القشرةُ وهي منسحبة. اصطادته البوّابةُ الحيّة.
+      if (y + el.clientHeight >= el.scrollHeight - 4) return;
+      // **وحدثٌ بلا حركةٍ لا يُبدّل شيئًا** (اصطادته البوّابةُ الحيّة قبلُ)
       if (d === 0) return;
-      // **عتبةٌ تمنع الارتجاف** (وهي سرُّ نعومة X): النزولُ لا يُخفي حتّى يبلغ
-      // ثمانيةَ بكسلات، **والصعودُ يُظهر فورًا وإن قلّ** — فردُّ القشرة أولى من
-      // حبسها، ولا يرتجف الشريطُ مع اهتزاز الإصبع.
-      if (d > 0 && d < 8) return;
-      if (d < 0 && d > -2) return;
-      last = y;
-      document.body.classList.toggle("reading-immersive", d > 0 && y > 140);
+      if (calm.matches) {
+        // بلا اقتران: إظهارٌ عند الصعود، وإخفاءٌ عند النزول بعد أوّل صفحة
+        setP(d > 0 && y > 140 ? 1 : 0);
+        return;
+      }
+      // **الإصبعُ هو المحرّك**: لا انتقالَ ما دام يسحب — يتحرّك بمقداره واتّجاهه
+      body.classList.add("shell-drag");
+      pending += d;
+      if (!raf) raf = requestAnimationFrame(frame);
+      window.clearTimeout(rest);
+      rest = window.setTimeout(snap, 150);
     };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       el.removeEventListener("scroll", onScroll);
-      document.body.classList.remove("reading-immersive");
-      document.body.classList.remove("reading-surface");
+      if (raf) cancelAnimationFrame(raf);
+      window.clearTimeout(rest);
+      root.style.removeProperty("--shell-p");
+      body.classList.remove("shell-drag");
+      body.classList.remove("reading-immersive");
+      body.classList.remove("reading-surface");
     };
   }, [narrow]);
 
@@ -880,6 +915,10 @@ export default function Reader() {
   const clearOnOutside = (e: React.MouseEvent) => {
     const el = e.target as HTMLElement;
     if (el.closest(".ayah-card, .mp-ayah, .ayah-panel, .word-sheet, .sheet-backdrop, .wq-overlay, button, a, input, select, .v-more-menu")) return;
+    // **وردُّ القشرة يردّ مقدارَها** (ج٨ §٣): لمسةٌ في الهامش تُرجعها كاملةً
+    // بانتقالها المعتاد — لا نصفَ ظاهرةٍ ولا قفزةً.
+    document.body.classList.remove("shell-drag");
+    document.documentElement.style.setProperty("--shell-p", "0");
     document.body.classList.remove("reading-immersive");
     if (!selectedLoc) return;
     setSelectedAyah(null);
