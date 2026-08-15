@@ -522,17 +522,30 @@ async function negatives(cdp) {
 
   const done = [];
 
-  /* ١) يُعطَّل الشحنُ: يُفرض `serif` النظام — فتُصطاد السقطة */
-  await plant(`.mushaf-page .mp-text, .mushaf-page .mp-text * { font-family: "Times New Roman", serif !important; }`,
-    ".mushaf-page .mp-text .w", "fontFamily");
+  /* ═══ ١) **يُمنع ملفُّ الخطّ من الوصول** فيسقط الرسمُ إلى خطّ النظام ═══
+     وهذا زرعٌ **يحاكي العلّةَ نفسَها** التي فُتحت لها الجلسة (جهازٌ لا خطَّ
+     مصحفٍ فيه)، لا مجرّدَ إبدالِ اسمِ عائلةٍ في الأنماط: يُحجب الملفُّ على
+     الشبكة ثمّ تُعاد الصفحة، **فيشهد المحرّكُ أنّ الذي رسم ليس من خطوطنا**. */
+  const reload = async () => {
+    await cdp.send("Page.navigate", { url: "about:blank" });
+    await sleep(150);
+    await cdp.send("Page.navigate", { url: `http://localhost:${PORT}/#/read/2` });
+    const up = await cdp.until(`!document.querySelector('.boot') && document.querySelector('.mushaf-page .mp-text .w')`);
+    await cdp.ev(`document.documentElement.dataset.theme = 'light'; return true;`).catch(() => {});
+    await sleep(1200);
+    return up;
+  };
+  await cdp.send("Network.setBlockedURLs", { urls: ["*amiri-quran*", "*/fonts/*.woff2", "*.woff2"] });
+  if (!(await reload())) missing.push("لم تظهر الصفحةُ بعد حجب الخطّ");
   let f = await cdp.platformFonts(".mushaf-page .mp-text .w");
   let strangers = (f ?? []).filter((x) => !x.custom || !SHIPPED_FACES.includes(x.family));
-  if (!strangers.length) fail("ضبطٌ سالب", "عُطِّل الشحنُ فلم تُصطَد السقطةُ إلى خطّ النظام");
-  else done.push(`عُطِّل الشحنُ فاصطيدت السقطة (${strangers.map((x) => x.family).join(" · ")})`);
-  await unplant();
+  if (!strangers.length) fail("ضبطٌ سالب", `حُجب ملفُّ الخطّ فلم تُصطَد السقطةُ إلى خطّ النظام (الذي رسم: ${(f ?? []).map((x) => x.family).join(" · ") || "لا شيء"})`);
+  else done.push(`حُجب ملفُّ الخطّ فاصطيدت السقطةُ إلى خطّ النظام (${strangers.map((x) => `${x.family}${x.custom ? "" : " — ليس من خطوطنا"}`).join(" · ")})`);
+  await cdp.send("Network.setBlockedURLs", { urls: [] });
+  if (!(await reload())) missing.push("لم تعُد الصفحةُ بعد رفع الحجب");
   f = await cdp.platformFonts(".mushaf-page .mp-text .w");
-  if ((f ?? []).some((x) => !x.custom || !SHIPPED_FACES.includes(x.family))) fail("ضبطٌ سالب", "أُزيل الزرعُ ولم يعُد الخطُّ المشحون — قياسٌ غيرُ مستقرّ");
-  else done.push("وأُزيل الزرعُ فعاد الخطُّ المشحون — قياسٌ مستقرّ");
+  if ((f ?? []).some((x) => !x.custom || !SHIPPED_FACES.includes(x.family))) fail("ضبطٌ سالب", "رُفع الحجبُ ولم يعُد الخطُّ المشحون — قياسٌ غيرُ مستقرّ");
+  else done.push(`ورُفع الحجبُ فعاد الخطُّ المشحون (${(f ?? []).map((x) => x.family).join(" · ")}) — قياسٌ مستقرّ`);
 
   /* ٢) يُخفَّت لونُ العلامات — فيُصطاد نقصُ التباين */
   await plant(`.mushaf-page .ayah-marker { color: #cbbfa6 !important; }`, ".mushaf-page .ayah-marker", "color");
