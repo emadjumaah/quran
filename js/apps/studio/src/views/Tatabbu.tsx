@@ -26,7 +26,7 @@
  * البتّةَ إنّها تعمل بلا إنترنت ولا إنّ الصوتَ لا يغادر الجهاز** — فذلك لا يصحّ
  * إلّا بالمحرّك الحرّ على الجهاز.
  */
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DEFAULT_ALIGN, alignUtterance, speechTokens } from "../lib/sawt/align";
 import { SawtMeter, type SawtReport } from "../lib/sawt/metrics";
@@ -37,6 +37,11 @@ import {
   webSpeechAvailable,
 } from "../lib/sawt/recognizer";
 import {
+  RENDER_AHEAD,
+  RENDER_BEHIND,
+  RENDER_EDGE,
+  RENDER_MAX_WORDS,
+  RENDER_STEP,
   SEALED_SEGMENTS,
   WINDOW_AHEAD,
   WINDOW_WORDS,
@@ -113,6 +118,30 @@ const readAhkam = (): boolean => {
 
 /** كم نتيجةً مختومةً يقف عندها المؤشّرُ قبل أن يمضيَ من تلقائه */
 const STALL_BEFORE_ADVANCE = 3;
+/**
+ * ما جاوز هذا البعدَ من قفزات الاسترداد الواسع عُدّ **التقاطًا في موضعٍ آخر**
+ * لا تتبُّعًا فات فعاد — فتنتقل إليه مرساةُ البهت (ص-م٦ §١/١). ودونه تعثُّرٌ في
+ * المحاذاة داخلَ سياق القراءة، **ولو زُحزحت المرساةُ به لانمحى بهتُ ما قُرئ حقًّا**.
+ */
+const FAR_JUMP_WORDS = 40;
+
+/* ═══ **بابا الضبط السالب** (ص-م٦ §٤) — يُفتحان بعلامةٍ صريحةٍ في العنوان ═══
+   **وحارسٌ لا يُشهَد عليه أنّه يصطاد ليس حارسًا**: فحصُ المرساة يُقاس بأن تُزحزح
+   المرساةُ إلى الصفر فيعود البهتُ الكاذبُ فيُصطاد؛ وفحصُ نافذة العرض بأن يُعطَّل
+   تقييدُها فيُصطاد الانفجار. **وبهما يُقاس القبلُ والبعدُ على البناء نفسِه** —
+   فلا يُقارَن بناءٌ ببناء. ولا أثرَ لهما في سطح القارئ: لا زرَّ ولا سطرَ ولا
+   خيارًا؛ من لم يكتبهما في عنوان الصفحة بيده فالتقييدُ عاملٌ عنده كما شُحن. */
+const flag = (name: string): boolean => {
+  try {
+    return new URLSearchParams(window.location.search).has(name);
+  } catch {
+    return false;
+  }
+};
+/** يُبهَت كلُّ ما قبل المؤشّر كما كان قبل ص-م٦ (لضبط البوّابة السالب وحدَه) */
+const FADE_FROM_START = flag("sawt-fade-from-start");
+/** يُرسم المحمَّلُ كلُّه بلا نافذةِ عرضٍ كما كان قبل ص-م٦ (للضبط السالب وحدَه) */
+const RENDER_ALL = flag("sawt-render-all");
 /** عددُ سور المصحف وأجزائه وصفحاته — عِدَدٌ ثابتةٌ لا تُستخرج من قاعدة */
 const SURAHS = 114;
 const JUZS = 30;
@@ -138,6 +167,29 @@ function useIsMobile(): boolean {
 }
 
 const ayahCountOf = (script: SawtScript): number => script.totalAyahs;
+
+/** المُمرِّرُ الذي يحوي هذا العنصر — الجوالُ **وعاءٌ يمرّر** والحاسوبُ **الصفحةُ نفسُها** */
+const scrollerOf = (el: HTMLElement | null): HTMLElement | null => {
+  for (let n: HTMLElement | null = el; n; n = n.parentElement) {
+    const st = getComputedStyle(n);
+    if (/(auto|scroll)/.test(st.overflowY) && n.scrollHeight > n.clientHeight + 1) return n;
+  }
+  return null;
+};
+
+/**
+ * **مرساةُ التمرير**: أوّلُ علامةِ آيةٍ لم تخرج من أعلى الشاشة، وموضعُها.
+ * وبها يُعوَّض ما تقصّه نافذةُ العرضِ من أعلى أو تزيدُه — **فينزلق المرسومُ ولا
+ * يقفز النصُّ في يد القارئ** (ص-م٦ §١/٢).
+ */
+const firstVisibleAyah = (box: HTMLElement): { ayah: number; top: number } | null => {
+  const edge = scrollerOf(box)?.getBoundingClientRect().top ?? 0;
+  for (const el of Array.from(box.querySelectorAll<HTMLElement>("[data-ayah]"))) {
+    const r = el.getBoundingClientRect();
+    if (r.bottom > edge) return { ayah: Number(el.dataset.ayah), top: r.top };
+  }
+  return null;
+};
 
 /** تاريخٌ بأرقامٍ عربيّة — فبعضُ المحلّيّات تُخرج «ar» بأرقامٍ لاتينيّة */
 const arDate = (iso: string): string => {
@@ -208,6 +260,23 @@ export default function Tatabbu() {
   const [growth, setGrowth] = useState(0);
   const [openMs, setOpenMs] = useState<number | null>(null);
   const [cursor, setCursor] = useState(0);
+  /**
+   * **موضعُ بدء القراءة الفعليّ** — وبه يبدأ البهت لا بأوّل المقطع (ص-م٦ §١/١).
+   *
+   * **بلاغُ المالك ١٥ أغسطس**: «إذا قرأتُ من آخر الجزء جعل كلَّ الجزء إلى محلّ
+   * الكلمة باهتًا». وعلّتُه أنّ الحالَ كانت تُحسب `i < cursor ⇒ مقروء` — **فكلُّ
+   * ما قبل المؤشّر يُعَدّ مقروءًا ولو لم يقرأه القارئُ قطُّ**، ومن التُقط بعيدًا
+   * بُهت ما بينه وبين أوّل المقطع كلُّه. **والمقروءُ ما بين أقدمِ موضعٍ قُرئ
+   * والمؤشّر**، وما قبلَه يبقى بحبرٍ عاديٍّ فلم يُقرأ حتّى يُوسَم مقروءًا.
+   * **وإن رجع القارئُ فقُرئ موضعٌ قبل المرساة تراجعت المرساةُ إلى الأقدم.**
+   */
+  const [origin, setOrigin] = useState(0);
+  /**
+   * **مدى الكلمات المرسومة فعلًا** — نافذةُ عرضٍ حول المؤشّر لا المحمَّلُ كلُّه
+   * (ص-م٦ §١/٢). تنمو بالتمرير كما ينمو التحميل، **ولها سقفٌ معلَنٌ**
+   * (`RENDER_MAX_WORDS`) تنزلق عنده انزلاقًا فلا تنتفخ.
+   */
+  const [drawn, setDrawn] = useState({ from: 0, to: RENDER_AHEAD });
   const [engineState, setEngineState] = useState<RecognizerState>("idle");
   const [engineDetail, setEngineDetail] = useState<string | null>(null);
   const [report, setReport] = useState<SawtReport | null>(null);
@@ -230,6 +299,8 @@ export default function Tatabbu() {
   const wakeRef = useRef<WakeLockish | null>(null);
   const anchorRef = useRef(0);
   const cursorRef = useRef(0);
+  /** أقدمُ موضعٍ قُرئ في هذه النافذة — مرآةُ `origin` في مرجعٍ يقرؤه ردُّ المحرّك */
+  const originRef = useRef(0);
   const lastAdvanceRef = useRef(0);
   const skipsRef = useRef(0);
   const autoRef = useRef(0);
@@ -239,6 +310,10 @@ export default function Tatabbu() {
   const textElRef = useRef<HTMLDivElement | null>(null);
   /** طرفُ المحمَّل — يُرقَب فتنمو النافذةُ **قبل** أن يبلغه القارئ (§١/١) */
   const endElRef = useRef<HTMLDivElement | null>(null);
+  /** ورأسُ المرسوم — يُرقَب فتمتدّ نافذةُ العرض إلى الوراء لمن رجع (ص-م٦ §١/٢) */
+  const headElRef = useRef<HTMLDivElement | null>(null);
+  /** مرساةُ التمرير: أوّلُ آيةٍ مرئيّةٍ وموضعُها — بها لا يقفز النصُّ حين تنزلق النافذة */
+  const keepRef = useRef<{ ayah: number; top: number } | null>(null);
   /** فهرسُ الالتقاط الشامل — يُبنى عند البدء لا عند الإقلاع (§٢) */
   const iltiqatRef = useRef<IltiqatIndex | null>(null);
   /** آخرُ ما وصل من رموزٍ مختومة — بها يُلتمس الموضعُ حين تخيب المحاذاةُ القريبة */
@@ -331,7 +406,9 @@ export default function Tatabbu() {
       winRef.current = win;
       cursorRef.current = startWord;
       anchorRef.current = startWord;
+      originRef.current = startWord;
       setCursor(startWord);
+      setOrigin(startWord);
       setOpenMs(Math.round(performance.now() - t0));
       setGrowth((g) => g + 1);
       setReady(true);
@@ -364,7 +441,19 @@ export default function Tatabbu() {
       (entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         const win = winRef.current;
-        if (!win || !win.more) return;
+        if (!win) return;
+        // **المرسومُ أوّلًا ثمّ المحمَّل**: إن بقي من المحمَّل ما لم يُرسم مُدّت
+        // نافذةُ العرض إليه؛ فإذا استُوفي المرسومُ المحمَّلَ كلَّه نما التحميل.
+        const words = win.script.words.length;
+        if (!RENDER_ALL && drawn.to < words - 1) {
+          setDrawn((d) => {
+            const to = Math.min(words - 1, d.to + RENDER_STEP);
+            // **السقفُ المعلَن**: تنزلق النافذةُ ولا تنتفخ
+            return { from: Math.max(d.from, to - RENDER_MAX_WORDS + 1), to };
+          });
+          return;
+        }
+        if (!win.more) return;
         void win.grow(win.script.words.length + WINDOW_WORDS).then((grew) => {
           if (grew) setGrowth((g) => g + 1);
         });
@@ -374,10 +463,46 @@ export default function Tatabbu() {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [ready, growth]);
+  }, [ready, growth, drawn]);
+
+  /* ── ومن رجع إلى الوراء امتدّ له المرسومُ إلى الوراء (ص-م٦ §١/٢) ── */
+  useEffect(() => {
+    const el = headElRef.current;
+    if (!el || RENDER_ALL) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        setDrawn((d) => {
+          if (d.from === 0) return d;
+          const fromIx = Math.max(0, d.from - RENDER_STEP);
+          return { from: fromIx, to: Math.min(d.to, fromIx + RENDER_MAX_WORDS - 1) };
+        });
+      },
+      { root: null, rootMargin: "150% 0px 0px 0px", threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ready, growth, drawn]);
 
   const script = winRef.current?.script ?? null;
   const wordCount = script ? script.words.length : 0;
+
+  /* ── **نافذةُ العرض تلازم المؤشّر** (ص-م٦ §١/٢) ──
+     إذا دنا المؤشّرُ من طرف المرسوم أُعيد توسيطُ النافذة عليه — **بمقدارٍ لا
+     بكلمةٍ كلَّ خطوة**، فلا تُعاد الشجرةُ بناءً في كلّ تقدُّم. ولا يُعاد التوسيطُ
+     عند طرف المحمَّل، إذ ليس وراءه ما يُرسم. */
+  useEffect(() => {
+    if (RENDER_ALL || !wordCount) return;
+    setDrawn((d) => {
+      const nearHead = cursor < d.from + RENDER_EDGE && d.from > 0;
+      const nearTail = cursor > d.to - RENDER_EDGE && d.to < wordCount - 1;
+      const outside = cursor < d.from || cursor > d.to;
+      if (!nearHead && !nearTail && !outside) return d;
+      const fromIx = Math.max(0, cursor - RENDER_BEHIND);
+      const to = Math.min(wordCount - 1, cursor + RENDER_AHEAD);
+      return d.from === fromIx && d.to === to ? d : { from: fromIx, to };
+    });
+  }, [cursor, wordCount]);
 
   /* ── تمريرٌ يتبع المؤشّر: لا لمسَ بعد البدء، ولا تمريرَ مفاجئ ── */
   useEffect(() => {
@@ -392,6 +517,28 @@ export default function Tatabbu() {
     if (r.top >= b.top + band && r.bottom <= b.bottom - band) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [cursor, phase]);
+
+  /* ── **ولا يقفز النصُّ حين تنزلق نافذةُ العرض** (ص-م٦ §١/٢) ──
+     قصُّ ما فوق الشاشة يرفع النصَّ بمقداره، وزيادتُه تخفضه — **وكلاهما قفزةٌ في
+     يد قارئ**، وهي في مصحفٍ يُتلى أسوأُ من بطءٍ. فتُمسَك آيةٌ مرئيّةٌ مرساةً،
+     ويُعوَّض ما تبدّل من موضعها في التمرير قبل أن يراه أحد. */
+  useLayoutEffect(() => {
+    const box = textElRef.current;
+    if (RENDER_ALL || !box) return;
+    const prev = keepRef.current;
+    if (prev) {
+      const el = box.querySelector<HTMLElement>(`[data-ayah="${prev.ayah}"]`);
+      if (el) {
+        const delta = el.getBoundingClientRect().top - prev.top;
+        if (Math.abs(delta) > 1) {
+          const sc = scrollerOf(box);
+          if (sc) sc.scrollTop += delta;
+          else window.scrollBy(0, delta);
+        }
+      }
+    }
+    keepRef.current = firstVisibleAyah(box);
+  });
 
   const stopAll = useCallback(() => {
     recRef.current?.stop();
@@ -416,6 +563,10 @@ export default function Tatabbu() {
     winRef.current = win;
     cursorRef.current = startWord;
     anchorRef.current = startWord;
+    // **والمقطعُ يُفتح من جديدٍ عند موضع الالتقاط** — فأقدمُ ما قُرئ فيه هو هذا
+    // الموضعُ نفسُه، ولا شيءَ قبله قُرئ في هذه النافذة (ص-م٦ §١/١).
+    originRef.current = startWord;
+    setOrigin(startWord);
     stallRef.current = 0;
     recentRef.current = [];
     relocsRef.current += 1;
@@ -463,6 +614,10 @@ export default function Tatabbu() {
     if (!win) return;
     const at = cursorRef.current;
     anchorRef.current = at;
+    // **البهتُ يبدأ من ههنا**: من ضغط «ابدأ» وهو عند آخر الجزء لم يقرأ ما قبله،
+    // فلا يُوسَم مقروءًا (ص-م٦ §١/١ — على بلاغ المالك ١٥ أغسطس).
+    originRef.current = at;
+    setOrigin(at);
     skipsRef.current = 0;
     autoRef.current = 0;
     stallRef.current = 0;
@@ -517,6 +672,21 @@ export default function Tatabbu() {
         setCursor(step.cursor);
         lastAdvanceRef.current = performance.now();
         requestAnimationFrame(() => gauge.noteEngineLatency(performance.now() - r.at));
+      }
+      /* ── **المرساةُ تتبع القراءةَ الفعليّة** (ص-م٦ §١/١) ──
+         قفزةٌ بعيدةٌ في الاسترداد الواسع ليست تتبُّعًا فات فعاد، وإنّما **التقاطٌ
+         في موضعٍ آخر**: ما بين الموضعين لم يُتلَ عندنا، فلا يُوسَم مقروءًا. وما
+         قرُب فهو تعثّرٌ في المحاذاة داخلَ سياق القراءة، فلا يُزحزح المرساة.
+         **وإن رجع القارئُ إلى ما قبل المرساة تراجعت إلى الأقدم** — فالمقروءُ ما
+         بين أقدمِ موضعٍ قُرئ والمؤشّر. */
+      let anchorAt = originRef.current;
+      for (const rl of step.relocks) {
+        if (rl.to - rl.fromCursor > FAR_JUMP_WORDS) anchorAt = rl.to;
+      }
+      if (step.cursor < anchorAt) anchorAt = step.cursor;
+      if (anchorAt !== originRef.current) {
+        originRef.current = anchorAt;
+        setOrigin(anchorAt);
       }
       // المِسطرةُ تُغذّى بالمختوم وحدَه: الجزئيُّ يُراجَع وينمو، فلو حُسب
       // لتضاعفت الكلمةُ الواحدةُ مرارًا.
@@ -814,13 +984,24 @@ export default function Tatabbu() {
    *  من الشريط (أمر المالك 2026-08-14 — «ألغِ هذا البوب أب»). */
   const textView = () => {
     if (!script) return <div className="sawt-text sawt-text-wait" />;
+    /* **المرسومُ نافذةٌ حول المؤشّر لا المحمَّلُ كلُّه** (ص-م٦ §١/٢): تُقصّ الحدودُ
+       على الآيات كاملةً — فلا تُبتر آيةٌ في سطرٍ — ويُرقَب طرفاها فتنزلق النافذةُ
+       بالتمرير. **والمؤشّرُ داخلَها دائمًا** بحكم إعادة التوسيط. */
+    const aFrom = RENDER_ALL ? 0 : script.words[Math.min(drawn.from, wordCount - 1)]?.ayahIndex ?? 0;
+    const aTo = RENDER_ALL
+      ? script.ayahs.length - 1
+      : script.words[Math.min(drawn.to, wordCount - 1)]?.ayahIndex ?? script.ayahs.length - 1;
+    const shown = script.ayahs.slice(aFrom, aTo + 1);
     return (
       <div
         className={`sawt-text${hal.bigger ? " sawt-big" : ""}`}
         dir="rtl"
         ref={textElRef}
         data-sawt="text"
+        data-sawt-drawn={`${aFrom}-${aTo}`}
       >
+        {/* رأسُ المرسوم — يُرقَب فيمتدّ إلى الوراء لمن رجع (ص-م٦ §١/٢) */}
+        <div ref={headElRef} className="sawt-end" aria-hidden />
         {/* ═══ **السردُ على هيئة المصحف** (رصدُ المالك ١٤ أغسطس · §٤) ═══
             كان كلُّ آيةٍ فقرةً منصَّفةً تبدأ سطرًا جديدًا — «غريبٌ على نصّ
             القرآن». **والعلاجُ يُقتبس ولا يُخترع**: نسقُ `.mushaf-page .quran`
@@ -828,7 +1009,8 @@ export default function Tatabbu() {
             تفصلها **علاماتُها** في مواضعها، ورأسُ السورة فاصلٌ بيّن.
             **ولم يُكسر بهذا شيء**: مواضعُ الكلمات ومسارُ المؤشّر والحجابُ
             كلُّها **على الكلمة لا على الفقرة**، فبقيت كما هي حرفًا. */}
-        {script.ayahs.map((a, ai) => {
+        {shown.map((a, si) => {
+          const ai = aFrom + si;
           const words = script.words.slice(a.from, a.to + 1);
           // **إشعالُ الأحكام السبعة بمحرّكنا الحرّ** (§٥هـ): يُحسب من رسم
           // المصحف عندنا، بلا بياناتٍ خارجيّة — والمقاديرُ ليست ههنا.
@@ -842,7 +1024,11 @@ export default function Tatabbu() {
               )}
               {words.map((w, k) => {
                 const i = a.from + k;
-                const state = i < cursor ? "past" : i === cursor ? "now" : "next";
+                /* **المقروءُ ما بين أقدمِ موضعٍ قُرئ والمؤشّر** — لا ما بين أوّل
+                   المقطع والمؤشّر (ص-م٦ §١/١ · بلاغُ المالك ١٥ أغسطس). وما قبل
+                   المرساة **بحبرٍ عاديّ**: لم يُقرأ حتّى يُوسَم مقروءًا. */
+                const readFrom = FADE_FROM_START ? 0 : origin;
+                const state = i < cursor ? (i >= readFrom ? "past" : "next") : i === cursor ? "now" : "next";
                 const hidden = hal.text === "veiled" && i >= cursor;
                 const spans = colored?.[k];
                 // **الفاصلُ خارجَ صندوق الكلمة**: كان بياضُ الفصل داخلَ الوسم، فكان
@@ -870,7 +1056,9 @@ export default function Tatabbu() {
                   </Fragment>
                 );
               })}
-              <span className="ayah-marker">﴿{num(a.ayahNo)}﴾</span>{" "}
+              <span className="ayah-marker" data-ayah={ai}>
+                ﴿{num(a.ayahNo)}﴾
+              </span>{" "}
             </Fragment>
           );
         })}
