@@ -137,27 +137,47 @@ export interface SawtConsent {
   engine: string;
 }
 
+/** الإذنُ محفوظًا: لكلّ محرّكٍ تاريخُه — **سجلٌّ لكلٍّ لا سجلٌّ واحدٌ يُداس** */
+type ConsentStore = Record<string, string>;
+
 /**
  * **والإذنُ لمحرّكٍ بعينه لا للصفحة.** صار عندنا محرّكان يختلف حالُ الصوت
  * فيهما اختلافًا جوهريًّا، فمن أذِن لمحرّكٍ يُخرج صوتَه **لا يُورَّث إذنُه**
  * لغيره ولا العكس — يُسأل لكلٍّ مرّةً واحدة.
+ *
+ * **وكان يُحفظ سجلٌّ واحدٌ فيه اسمُ آخرِ محرّكٍ أُذن له** — فكان الإذنُ للثاني
+ * **يمحو إذنَ الأوّل** وإن لم يسحبه أحد: يعود إليه القارئُ فيُسأل من جديد،
+ * ولا يقع رجوعٌ تلقائيٌّ إلى محرّكٍ أذِن له بالأمس (ص-م٥ §١‑٢). **فصار لكلّ
+ * محرّكٍ سجلُّه**، والشكلُ القديمُ يُقرأ كما هو فلا يُهدَر إذنٌ سابق.
  */
-export function readConsent(engine: string): SawtConsent | null {
+function readStore(): ConsentStore {
   try {
     const raw = localStorage.getItem(CONSENT_KEY);
-    if (!raw) return null;
-    const c = JSON.parse(raw) as SawtConsent;
-    return c && c.engine === engine ? c : null;
+    if (!raw) return {};
+    const v = JSON.parse(raw) as unknown;
+    if (!v || typeof v !== "object") return {};
+    const one = v as Partial<SawtConsent>;
+    if (typeof one.engine === "string" && typeof one.at === "string") return { [one.engine]: one.at };
+    const out: ConsentStore = {};
+    for (const [k, at] of Object.entries(v as Record<string, unknown>)) {
+      if (typeof at === "string") out[k] = at;
+    }
+    return out;
   } catch {
-    return null;
+    return {};
   }
+}
+
+export function readConsent(engine: string): SawtConsent | null {
+  const at = readStore()[engine];
+  return at ? { at, engine } : null;
 }
 
 export function saveConsent(engine: string): void {
   try {
     localStorage.setItem(
       CONSENT_KEY,
-      JSON.stringify({ at: new Date().toISOString(), engine } satisfies SawtConsent),
+      JSON.stringify({ ...readStore(), [engine]: new Date().toISOString() } satisfies ConsentStore),
     );
   } catch {
     /* لا شيء */

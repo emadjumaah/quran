@@ -47,6 +47,12 @@ export interface RecognizerPort {
   onState(cb: (s: RecognizerState, detail?: string) => void): void;
   /** كم مرّةً انقطع المحرّكُ من تلقائه فأُعيد تشغيلُه (مقياسُ ثبات) */
   readonly restarts: number;
+  /**
+   * **أثرُ الإقلاع** — مراحلُ البدء بأسمائها، **يُقرأ خلف باب «للفحص» وحدَه**.
+   * وبه يُشخَّص جهازٌ ليس بين أيدينا: يفتح صاحبُه البابَ فينسخه ويُرسله، فلا
+   * يُشخَّص إخفاقٌ على هاتفٍ بالظنّ. اختياريٌّ: من لا أثرَ له لا يُلزَم به.
+   */
+  readonly diagnostics?: readonly string[];
 }
 
 /* ═══════════ تصريحاتُ واجهة المتصفّح (ليست في مكتبة الأنواع القياسيّة) ═══════════ */
@@ -111,6 +117,13 @@ export class WebSpeechRecognizer implements RecognizerPort {
   private startedAt = 0;
   private backoff = 250;
   restarts = 0;
+  /** أثرُ الإقلاع — خلف باب «للفحص» وحدَه، كما في المحرّك الحرّ */
+  readonly diagnostics: string[] = [];
+
+  private note(line: string) {
+    this.diagnostics.push(`${Math.round(performance.now())} — ${line}`);
+    if (this.diagnostics.length > 40) this.diagnostics.shift();
+  }
 
   private lang: string;
 
@@ -132,6 +145,7 @@ export class WebSpeechRecognizer implements RecognizerPort {
   start() {
     const Ctor = speechCtor();
     if (!Ctor) {
+      this.note("خدمةُ المتصفّح غيرُ متاحةٍ هنا");
       this.emitState("unsupported");
       return;
     }
@@ -151,6 +165,7 @@ export class WebSpeechRecognizer implements RecognizerPort {
 
     rec.onstart = () => {
       this.startedAt = performance.now();
+      this.note("بدأ الإصغاء");
       this.emitState("listening");
     };
 
@@ -174,12 +189,13 @@ export class WebSpeechRecognizer implements RecognizerPort {
       // «لا كلام» و«الإجهاض» عارضان مألوفان في التلاوة المتّصلة (وقفٌ طويل،
       // إعادةُ تشغيل) — يُتجاوزان بلا إزعاجٍ للقارئ. وما عداهما يُعلَن.
       if (e.error === "no-speech" || e.error === "aborted") return;
+      this.note(`عطب: ${e.error}`);
       if (e.error === "not-allowed" || e.error === "service-not-allowed") {
         this.running = false;
-        this.emitState("denied", e.error);
+        this.emitState("denied", "لم يُؤذَن للصفحة بالميكروفون");
         return;
       }
-      this.emitState("error", e.error);
+      this.emitState("error", "تعثّرت خدمةُ المتصفّح");
     };
 
     rec.onend = () => {
@@ -212,7 +228,8 @@ export class WebSpeechRecognizer implements RecognizerPort {
     try {
       rec.start();
     } catch (err) {
-      this.emitState("error", String(err));
+      this.note(`تعذّر التشغيل: ${String((err as Error)?.name ?? err)}`);
+      this.emitState("error", "تعذّر تشغيلُ خدمة المتصفّح");
     }
   }
 

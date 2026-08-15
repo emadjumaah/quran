@@ -77,3 +77,92 @@
   border-color: var(--accent);
   color: var(--accent);
 }
+
+/* ═══════════ ص-م٥ — لا يُحبَس قارئٌ في خيارٍ لا يعمل ═══════════ */
+
+/**
+ * **شريطُ حال المحرّك** — تحت شريط الجوال، ظاهرٌ دائمًا: أيُّهما يعمل الآن.
+ * في التهيئة **زرٌّ يُبدّل** (فارتفاعُه ٤٤ هدفَ لمسٍ كما يوجب الميثاق)، وفي
+ * أثناء التلاوة **خبرٌ لا زرّ** — فلا يُزاد على «ثلاثةٍ لا رابعَ لها» أداة.
+ */
+.sawt-engine-chip {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 6px 14px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink-2);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  text-align: start;
+}
+.sawt-engine-chip-btn {
+  min-height: 44px;
+  cursor: pointer;
+}
+.sawt-engine-chip .sawt-dot {
+  margin-inline-end: 0;
+}
+.sawt-engine-chip-name {
+  font-weight: 700;
+  color: var(--ink);
+}
+.sawt-run-bar .sawt-engine-chip-name {
+  font-size: 15px;
+  color: var(--ink-2);
+  font-weight: 400;
+}
+.sawt-engine-chip-note {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sawt-engine-chip-btn .sawt-engine-chip-note {
+  margin-inline-start: auto;
+  color: var(--accent);
+}
+
+/**
+ * **خبرُ الإخفاق والرجوع** — يُقال ما وقع بنصّه، ولا يُترك القارئُ أمام شاشةٍ
+ * حيّةٍ لا تسمع. وهو **خبرٌ عن الآلة لا تصحيحٌ للقارئ**، فيجري في الأحوال
+ * كلِّها كما تجري إشارةُ الالتماس.
+ */
+.sawt-engine-fell {
+  flex: none;
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.page .sawt-engine-fell,
+.sawt-run .sawt-engine-fell {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin: 10px 0;
+}
+.sawt-engine-hint {
+  color: var(--ink-2);
+}
+
+/* أثرُ الإقلاع — خلف باب «للفحص» وحدَه، وهو عُدّةُ فحصٍ لا خبرُ قارئ */
+.sawt-diag {
+  margin: 8px 0;
+  padding-inline-start: 18px;
+  max-height: 40vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--ink-2);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.7;
+}

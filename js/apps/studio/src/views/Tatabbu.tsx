@@ -66,6 +66,8 @@ import {
   type HalId,
 } from "../lib/sawt/halat";
 import {
+  ENGINE_GRACE_MS,
+  ENGINE_GRACE_S,
   ENGINES,
   findEngine,
   readEngineChoice,
@@ -185,6 +187,22 @@ export default function Tatabbu() {
   const [askingEngine, setAskingEngine] = useState(false);
   const engine: EngineDescriptor | null = engineId ? findEngine(engineId) : null;
   const [consent, setConsent] = useState(() => (engineId ? readConsent(engineId) : null));
+  /**
+   * **المحرّكُ الذي يعمل الآن فعلًا** — وقد يخالف المختارَ إن وقع رجوعٌ تلقائيّ.
+   * وبه يُكتب سطرُ الشريط: **لا يُترك القارئُ يحزر أيُّهما يسمعه** (ص-م٥ §١‑٣).
+   */
+  const [activeEngine, setActiveEngine] = useState<EngineId | null>(null);
+  /**
+   * **خبرُ الإخفاق والرجوع** (ص-م٥ §١‑٢) — ما وقع بنصّه: أيُّ محرّكٍ أخفق، وإلى
+   * أيٍّ رُجع (أو أنّه لم يُرجَع وسببُه)، وبأنّ للقارئ أن يعود. **ولا صمتَ ولا
+   * شاشةٌ ميّتة**، ولا يُترك أحدٌ أمام مصحفٍ لا يجري فيه مؤشّر.
+   */
+  const [fell, setFell] = useState<{ from: EngineId; to: EngineId | null; why: string } | null>(null);
+  const fellRef = useRef(false);
+  /** أجاء السؤالُ عن المحرّك في طريق البدء (فتُستأنف) أم تبديلًا مقصودًا (فلا)؟ */
+  const resumeAfterChoiceRef = useRef(false);
+  /** أثرُ إقلاع المحرّك — خلف باب «للفحص» وحدَه، وبه يُشخَّص هاتفٌ ليس بين أيدينا */
+  const [diag, setDiag] = useState<string[]>([]);
 
   const [ready, setReady] = useState(false);
   const [growth, setGrowth] = useState(0);
@@ -242,6 +260,25 @@ export default function Tatabbu() {
   const condition = CONDITIONS.find((c) => c.id === conditionId) ?? CONDITIONS[0];
 
   useEffect(() => setRuns(listRuns()), [phase]);
+
+  /* ── **ما يُبدَّل في الإعدادات يُقرأ ههنا** (ص-م٥ §١‑١) ──
+     التبديلُ من موضعين، فيلزم أن يتّفقا: يُعاد قراءةُ الاختيار المحفوظ عند
+     العودة إلى الصفحة، فلا يبقى في الشريط اسمُ محرّكٍ بُدّل من مكانٍ آخر.
+     **ولا يمسّ ذلك تشغيلةً جارية**: العاملُ الآن هو `activeEngine` لا المحفوظ. */
+  useEffect(() => {
+    const sync = () => {
+      const saved = readEngineChoice();
+      setEngineId((cur) => (saved !== cur ? saved : cur));
+    };
+    window.addEventListener("focus", sync);
+    window.addEventListener("storage", sync);
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      window.removeEventListener("focus", sync);
+      window.removeEventListener("storage", sync);
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, []);
 
   /* ── الصفحةُ قائمةٌ بنفسها: يُخفى هيكلُ التطبيق ما دامت مفتوحة ── */
   useEffect(() => {
@@ -445,58 +482,26 @@ export default function Tatabbu() {
     const meter = new SawtMeter(win.script);
     meterRef.current = meter;
 
-    // **فهرسُ الالتقاط يُبنى عند البدء لا عند الإقلاع** (§٢/٦): من قاعدة المصحف
-    // التي في الجهاز، فلا بايتَ يُنزَّل له. وإن تعثّر بقي التتبّعُ محلّيًّا كما كان.
-    const tIx = performance.now();
-    void loadIltiqat()
-      .then((ix) => {
-        iltiqatRef.current = ix;
-        setIltiqatMs(Math.round(performance.now() - tIx));
-      })
-      .catch(() => {
-        iltiqatRef.current = null;
-      });
-
-    // الشاشةُ تبقى: القارئُ لا يلمس شيئًا بعد التكبير
-    try {
-      const navi = navigator as unknown as WakeLockNav;
-      wakeRef.current = (await navi.wakeLock?.request("screen")) ?? null;
-    } catch {
-      /* الجهازُ قد يمنعه — لا يُبطل الجلسة */
-    }
-
-    // قياسُ الزمن اختياريّ: إن تعذّر المجرى أو تعارض مع المحرّك يُطفأ ويُعلَن
-    // «غير مقيسٍ آليًّا»، ولا يُكتب رقمٌ مقدَّرٌ في خانةٍ مقيسة.
-    setWaqfMeasured(false);
-    if (measureTime) {
-      try {
-        vadRef.current = await startVad({
-          onSpeechStart: () => {},
-          onSpeechEnd: (endedAt) => {
-            if (waqfTimerRef.current != null) clearTimeout(waqfTimerRef.current);
-            waqfTimerRef.current = window.setTimeout(() => {
-              const adv = lastAdvanceRef.current;
-              meter.noteWaqfLatency(adv > endedAt ? adv - endedAt : 0);
-            }, 1500);
-          },
-        });
-        setWaqfMeasured(true);
-      } catch {
-        vadRef.current = null;
-      }
-    }
-
-    // **تبديلُ المحرّك لا يمسّ سطرًا ممّا بعده**: الواجهةُ واحدة، والمحاذاةُ
-    // لا تعلم أيُّهما يعمل (عقدُ ص-م١، وهو ما جعل هذه الجلسة استبدالَ تنفيذٍ
-    // لا بناءَ باب).
-    const rec: RecognizerPort = findEngine(engineOverride ?? engineId ?? "browser-speech").onDevice
-      ? new OnDeviceRecognizer()
-      : new WebSpeechRecognizer("ar-SA");
+    /* ═══ **المحرّكُ يُنشأ ويبدأ قبل كلّ انتظار** (ص-م٥ §٢) ═══
+       كان يُنشأ بعد انتظار قفل الشاشة وكاشف السكوت — **فيقع بدؤه خارج نبضة
+       الإيماءة التي ضغط فيها القارئُ «ابدأ»**، وأجهزةُ آبل تُنشئ السياقَ
+       الصوتيَّ **موقوفًا** خارجَ الإيماءة، فلا يصل إلى المحرّك صوتٌ ألبتّة وهو
+       يبدو حيًّا. ⇒ صار البدءُ أوّلَ ما يُفعل، وما بعده انتظاراتٌ لا تضرّ.
+       **وتبديلُ المحرّك لا يمسّ سطرًا ممّا بعده**: الواجهةُ واحدة، والمحاذاةُ
+       لا تعلم أيُّهما يعمل (عقدُ ص-م١). */
+    const chosen = findEngine(engineOverride ?? engineId ?? "browser-speech");
+    const rec: RecognizerPort = chosen.onDevice ? new OnDeviceRecognizer() : new WebSpeechRecognizer("ar-SA");
     recRef.current = rec;
+    setActiveEngine(chosen.id);
+    setEngineState("starting");
+    setEngineDetail(null);
+    setDiag([]);
     rec.onState((s, detail) => {
       setEngineState(s);
       setEngineDetail(detail ?? null);
+      setDiag(rec.diagnostics ? [...rec.diagnostics] : []);
     });
+
     rec.onResult((r) => {
       setHeard(true);
       const tokens = speechTokens(r.text);
@@ -569,7 +574,116 @@ export default function Tatabbu() {
     });
     rec.start();
     setPhase("running");
+
+
+    // **فهرسُ الالتقاط يُبنى عند البدء لا عند الإقلاع** (§٢/٦): من قاعدة المصحف
+    // التي في الجهاز، فلا بايتَ يُنزَّل له. وإن تعثّر بقي التتبّعُ محلّيًّا كما كان.
+    const tIx = performance.now();
+    void loadIltiqat()
+      .then((ix) => {
+        iltiqatRef.current = ix;
+        setIltiqatMs(Math.round(performance.now() - tIx));
+      })
+      .catch(() => {
+        iltiqatRef.current = null;
+      });
+
+    // الشاشةُ تبقى: القارئُ لا يلمس شيئًا بعد التكبير
+    try {
+      const navi = navigator as unknown as WakeLockNav;
+      wakeRef.current = (await navi.wakeLock?.request("screen")) ?? null;
+    } catch {
+      /* الجهازُ قد يمنعه — لا يُبطل الجلسة */
+    }
+
+    // قياسُ الزمن اختياريّ: إن تعذّر المجرى أو تعارض مع المحرّك يُطفأ ويُعلَن
+    // «غير مقيسٍ آليًّا»، ولا يُكتب رقمٌ مقدَّرٌ في خانةٍ مقيسة.
+    setWaqfMeasured(false);
+    if (measureTime) {
+      try {
+        vadRef.current = await startVad({
+          onSpeechStart: () => {},
+          onSpeechEnd: (endedAt) => {
+            if (waqfTimerRef.current != null) clearTimeout(waqfTimerRef.current);
+            waqfTimerRef.current = window.setTimeout(() => {
+              const adv = lastAdvanceRef.current;
+              meter.noteWaqfLatency(adv > endedAt ? adv - endedAt : 0);
+            }, 1500);
+          },
+        });
+        setWaqfMeasured(true);
+      } catch {
+        vadRef.current = null;
+      }
+    }
   }, [measureTime, engineId, relocate]);
+
+  /* ═══════════ **الرجوعُ عند الإخفاق — ولا شاشةَ ميّتة** (ص-م٥ §١‑٢) ═══════════
+     العيبُ الذي بلّغ عنه المالك: اختار المحرّكَ الحرَّ فلم يعمل، **ولم يجد
+     مخرجًا**. ⇒ ثلاثةٌ ههنا: **يُعلَم أنّه أخفق** (بمهلةٍ معلَنةٍ أو بعطبٍ
+     مصرَّح)، **ويُرجَع** إلى الشبكيّ إن جاز، **ويُخبَر القارئُ صراحةً** بما وقع.
+
+     **وقيدان لا يُنقضان بحجّة المخرج**:
+     ١ — **الصلاةُ لا يُرجَع فيها إلى الشبكيّ بحال** — صوتُ المصلّي لا يخرج إلى
+         طرفٍ ثالثٍ ولو تعطّل كلُّ شيء (سياسةُ الباب، ص-م٣ §٤‑٣). فيُوقَف
+         ويُقال ما وقع، **ولا يُفتح بالشبكيّ**.
+     ٢ — **والإذنُ لا يُورَّث**: من لم يأذن للشبكيّ لا يُشغَّل له صامتًا —
+         **فالإعلانُ يسبق الميكروفون ولو كان رجوعًا اضطراريًّا**. فمن أذِن له
+         قبلُ رُجع به من نفسه، ومن لم يأذن انفتح له إعلانُه فتكون لمسةً واحدة.
+         **والفرقُ بينهما ليس تشدّدًا**: إخراجُ صوت التلاوة إلى طرفٍ ثالثٍ ليس
+         ممّا يُختار عن الناس (ص-م٣ §٥)، ورجوعٌ صامتٌ إليه نقضٌ لذلك بابُه
+         عطبُ محرّك. */
+  const fallback = useCallback(
+    (why: string) => {
+      if (fellRef.current) return;
+      fellRef.current = true;
+      const rec = recRef.current;
+      if (rec?.diagnostics) setDiag([...rec.diagnostics]);
+      stopAll();
+      const netUsable = webSpeechAvailable();
+      // (١) الصلاةُ — ولا مخرجَ فيها إلّا الخبرُ الصريح
+      if (halId === "salat" || !netUsable) {
+        setPhase("idle");
+        setFell({ from: "on-device", to: null, why });
+        return;
+      }
+      saveEngineChoice("browser-speech");
+      setEngineId("browser-speech");
+      setConsent(readConsent("browser-speech"));
+      setFell({ from: "on-device", to: "browser-speech", why });
+      // (٢) الإذنُ لا يُورَّث — فإن كان موجودًا رُجع في الحال، وإلّا فإعلانٌ ولمسة
+      if (readConsent("browser-speech") && declaredIn().includes(halId)) {
+        void begin("browser-speech");
+      } else {
+        setPhase("idle");
+        setAsking(true);
+      }
+    },
+    [begin, halId, stopAll],
+  );
+
+  /**
+   * **حارسُ الجمود** — المهلةُ **معلَنةٌ** في نصّ الخبر لا خفيّة، **وتُعاد من
+   * أوّلها عند كلّ تقدّمٍ يُعلَن**: تبدّلُ حال المحرّك، أو تحرّكُ نسبة التنزيل،
+   * أو وصولُ أوّل صوت. ⇒ لا يُقطع على تنزيلٍ يجري وإن طال، **ويُقطع على جمودٍ
+   * لا خبرَ فيه**.
+   *
+   * **و«لم يُؤذَن بالميكروفون» ليس عيبَ محرّكٍ فلا يُبدَّل له محرّك** — تبديلُه
+   * لا يصنع شيئًا، والصوابُ أن يُقال للقارئ ما يفعل. فيُستثنى صراحةً.
+   */
+  useEffect(() => {
+    if (phase !== "running" || activeEngine !== "on-device" || heard) return;
+    if (engineState === "denied") return;
+    if (engineState === "error" || engineState === "unsupported") {
+      fallback(engineDetail ?? "لم يُقلع محرّكُ جهازك");
+      return;
+    }
+    const t = window.setTimeout(
+      () => fallback(`لم يُقلع محرّكُ جهازك ولم يصل منه خبرٌ ${num(ENGINE_GRACE_S)} ثانية`),
+      ENGINE_GRACE_MS,
+    );
+    return () => clearTimeout(t);
+  }, [phase, activeEngine, heard, engineState, engineDetail, fallback]);
 
   /**
    * **الإعلانُ يسبق الميكروفون.** لا يُشغَّل التقاطٌ ولا يُفتح مجرًى صوتيٌّ
@@ -577,14 +691,19 @@ export default function Tatabbu() {
    * الوحيدُ إلى البدء.
    */
   const requestStart = useCallback(() => {
+    // بدءٌ جديدٌ بيد القارئ ⇒ يُطوى خبرُ الإخفاق السابق ويُفتح بابُ الرجوع ثانيةً
+    fellRef.current = false;
+    setFell(null);
     // ١) المحرّكُ أوّلًا: لا يُبدأ بمحرّكٍ لم يخترْه القارئ
     if (!engineId || !engineUsable(findEngine(engineId))) {
+      resumeAfterChoiceRef.current = true;
       setAskingEngine(true);
       return;
     }
     // ٢) **والصلاةُ بالحرّ وحدَه** (قرارُ الإدارة، وبندُ ص-م٣ §٤-٣): لا يُفتح
     //    وضعُ الصلاة بمحرّكٍ يُخرج صوتَ المصلّي إلى خادمٍ ثالثٍ بحال.
     if (halId === "salat" && !findEngine(engineId).fitsSalat) {
+      resumeAfterChoiceRef.current = true;
       setAskingEngine(true);
       return;
     }
@@ -605,19 +724,40 @@ export default function Tatabbu() {
     void begin(engineId);
   }, [begin, halId, engineId]);
 
-  /** اختيارُ المحرّك — يُحفظ، وتُستأنف طريقُ البدء من حيث وقفت */
+  /**
+   * **اختيارُ المحرّك وتبديلُه — بابٌ واحدٌ لأمرين** (ص-م٥ §١‑١).
+   *
+   * إن جاء السؤالُ في طريق البدء (`requestStart`) **استُؤنفت الطريقُ من حيث
+   * وقفت**؛ وإن جاء **تبديلًا مقصودًا** من عُدّة التهيئة أو من الشريط **فلا
+   * يُشغَّل ميكروفونٌ من تلقائه**: يُحفظ الاختيارُ ويُغلق اللوح، فمن أراد
+   * التلاوةَ ضغط «ابدأ». **فالتبديلُ حقٌّ في كلّ وقتٍ لا خطوةٌ في طقس بدء.**
+   */
   const chooseEngine = useCallback(
     (id: EngineId) => {
+      fellRef.current = false;
+      setFell(null);
       saveEngineChoice(id);
       setEngineId(id);
       setConsent(readConsent(id));
       setAskingEngine(false);
+      if (!resumeAfterChoiceRef.current) return;
+      resumeAfterChoiceRef.current = false;
       // الإذنُ لا يُورَّث بين محرّكين، فيُعاد الإعلانُ لهذا المحرّك
       if (!readConsent(id) || !declaredIn().includes(halId)) setAsking(true);
       else void begin(id);
     },
     [begin, halId],
   );
+
+  /**
+   * **بابُ التبديل — يُفتح من موضعين في الصفحة** (عُدّةُ التهيئة `⋯` والشريط)،
+   * **ومن الإعدادات ثالثًا**. ولا يُشترط له إعادةُ تثبيتٍ ولا محوُ بيانات.
+   */
+  const openEngineSwap = useCallback(() => {
+    resumeAfterChoiceRef.current = false;
+    setAsking(false);
+    setAskingEngine(true);
+  }, []);
 
   /* ── «تجاوز»: رخصةٌ كي لا يَحبِس التتبّعُ قارئًا مصيبًا (في التثبيت وحدَه) ── */
   const skipOne = useCallback(() => {
@@ -822,7 +962,7 @@ export default function Tatabbu() {
         })}
       </div>
       <div className="sawt-warn-acts">
-        <button className="sawt-copy" onClick={() => setAskingEngine(false)}>
+        <button className="sawt-copy" data-sawt="engine-later" onClick={() => setAskingEngine(false)}>
           ليس الآن
         </button>
       </div>
@@ -1008,6 +1148,13 @@ export default function Tatabbu() {
     ),
   ].join("\n");
 
+  /** أثرُ الإقلاع نصًّا — يُنسخ ويُرسل، وفيه اسمُ الجهاز وحالُ التثبيت */
+  const diagText = [
+    `أثرُ إقلاع المحرّك — ${deviceName()}${isStandalone() ? " (تطبيقٌ مثبَّت)" : " (لسانُ المتصفّح)"}`,
+    `المحرّك: ${activeEngine ? findEngine(activeEngine).label : "—"} · الحال: ${hal.name} · ${engineState}`,
+    ...diag,
+  ].join("\n");
+
   /**
    * **سحبُ الإذن — يبقى في سطح القارئ ولا يُنقل خلف باب** (§٠): فهو حقُّ قارئٍ
    * في أمر صوته، لا عُدّةُ قياس. وموضعُه حيث يُهيّئ لا حيث يُفحَص.
@@ -1073,6 +1220,94 @@ export default function Tatabbu() {
       })}
     </div>
   );
+
+  /**
+   * **سطرُ «المحرّكُ الآن» وزرُّ تبديله** — يُعرض حيث يُهيّئ القارئ: في عُدّة
+   * التهيئة `⋯` على الجوال، وتحت زرّ البدء على الحاسوب. **وهو الموضعُ الأوّلُ
+   * من موضعَي التبديل** (والثاني في الإعدادات) — ولا يُخبَّأ خلف إعادةِ تثبيتٍ
+   * ولا محوِ بيانات (ص-م٥ §١‑١).
+   */
+  const engineNowLine = () => (
+    <p className="muted sawt-note sawt-engine-now" data-sawt="engine-line">
+      {engine ? (
+        <>
+          المحرّك: <b>{engine.label}</b> — {engine.privacyLine}{" "}
+        </>
+      ) : (
+        <>المحرّك: لم يُختر بعدُ — يُسأل عنه عند أوّل بدء. </>
+      )}
+      <button className="sawt-engine-swap" data-sawt="engine-swap" onClick={openEngineSwap}>
+        {engine ? "بدِّله" : "اختره"}
+      </button>
+    </p>
+  );
+
+  /**
+   * **خبرُ الإخفاق والرجوع** (ص-م٥ §١‑٢) — يُقال ما وقع بنصّه، **ولا يُترك
+   * القارئُ أمام شاشةٍ حيّةٍ لا تسمع**. وفي أثناء التلاوة **خبرٌ بلا زرّ**
+   * (فالجوالُ ثلاثةٌ لا رابعَ لها، ولا تُزاد أداةٌ على مصلٍّ يتلو)، ويُدَلُّ
+   * على موضع الرجوع؛ وفي التهيئة **خبرٌ وزرُّ عودة**.
+   */
+  const fellView = (withAct: boolean) => {
+    if (!fell) return null;
+    const to = fell.to ? findEngine(fell.to) : null;
+    return (
+      <div className="sawt-engine-fell" data-sawt="engine-fell" role="status">
+        <b>{fell.why}.</b>{" "}
+        {to ? (
+          <>
+            فتحوّلنا إلى <b>{to.label}</b> — {to.privacyLine}
+          </>
+        ) : halId === "salat" ? (
+          <>
+            ووضعُ الصلاة لا يُفتح بغيره، فصوتُ المصلّي لا يخرج إلى طرفٍ ثالثٍ بحال —
+            فاخترْ حالًا أخرى إن شئت التلاوةَ الآن.
+          </>
+        ) : (
+          <>ولا محرّكَ آخرَ يعمل على هذا الجهاز.</>
+        )}{" "}
+        {withAct ? (
+          <button className="sawt-engine-swap" data-sawt="engine-back" onClick={openEngineSwap}>
+            بدِّل المحرّك
+          </button>
+        ) : (
+          <span className="sawt-engine-hint">ولك أن تعود إليه من ⋯</span>
+        )}
+      </div>
+    );
+  };
+
+  /**
+   * **حالُ المحرّك ظاهرةٌ دائمًا** (ص-م٥ §١‑٣): أيُّهما يعمل الآن، وأين بلغ.
+   * وفي التهيئة **زرٌّ يُبدّل**، وفي أثناء التلاوة **خبرٌ لا زرّ** — فلا يُزاد
+   * على «ثلاثةٍ لا رابعَ لها» أداةٌ، ولا يُترك القارئُ يحزر.
+   */
+  const engineBar = (live: boolean) => {
+    const now = live ? (activeEngine ? findEngine(activeEngine) : null) : engine;
+    const line = live && engineDetail ? engineDetail : (now?.label ?? "لم يُختر محرّكٌ بعدُ");
+    const body = (
+      <>
+        <span className={`sawt-dot sawt-dot-${live ? engineState : "idle"}`} aria-hidden />
+        <span className="sawt-engine-chip-name">{now ? now.label : "المحرّك"}</span>
+        {live && engineDetail && <span className="sawt-engine-chip-note">{engineDetail}</span>}
+        {!live && <span className="sawt-engine-chip-note">بدِّله</span>}
+      </>
+    );
+    return live ? (
+      <p className="sawt-engine-chip" data-sawt="engine-now" aria-label={`المحرّك: ${line}`}>
+        {body}
+      </p>
+    ) : (
+      <button
+        className="sawt-engine-chip sawt-engine-chip-btn"
+        data-sawt="engine-now"
+        aria-label={`المحرّك: ${line} — بدِّله`}
+        onClick={openEngineSwap}
+      >
+        {body}
+      </button>
+    );
+  };
 
   /** زرُّ الباب الواحد — **بلا لغة أدوات** في اسمه (§٠) */
   const fahsDoor = () => (
@@ -1157,6 +1392,34 @@ export default function Tatabbu() {
         <button className="sawt-copy" onClick={() => copy("matrix", matrixText)}>
           {copied === "matrix" ? "نُسخت" : "انسخ المصفوفة"}
         </button>
+      </div>
+
+      {/* ═══ **أثرُ إقلاع المحرّك — ولا يُشخَّص هاتفٌ بالظنّ** (ص-م٥ §٢) ═══
+          خانةُ الهاتف في المحكّ المختوم مكتوبةٌ «لم تُقَس»، وأوّلُ قياسٍ لها جاء
+          بالإخفاق. **والجهازُ ليس بين أيدينا** — فيُبنى ما يقيس نفسَه: مراحلُ
+          البدء بأسمائها، وحالُ السياق الصوتيّ، وعددُ إطارات الصوت التي وصلت،
+          وأوّلُ عطبٍ بنصّه. يفتح صاحبُ الجهاز البابَ فينسخ الأثرَ ويُرسله،
+          **فيُقال سببٌ مسمًّى بدل إصلاحٍ مظنون**. وموضعُه خلف الباب لأنّه عُدّةُ
+          فحصٍ لا خبرُ قارئ. */}
+      <div className="sawt-card" data-sawt="diag">
+        <h2 className="sawt-h2">أثرُ إقلاع المحرّك</h2>
+        <p className="muted sawt-note">
+          مراحلُ البدء كما وقعت على هذا الجهاز — <b>عونٌ على تشخيص ما لا يُقاس إلّا عليه</b>.
+        </p>
+        {diag.length === 0 ? (
+          <p className="muted">لم يبدأ محرّكٌ في هذه الجلسة بعدُ.</p>
+        ) : (
+          <>
+            <ul className="sawt-diag">
+              {diag.map((d, i) => (
+                <li key={i}>{d}</li>
+              ))}
+            </ul>
+            <button className="sawt-copy" onClick={() => copy("diag", diagText)}>
+              {copied === "diag" ? "نُسخ" : "انسخ أثرَ الإقلاع"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -1400,6 +1663,13 @@ export default function Tatabbu() {
           )}
         </div>
 
+        {/* **حالُ المحرّك ظاهرةٌ دائمًا** (ص-م٥ §١‑٣) — شريطٌ رفيعٌ تحت الشريط:
+            في التهيئة زرٌّ يُبدّل، وفي أثناء التلاوة خبرٌ لا زرّ. **ولا تنزيلَ
+            صامت**: نسبةُ التنزيل تجري ههنا على الجوال كما تجري على الحاسوب —
+            وكان الجوالُ خِلوًا منها كلِّها، فكان الإخفاقُ لا يُفرَّق من الانتظار. */}
+        {engineBar(phase === "running")}
+        {fellView(phase !== "running")}
+
         {/* **الإعلانُ حيث يقع الفعل**: ينفتح عنه الشريطُ عند ضغط «ابدأ» — بلا
             طمسٍ ولا صندوقٍ فوق النصّ، والموافقةُ مرّةٌ واحدةٌ محفوظةٌ كما هي */}
         {phase === "idle" && asking && <div className="sawt-m-panel">{consentView()}</div>}
@@ -1420,6 +1690,8 @@ export default function Tatabbu() {
             {!suspended && (
               <>
                 {pickerView()}
+                {/* **موضعُ التبديل الأوّل** — في عُدّة التهيئة نفسِها (ص-م٥ §١‑١) */}
+                {engineNowLine()}
                 {halId === "ard" && bankView()}
                 {consentLine()}
                 {fahsDoor()}
@@ -1471,6 +1743,10 @@ export default function Tatabbu() {
         <div className="sawt-run-bar">
           <span className="sawt-where">{cur ? `${surahNameAr(cur.surahNo)} ${num(cur.ayahNo)}` : "—"}</span>
           <span className={`sawt-dot sawt-dot-${engineState}`} aria-label="حالُ الإصغاء" />
+          {/* **أيُّهما يعمل الآن** — فلا يُترك القارئُ يحزر (ص-م٥ §١‑٣) */}
+          <span className="sawt-engine-chip-name" data-sawt="engine-now">
+            {activeEngine ? findEngine(activeEngine).label : "—"}
+          </span>
           {seeking && <span className="sawt-seek" data-sawt="seek">يلتمس موضعك…</span>}
           {hal.text === "veiled" && (
             <button className="sawt-skip" onClick={skipOne}>
@@ -1489,6 +1765,7 @@ export default function Tatabbu() {
             {engineDetail}
           </p>
         )}
+        {fellView(false)}
         {textView()}
         {hal.after !== "silent" && slow && !heard && (
           <p className="muted sawt-hint">
@@ -1563,14 +1840,8 @@ export default function Tatabbu() {
                   </button>
                 )}
                 {/* والمحرّكُ المختارُ ظاهرٌ لا مخبوء، ويُبدَّل من موضعه */}
-                {engine && (
-                  <p className="muted sawt-note sawt-engine-now">
-                    المحرّك: <b>{engine.label}</b> — {engine.privacyLine}{" "}
-                    <button className="sawt-engine-swap" onClick={() => setAskingEngine(true)}>
-                      بدِّله
-                    </button>
-                  </p>
-                )}
+                {engineNowLine()}
+                {fellView(true)}
                 {!supported && (
                   <div className="sawt-warn sawt-warn-hard">
                     متصفّحُ هذا الجهاز لا يتيح التعرّفَ على الصوت — فلا يعمل التتبّعُ هنا.

@@ -20,6 +20,13 @@ import { RECITERS, reloadForReciter, setLivePlaybackRate } from "./AudioButton";
 import { TAFSIR_SOURCES } from "../books";
 import { TAJWID_LEGEND } from "../tajwid";
 import { getUILang, num, useUILang } from "../i18n";
+import {
+  ENGINES,
+  findEngine,
+  readEngineChoice,
+  saveEngineChoice,
+  type EngineId,
+} from "../lib/sawt/engines";
 import OfflineReadiness from "./OfflineReadiness";
 import RecitationCredit from "./RecitationCredit";
 import "../styles/sawt-tilawa.css";
@@ -79,6 +86,50 @@ function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
       <span className="set-switch-track" aria-hidden />
       {label && <span className="set-switch-note">{label}</span>}
     </label>
+  );
+}
+
+/**
+ * **محرّكُ التتبّع — الموضعُ الثاني للتبديل** (ص-م٥ §١‑١).
+ *
+ * بلَّغ المالكُ أنّه سُئل مرّةً واحدةً فاختار، **ثمّ لم يجد سبيلًا إلى التبديل**
+ * — فمن أخطأ الاختيارَ صار البابُ معطَّلًا عنده بلا مخرج. **وهذا عيبُ تصميمٍ لا
+ * عيبُ محرّك**: يبقى قائمًا ولو عمل المحرّكان. ⇒ التبديلُ متاحٌ في كلّ وقتٍ من
+ * موضعين: من عُدّة تهيئة التتبّع، **ومن ههنا** — ولا يُشترط إعادةُ تثبيتٍ ولا
+ * محوُ بيانات.
+ *
+ * **ولا يُورَّث الإذنُ بالتبديل**: يُحفظ الاختيارُ ههنا، ثمّ **يُعاد الإعلانُ
+ * في صفحة التتبّع** قبل أوّل ميكروفونٍ للمحرّك الجديد — فالتبديلُ اختيارٌ لا
+ * إذن. **وسطرُ الصدق يُجلب من وصف المحرّك** ولا يُكتب ههنا بيد.
+ */
+function SawtEngineRow({ ar }: { ar: boolean }) {
+  const [id, setId] = useState<EngineId | null>(() => readEngineChoice());
+  const chosen = id ? findEngine(id) : null;
+  return (
+    <>
+      <Row label={ar ? "محرّك التتبّع" : "Tracking engine"} hint={ar ? "يُبدَّل متى شئت" : "switch any time"}>
+        <Seg<EngineId>
+          value={(id ?? "on-device") as EngineId}
+          onChange={(v) => {
+            saveEngineChoice(v);
+            setId(v);
+          }}
+          options={ENGINES.map((e) => ({ v: e.id, label: ar ? e.label : e.labelEn }))}
+        />
+      </Row>
+      <p className="set-note" data-sawt-set="engine-line">
+        {chosen
+          ? chosen.privacyLine
+          : ar
+            ? "لم يُختر بعدُ — يُسأل عنه عند أوّل تتبّع."
+            : "Not chosen yet — you will be asked at first use."}
+      </p>
+      <p className="set-note">
+        {ar
+          ? "ويُعاد الإعلانُ في صفحة التتبّع قبل تشغيل الميكروفون للمحرّك الجديد."
+          : "The notice is shown again in the tracking page before the microphone runs."}
+      </p>
+    </>
   );
 }
 
@@ -219,6 +270,10 @@ export default function SettingsPanel() {
               </Row>
               {/* الإسنادُ ظاهرٌ حيث تُختار التلاوة — شرطُ رخصةٍ لا تحسين */}
               <RecitationCredit source={RECITERS[s.reciter]?.everyayah ? "everyayah" : "cdn"} />
+            </Group>
+
+            <Group title={ar ? "التتبّع بالصوت" : "Voice tracking"}>
+              <SawtEngineRow ar={ar} />
             </Group>
 
             {/* **المكانُ الذي حُجز باسمه** قد عُمر: لوحةُ «جاهزيّة العمل بلا
