@@ -694,8 +694,14 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
    a backdrop dims + locks the page, the sheet is fixed to the bottom and only
    its own body scrolls. */
 .sheet-backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.34); z-index: 90; animation: sheet-fade 0.15s ease; }
+/* **وخلفيّةُ الورقة في الأساس لا في `card` وحدَها** (ج٩ §٢ — تحصينًا): الورقةُ
+   تُرسم من أسفل الشاشة فوق ظهيرٍ خافت، **فإن طارت بلا أرضيّةٍ اختلطت عناصرُها
+   بنصّ المصحف**. وقد وقع ذلك في ورقة «⋯» إذ نُسي `card` عنها؛ فتُكتب الخلفيّةُ
+   ههنا **بالرمز نفسِه** الذي تكتبه `card` — فلا ازدواجَ ضارّ، ولا تطير ورقةٌ
+   أخرى نسيت الصنف. */
 .word-sheet {
   position: fixed; inset-inline: 0; bottom: 0; z-index: 92;
+  background: var(--panel);
   min-height: 56vh; max-height: 88vh; display: flex; flex-direction: column;
   border-radius: 20px 20px 0 0;
   padding: 0 16px calc(14px + env(safe-area-inset-bottom, 0px));
@@ -943,7 +949,12 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
      ثلاث خاناتٍ ولا تخنقه — وهو صنيعُ المصاحف المطبوعة نفسِه.
    • **وتُرسم خلف الرقم لا فوقه**: `isolation` تُنشئ سياقًا مستقلًّا فيقع
      المقنَّعُ (`z-index: -1`) فوق خلفيّة العلامة وتحت رقمها. */
-.mushaf-page .mp-ayah > .ayah-marker {
+/* **وسطحُ التتبّع يأخذ العلامةَ نفسَها** (ج٩ §٥): كانت علاماتُه ﴿٦﴾ ﴿٧﴾ ذهبيّةً
+   بقوسين — أي هيئةً سبقت توحيدَ ج٨ (§١د) الذي جعل أرقامَ المصحف خضراءَ في
+   ميداليّةٍ مرسومة، **وأبقى الذهبَ لـ۞ و۩ وحدَهما**. فيُقتبس النسقُ ولا
+   يُخترع له ثانٍ، ولا يُمَسّ منطقُ المحاذاة ولا المؤشّر. */
+.mushaf-page .mp-ayah > .ayah-marker,
+.sawt-text .ayah-marker {
   position: relative;
   isolation: isolate;
   display: inline-block;
@@ -959,7 +970,8 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   font-variant-numeric: tabular-nums;
   color: var(--mushaf-mark);
 }
-.mushaf-page .mp-ayah > .ayah-marker::before {
+.mushaf-page .mp-ayah > .ayah-marker::before,
+.sawt-text .ayah-marker::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -3561,6 +3573,16 @@ body.sawt-page { overflow: hidden; }
 .sawt-quiet-word { font-family: var(--font-quran); font-size: 30px; color: var(--accent); margin-bottom: 26px; }
 .sawt-select { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; min-height: 44px; padding: 0 14px; color: var(--ink); font-family: inherit; font-size: 15px; }
 .sawt-hint { padding: 0 18px 14px; font-size: 15px; line-height: 1.8; text-align: center; }
+/* **سطرُ «تتابع من موضعك؟»** (ج٩ §٣) — خفيفٌ في الصفحة لا لوحٌ فوقها، ولا يُطمس
+   به متنٌ ولا يُعترض به قارئ؛ ويُهمَل بلا أثرٍ فيبقى السطحُ على صفحته. */
+.sawt-resume-ask {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: calc(100% - 36px); margin: 0 18px 12px; min-height: 44px;
+  padding: 0 14px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--panel-2); color: var(--ink-2); font-size: 15px; cursor: pointer;
+}
+.sawt-resume-ask:active { background: var(--accent-soft); }
+.sawt-resume-where { font-family: var(--font-quran); color: var(--accent); font-size: 16px; }
 .sawt-surah {
   display: block; font-size: 17px; font-family: var(--font-quran);
   color: var(--mushaf-title); letter-spacing: .02em;

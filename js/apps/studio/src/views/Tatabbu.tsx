@@ -207,12 +207,18 @@ const arDate = (iso: string): string => {
  *    مكانها لا إلى صفحةٍ سابقة.
  *  • `autostart`: **لمسةُ الميكروفون في سطح القراءة تبدأ التتبّعَ** — تمرّ على
  *    طريق البدء نفسِه (إعلانٌ ثمّ إذنٌ ثمّ محرّك)، **فلا ميكروفونَ بلا إعلان**.
+ *  • `startAt`: **الموضعُ الذي أمام القارئ** `"سورة:آية"` (ج٩ §٣) — وكان
+ *    السطحُ يُركَّب بلا موضعٍ ألبتّة فيفتح على محفوظه، **فمن كان في آل عمران
+ *    رُمي إلى الفاتحة** فبدا التتبّعُ صفحةً منفصلةً لا حالًا من صفحته. **وهو
+ *    المقدَّمُ على المحفوظ**؛ والمحفوظُ يبقى لفتح `/tatabbu` المباشر (وهناك
+ *    `startAt` غيرُ ممرَّرٍ أصلًا) ولحال الختمة بسطر خيارٍ لا بقفزةٍ صامتة.
  */
 export default function Tatabbu({
   embedded = false,
   autostart = false,
+  startAt = null,
   onClose,
-}: { embedded?: boolean; autostart?: boolean; onClose?: () => void } = {}) {
+}: { embedded?: boolean; autostart?: boolean; startAt?: string | null; onClose?: () => void } = {}) {
   const nav = useNavigate();
   const mobile = useIsMobile();
 
@@ -225,7 +231,8 @@ export default function Tatabbu({
 
   const [pick, setPick] = useState<Pick>("surah");
   const [sealed, setSealed] = useState(SEALED_SEGMENTS[0].id);
-  const [surahNo, setSurahNo] = useState(1);
+  /** **سورةُ المقطع تبدأ من التي أمام القارئ** إن دخل من سطح القراءة (ج٩ §٣) */
+  const [surahNo, setSurahNo] = useState(() => Number(startAt?.split(":")[0]) || 1);
   const [juz, setJuz] = useState(1);
   const [page, setPage] = useState(1);
   const [rangeFrom, setRangeFrom] = useState(1);
@@ -426,8 +433,19 @@ export default function Tatabbu({
     }
   }, [pick, sealed, surahNo, juz, page, rangeFrom, rangeTo]);
 
-  /** من أين يبدأ: من الموضع المختار، أو من آخر موضعٍ محفوظ */
-  const from = (hal.resumes || resume) && mark ? mark.location : null;
+  /**
+   * **موضعُ البدء المفروض** — يُملأ من `startAt` عند الدخول من سطح القراءة،
+   * ويُبدَّل إلى المحفوظ متى اختار القارئُ ذلك بسطر الخيار (ج٩ §٣).
+   */
+  const [imposed, setImposed] = useState<string | null>(startAt);
+  /** من أين يبدأ: **الصفحةُ التي أمامه أوّلًا**، ثمّ الموضعُ المختار، ثمّ المحفوظ */
+  const from = imposed ?? ((hal.resumes || resume) && mark ? mark.location : null);
+  /**
+   * **سطرُ الخيار في حال الختمة** (ج٩ §٣): العودةُ إلى حيث وقف **مقصودةٌ هناك**،
+   * فلا يُهدَر محفوظُه بلا خبر — ولا يُقفز به إليه صامتًا وهو ينظر إلى صفحةٍ
+   * أخرى. فيُعرض سطرٌ خفيفٌ داخل السطح يُهمَل بلا أثر، ومن لمسه انتقل.
+   */
+  const offerMark = !!(embedded && startAt && hal.resumes && mark && imposed === startAt && mark.location !== startAt);
   const specKey = JSON.stringify(spec);
   specRef.current = spec;
 
@@ -1154,8 +1172,12 @@ export default function Tatabbu({
                   </Fragment>
                 );
               })}
+              {/* **الرقمُ وحدَه في ميداليّةٍ مرسومة** (ج٩ §٥): كان `﴿…﴾` ذهبيًّا
+                  ههنا وحدَه بعد أن وحّدت ج٨ أرقامَ المصحف خضراءَ بلا قوسين —
+                  والقوسان كانا يقومان مقامَ الميداليّة، وقد صارت مرسومةً في
+                  `theme.css` حول الرقم. */}
               <span className="ayah-marker" data-ayah={ai}>
-                ﴿{num(a.ayahNo)}﴾
+                {num(a.ayahNo)}
               </span>{" "}
             </Fragment>
           );
@@ -2014,6 +2036,26 @@ export default function Tatabbu({
               ? halNote(hal)
               : "متصفّحُ هذا الجهاز لا يتيح التعرّفَ على الصوت — فلا يعمل التتبّعُ هنا."}
           </p>
+        )}
+
+        {/* **سطرُ الخيار لحال الختمة** (ج٩ §٣): دخل من صفحته فبدأ السطحُ عندها،
+            **ومحفوظُه لا يُهدَر ولا يُقفز إليه صامتًا** — سطرٌ خفيفٌ في الصفحة
+            لا لوحٌ فوقها (ميثاقُ الوجه §١٣)، يُهمَل بلا أثرٍ ومن لمسه انتقل. */}
+        {phase === "idle" && offerMark && mark && (
+          <button
+            className="sawt-resume-ask"
+            data-sawt="resume-ask"
+            onClick={() => {
+              setPick("surah");
+              setSurahNo(Number(mark.location.split(":")[0]));
+              setImposed(mark.location);
+            }}
+          >
+            <span>تتابع من موضعك؟</span>
+            <span className="sawt-resume-where">
+              {surahNameAr(Number(mark.location.split(":")[0]))} {num(Number(mark.location.split(":")[1]))}
+            </span>
+          </button>
         )}
 
         {textView()}

@@ -418,6 +418,19 @@ export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) 
   const [tracking, setTracking] = useState(tatabbu);
   /** أبدأ التتبّعُ بلمسةٍ مقصودةٍ الآن؟ — فيُطلب البدءُ من نفسه (لا عند فتح التطبيق) */
   const [micTouched, setMicTouched] = useState(false);
+  /**
+   * **موضعُ الدخول إلى السطح المدموج** — `"سورة:آية"` أوّلِ المرئيّ في الصفحة
+   * الجارية (ج٩ §٣).
+   *
+   * **الواقعةُ بنصّها**: كان السطحُ يُركَّب **بلا أيّ موضع**، فيفتح على محفوظه
+   * (`readMawdi(halId)` — وهو للزائر الفاتحة). فمن كان في آل عمران فلمس
+   * الميكروفونَ رُمي إلى الفاتحة، **فبدا التتبّعُ صفحةً منفصلةً** لا حالًا من
+   * الصفحة التي بين يديه — وذلك نقضُ ج٤ §١ نفسِه.
+   * **والصفحةُ المعروضةُ مقدَّمةٌ على المحفوظ** عند الدخول من لمسة الميكروفون؛
+   * والمحفوظُ يبقى لفتح `/tatabbu` المباشر (فذاك موضعُه)، **ولحال الختمة
+   * خاصّةً** — ويُعرض هناك سطرُ خيارٍ خفيفٌ داخل السطح لا قفزةٌ صامتة.
+   */
+  const [startAt, setStartAt] = useState<string | null>(null);
   // صفحات is the default (easiest for most readers); آيات is opt-in for its
   // tools/translation/«مثلها». A returning reader's explicit choice is remembered.
   const [mode, setMode] = useState<Mode>(
@@ -708,6 +721,29 @@ export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) 
 
   const listenSurah = () => playContinuous((surahBase.get(surahNo) ?? 0) + 1);
 
+  /**
+   * **أوّلُ آيةٍ مرئيّةٍ في الصفحة الجارية** (ج٩ §٣) — وهي موضعُ الدخول إلى
+   * سطح التتبّع. **وتُقاس من الشجرة لحظتَها** ولا تُخمَّن من الحال: القارئُ قد
+   * مرّر بعيدًا عن الآية الهدف، فالهدفُ يقول أين دخل لا أين هو الآن.
+   * **وحدُّ المرئيّ حافّةُ المحتوى لا حافّةُ الوعاء**: الرأسُ طبقةٌ عليا تمرّ
+   * تحتها الحشوةُ الثابتة، فما تحتها ليس مرئيًّا وإن وقع داخلَ الوعاء.
+   * وإن أخفقت القراءةُ رُدَّ إلى الموضع المعلوم من الحال — فلا يبقى بلا موضع.
+   */
+  const firstVisibleLoc = (): string => {
+    const el = mainRef.current;
+    if (el) {
+      const box = el.getBoundingClientRect();
+      const pad = parseFloat(getComputedStyle(el).paddingBlockStart) || 0;
+      const edge = box.top + pad;
+      for (const a of document.querySelectorAll<HTMLElement>('[id^="ayah-"]')) {
+        if (a.getBoundingClientRect().bottom <= edge + 1) continue;
+        const [, s, n] = a.id.split("-");
+        if (s && n) return `${Number(s)}:${Number(n)}`;
+      }
+    }
+    return `${surahNo}:${targetAyahNo ?? 1}`;
+  };
+
 
   /* ═══ **أدواتُ المصحف في الرأس الواحد** (ج٨ §٢ب) ═══
      كان للجوال شريطٌ ثانٍ لاصقٌ تحت رأس التطبيق — **شريطان فوق المتن**، وهو أوّلُ
@@ -760,6 +796,9 @@ export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) 
             <button
               className={`sh-btn rd-mic-btn${tracking ? " on" : ""}`}
               onClick={() => {
+                // **يُقرأ الموضعُ قبل الانقلاب** — فبعده لا تبقى صفحةُ المصحف
+                // في الشجرة ليُقرأ منها أوّلُ المرئيّ (ج٩ §٣)
+                setStartAt(firstVisibleLoc());
                 setMicTouched(true);
                 setTracking(true);
               }}
@@ -805,7 +844,12 @@ export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) 
         {sheet && (
           <>
             <div className="sheet-backdrop" onClick={() => setSheet(false)} />
-            <div className="word-sheet rd-sheet" role="dialog" aria-label={ar ? "أدوات المصحف" : "mushaf tools"}>
+            {/* **و`card` حاملةُ الخلفيّة في أوراق التطبيق كلِّها** (ج٩ §٢):
+                كانت هذه الورقةُ وحدَها بلا `card` — فبقيت شفّافةً تطير عناصرُها
+                فوق نصّ المصحف (لقطةُ المالك ١٦ أغسطس). والشاهدُ على أنّها
+                القاعدةُ لا الاستثناء: `SimilarAyahs.tsx` و«ورقةُ الآية» أدناه
+                كلتاهما `word-sheet card`. */}
+            <div className="word-sheet rd-sheet card" role="dialog" aria-label={ar ? "أدوات المصحف" : "mushaf tools"}>
               <div className="word-sheet-grip" />
               <button className="word-sheet-close" onClick={() => setSheet(false)} aria-label={ar ? "إغلاق" : "close"}>
                 ✕
@@ -996,9 +1040,11 @@ export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) 
             <TatabbuSurface
               embedded
               autostart={micTouched}
+              startAt={startAt}
               onClose={() => {
                 setTracking(false);
                 setMicTouched(false);
+                setStartAt(null);
               }}
             />
           </Suspense>
