@@ -1,0 +1,10 @@
+{
+  "gate": "sawt-view",
+  "green": false,
+  "failures": [],
+  "missing": [
+    "تعثّرت البوّابة: تعلّق النداءُ Runtime.evaluate فوق 45000 مِث"
+  ],
+  "notes": [],
+  "measures": {}
+}

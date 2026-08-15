@@ -159,9 +159,16 @@ return true;
 const COUNT = `
 const box = document.querySelector('[data-sawt="text"]');
 if (!box) return { error: 'لا نصَّ في الصفحة' };
-const words = box.querySelectorAll('.sawt-w');
+const words = [...box.querySelectorAll('.sawt-w')];
+/* **وموضعُ أوّل كلمةٍ باهتةٍ هو الحكم**: البهتُ بعد موضع الالتقاط صدقٌ (تلك
+   كلماتٌ تُليت فعلًا)، **وقبله كذب** — وهو بلاغُ المالك بعينه. */
+let firstPast = -1;
+for (let i = 0; i < words.length; i++) {
+  if (words[i].classList.contains('sawt-past')) { firstPast = i; break; }
+}
 return {
   drawn: words.length,
+  firstPast,
   past: box.querySelectorAll('.sawt-past').length,
   now: box.querySelectorAll('.sawt-now').length,
   loaded: Number(box.dataset.sawtWords || 0),
@@ -174,9 +181,10 @@ return {
  * **يُنمّى المحمَّلُ بالتمرير** حتّى يبلغ الجزءَ — كما يفعل قارئٌ يمرّر إلى آخره.
  * ولا يُلمس من الشيفرة شيء: تمريرٌ ثمّ انتظارُ الرقيب.
  */
-const GROW = (target) => `
+const GROW = (target, budgetMs) => `
 const box = document.querySelector('[data-sawt="text"]');
-if (!box) return 0;
+if (!box) return { words: 0, ms: 0, iters: 0 };
+const t0 = performance.now();
 const sc = (function (el) {
   for (let n = el; n; n = n.parentElement) {
     const st = getComputedStyle(n);
@@ -184,13 +192,15 @@ const sc = (function (el) {
   }
   return null;
 })(box);
-for (let i = 0; i < 90; i++) {
+let i = 0;
+for (; i < 400; i++) {
   if (Number(box.dataset.sawtWords || 0) >= ${target}) break;
+  if (performance.now() - t0 > ${budgetMs}) break;
   if (sc) sc.scrollTop = sc.scrollHeight;
   else window.scrollTo(0, document.body.scrollHeight);
-  await new Promise((r) => setTimeout(r, 240));
+  await new Promise((r) => setTimeout(r, 200));
 }
-return Number(box.dataset.sawtWords || 0);
+return { words: Number(box.dataset.sawtWords || 0), ms: Math.round(performance.now() - t0), iters: i };
 `;
 
 /** التلاوةُ تبدأ من كلماتٍ **بعيدةٍ في المحمَّل** — وهي صورةُ «قرأتُ من آخر الجزء» */
@@ -232,16 +242,26 @@ return paint ? Math.round((performance.now() - t0) * 10) / 10 : null;
  * تشغيلةٌ كاملةٌ في سيناريو البلاغ: المصحفُ كلُّه ⇒ تمريرٌ ينمّي المحمَّل ⇒ بدءٌ
  * ⇒ **التقاطٌ عند آخر المحمَّل** ⇒ عدٌّ وقياس. و`query` هو بابُ الضبط السالب.
  */
-async function run(cdp, { query, label, steps = 0 }) {
+async function run(port, { query, label, steps = 0, budget = 150000 }) {
+  const br = await openBrowser(port);
+  if (!br) {
+    missing.push(`لم يقم المتصفّحُ للتشغيلة «${label}»`);
+    return null;
+  }
+  const cdp = br.cdp;
+  try {
   log(`تشغيلة «${label}» — يُفتح ${query || "بلا بابٍ سالب"}`);
+  // **والإقلاعُ تهيئةٌ لا قياس**: يُرفع الخنقُ حتّى تقوم الصفحةُ (وقد ردّ ×٤
+  // تشغيلةً كاملةً «لم تُقلع» وهي بريئة — والآلةُ يومئذٍ مشغولةٌ أيضًا).
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
   await cdp.send("Page.navigate", { url: `http://localhost:${PORT}/${query}#/tatabbu` });
-  const booted = await cdp.until(`!document.querySelector('.boot') && document.querySelector('[data-sawt="root"]')`);
+  const booted = await cdp.until(`!document.querySelector('.boot') && document.querySelector('[data-sawt="root"]')`, 180000);
   if (!booted) {
     missing.push(`لم تُقلع الصفحةُ في التشغيلة «${label}»`);
     return null;
   }
   log("أقلعت الصفحة");
-  await cdp.until(`document.querySelector('[data-sawt="begin"]') && !document.querySelector('[data-sawt="begin"]').disabled`);
+  await cdp.until(`document.querySelector('[data-sawt="begin"]') && !document.querySelector('[data-sawt="begin"]').disabled`, 180000);
 
   /* المصحفُ كلُّه — وهو مقطعُ البلاغ */
   await cdp.ev(click(".sawt-m-more"));
@@ -262,10 +282,17 @@ return true;
 
   /* التمريرُ ينمّي المحمَّل حتّى يبلغ الجزءَ الأوّل (نحو ٣٬١٥٠ كلمة) */
   log("يُنمَّى المحمَّلُ بالتمرير");
-  // **والتنميةُ تُمهَل**: بابُ الضبط السالب يرسم آلافَ العناصر فيبطئ التمريرُ
-  // نفسُه — وهو من جنس ما تقيسه هذه البوّابة، فلا يُقطع عليه بمهلةٍ قصيرة.
-  const loaded = await cdp.ev(GROW(3000), 240000);
-  log(`المحمَّل: ${loaded} كلمة`);
+  /* **والخنقُ للقياس لا للتهيئة** (تصويبُ تسيير — درسُ ص-م٥): تنميةُ المحمَّل
+     تهيئةٌ، وخنقُها ×٤ يُطيل التشغيلةَ دقائقَ ولا يزيد الحكمَ صدقًا. فيُرفع
+     الخنقُ ما دامت التهيئةُ، **ويُعاد قبل الالتقاط والقياس** — وهما موضعُ الحكم. */
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+  /* **وتشغيلاتُ «القبل» لا تُنمَّى بالتمرير**: هي بطيئةٌ ببطئها هي نفسِه (قِيس:
+     ١٨١ ثانيةً لتبلغ ٩٠٤ كلمة)، **والضبطُ السالبُ لا يحتاج نموًّا** — يكفيه أن
+     يُلتقط القارئُ عند آخر المحمَّل الأوّل، وهو «قرأتُ من آخر الجزء» في صغره. */
+  const grown = budget > 0 ? await cdp.ev(GROW(3000, budget), budget + 60000) : { words: 0, ms: 0, iters: 0 };
+  const loaded = grown?.words ?? 0;
+  log(`المحمَّل: ${loaded} كلمة في ${grown?.ms} مِث (${grown?.iters} تمريرة)`);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
   await sleep(400);
 
   /* البدء: المحرّكُ الشبكيُّ (ساكنٌ يُملى عليه)، والإعلانُ ثمّ التلاوة */
@@ -289,11 +316,12 @@ return true;
   log(`الالتقاط: ${JSON.stringify(said)}`);
   await sleep(600);
   const after = await cdp.ev(COUNT);
+  log(`العدّ: ${JSON.stringify(after)}`);
 
   /* وقياسُ زمن الإطار عند تقدّم المؤشّر */
   const times = [];
   for (let i = 0; i < steps; i++) {
-    const t = await cdp.ev(STEP_MS);
+    const t = await cdp.ev(STEP_MS, 90000);
     log(`خطوة ${i + 1}: ${t} مِث`);
     if (typeof t === "number") times.push(t);
     await sleep(120);
@@ -302,16 +330,67 @@ return true;
   await sleep(400);
 
   const median = times.length ? [...times].sort((a, b) => a - b)[Math.floor(times.length / 2)] : null;
-  return { label, loaded, atStart, after, said, times, median };
+  return { label, loaded, growMs: grown?.ms ?? null, atStart, after, said, times, median };
+  } finally {
+    try {
+      br.proc.kill();
+    } catch {
+      /* لا يضرّ */
+    }
+  }
 }
 
 /* ═══════════ التسيير ═══════════ */
 
 let preview = null;
-let chrome = null;
+const browsers = [];
+
+/**
+ * **متصفّحٌ جديدٌ لكلّ تشغيلة** — لا لسانٌ واحدٌ يتنقّل بينها.
+ *
+ * وسببُه مقيسٌ لا مقدَّر: بعد تشغيلة «بلا نافذةِ عرض» (وهي التي تُثقل الشجرة)
+ * **لم تعُد الصفحةُ تُقلع في اللسان نفسِه ولو أُمهلت تسعين ثانية** — مرّتين
+ * متتاليتين. **فالحكمُ على تشغيلةٍ لوّثتها التي قبلها ليس حكمًا**، ولسانٌ جديدٌ
+ * يكلّف ثوانيَ ويشتري يقينًا.
+ */
+async function openBrowser(port) {
+  const proc = spawn(
+    CHROME,
+    [
+      "--headless=new",
+      `--remote-debugging-port=${port}`,
+      `--user-data-dir=/tmp/cdp-sawt-view-${process.pid}-${port}`,
+      "--no-first-run",
+      "--disable-gpu",
+      "about:blank",
+    ],
+    { stdio: "ignore" },
+  );
+  browsers.push(proc);
+  let target = null;
+  for (let i = 0; i < 60 && !target; i++) {
+    await sleep(500);
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/json`);
+      const list = await res.json();
+      target = list.find((t) => t.type === "page");
+    } catch {
+      /* لم يقم بعد */
+    }
+  }
+  if (!target) return null;
+  const ws = new WebSocket(target.webSocketDebuggerUrl);
+  await new Promise((r) => ws.addEventListener("open", r, { once: true }));
+  const cdp = new Cdp(ws);
+  await cdp.send("Page.enable");
+  await cdp.send("Runtime.enable");
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await cdp.send("Page.addScriptToEvaluateOnNewDocument", { source: PRELUDE });
+  return { cdp, proc };
+}
 
 /** **ولا تُترك بوّابةٌ تعلّق بلا حكم**: مهلةٌ قصوى ثمّ تُردّ حمراءَ بسببها */
-const WATCHDOG_MS = 7 * 60 * 1000;
+const WATCHDOG_MS = 14 * 60 * 1000;
 
 async function main() {
   const cap = declaredCap();
@@ -332,54 +411,18 @@ async function main() {
     cwd: STUDIO,
     stdio: "ignore",
   });
-  chrome = spawn(
-    CHROME,
-    [
-      "--headless=new",
-      `--remote-debugging-port=${CDP_PORT}`,
-      `--user-data-dir=/tmp/cdp-sawt-view-${process.pid}`,
-      "--no-first-run",
-      "--disable-gpu",
-      "about:blank",
-    ],
-    { stdio: "ignore" },
-  );
-
-  let target = null;
-  for (let i = 0; i < 60 && !target; i++) {
-    await sleep(500);
-    try {
-      const res = await fetch(`http://127.0.0.1:${CDP_PORT}/json`);
-      const list = await res.json();
-      target = list.find((t) => t.type === "page");
-    } catch {
-      /* لم يقم بعد */
-    }
-  }
-  if (!target) {
-    missing.push("لم يقم المتصفّحُ على منفذ الأدوات");
-    return;
-  }
-
-  const ws = new WebSocket(target.webSocketDebuggerUrl);
-  await new Promise((r) => ws.addEventListener("open", r, { once: true }));
-  const cdp = new Cdp(ws);
-  await cdp.send("Page.enable");
-  await cdp.send("Runtime.enable");
-  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
-  await cdp.send("Page.addScriptToEvaluateOnNewDocument", { source: PRELUDE });
-  // **وخنقُ المعالج ×٤ كعادة القياس** — فالحكمُ على هاتفٍ لا على حاسوب
-  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  await sleep(2500);
 
   /* (١) البناءُ كما يُشحن: المرساةُ ونافذةُ العرض عاملتان */
-  const now = await run(cdp, { query: "", label: "كما يُشحن", steps: 7 });
+  const now = await run(CDP_PORT, { query: "", label: "كما يُشحن", steps: 7 });
   /* (٢) والتقييدُ معطَّل — وهو **القبلُ** بعينه، وضبطُ نافذة العرض السالب */
-  const all = await run(cdp, { query: "?sawt-render-all", label: "بلا نافذةِ عرض (القبل)", steps: 7 });
+  const all = await run(CDP_PORT + 1, { query: "?sawt-render-all", label: "بلا نافذةِ عرض (القبل)", steps: 5, budget: 0 });
   /* (٣) والمرساةُ مزحزحةٌ إلى الصفر — ضبطُ المرساة السالب */
-  const faded = await run(cdp, {
+  const faded = await run(CDP_PORT + 2, {
     query: "?sawt-render-all&sawt-fade-from-start",
     label: "بمرساةٍ في الصفر (القبل)",
     steps: 0,
+    budget: 0,
   });
 
   if (!now || !all || !faded) return;
@@ -387,30 +430,33 @@ async function main() {
   /* ═══ ١ — فحصُ المرساة ═══ */
   if (all.after?.error || now.after?.error) {
     missing.push("تعذّر عدُّ الكلمات في شجرة العرض");
-  } else if (all.after.past !== 0) {
+  } else if (all.after.firstPast >= 0 && all.after.firstPast < (all.said?.at ?? 0)) {
     fail(
       "المرساة",
-      `التُقط القارئُ عند آخر المحمَّل فبُهت ما قبله: ${all.after.past} كلمةً باهتةً من ${all.after.drawn} مرسومة`,
+      `التُقط القارئُ عند الكلمة ${all.said?.at} فبُهت ما قبلها: أوّلُ كلمةٍ باهتةٍ عند ${all.after.firstPast} (${all.after.past} كلمةً باهتة)`,
     );
   } else if (all.after.now !== 1) {
     fail("المرساة", `لم يستقرَّ المؤشّرُ على كلمةٍ واحدةٍ بعد الالتقاط (${all.after.now})`);
-  } else if (all.after.drawn < 2000) {
+  } else if (all.after.drawn < 800) {
     missing.push(
       `لم يُرسم ما يكفي ليكون للبهت مادّةٌ تُصطاد (${all.after.drawn} كلمةً مرسومة) — فالفحصُ لا يشهد`,
     );
   } else {
     notes.push(
-      `المرساة: فُتح المصحفُ كلُّه ونُمّي المحمَّلُ إلى ${all.loaded} كلمة، ثمّ التُقط القارئُ عند آخره — **صفرُ كلمةٍ باهتةٍ** من ${all.after.drawn} كلمةً مرسومة`,
+      `المرساة: التُقط القارئُ عند الكلمة ${all.said?.at} من ${all.after.drawn} مرسومة — **صفرُ كلمةٍ باهتةٍ قبل موضع الالتقاط** (أوّلُ باهتةٍ عند ${all.after.firstPast}، وهي من الكلمات الخمس التي تُليت)`,
     );
   }
 
   /* وضبطُها السالب: المرساةُ في الصفر ⇒ يعود البهتُ الكاذبُ فيُصطاد */
   if (faded.after?.error) missing.push("تعذّر عدُّ الكلمات في ضبط المرساة السالب");
-  else if (faded.after.past <= 0) {
-    fail("ضبطُ المرساة", "زُحزحت المرساةُ إلى الصفر فلم يظهر بهتٌ كاذبٌ — والفحصُ لا يفحص");
+  else if (faded.after.firstPast !== 0 || faded.after.past <= 1) {
+    fail(
+      "ضبطُ المرساة",
+      `زُحزحت المرساةُ إلى الصفر فلم يعُد البهتُ الكاذب (أوّلُ باهتةٍ ${faded.after.firstPast} · ${faded.after.past} باهتة) — والفحصُ لا يفحص`,
+    );
   } else {
     notes.push(
-      `ضبطٌ سالب: زُحزحت المرساةُ إلى الصفر فبُهتت ${faded.after.past} كلمةً لم تُقرأ — فاصطادها الفحص`,
+      `ضبطٌ سالب: زُحزحت المرساةُ إلى الصفر فبُهت المقطعُ من أوّله (أوّلُ باهتةٍ عند ٠) — ${faded.after.past} كلمةً لم تُقرأ، فاصطادها الفحص`,
     );
   }
 
@@ -422,14 +468,23 @@ async function main() {
       `نافذةُ العرض: المحمَّلُ ${now.after.loaded} كلمةً والمرسومُ ${now.after.drawn} — دون السقف المعلَن (${cap})`,
     );
   }
-  if (all.after.drawn <= cap) {
+  /* **وضبطُه السالبُ يقيس الحجبَ نفسَه**: مع التقييد **يُحجب بعضُ المحمَّل عن
+     الرسم**، وبتعطيله **يُرسم المحمَّلُ كلُّه** — فإن استوى الحالان فليس ثَمَّ
+     تقييدٌ يُفحص. (ولا يُشترط أن يبلغ «القبلُ» السقفَ، إذ هو أبطأُ من أن يبلغه
+     في مهلةٍ معقولة — وذلك نفسُه من مادّة القياس.) */
+  if (all.after.drawn !== all.after.loaded) {
     fail(
       "ضبطُ نافذة العرض",
-      `عُطّل التقييدُ فلم ينفجر المرسوم (${all.after.drawn} ≤ ${cap}) — فالفحصُ لا يفحص`,
+      `عُطّل التقييدُ فلم يُرسم المحمَّلُ كلُّه (${all.after.drawn} من ${all.after.loaded}) — فالبابُ السالبُ لا يفتح`,
+    );
+  } else if (now.after.drawn >= now.after.loaded) {
+    fail(
+      "ضبطُ نافذة العرض",
+      `كما يُشحن: رُسم المحمَّلُ كلُّه (${now.after.drawn} من ${now.after.loaded}) — فلا نافذةَ عرضٍ تحجب شيئًا`,
     );
   } else {
     notes.push(
-      `ضبطٌ سالب: عُطّل التقييدُ فرُسم ${all.after.drawn} كلمةً — فوق السقف المعلَن، فاصطاده الفحص`,
+      `ضبطٌ سالب: بالتقييد رُسم ${now.after.drawn} من ${now.after.loaded} محمَّلة، وبتعطيله رُسم المحمَّلُ كلُّه (${all.after.drawn} من ${all.after.loaded}) — فالحجبُ مقيسٌ لا مُدَّعًى`,
     );
   }
 
@@ -439,6 +494,7 @@ async function main() {
   measures.before = { drawn: all.after.drawn, nodes: all.after.nodes, frameMs: all.median, times: all.times };
   measures.after = { drawn: now.after.drawn, nodes: now.after.nodes, frameMs: now.median, times: now.times };
   measures.loaded = { before: all.loaded, after: now.loaded };
+  measures.growMs = { before: all.growMs, after: now.growMs };
   notes.push(
     `قياسٌ (معالجٌ مخنوقٌ ×٤): الكلماتُ المرسومة ${all.after.drawn} ⇐ ${now.after.drawn} · عناصرُ الشجرة ${all.after.nodes} ⇐ ${now.after.nodes} · وسيطُ زمن الإطار عند تقدّم المؤشّر ${all.median ?? "—"} ⇐ ${now.median ?? "—"} مِث`,
   );
@@ -451,7 +507,7 @@ Promise.race([
   .catch((e) => missing.push(`تعثّرت البوّابة: ${String(e?.message ?? e)}`))
   .finally(() => {
     try {
-      chrome?.kill();
+      for (const b of browsers) b.kill();
       preview?.kill();
     } catch {
       /* لا يضرّ */
