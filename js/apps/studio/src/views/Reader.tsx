@@ -281,9 +281,19 @@ function MushafPage({
   const startAyah = ayahs.find((a) => a.ayahNo === 1);
   return (
     <section className={`mushaf-page${opening ? " opening" : ""}`}>
-      <div className="mp-margin">
-        <span>{ar ? "الجزء" : "Juz"} {num(first?.juz ?? 0)}</span>
-        <span>{surahNameAr(surahNo)} · {ar ? "الحزب" : "Hizb"} {num(first?.hizb ?? 0)}</span>
+      {/* ═══ **ترويسةُ الصفحة** (ج٨ §١أ) — كترويسة المصحف المطبوع ═══
+          كان ههنا سطران رماديّان سائبان (`.mp-margin`) ورقمُ الصفحة باهتًا في
+          قدمها (`.page-no`) — **عناصرُ صحيحةٌ مفرداتٍ ضائعةٌ نظامًا**. فصارت
+          **ترويسةً واحدةً مؤطَّرةً** ثلاثَ خاناتٍ على سطر: اسمُ السورة · رقمُ
+          الصفحة في زخرفه · الجزءُ والحزب. **وبها يُقرأ بيانُ الحزب** فلا يقع
+          في وسط عمود المتن (§١ب)، **والفصلُ بين الصفحتين فراغٌ** وترويسةُ
+          التالية — كطيّ ورقةٍ في كتاب، لا خطًّا يقطعها. */}
+      <div className="mp-head">
+        <span className="mp-head-cell">{surahNameAr(surahNo)}</span>
+        <span className="mp-head-folio">{num(page)}</span>
+        <span className="mp-head-cell">
+          {ar ? "الجزء" : "Juz"} {num(first?.juz ?? 0)} · {ar ? "الحزب" : "Hizb"} {num(first?.hizb ?? 0)}
+        </span>
       </div>
       {/* **لوحةُ السورة** — تُصنع ولا تُنسخ عن ناشرٍ بعينه، وبياناتُها من
           `SurahDoc` حرفًا. **والبسملةُ تُحذف حيث لا بسملةَ فيها** بقراءة
@@ -292,6 +302,8 @@ function MushafPage({
       {startAyah && (
         <>
           <div className="mp-surah-band">
+            {/* ترويسةٌ وسطى صغيرةٌ بلمسة ذهب — زخرفٌ مرسومٌ في الملفّ لا مجلوبٌ من شبكة (ج٨ §١ج) */}
+            <span className="mp-band-crest" aria-hidden />
             <span className="mp-surah-name quran">سورة {surahNameAr(startAyah.surahNo)}</span>
             {surahDoc && <span className="mp-surah-meta">{surahPlateMeta(surahDoc)}</span>}
           </div>
@@ -311,9 +323,11 @@ function MushafPage({
           const isKulliya = !!(layers.jawami && kullReady && classOf(`${ayah.surahNo}:${ayah.ayahNo}`)?.tier === "كلّية");
           return (
             <Fragment key={ayah.location}>
-              {/* الرمزُ المتوارثُ عاريًا، وبيانُه سطرٌ دقيقٌ تحته لا في متن السطر (ج٦٧ §١/٧) */}
-              {rub && <div className="mp-mark mp-rub"><span>۞</span><span className="mp-mark-say">{num(rub)}</span></div>}
-              {ayah.sajdaType && <div className="mp-mark mp-sajda"><span>۩</span><span className="mp-mark-say">موضع سجدة</span></div>}
+              {/* **الرمزُ المتوارثُ وحدَه** (ج٨ §١ب): كان تحته سطرٌ يقول «الحزب ٦»
+                  و«موضع سجدة» في وسط عمود المتن — وموضعُ البيان **ترويسةُ الصفحة**
+                  لا متنُها، ومعنى ۞ و۩ متوارَثٌ يُقرأ بلا شرح، كالمصحف المطبوع. */}
+              {rub && <div className="mp-mark mp-rub" title={`${ar ? "الحزب" : "Hizb"} ${num(rub)}`}><span>۞</span></div>}
+              {ayah.sajdaType && <div className="mp-mark mp-sajda" title={ar ? "موضع سجدة" : "sajda"}><span>۩</span></div>}
               {/* «القراءةُ أولًا»: النقرُ في أيِّ مكانٍ من الآية — حتى فوق كلماتها —
                   يعلّمها؛ وبياناتُ الكلمة بنقرٍ طويلٍ (جوال) أو بنقرةٍ بعد التعليم
                   (حاسوب) — قرار المالك 2026-07-29 */}
@@ -354,14 +368,18 @@ function MushafPage({
                       الميداليّة، وقد صارت الميداليّةُ مرسومةً في `theme.css`
                       حول الرقم. (وفي نمط «آيات» وسائرِ المواضع يبقى `﴿…﴾`.) */}
                   {num(ayah.ayahNo)}
-                </span>{" "}
+                </span>
+                {/* **ووسمُ الكلّيّات لا يُلوّن رقمَ الآية** (ج٨ §١د): كان الرقمُ
+                    يصير ذهبيًّا فيقع في الصفحة لونان لأرقام الآي بلا مفتاحٍ
+                    معلَن — فصار الوسمُ نجمةً دقيقةً بعده، **واللونُ الواحدُ
+                    للأرقام كلِّها**. */}
+                {isKulliya && <span className="mp-kull-star" aria-hidden />}{" "}
               </span>
               {selectedAyahNo === ayah.ayahNo && selectedExtras}
             </Fragment>
           );
         })}
       </div>
-      <div className="page-no">﴾ {num(page)} ﴿</div>
     </section>
   );
 }
