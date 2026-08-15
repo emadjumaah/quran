@@ -511,6 +511,16 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+/**
+ * **التتبّعُ حالٌ من القراءة لا صفحةٌ أخرى** (ج٤ §١/٥) — وعلى الجوال يُفتح
+ * الرابطُ **على المصحف في حال التتبّع**، فروابطُ الناس لا تُكسَر ولا يُنقل
+ * قارئٌ إلى سطحٍ ثانٍ له رأسُه. وعلى الحاسوب يبقى البابُ صفحتَه كما كان.
+ */
+function TatabbuRoute() {
+  const mobile = useIsMobile();
+  return mobile ? <Reader tatabbu /> : <Tatabbu />;
+}
+
 function App() {
   const mobile = useIsMobile();
   const [drawer, setDrawer] = useState(false);
@@ -645,7 +655,7 @@ function App() {
           <Route path="/today" element={<Today />} />
           <Route path="/goto/:kind/:n" element={<Goto />} />
           {/* مستور — لا يُدرج في التنقّل ولا في التوثيق حتّى يُقرَّر بعد الفحص */}
-          <Route path="/tatabbu" element={<Tatabbu />} />
+          <Route path="/tatabbu" element={<TatabbuRoute />} />
         </Routes>
         </RouteBoundary>
         <NowPlayingBar />

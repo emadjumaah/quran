@@ -197,7 +197,22 @@ const arDate = (iso: string): string => {
   return `${num(d.getDate())}/${num(d.getMonth() + 1)}/${num(d.getFullYear())}`;
 };
 
-export default function Tatabbu() {
+/**
+ * **حالٌ من القراءة لا صفحةٌ أخرى** (ج٤ §١): يُركَّب هذا الباب **داخلَ سطح
+ * القراءة** فلا ينتقل القارئُ إلى صفحةٍ ثانيةٍ ولا يرى شاشةَ بدء —
+ *
+ *  • `embedded`: **لا يُخفى هيكلُ التطبيق ما دام مهيَّئًا** (فالرأسُ الواحدُ
+ *    رأسُه)، وإنّما يُخفى **أثناء التلاوة وحدَها** (`sawt-live`) — فتبقى
+ *    «ثلاثةٌ لا رابعَ لها» على حالها. **وزرُّ الإغلاق يردّ إلى القراءة** في
+ *    مكانها لا إلى صفحةٍ سابقة.
+ *  • `autostart`: **لمسةُ الميكروفون في سطح القراءة تبدأ التتبّعَ** — تمرّ على
+ *    طريق البدء نفسِه (إعلانٌ ثمّ إذنٌ ثمّ محرّك)، **فلا ميكروفونَ بلا إعلان**.
+ */
+export default function Tatabbu({
+  embedded = false,
+  autostart = false,
+  onClose,
+}: { embedded?: boolean; autostart?: boolean; onClose?: () => void } = {}) {
   const nav = useNavigate();
   const mobile = useIsMobile();
 
@@ -372,11 +387,14 @@ export default function Tatabbu() {
     };
   }, []);
 
-  /* ── الصفحةُ قائمةٌ بنفسها: يُخفى هيكلُ التطبيق ما دامت مفتوحة ── */
+  /* ── الصفحةُ قائمةٌ بنفسها: يُخفى هيكلُ التطبيق ما دامت مفتوحة ──
+     **إلّا مركَّبةً في سطح القراءة** (ج٤ §٢): فالرأسُ حينئذٍ رأسُ التطبيق الواحدُ
+     ولا يُخفى إلّا بالتلاوة. */
   useEffect(() => {
+    if (embedded) return;
     document.body.classList.add("sawt-page");
     return () => document.body.classList.remove("sawt-page");
-  }, []);
+  }, [embedded]);
   useEffect(() => {
     if (phase !== "running") return;
     document.body.classList.add("sawt-live");
@@ -947,6 +965,16 @@ export default function Tatabbu() {
     void begin();
   }, [begin, halId, engineId]);
 
+  /** **لمسةُ الميكروفون في سطح القراءة** (ج٤ §١/٢): تُطلب البدايةُ مرّةً عند
+   *  التركيب، **على طريق البدء نفسِه** — فإن لزم إعلانٌ أو اختيارُ محرّكٍ فُتح
+   *  بابُه، **ولا يُفتح ميكروفونٌ بلا إعلان**. */
+  const startedOnceRef = useRef(false);
+  useEffect(() => {
+    if (!autostart || startedOnceRef.current || !ready) return;
+    startedOnceRef.current = true;
+    requestStart();
+  }, [autostart, ready, requestStart]);
+
   const agreeAndStart = useCallback(() => {
     if (!engineId) return;
     saveConsent(engineId);
@@ -1027,6 +1055,11 @@ export default function Tatabbu() {
 
   /** زرُّ إغلاقٍ واحدٌ يعود بالقارئ من حيث جاء — وإن قدِم من خارج التطبيق فإلى المصحف */
   const close = () => {
+    // **مركَّبًا: يُردّ إلى القراءة في مكانها** — لا انتقالَ ولا رجوعٌ في التاريخ
+    if (embedded) {
+      onClose?.();
+      return;
+    }
     if (window.history.length > 1) nav(-1);
     else nav("/read");
   };
@@ -1892,7 +1925,13 @@ export default function Tatabbu() {
   if (mobile) {
     const suspended = !!hal.suspended;
     return (
-      <div className="sawt-m" data-sawt="root" data-sawt-state={engineState} data-sawt-iltiqat={iltiqatMs ?? ""}>
+      <div
+        className={`sawt-m${embedded ? " sawt-embed" : ""}`}
+        data-sawt="root"
+        data-sawt-embedded={embedded ? "1" : ""}
+        data-sawt-state={engineState}
+        data-sawt-iltiqat={iltiqatMs ?? ""}
+      >
         <div className="sawt-m-bar">
           <button
             className="sawt-x"

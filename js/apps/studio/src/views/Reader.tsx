@@ -9,7 +9,7 @@
  * يُفتح بالنقر (أُلغي الجانبُ الأيمن بقرار المالك 2026-07-21). ودون ٩٠٠ بكسل
  * تنطوي قائمةُ السور ويحلّ محلَّها مُنتقٍ.
  */
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ChangeEvent } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -41,7 +41,11 @@ import AyahPanel from "../components/AyahPanel";
 import WelcomeQuestions from "../components/WelcomeQuestions";
 import { EnTransBar, EnVerseLine } from "../components/EnVerse";
 import { wbwOf, type WbwEntry } from "../lib/wbw";
-import { readMawdi, saveMawdi } from "../lib/mawadi";
+import { parseMawdi, readMawdi, saveMawdi } from "../lib/mawadi";
+
+/** **بابُ التتبّع يُركَّب في سطح القراءة** (ج٤ §١) — كسولًا: لا يُحمَّل شيءٌ منه
+ *  لمن لم يلمس الميكروفون، فيبقى المصحفُ خفيفًا لمن جاء يقرأ. */
+const TatabbuSurface = lazy(() => import("./Tatabbu"));
 
 const MODE_KEY = "quran-studio:reader-mode";
 /** أنّ سطرَ «تجدّدت هيئةُ الصفحات» عُرض — فيُعرض مرّةً ثمّ لا يعود (§٥ب) */
@@ -386,7 +390,7 @@ function MushafPage({
   );
 }
 
-export default function Reader() {
+export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) {
   useUILang();
   const params = useParams<{ surahNo: string; ayahNo?: string }>();
   const navigate = useNavigate();
@@ -402,9 +406,18 @@ export default function Reader() {
   // ?know=twin|links|wujuh — سؤالُ الاستقبال يفتح جوابَه: الآيةُ تُعلَّم ولوحتُها تُفتح
   const [searchParams] = useSearchParams();
   const knowParam = searchParams.get("know") as "twin" | "links" | "wujuh" | null;
-  const surahNo = Number(params.surahNo);
-  const targetAyahNo = params.ayahNo != null ? Number(params.ayahNo) : null;
+  /** **ومن جاء برابط `/tatabbu` بلا سورة** فُتح على آخر موضعٍ له (ج٤ §١/٥ و§٣/٤) */
+  const resumeFor = tatabbu && params.surahNo == null ? parseMawdi(readMawdi("mushaf")) : null;
+  const surahNo = params.surahNo != null ? Number(params.surahNo) : (resumeFor?.surahNo ?? 1);
+  const targetAyahNo = params.ayahNo != null ? Number(params.ayahNo) : (resumeFor?.ayahNo ?? null);
   const narrow = useNarrow();
+  /* ═══ **التتبّعُ حالٌ من القراءة** (ج٤ §١) ═══
+     لا صفحةَ ثانيةَ ولا انتقالَ ولا شاشةَ بدء: لمسةُ الميكروفون في الرأس الواحد
+     تقلب هذه الصفحةَ إلى حال تتبّعٍ في مكانها، والإغلاقُ يردّها إلى القراءة.
+     **ومن جاء برابط `/tatabbu` فُتحت له الحالُ نفسُها** — فروابطُ الناس لا تُكسر. */
+  const [tracking, setTracking] = useState(tatabbu);
+  /** أبدأ التتبّعُ بلمسةٍ مقصودةٍ الآن؟ — فيُطلب البدءُ من نفسه (لا عند فتح التطبيق) */
+  const [micTouched, setMicTouched] = useState(false);
   // صفحات is the default (easiest for most readers); آيات is opt-in for its
   // tools/translation/«مثلها». A returning reader's explicit choice is remembered.
   const [mode, setMode] = useState<Mode>(
@@ -741,6 +754,23 @@ export default function Reader() {
                 <path d="M15.4 15.4 20.5 20.5" />
               </svg>
             </button>
+            {/* **الميكروفونُ لمسةٌ لا افتراض** (ج٤ §١/٣): لا يُطلب إذنُه عند فتح
+                التطبيق بحال — من فتح وجد مصحفًا نافعًا بذاته؛ ومن لمسه هنا
+                تبع المؤشّرُ صوتَه **في الصفحة نفسِها**. */}
+            <button
+              className={`sh-btn rd-mic-btn${tracking ? " on" : ""}`}
+              onClick={() => {
+                setMicTouched(true);
+                setTracking(true);
+              }}
+              aria-pressed={tracking}
+              aria-label={ar ? "تتبّعْ تلاوتي" : "follow my recitation"}
+              title={ar ? "تتبّعْ تلاوتي" : "follow my recitation"}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <path d="M3.2 12h1.6M8 8v8M12 4.8v14.4M16 8v8M19.2 12h1.6" />
+              </svg>
+            </button>
             <button
               className="sh-btn rd-more-btn"
               onClick={() => setSheet(true)}
@@ -956,6 +986,23 @@ export default function Reader() {
             والتشغيلُ والأنماطُ في ورقةٍ سفليّةٍ يفتحها «⋯»، **واسمُ السورة
             الجاري يُقرأ من ترويسة الصفحة** فلا يلزمه شريط. */}
         {surah && narrow && <ReaderHeadTools />}
+
+        {/* ═══ **حالُ التتبّع — في الصفحة نفسِها** (ج٤ §١) ═══
+            لا انتقالَ ولا شاشةَ بدءٍ ولا صفحةٌ ثانية: يُركَّب سطحُ التتبّع فوق
+            سطح القراءة **تحت الرأس الواحد**، فإذا بدأت التلاوةُ خلا الوجهُ إلّا
+            من القرآن (`sawt-live`)، وإذا أُغلق عاد القارئُ إلى مكانه من المصحف. */}
+        {tracking && narrow && (
+          <Suspense fallback={null}>
+            <TatabbuSurface
+              embedded
+              autostart={micTouched}
+              onClose={() => {
+                setTracking(false);
+                setMicTouched(false);
+              }}
+            />
+          </Suspense>
+        )}
 
         {/* Desktop: name · meta · on-page search · listen · modes. */}
         {surah && !narrow && (

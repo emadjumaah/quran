@@ -3639,3 +3639,23 @@ body.sawt-page { overflow: hidden; }
 }
 @keyframes resumed-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .reader-resumed { animation: none; } }
+
+/* ═══ **التتبّعُ مركَّبًا في سطح القراءة** (ج٤ §١) ═══
+   سطحُ التتبّع طبقةٌ ثابتةٌ تملأ الشاشة؛ ومركَّبًا في المصحف **يبدأ تحت الرأس
+   الواحد** — فالرأسُ رأسُ التطبيق لا رأسٌ ثانٍ للتتبّع (§٢). **وأثناء التلاوة**
+   يُخفى الرأسُ (`sawt-live`) فيملأ السطحُ الشاشةَ: القرآنُ وحدَه، ثلاثةٌ لا
+   رابعَ لها. */
+.sawt-m.sawt-embed { inset-block-start: var(--topbar-h, 56px); }
+body.sawt-live .sawt-m.sawt-embed { inset-block-start: 0; }
+/* والميكروفونُ في الرأس: عارٍ كأخواته، وحبرُ الهويّة يقول إنّ التتبّعَ قائم */
+.rd-mic-btn.on { color: var(--accent); }
+
+/* **وأثناء التلاوة ينزلق الرأسُ ولا يقفز** (ج٤ §٢): البابُ القائمُ بنفسه يُخفي
+   القشرةَ بـ`display: none` — **و`display` لا يقبل انتقالًا**، فيقفز. ومركَّبًا
+   في سطح القراءة يُدفَع بمقدار الانسحاب نفسِه (`--shell-p`) بتوقيته الواحد
+   (ج٨ §٣) — فيغيب الرأسُ والشريطُ كما يغيبان بالتمرير سواءً بسواء. */
+@media (max-width: 760px) {
+  body.reading-surface.sawt-live { --shell-p: 1; }
+  body.reading-surface.sawt-live .topbar { display: flex; }
+  body.reading-surface.sawt-live .tabbar { display: flex; }
+}
