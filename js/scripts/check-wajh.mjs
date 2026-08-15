@@ -673,9 +673,29 @@ async function live() {
     const themes = ["light", "dark", "sepia"];
     const table = [];
     let clean = null;
+    /* **السمةُ ملكُ التطبيق لا ملكُ القياس** (واقعةُ مراجعة ج٦٧): `applySettings`
+       يعيد كتابةَ `data-theme` من مخزونه عند كلّ استدعاء، وقياسٌ يزرع السمةَ من
+       خارج قناته يتسابق معه — والانتقالُ (١٢٠ مث على خلفيّات الأزرار) يجعل
+       اللقطةَ هجينةً: حبرُ وضعٍ على خلفيّة وضعٍ آخرَ فتُقرأ ١٫٠٦ والألوانُ بريئة.
+       فيُكتب الوضعُ في **مخزن التطبيق نفسِه** (فإن أعاد الكتابةَ أعاد الوضعَ
+       عينَه — يُقطع السباقُ من جذره)، وتُجمَّد الانتقالاتُ زمنَ القياس بعُدّة
+       `__noTrans` القائمةِ في ضبط الانسحاب أعلاه، ويُشترط ثباتُ السمة قبل القراءة. */
+    await cdp.ev(`
+      const st = document.createElement('style');
+      st.id = '__noTransShell';
+      st.textContent = '* { transition: none !important; }';
+      document.head.appendChild(st);
+      return true;
+    `);
     for (const th of themes) {
-      await cdp.ev(`document.documentElement.setAttribute('data-theme', '${th}'); return true;`);
-      await sleep(250);
+      await cdp.ev(`
+        localStorage.setItem('quran-studio:settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('quran-studio:settings') ?? '{}'), theme: '${th}' }));
+        document.documentElement.setAttribute('data-theme', '${th}');
+        return true;
+      `);
+      const settled = await cdp.until(`document.documentElement.dataset.theme === '${th}'`, 5000, 100);
+      if (!settled) { fail(`انتظامُ الرأس — «${th}»`, "لم تثبت سمةُ الوضع — التطبيقُ يعيد كتابتها بغير ما كُتب في مخزنه"); continue; }
+      await sleep(150);
       const s = await cdp.ev(SHELL);
       if (s.error) { fail("انتظامُ الرأس", s.error); break; }
       if (th === "light") clean = s;
@@ -695,7 +715,17 @@ async function live() {
           (s.tabs.length ? ` · الفوتر أدنى حبرٍ ${Math.min(...s.tabs.map((t) => t.ink))}:١` : " · لا فوترَ في هذا القياس"),
       );
     }
-    await cdp.ev(`document.documentElement.setAttribute('data-theme', 'light'); return true;`);
+    /* ويُعاد ما استُعير: يُمحى مفتاحُ الوضع من المخزن (فيعود «auto» الأصل)
+       وتُرفع السمةُ إلى الفاتح ويُزال مجمِّدُ الانتقالات — فما بعد هذه الكتلة
+       يقيس صفحةً كما كانت. */
+    await cdp.ev(`
+      const raw = JSON.parse(localStorage.getItem('quran-studio:settings') ?? '{}');
+      delete raw.theme;
+      localStorage.setItem('quran-studio:settings', JSON.stringify(raw));
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.getElementById('__noTransShell')?.remove();
+      return true;
+    `);
     await sleep(200);
     if (table.length === themes.length) notes.push(`انتظامُ الرأس وتباينُ القشرة — ${table.join(" | ")}`);
 
