@@ -4,6 +4,7 @@ import { HashRouter, Link, NavLink, Navigate, Route, Routes, useLocation, usePar
 import { initDb, listSurahs } from "./db";
 import { ensureLayers } from "./layers";
 import { applyUILang, getUILang, setUILang, t, useUILang } from "./i18n";
+import { parseMawdi, readMawdi } from "./lib/mawadi";
 
 // سجل الطبقات (rag-manifest) يُحمَّل مع الإقلاع كي ترى كلُّ الشاشات — لا نبراس
 // وحده — الكتبَ والطبقاتِ المضافة قيودَ مانيفست («العائلات المفتوحة»)
@@ -306,13 +307,19 @@ function Nav() {
   );
 }
 
-/** First load opens the Quran — at the last-read position, else al-Fātiḥa. */
+/** First load opens the Quran — at the last-read position, else al-Fātiḥa.
+ *  **والموضعُ من طبقة المواضع** (ج٤ §٣): مفتاحٌ واحدٌ لكلّ معنًى، وميراثُ ما
+ *  قبلها يُقرأ منها — فلا يفقد قارئٌ موضعَه في التحوّل. */
 function Home() {
-  const last = localStorage.getItem("quran-studio:last-read");
-  const to = last && /^\d+:\d+$/.test(last)
-    ? `/read/${last.split(":")[0]}/${last.split(":")[1]}`
-    : "/read/1";
-  return <Navigate to={to} replace />;
+  const at = parseMawdi(readMawdi("mushaf"));
+  /* **والعودةُ بلا استجواب** (ج٤ §٣/٤): يُفتح فيجد نفسَه حيث وقف — **ولا سؤالَ
+     يُعترض به على القارئ**؛ وإنّما تُمرَّر إشارةٌ إلى الصفحة فتقول سطرًا خفيفًا
+     يُهمَل. ولا تُقال لمن جاء برابطٍ صريحٍ — فذاك لم يُعَد إلى شيء. */
+  return at ? (
+    <Navigate to={`/read/${at.surahNo}/${at.ayahNo}`} replace state={{ resumed: `${at.surahNo}:${at.ayahNo}` }} />
+  ) : (
+    <Navigate to="/read/1" replace />
+  );
 }
 
 function Brand() {

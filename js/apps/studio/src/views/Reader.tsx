@@ -41,6 +41,7 @@ import AyahPanel from "../components/AyahPanel";
 import WelcomeQuestions from "../components/WelcomeQuestions";
 import { EnTransBar, EnVerseLine } from "../components/EnVerse";
 import { wbwOf, type WbwEntry } from "../lib/wbw";
+import { readMawdi, saveMawdi } from "../lib/mawadi";
 
 const MODE_KEY = "quran-studio:reader-mode";
 /** أنّ سطرَ «تجدّدت هيئةُ الصفحات» عُرض — فيُعرض مرّةً ثمّ لا يعود (§٥ب) */
@@ -391,7 +392,13 @@ export default function Reader() {
   const navigate = useNavigate();
   // مفتاحُ كلِّ انتقال — به يُعاد التمريرُ إلى الآية حتى لو كان الرابطُ نفسَه
   // (رصدُ المالك: البحثُ عن الآية ثانيةً لم يعد يحرّك إليها)
-  const navKey = useLocation().key;
+  const loc = useLocation();
+  const navKey = loc.key;
+  /* **سطرُ العودة إلى الموضع** (ج٤ §٣/٤): من فُتح له التطبيقُ على موضعه يُخبَر
+     **بسطرٍ خفيفٍ يُهمَل** — لا بسؤالٍ يعترضه. والإشارةُ تأتي من `Home` وحدَها،
+     فلا يُقال لمن جاء برابطٍ صريح. */
+  const resumedAt = (loc.state as { resumed?: string } | null)?.resumed ?? null;
+  const [showResumed, setShowResumed] = useState(false);
   // ?know=twin|links|wujuh — سؤالُ الاستقبال يفتح جوابَه: الآيةُ تُعلَّم ولوحتُها تُفتح
   const [searchParams] = useSearchParams();
   const knowParam = searchParams.get("know") as "twin" | "links" | "wujuh" | null;
@@ -506,11 +513,21 @@ export default function Reader() {
   // remember the last reading position (for resume) and advance khatma progress
   useEffect(() => {
     if (Number.isInteger(surahNo) && surahNo >= 1 && surahNo <= 114) {
-      localStorage.setItem("quran-studio:last-read", `${surahNo}:${targetAyahNo ?? 1}`);
+      // **موضعُ قراءة المصحف يُكتب في طبقة المواضع وحدَها** (ج٤ §٣/١) — فلا
+      // نظامان يكتبان في معنًى واحد. والقديمُ يبقى في جهاز من سبق يُقرأ منه.
+      saveMawdi("mushaf", `${surahNo}:${targetAyahNo ?? 1}`);
       const base = surahBase.get(surahNo);
       if (base != null) recordProgress(base + (targetAyahNo ?? 1));
     }
   }, [surahNo, targetAyahNo, surahBase]);
+
+  /** يظهر عند العودة ثمّ ينصرف من نفسه — ولا زرَّ إغلاقٍ يُطلب من القارئ */
+  useEffect(() => {
+    if (!resumedAt) return;
+    setShowResumed(true);
+    const t = window.setTimeout(() => setShowResumed(false), 6000);
+    return () => window.clearTimeout(t);
+  }, [resumedAt]);
 
   // وصولٌ من سؤال استقبال: علِّم الآيةَ الهدف كي يظهر سطرُ معارفها مفتوحًا
   useEffect(() => {
@@ -965,6 +982,12 @@ export default function Reader() {
           </div>
         )}
 
+        {/* **عُدتَ إلى…** — سطرٌ خفيفٌ في الصفحة لا لوحٌ فوقها (ج٤ §٣/٤) */}
+        {showResumed && resumedAt && (
+          <p className="reader-resumed" data-reader="resumed" role="status">
+            عُدتَ إلى {surahNameAr(Number(resumedAt.split(":")[0]))} {num(Number(resumedAt.split(":")[1]))}
+          </p>
+        )}
         {!loading && <WelcomeQuestions />}
         {/* سطرُ التجديد — **في الصفحة لا فوقها**، ويُهمَل بلا أثر (§٥ب) */}
         {!loading && renewNote && mode === "ayat" && (

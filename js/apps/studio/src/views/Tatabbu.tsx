@@ -84,16 +84,16 @@ import { OnDeviceRecognizer, onDeviceAvailable } from "../lib/sawt/onDeviceRecog
 import { isAppleMobile, startVad, type VadHandle } from "../lib/sawt/vad";
 import {
   CONDITIONS,
-  clearMark,
+
   deviceName,
   isStandalone,
   listRuns,
-  readMark,
-  saveMark,
+
   saveRun,
   type SawtRunRow,
 } from "../lib/sawt/runs";
 import { surahNameAr } from "../db";
+import { clearMawdi, LOCAL_ONLY_NOTE, readMawdi, saveMawdi, type MawdiId } from "../lib/mawadi";
 import { TAJWID, tajwidWords, type TajwidRule } from "../tajwid";
 import TAJWID_BANK from "../lib/sawt/tajwid-bank.json";
 import "../styles/sawt-engine.css";
@@ -204,6 +204,9 @@ export default function Tatabbu() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [halId, setHalId] = useState<HalId>(() => readHal());
   const hal = findHal(halId);
+  /** والحالُ مرآةً في مرجع — فيكتب الختامُ علامتَه لحالها لا لحالٍ سبقتها */
+  const halIdRef = useRef<HalId>(halId);
+  halIdRef.current = halId;
 
   const [pick, setPick] = useState<Pick>("surah");
   const [sealed, setSealed] = useState(SEALED_SEGMENTS[0].id);
@@ -339,7 +342,9 @@ export default function Tatabbu() {
 
   /** يُعاد قراءةُ العلامة عند كلّ ختامٍ **وعند محوها بيد القارئ** (§٣) */
   const [markTick, setMarkTick] = useState(0);
-  const mark = useMemo(() => readMark(), [phase, markTick]);
+  /* **لكلّ حالٍ علامتُها** (ج٤ §٣/٢): كانت علامةً واحدةً تكتب على الأخرى —
+     فختمتُه تمحو مراجعتَه — فصار لكلّ حالٍ مفتاحُها في طبقة المواضع. */
+  const mark = useMemo(() => readMawdi(halId as MawdiId), [phase, markTick, halId]);
   /** أيقوم في هذا الجهاز محرّكٌ أصلًا؟ — أحدُهما يكفي */
   const supported = webSpeechAvailable() || onDeviceAvailable();
   /** أمتاحٌ كلُّ محرّكٍ بحدته — فلا يُعرض خيارٌ لا يعمل ولا يُكتم عذرُه */
@@ -656,7 +661,7 @@ export default function Tatabbu() {
       // علامةُ آخر موضع: موضعٌ وتاريخُه لا غير — سجلُّ موضعٍ لا لعبةَ مواظبة
       const w = win.script.words[Math.min(cursorRef.current, win.script.words.length - 1)];
       if (w && cursorRef.current > 0) {
-        saveMark(w.location);
+        saveMawdi(halIdRef.current as MawdiId, w.location);
         setReached(`${surahNameAr(w.surahNo)} ${num(w.ayahNo)}`);
       }
     }
@@ -1347,13 +1352,15 @@ export default function Tatabbu() {
             className="sawt-seg"
             data-sawt="reset-clear"
             onClick={() => {
-              clearMark();
+              clearMawdi(halId as MawdiId);
               setResume(false);
               setMarkTick((t) => t + 1);
             }}
           >
             امحُ موضعي المحفوظ
           </button>
+          {/* **حدٌّ يُعلَن ولا يُوعَد بخلافه** (ج٤ §٣/٦) — المواضعُ محلّيّةٌ لكلّ جهاز */}
+          <p className="muted sawt-note" data-sawt="mawdi-local">{LOCAL_ONLY_NOTE}</p>
         </div>
       )}
       {/* **إشعالُ الأحكام** — يُضبط بمفتاحٍ ههنا، وافتراضُه مطفأ في «الصلاة» (§٥هـ) */}
