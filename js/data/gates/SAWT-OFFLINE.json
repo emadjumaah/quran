@@ -10,9 +10,9 @@
       "agree": true
     },
     "ready": true,
-    "readyMs": 18286,
+    "readyMs": 14070,
     "advanced": 8,
-    "requestsTotal": 15,
+    "requestsTotal": 16,
     "duringListening": [],
     "duringListeningCount": 0
   },
@@ -25,9 +25,9 @@
       "agree": false
     },
     "ready": true,
-    "readyMs": 2,
+    "readyMs": 4,
     "advanced": 8,
-    "requestsTotal": 14,
+    "requestsTotal": 15,
     "duringListening": [],
     "duringListeningCount": 0
   }
