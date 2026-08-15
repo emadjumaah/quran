@@ -236,13 +236,121 @@ await Promise.race([
 return paint ? Math.round((performance.now() - t0) * 10) / 10 : null;
 `;
 
+/**
+ * **قياسُ السكون** (ص٤ §١) — والحكمُ على **ما تراه العين** لا على ما كُتب.
+ *
+ * تُمسَك آيةٌ مرئيّةٌ مرساةً للقياس، ويُقاس **موضعُها على الشاشة** عيّنةً في كلّ
+ * إطارٍ بينما يتقدّم المؤشّرُ كلماتٍ. وميزانُ القبول اثنان:
+ *
+ *   • **تقدُّمٌ داخل الحزام ⇒ صفرُ حركة** — لا كسرَ نقطةٍ واحدة؛
+ *   • **بلوغُ الطرف ⇒ حركةٌ واحدةٌ ناعمة** — دفعةٌ واحدةٌ في اتّجاهٍ واحد،
+ *     **ولا ارتداد**. والارتدادُ (لأعلى ثمّ لأسفل) هو بلاغُ المالك بحرفه، فهو
+ *     المرصودُ الأوّل ههنا.
+ *
+ * ولا يُقاس التمريرُ نفسُه (`scrollTop`) عمدًا: تعويضُ المرساة عند انزلاق نافذة
+ * الرسم **يحرّك التمريرَ ولا يحرّك النصَّ في العين** — وهو صوابٌ لا عيب. فالمقيسُ
+ * موضعُ الحرف لا رقمُ الوعاء.
+ */
+const STILL_STEP = (words) => `
+const box = document.querySelector('[data-sawt="text"]');
+if (!box) return { error: 'لا نصَّ في الصفحة' };
+const sc = (function (el) {
+  for (let n = el; n; n = n.parentElement) {
+    const st = getComputedStyle(n);
+    if (/(auto|scroll)/.test(st.overflowY) && n.scrollHeight > n.clientHeight + 1) return n;
+  }
+  return null;
+})(box);
+const ws = [...box.querySelectorAll('.sawt-w')];
+const cur = box.querySelector('.sawt-now');
+const ix = ws.indexOf(cur);
+if (ix < 0 || ix + ${words} + 1 >= ws.length) return { error: 'لم يبقَ في المرسوم ما يُتلى' };
+/* مرساةُ القياس: أوّلُ آيةٍ لم تخرج من أعلى النافذة */
+const edge = sc ? sc.getBoundingClientRect().top : 0;
+let ref = null;
+for (const el of box.querySelectorAll('[data-ayah]')) {
+  if (el.getBoundingClientRect().bottom > edge) { ref = el; break; }
+}
+if (!ref) return { error: 'لا مرساةَ في الشاشة' };
+const key = ref.dataset.ayah;
+const at = () => {
+  const el = box.querySelector('[data-ayah="' + key + '"]');
+  return el ? el.getBoundingClientRect().top : null;
+};
+const b = box.getBoundingClientRect();
+const band = b.height * 0.28;
+const inBand = (el) => {
+  const r = el.getBoundingClientRect();
+  return r.top >= b.top + band && r.bottom <= b.bottom - band;
+};
+const bandBefore = inBand(cur);
+const top0 = at();
+const scroll0 = sc ? sc.scrollTop : window.scrollY;
+const said = ws.slice(ix + 1, ix + 1 + ${words}).map((w) => w.innerText.trim()).join(' ');
+window.__sawtSay(said);
+/* عيّناتٌ في كلّ إطارٍ حتّى يسكن الموضعُ ٤٠٠ مِث أو تنقضي مهلةُ الخطوة.
+   **وفي أوّل إطارٍ يُسأل: أخرج المؤشّرُ من الحزام؟** — وهو سببُ التمرير إن مرّ:
+   فبه يُفرَّق **تمريرٌ لزم** من **حركةٍ لا داعيَ لها**، وذلك عينُ الحكم. */
+const samples = [];
+let bandFirst = null;
+const t0 = performance.now();
+await new Promise((done) => {
+  let lastMove = performance.now();
+  const tick = () => {
+    const v = at();
+    const n = samples.push(v);
+    if (bandFirst === null) {
+      const c0 = box.querySelector('.sawt-now');
+      bandFirst = c0 ? inBand(c0) : null;
+    }
+    if (n > 1 && v != null && samples[n - 2] != null && Math.abs(v - samples[n - 2]) > 0.5) {
+      lastMove = performance.now();
+    }
+    if (performance.now() - t0 > 2500 || performance.now() - lastMove > 400) { done(); return; }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});
+let travel = 0, back = 0, fwd = 0, reversals = 0, bursts = 0, dir = 0, moving = false, gaps = 0;
+for (let i = 1; i < samples.length; i++) {
+  const a = samples[i - 1], c = samples[i];
+  if (a == null || c == null) { gaps++; continue; }
+  const d = c - a;
+  if (Math.abs(d) <= 0.5) { moving = false; continue; }
+  if (!moving) { moving = true; bursts++; }
+  travel += Math.abs(d);
+  if (d < 0) fwd += -d; else back += d;
+  const s = d > 0 ? 1 : -1;
+  if (dir !== 0 && s !== dir && Math.abs(d) > 2) reversals++;
+  dir = s;
+}
+const curNow = box.querySelector('.sawt-now');
+const r1 = (n) => Math.round(n * 10) / 10;
+return {
+  said: said.slice(0, 40),
+  from: ix,
+  to: curNow ? ws.indexOf(curNow) : -1,
+  bandBefore,
+  bandFirst,
+  bandAfter: curNow ? inBand(curNow) : null,
+  travel: r1(travel),
+  fwd: r1(fwd),
+  back: r1(back),
+  reversals, bursts, gaps,
+  scrolled: r1((sc ? sc.scrollTop : window.scrollY) - scroll0),
+  net: r1((at() ?? top0 ?? 0) - (top0 ?? 0)),
+  frames: samples.length,
+  ms: Math.round(performance.now() - t0),
+};
+`;
+
 /* ═══════════ التشغيلة الواحدة ═══════════ */
 
 /**
  * تشغيلةٌ كاملةٌ في سيناريو البلاغ: المصحفُ كلُّه ⇒ تمريرٌ ينمّي المحمَّل ⇒ بدءٌ
  * ⇒ **التقاطٌ عند آخر المحمَّل** ⇒ عدٌّ وقياس. و`query` هو بابُ الضبط السالب.
  */
-async function run(port, { query, label, steps = 0, budget = 150000 }) {
+async function run(port, { query, label, steps = 0, budget = 150000, still = 0 }) {
   const br = await openBrowser(port);
   if (!br) {
     missing.push(`لم يقم المتصفّحُ للتشغيلة «${label}»`);
@@ -310,6 +418,35 @@ return true;
 
   log("بدأت التلاوة");
   const atStart = await cdp.ev(COUNT);
+
+  /* ═══ **تشغيلةُ السكون** (ص٤ §١) — سيناريوها غيرُ سيناريو البهت ═══
+     ههنا **لا يُلتقط القارئُ بعيدًا**: يُتلى من أوّل المقطع كلماتٍ كلماتٍ كما
+     يقرأ القارئُ، فيمرّ المؤشّرُ داخلَ الحزام ثمّ يبلغ طرفَه — وهما الحالان
+     اللذان يُحكم عليهما. **والخنقُ يُرفع** لأنّ المقيسَ حركةُ النصّ في العين لا
+     سرعةُ الجهاز، وخنقُ الإطارات يُشوّش العيّنات ولا يزيد الحكمَ صدقًا. */
+  if (still > 0) {
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+    await sleep(400);
+    const rows = [];
+    for (let i = 0; i < still; i++) {
+      const r = await cdp.ev(STILL_STEP(5), 60000);
+      if (!r || r.error) {
+        log(`سكون: ${r?.error ?? "لا جواب"}`);
+        break;
+      }
+      rows.push(r);
+      log(
+        `سكون ${i + 1}: حزام ${r.bandFirst === false ? "خرج" : "داخل"} · حركة ${r.travel} · تمرير ${r.scrolled} · ارتداد ${r.reversals} · دفعات ${r.bursts}`,
+      );
+      const held = rows.filter((s) => s.travel <= 1).length;
+      const moved = rows.filter((s) => s.travel > 1).length;
+      if (held >= 6 && moved >= 2 && i >= 9) break;
+      await sleep(150);
+    }
+    await cdp.ev(click('[data-sawt="close"]'));
+    await sleep(300);
+    return { label, loaded, still: rows };
+  }
 
   /* **الالتقاطُ عند آخر ما حُمّل** — وهو «قرأتُ من آخر الجزء» بعينه */
   const said = await cdp.ev(SAY_FAR(40, 5));
@@ -390,7 +527,87 @@ async function openBrowser(port) {
 }
 
 /** **ولا تُترك بوّابةٌ تعلّق بلا حكم**: مهلةٌ قصوى ثمّ تُردّ حمراءَ بسببها */
-const WATCHDOG_MS = 14 * 60 * 1000;
+const WATCHDOG_MS = 20 * 60 * 1000;
+
+/**
+ * **حكمُ السكون وضبطُه السالب** (ص٤ §١) — خطوةٌ خطوةً كما قيست، وبثلاثة قيود:
+ *
+ *   ١ — **حركةٌ بلا داعٍ لا تُغتفر**: خطوةٌ بقي فيها المؤشّرُ داخل الحزام
+ *       (`bandFirst`، ويُسأل في أوّل إطارٍ بعد تقدّم المؤشّر — قبل أن يردَّه
+ *       تمريرٌ إلى الوسط) **حقُّها صفرُ حركةٍ في العين**.
+ *   ٢ — **ولا يتحرّك النصُّ أكثرَ ممّا تحرّك التمريرُ فعلًا**: المسافةُ التي
+ *       يقطعها الحرفُ في العين تساوي ما مرّه الوعاءُ صافيًا، **وما زاد فليس
+ *       تمريرًا مقصودًا بل مرساةٌ تنازعه** (ذهابٌ وإيابٌ يبتلع بعضُه بعضًا في
+ *       الصافي ولا يبتلعه في العين). وقد قِيس في البناء الشاحن: ٢١٢/٢١٢ ·
+ *       ١٨٢/١٨٢ — تساويًا تامًّا.
+ *   ٣ — **ودفعةٌ واحدةٌ بلا ارتداد** حيث لزم التمرير.
+ *
+ * وقيدُ (٢) يحتمل حالًا واحدةً لا تقع في هذا السيناريو: أن تنزلق نافذةُ الرسم
+ * في الخطوة نفسِها فتعوّضها المرساةُ **في الجهة المقابلة** — وحينئذٍ يصغر
+ * الصافي ويكبر ما في العين بلا عيب. **ولا تنزلق ههنا**: التلاوةُ من أوّل
+ * المقطع ولمّا يبلغ المؤشّرُ حدَّ إعادة التوسيط، وهو مقيسٌ في `range`.
+ */
+function stillness(now, stale) {
+  const rows = now?.still ?? [];
+  if (!rows.length) {
+    missing.push("لم تُقَس خطوةُ سكونٍ واحدة — فلا شهادةَ على التذبذب");
+    return;
+  }
+  /** الحكمُ على الخطوة الواحدة: ما الذي خالف فيها إن خالف */
+  const flaws = (s) => {
+    const bad = [];
+    if (s.travel > 1 && s.bandFirst === true) bad.push("حركةٌ والمؤشّرُ داخل الحزام");
+    if (s.travel > Math.abs(s.scrolled) + 2) bad.push(`حركةٌ ${s.travel} وتمريرٌ ${s.scrolled}`);
+    if (s.reversals > 0) bad.push(`ارتدادٌ ${s.reversals}`);
+    if (s.bursts > 1) bad.push(`دفعاتٌ ${s.bursts}`);
+    return bad;
+  };
+  const still = rows.filter((s) => s.travel <= 1);
+  const moved = rows.filter((s) => s.travel > 1);
+  const broken = rows.map((s) => ({ s, bad: flaws(s) })).filter((r) => r.bad.length);
+  const say = (r) => `[${r.s.from}→${r.s.to}] ${r.bad.join(" · ")}`;
+
+  if (still.length < 3 || moved.length < 1) {
+    missing.push(
+      `لم يقع سيناريو القياس: خطواتٌ ساكنةٌ ${still.length} · خطواتٌ تحرّك فيها النصُّ ${moved.length} (من ${rows.length})`,
+    );
+  } else if (broken.length) {
+    fail("سكونُ التتبّع", `${broken.length} خطوةً خالفت من ${rows.length}: ${broken.slice(0, 4).map(say).join(" · ")}`);
+  } else if (still.length * 2 < rows.length) {
+    fail(
+      "سكونُ التتبّع",
+      `أكثرُ الخطوات تحرّك فيها النصُّ (${moved.length} من ${rows.length}) — فالحزامُ لا يمسك شيئًا`,
+    );
+  } else {
+    notes.push(
+      `سكونُ التتبّع: ${still.length} خطوةً من ${rows.length} **بصفر حركةٍ في العين** والمؤشّرُ يتقدّم داخل الحزام · و${moved.length} خطوةً بلغ فيها الطرفَ فرُدّ **بدفعةٍ واحدةٍ ناعمةٍ بلا ارتداد** (${moved.map((s) => Math.round(s.travel)).join("، ")} نقطة، **وهي عينُ ما تحرّكه التمريرُ صافيًا**: ${moved.map((s) => Math.round(s.scrolled)).join("، ")})`,
+    );
+  }
+
+  /* وضبطُه السالب: يُعاد صراعُ المرساة والمتابعة فيُصطاد التذبذب */
+  const bad = stale?.still ?? [];
+  if (!bad.length) {
+    missing.push("لم تُقَس خطوةُ سكونٍ في الضبط السالب");
+  } else {
+    const caught = bad.map((s) => ({ s, bad: flaws(s) })).filter((r) => r.bad.length);
+    if (!caught.length) {
+      fail(
+        "ضبطُ السكون",
+        `أُعيدت المرساةُ إلى ما كانت (تعويضٌ على كلّ رسمٍ ولا تحديثَ بعد تمريرٍ مقصود) فلم يُصطَد شيءٌ في ${bad.length} خطوة — والقياسُ لا يقيس`,
+      );
+    } else {
+      const worst = Math.max(...bad.map((s) => s.travel));
+      notes.push(
+        `ضبطٌ سالب: بمرساةٍ تنازع المتابعةَ (\`?sawt-keep-stale\`) اصطيدت ${caught.length} خطوةً من ${bad.length} — يتحرّك النصُّ في العين حتّى ${Math.round(worst)} نقطةً والتمريرُ الصافي ${Math.round(bad[bad.length - 1].scrolled)}، **ويتّسع مع كلّ كلمة**: ${bad.filter((s) => s.travel > 1).slice(0, 6).map((s) => Math.round(s.travel)).join(" ← ")}`,
+      );
+    }
+  }
+  measures.stillness = {
+    scenario: "تلاوةٌ متتابعةٌ من أوّل المقطع · خمسُ كلماتٍ في الخطوة · بلا خنق · عرضُ ٣٩٠",
+    after: rows,
+    before: bad,
+  };
+}
 
 async function main() {
   const cap = declaredCap();
@@ -424,6 +641,19 @@ async function main() {
     steps: 0,
     budget: 0,
   });
+
+  /* (٤) **سكونُ التتبّع** (ص٤ §١): تلاوةٌ متتابعةٌ من أوّل المقطع، بلا نموٍّ ولا
+     التقاطٍ بعيد — ثمّ (٥) **ضبطُه السالب**: يُعاد صراعُ المرساة والمتابعة كما
+     كان، **فإن لم يظهر التذبذبُ فليس القياسُ قياسًا**. */
+  const still = await run(CDP_PORT + 3, { query: "", label: "سكونُ التتبّع", budget: 0, still: 18 });
+  const bounce = await run(CDP_PORT + 4, {
+    query: "?sawt-keep-stale",
+    label: "بمرساةٍ تنازع المتابعة (القبل)",
+    budget: 0,
+    still: 18,
+  });
+
+  stillness(still, bounce);
 
   if (!now || !all || !faded) return;
 
