@@ -14,6 +14,11 @@
  *       ولا يُقال إنّها فُحصت فمرّت.
  *   ٣ — **ولا يُطمس نصُّ القرآن** (§١٣): لا `blur` يعلو متنَ القرآن، ولا لوحَ
  *       يغطّيه لأجل أداة.
+ *   ٤ — **ولوحاتُ القشرة تُفتح فتُقاس** (ج٩ §٦ — إلحاقٌ بالقائم لا بوّابةٌ ثانية):
+ *       لوحةُ الإعدادات من الرأس ارتفاعُها المرئيُّ ≥ ٦٠٪ من الشاشة ومحتواها
+ *       داخلَ حدودها؛ وورقةُ «⋯» خلفَ عناصرها أرضيّةٌ معتمةٌ لا نصُّ المصحف.
+ *       **وضبطُهما السالبُ عينُ الواقعة**: يُزرع `transform` على حاويةِ لوحةٍ
+ *       `fixed` فيُصطاد انهيارُها إلى ارتفاع الرأس، ويُشفَّف ظهرُ الورقة فيُصطاد.
  *
  * **والضبطُ السالب شرطُ صحّة**: يُزرع زرٌّ صغيرٌ ونصٌّ صغيرٌ وطمسٌ فوق المتن
  * و`confirm` — فتُصطاد كلُّها، ثمّ تُزال فتعود البوّابةُ خضراء. **وزرعٌ لا أثرَ
@@ -827,6 +832,208 @@ async function live() {
     else if (again) fail("سطرُ تجدّد الهيئة", "عاد السطرُ بعد أن عُرض مرّةً — والعرضُ مرّةٌ واحدة");
     else if (never) fail("سطرُ تجدّد الهيئة", "ظهر السطرُ لمن لم يبدّل قطُّ — وهو على الافتراض الجديد أصلًا");
     else notes.push("سطرُ تجدّد الهيئة: ظهر لمن حُفظ عنده «آيات» · أُهمل فاختفى · ولم يعد · ولم يُعرض لمن لم يبدّل");
+  }
+
+  /* ═══ ٧ — **لوحاتُ القشرة تُفتح فتُقاس** (ج٩ §٦) ═══
+     واقعةُ ١٦ أغسطس: `transform` على `.topbar` جعله **حاويةَ الإحداثيّات لكلّ
+     `fixed` في أحفاده**، فصارت لوحةُ الإعدادات بـ`inset: 0` ملءَ الرأس (٥٥px
+     مقيسةً على المنشور) لا ملءَ الشاشة — فبدت «فارغة». **والبوّابةُ كانت تفتحها
+     وتقيس أهدافَ لمسها ونصَّها ولا تسأل: أهي على الشاشة أصلًا؟** فيُلحق ههنا
+     ما يسأله: ارتفاعٌ مرئيٌّ ≥ ٦٠٪ ومحتوًى داخلَ الحدود. **وورقةُ «⋯»** كانت
+     بلا `card` فطارت عناصرُها فوق نصّ المصحف — فيُشترط خلفَ عناصرها **أرضيّةٌ
+     معتمةٌ (شفافيّة ١)** يحملها عنصرٌ من الورقة نفسِها لا من الصفحة تحتها. */
+  if (lastCdp) {
+    const cdp = lastCdp;
+    const MIN_PANEL_SHARE = 60;
+    /** **ولا يُقاس على شجرةٍ نصفِ قائمة**: أدواتُ المصحف في الرأس تنتظر جدولَ
+        السور، وهو نداءٌ غيرُ نداء الآيات — فقد تقوم صفحةُ المصحف قبلها. فيُنتظر
+        الزرُّ نفسُه لا الصفحةُ وحدَها، وإلّا قيل «لا زرَّ» وإنّما هو لم يقُم بعد. */
+    const openMushaf = async () => {
+      await cdp.send("Page.navigate", { url: "about:blank" });
+      await sleep(200);
+      await cdp.send("Page.navigate", { url: `http://localhost:${PORT}/#/read/2` });
+      const ok = await cdp.until(
+        `!document.querySelector('.boot') && document.querySelector('.mushaf-page')
+         && document.querySelector('.rd-more-btn') && document.querySelector('.set-wrap > button')`,
+      );
+      await sleep(1200);
+      return ok;
+    };
+
+    /** تُفتح لوحةُ الإعدادات من الرأس، فيُقاس ارتفاعُها المرئيُّ وموقعُ محتواها */
+    const PANEL = `
+      const wait = (t) => new Promise((r) => setTimeout(r, t));
+      const btns = [...document.querySelectorAll('.set-wrap > button')];
+      if (!btns.length) return { error: 'لا زرَّ إعداداتٍ في الرأس' };
+      if (!document.querySelector('.set-panel.set-reading')) { btns.at(-1).click(); await wait(600); }
+      const p = document.querySelector('.set-panel.set-reading');
+      if (!p) return { error: 'لم تُفتح لوحةُ الإعدادات' };
+      const r = p.getBoundingClientRect();
+      const seen = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+      /* **ومحتواها يُسأل عنه بعينه**: لوحةٌ رأسُها يُرى ومحتواها مقصوصٌ تمرّ
+         بقياس الارتفاع وحدَه — فيُقاس صفَّا «حجمِ الخطّ» و«السمة» داخلَ حدودها. */
+      const rows = [...p.querySelectorAll('.set-row')].slice(0, 2).map((el) => {
+        const b = el.getBoundingClientRect();
+        return {
+          what: (el.querySelector('.set-label')?.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 20),
+          top: Math.round(b.top), bottom: Math.round(b.bottom),
+          inside: b.height > 0 && b.top >= r.top - 1 && b.bottom <= r.bottom + 1 && b.bottom <= innerHeight + 1,
+        };
+      });
+      return {
+        h: Math.round(r.height), vh: innerHeight, seen: Math.round(seen),
+        share: Math.round((seen / innerHeight) * 100), rows,
+      };
+    `;
+
+    /** تُفتح ورقةُ «⋯»، فيُسأل عن حاملِ الأرضيّة خلفَ كلّ عنصرٍ فيها */
+    const SHEET = `
+      const wait = (t) => new Promise((r) => setTimeout(r, t));
+      const b = document.querySelector('.rd-more-btn');
+      if (!b) return { error: 'لا زرَّ «⋯» في الرأس' };
+      if (!document.querySelector('.rd-sheet')) { b.click(); await wait(600); }
+      const sh = document.querySelector('.rd-sheet');
+      if (!sh) return { error: 'لم تُفتح ورقةُ ⋯' };
+      const alpha = (v) => {
+        const p = (v.match(/[\\d.]+/g) ?? []).map(Number);
+        return p.length < 4 ? (p.length ? 1 : 0) : p[3];
+      };
+      /** **أوّلُ سلفٍ خلفيّتُه معتمةٌ تمامًا** — وهو حاملُ الأرضيّة فعلًا؛ فإن
+          كان خارجَ الورقة فما خلفَ عناصرها صفحةُ المصحف لا أرضيّةٌ لها. */
+      const host = (el) => {
+        for (let n = el; n; n = n.parentElement) {
+          if (alpha(getComputedStyle(n).backgroundColor) >= 0.999) return n;
+        }
+        return null;
+      };
+      const rows = [...sh.querySelectorAll('.rd-sheet-row, .rd-sheet-act')].map((el) => {
+        const h = host(el);
+        return {
+          what: (el.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 18),
+          host: h ? (h.className || h.tagName).toString().slice(0, 26) : null,
+          grounded: !!h && sh.contains(h),
+        };
+      });
+      const r = sh.getBoundingClientRect();
+      const q = document.querySelector('.mushaf-page');
+      const qr = q ? q.getBoundingClientRect() : null;
+      /* والشفافيّةُ إنّما تُرى حيث يقع تحتها متنٌ — فيُقيَّد أنّه واقعٌ تحتها */
+      const overQuran = !!qr && !(r.right <= qr.left || r.left >= qr.right || r.bottom <= qr.top || r.top >= qr.bottom);
+      return { rows, n: rows.length, overQuran, alpha: alpha(getComputedStyle(sh).backgroundColor) };
+    `;
+
+    /* ── ٧أ — لوحةُ الإعدادات من الرأس ── */
+    let panelClean = null;
+    if (await openMushaf()) {
+      panelClean = await cdp.evAsync(PANEL);
+      const p = panelClean;
+      if (p.error) {
+        fail("لوحةُ الإعدادات من الرأس", p.error);
+      } else if (p.share < MIN_PANEL_SHARE) {
+        fail(
+          "لوحةُ الإعدادات من الرأس",
+          `ارتفاعُها المرئيُّ ${p.seen}px من ${p.vh} (${p.share}٪) — والحدُّ ${MIN_PANEL_SHARE}٪. ` +
+            `وهذه صورةُ اللوحة المحبوسة في رأسٍ متحوِّل: ارتفاعُها ${p.h}px`,
+        );
+      } else if (!p.rows.length || p.rows.some((r) => !r.inside)) {
+        fail(
+          "لوحةُ الإعدادات من الرأس",
+          p.rows.length
+            ? `عناصرُ محتواها خارجَ حدودها المرئيّة: ${p.rows.filter((r) => !r.inside).map((r) => `«${r.what}» ${r.top}–${r.bottom}`).join(" · ")}`
+            : "لا صفوفَ في محتواها تُقاس — فاللوحةُ فارغةٌ فعلًا",
+        );
+      } else {
+        notes.push(
+          `لوحةُ الإعدادات من الرأس على ٣٩٠: ارتفاعُها المرئيُّ ${p.seen}px من ${p.vh} (${p.share}٪ ≥ ${MIN_PANEL_SHARE}٪)، ` +
+            `وصفّا ${p.rows.map((r) => `«${r.what}»`).join(" و")} داخلَ حدودها المرئيّة`,
+        );
+      }
+
+      /* **ضبطُه السالبُ عينُ الواقعة**: تُوضع اللوحةُ في حاويةٍ ذاتِ `transform`
+         بارتفاع الرأس — فيصير مرجعُ `fixed` تلك الحاويةَ لا الشاشةَ وتنهار. */
+      if (!p.error) {
+        await cdp.ev(`
+          const p = document.querySelector('.set-panel.set-reading');
+          if (!p) return false;
+          const box = document.createElement('div');
+          box.id = '__plantXform';
+          box.style.cssText = 'transform: translateY(0px); height: 55px;';
+          p.parentNode.insertBefore(box, p);
+          box.appendChild(p);
+          return true;
+        `);
+        await sleep(300);
+        const trapped = await cdp.evAsync(PANEL);
+        await cdp.ev(`
+          const box = document.getElementById('__plantXform');
+          if (!box) return false;
+          const p = box.firstElementChild;
+          if (p) box.parentNode.insertBefore(p, box);
+          box.remove();
+          return true;
+        `);
+        await sleep(300);
+        const back = await cdp.evAsync(PANEL);
+        if (trapped.error) {
+          fail("ضبطُ لوحة الإعدادات", `تعثّر القياسُ بعد الزرع: ${trapped.error}`);
+        } else if (!(trapped.share < MIN_PANEL_SHARE)) {
+          fail(
+            "ضبطُ لوحة الإعدادات",
+            `زُرع \`transform\` على حاويةٍ ٥٥px فلم تنهر اللوحةُ ولم تُصطَد (${trapped.share}٪) — والفاحصُ لا يفحص`,
+          );
+        } else if (back.error || back.share < MIN_PANEL_SHARE) {
+          fail("ضبطُ لوحة الإعدادات", "أُزيل الزرعُ فلم تعُد اللوحةُ إلى الشاشة — قياسٌ غيرُ مستقرّ");
+        } else {
+          notes.push(
+            `ضبطٌ سالب: زُرع \`transform\` على حاويةِ اللوحة بارتفاع الرأس — فانهارت إلى ${trapped.seen}px (${trapped.share}٪) فاصطيدت، ` +
+              `ثمّ أُزيل الزرعُ فعادت إلى ${back.share}٪ — وهي الواقعةُ بعينها`,
+          );
+        }
+      }
+    } else {
+      missing.push("لم يقم سطحُ المصحف لقياس لوحات القشرة");
+    }
+
+    /* ── ٧ب — ورقةُ «⋯» ── */
+    if (!(await openMushaf())) {
+      missing.push("لم تقم أدواتُ المصحف في الرأس لقياس ورقة «⋯»");
+    } else {
+      const s = await cdp.evAsync(SHEET);
+      if (s.error) {
+        fail("ورقةُ «⋯»", s.error);
+      } else if (!s.n) {
+        fail("ورقةُ «⋯»", "لا عناصرَ فيها تُقاس");
+      } else if (s.rows.some((r) => !r.grounded)) {
+        fail(
+          "ورقةُ «⋯»",
+          `خلفَ عناصرها نصُّ المصحف لا أرضيّةٌ معتمة: ${s.rows.filter((r) => !r.grounded).map((r) => `«${r.what}» (حاملُها ${r.host ?? "لا شيء"})`).join(" · ")}`,
+        );
+      } else {
+        notes.push(
+          `ورقةُ «⋯» على ٣٩٠: ${s.n} عنصرًا خلفَ كلٍّ منها أرضيّةٌ معتمةٌ (شفافيّة ١) من الورقة نفسِها` +
+            (s.overQuran ? " — وهي واقعةٌ فوق متن المصحف، فالشفافيّةُ لو كانت لظهر النصُّ خلفها" : ""),
+        );
+
+        /* **وضبطُه**: يُشفَّف ظهرُ الورقة فتصير أرضيّتُها الصفحةَ تحتها — فتُصطاد */
+        await cdp.ev(`document.querySelector('.rd-sheet').style.background = 'transparent'; return true;`);
+        await sleep(300);
+        const bare = await cdp.evAsync(SHEET);
+        await cdp.ev(`document.querySelector('.rd-sheet').style.removeProperty('background'); return true;`);
+        await sleep(300);
+        const after = await cdp.evAsync(SHEET);
+        if (bare.error) {
+          fail("ضبطُ ورقة «⋯»", `تعثّر القياسُ بعد الزرع: ${bare.error}`);
+        } else if (!bare.rows.some((r) => !r.grounded)) {
+          fail("ضبطُ ورقة «⋯»", "شُفِّف ظهرُ الورقة فلم يُصطَد — والفاحصُ لا يفحص");
+        } else if (after.error || after.rows.some((r) => !r.grounded)) {
+          fail("ضبطُ ورقة «⋯»", "أُزيل الزرعُ فلم تعُد الورقةُ إلى أرضيّتها — قياسٌ غيرُ مستقرّ");
+        } else {
+          notes.push(
+            `ضبطٌ سالب: شُفِّف ظهرُ ورقة «⋯» فصار حاملُ الأرضيّة خارجَها (${bare.rows.find((r) => !r.grounded)?.host ?? "—"}) فاصطيدت، ثمّ أُعيد فعادت خضراء`,
+          );
+        }
+      }
+    }
   }
 
   ws.close();
