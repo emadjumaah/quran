@@ -1,18 +1,18 @@
 {
-  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ج٩ (607adf9) — بالإذن الدائم: أُصلح المنشورُ المعطوب (اللوحاتُ المنهارةُ بالرأس المتحوِّل · ورقةُ ⋯ · قفزُ التتبّع · الميكروفون يفتح على صفحة القارئ).",
+  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ص٤ (a7d0d4c) — سكونُ التتبّع وتفريغُ ذاكرة iOS.",
   "branch": "main",
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "607adf9c69b574cfda907355320748433fd0bba4",
-    "refs/remotes/origin/main": "607adf9c69b574cfda907355320748433fd0bba4"
+    "refs/remotes/origin/HEAD": "a7d0d4ce2d571d620a0d5c756d697078753dca44",
+    "refs/remotes/origin/main": "a7d0d4ce2d571d620a0d5c756d697078753dca44"
   },
-  "lastPush": "607adf9 refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "a7d0d4c refs/remotes/origin/main@{0}: update by push",
   "previous": {
-    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول الليلة (f5f5ed2) — بالإذن الدائم: دُفعت ص٣ وج٨ وج٤ وقبولُ الإدارة ليفحص المالكُ المحرّكَ والشكلَ والدمجَ على هاتفه.",
+    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ج٩ (607adf9) — بالإذن الدائم: أُصلح المنشورُ المعطوب (اللوحاتُ المنهارةُ بالرأس المتحوِّل · ورقةُ ⋯ · قفزُ التتبّع · الميكروفون يفتح على صفحة القارئ).",
     "branch": "main",
     "remoteRefs": {
-      "refs/remotes/origin/HEAD": "f5f5ed2ede7d73b08193084bf05c9b17470f557d",
-      "refs/remotes/origin/main": "f5f5ed2ede7d73b08193084bf05c9b17470f557d"
+      "refs/remotes/origin/HEAD": "607adf9c69b574cfda907355320748433fd0bba4",
+      "refs/remotes/origin/main": "607adf9c69b574cfda907355320748433fd0bba4"
     },
-    "lastPush": "f5f5ed2 refs/remotes/origin/main@{0}: update by push"
+    "lastPush": "607adf9 refs/remotes/origin/main@{0}: update by push"
   }
 }
