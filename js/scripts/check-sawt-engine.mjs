@@ -11,6 +11,10 @@
  *       2026-08-14)، وتسري على كلّ جلسةٍ بعد هذه.
  *   ٣ — **وضعُ الصلاة بالحرّ وحدَه**: الوصفُ يقول إنّ الشبكيَّ لا يصلح لها،
  *       والصفحةُ تمنع البدءَ به فيها.
+ *   ٤ — **بابُ «العَرْض»**: خطُّه لا يقرأ المرجعَ المحبوس، وسطحُه لا يحكم على تلاوة.
+ *   ٥ — **ولا يُحبَس قارئٌ في خيارٍ لا يعمل** (ص-م٥، على بلاغ المالك): التبديلُ
+ *       متاحٌ من موضعين · ورجوعٌ تلقائيٌّ بمهلةٍ معلَنةٍ يُخبَر به · والصلاةُ
+ *       مستثناةٌ منه · والإذنُ لا يُورَّث فيه · وحالُ المحرّك معروضة.
  *
  * ولا `\b` مع العربيّة (بلاغُ الحدود 2026-08-12) — بل عباراتٌ كاملة.
  *
@@ -87,11 +91,36 @@ if (!desc["on-device"] || !desc["browser-speech"]) {
 
 /** والصفحةُ نفسُها لا تكتب دعوى استقلالٍ بيدها — بل تعرض سطرَ المحرّك */
 const viewShown = stripComments(read("views/Tatabbu.tsx"));
+/**
+ * وصارت الإعداداتُ موضعًا ثانيًا للتبديل (ص-م٥) — فيسري عليها الحكمُ نفسُه.
+ *
+ * **ويُقتطع منها قسمُ المحرّك وحدَه لا الملفُّ كلُّه**: فأوّلُ تشغيلٍ لهذا الفحص
+ * ردَّ البوّابةَ حمراءَ على «جاهزيّة العمل بلا إنترنت» — وهي **دعوى صادقةٌ في
+ * بابها** (خزانةُ البيانات لا صوتُ القارئ). **والحارسُ الذي يصطاد الصادقَ في
+ * غير بابه ليس حارسًا** — فحُدَّ نطاقُه بقسمه كما حُدّت واصفاتُ المحرّكات.
+ */
+const setFull = stripComments(read("components/SettingsPanel.tsx"));
+const setShown = (() => {
+  const from = setFull.indexOf("function SawtEngineRow");
+  if (from < 0) {
+    fail("قسمُ المحرّك في الإعدادات", "لم يُوجد قسمُ محرّك التتبّع في الإعدادات — فأين موضعُ التبديل الثاني؟");
+    return "";
+  }
+  const rest = setFull.slice(from + 1);
+  const to = rest.search(/\nexport default function|\nfunction /);
+  return to < 0 ? rest : rest.slice(0, to);
+})();
 for (const [name, re] of CLAIMS) {
   if (re.test(viewShown)) fail("دعوى في الصفحة", `الصفحةُ تكتب «${name}» بيدها بدل سطر المحرّك`);
+  if (re.test(setShown)) fail("دعوى في الإعدادات", `قسمُ المحرّك في الإعدادات يكتب «${name}» بيده بدل سطر المحرّك`);
 }
 if (!/privacyLine/.test(viewShown)) {
   fail("سطرُ المحرّك", "الصفحةُ لا تعرض `privacyLine` — فمن أين يعلم القارئُ حالَ صوته؟");
+}
+if (!/privacyLine/.test(setShown)) {
+  fail("سطرُ المحرّك في الإعدادات", "موضعُ التبديل الثاني لا يعرض سطرَ صدق المحرّك");
+} else {
+  notes.push("قسمُ المحرّك في الإعدادات يعرض سطرَ صدق المحرّك المختار ولا يكتب دعوى بيده");
 }
 
 /* ═══════════ ٢ — لا يُمسَك صوت ═══════════ */
@@ -206,6 +235,57 @@ if (!/ينتظران\s+ثبوتَ\s+رخصةِ\s+مرجعهما/.test(viewShown)
   notes.push("نصُّ الوقف مكتوبٌ بحدّه: تُعرض الأحكامُ محسوبةً، وتنتظر المقاديرُ رخصةَ مرجعها ومختصَّ التجويد");
 }
 
+/* ═══════════ ٥ — لا يُحبَس قارئٌ في خيارٍ لا يعمل (ص-م٥) ═══════════
+   بلاغُ المالك في فحصٍ حيٍّ على هاتفه: سُئل مرّةً واحدةً فاختار المحرّكَ الحرّ،
+   **فلم يعمل، ولم يجد سبيلًا إلى التبديل**. **وثانيهما عيبُ تصميمٍ لا عيبُ
+   محرّك** — يبقى قائمًا ولو عمل المحرّكان. فثلاثةٌ تُحرَس ههنا بالآلة:
+
+     أ — **التبديلُ متاحٌ من موضعين**: عُدّةُ تهيئة التتبّع (وشريطُها)،
+         **والإعدادات** — ولا يُخبَّأ خلف إعادةِ تثبيتٍ ولا محوِ بيانات.
+     ب — **ورجوعٌ تلقائيٌّ عند الإخفاق** بمهلةٍ **معلَنة**، **ويُخبَر به**
+         صراحةً — **ولا يُرجَع في الصلاة إلى الشبكيّ بحال**، **ولا يُشغَّل
+         محرّكٌ يُخرج الصوتَ بلا إذنٍ له**.
+     ج — **وحالُ المحرّك معروضة**: أيُّهما يعمل الآن، فلا يحزر القارئ. */
+
+/** موضعا التبديل — كلٌّ بعلامته في مصدره */
+const SWAP_IN_PAGE = /data-sawt="engine-swap"/;
+const SWAP_IN_BAR = /data-sawt="engine-now"/;
+const SWAP_IN_SETTINGS = /saveEngineChoice\(/;
+/** الرجوعُ التلقائيُّ وخبرُه */
+const FALLBACK_FN = /const fallback = useCallback\(/;
+const FALLBACK_GRACE = /ENGINE_GRACE_MS/;
+const FALLBACK_NOTICE = /data-sawt="engine-fell"/;
+/** والصلاةُ مستثناةٌ من الرجوع — بحرفها في موضع الرجوع لا في غيره */
+const FALLBACK_SALAT = /halId === "salat" \|\| !netUsable/;
+/** والإذنُ لا يُورَّث ولو كان الرجوعُ اضطراريًّا */
+const FALLBACK_CONSENT = /readConsent\("browser-speech"\) && declaredIn\(\)/;
+/** و«لم يُؤذَن بالميكروفون» ليس عيبَ محرّكٍ فلا يُبدَّل له محرّك */
+const FALLBACK_DENIED = /engineState === "denied"\) return/;
+
+const doorFive = [
+  ["التبديلُ من صفحة التتبّع", SWAP_IN_PAGE, viewShown, "لا زرَّ تبديلٍ في عُدّة التهيئة"],
+  ["حالُ المحرّك في الشريط", SWAP_IN_BAR, viewShown, "حالُ المحرّك ليست معروضةً في الشريط"],
+  ["التبديلُ من الإعدادات", SWAP_IN_SETTINGS, setShown, "قسمُ المحرّك في الإعدادات لا يحفظ اختيارًا — فالتبديلُ من موضعٍ واحد"],
+  ["الرجوعُ التلقائيّ", FALLBACK_FN, viewShown, "لا رجوعَ تلقائيًّا عند إخفاق المحرّك"],
+  ["المهلةُ معلَنة", FALLBACK_GRACE, viewShown, "لا مهلةَ معلَنةً قبل الحكم بالإخفاق"],
+  ["خبرُ الرجوع", FALLBACK_NOTICE, viewShown, "يقع الرجوعُ ولا يُخبَر به القارئ"],
+  ["الصلاةُ لا يُرجَع فيها إلى الشبكيّ", FALLBACK_SALAT, viewShown, "الرجوعُ التلقائيُّ لا يستثني «الصلاة»"],
+  ["الإذنُ لا يُورَّث في الرجوع", FALLBACK_CONSENT, viewShown, "يُرجَع إلى محرّكٍ يُخرج الصوتَ بلا إذنٍ له"],
+  ["منعُ الإذن ليس عيبَ محرّك", FALLBACK_DENIED, viewShown, "يُبدَّل المحرّكُ لمن لم يأذن بالميكروفون — وتبديلُه لا يصنع شيئًا"],
+];
+let fiveBad = 0;
+for (const [name, re, body, why] of doorFive) {
+  if (!re.test(body)) {
+    fiveBad++;
+    fail("الحبسُ في خيار", `${name}: ${why}`);
+  }
+}
+if (!fiveBad) {
+  notes.push(
+    "لا حبسَ في خيار: التبديلُ من موضعين (عُدّةُ التتبّع وشريطُها · والإعدادات) · ورجوعٌ تلقائيٌّ بمهلةٍ معلَنةٍ يُخبَر به · والصلاةُ مستثناةٌ منه · والإذنُ لا يُورَّث فيه · وحالُ المحرّك معروضة",
+  );
+}
+
 /* ═══════════ الضبطُ السالب — زرعٌ ذهنيٌّ بلا كتابةٍ على القرص ═══════════ */
 
 const plants = [
@@ -222,13 +302,34 @@ const plants = [
   ["مقدارُ مدٍّ بالحركات", VERDICT_WORDS[4][1], "<span>مدٌّ ستُّ حركات</span>", true],
   ["اسمُ حكمٍ بريء", LOCKED[0][1], "const rule = TAJWID.ikhfa;", false],
   ["ذِكرُ الإخفاء بريء", VERDICT_WORDS[1][1], "موضعُ إخفاءٍ ههنا", false],
+  // وضبطُ باب ص-م٥: لكلّ علامةٍ زرعٌ يُصطاد وبريءٌ يُشبهها فلا يُصطاد —
+  // **فالعلامةُ تُميّز ما وُضعت له**، ولا تكتفي بأن توجد في الملفّ حيثما كان.
+  ["زرُّ تبديلٍ حاضر", SWAP_IN_PAGE, 'data-sawt="engine-swap"', true],
+  ["علامةُ عودةٍ لا تُحسب تبديلًا", SWAP_IN_PAGE, 'data-sawt="engine-back"', false],
+  ["حالُ المحرّك معروضة", SWAP_IN_BAR, 'data-sawt="engine-now"', true],
+  ["سطرُ وصفٍ لا يُحسب حالًا", SWAP_IN_BAR, 'data-sawt="engine-line"', false],
+  ["حفظُ الاختيار في الإعدادات", SWAP_IN_SETTINGS, "saveEngineChoice(v);", true],
+  ["قراءةُ الاختيار وحدَها لا تكفي", SWAP_IN_SETTINGS, "readEngineChoice()", false],
+  ["رجوعٌ تلقائيٌّ حاضر", FALLBACK_FN, "const fallback = useCallback(", true],
+  ["دالّةٌ أخرى لا تُحسب رجوعًا", FALLBACK_FN, "const finish = useCallback(", false],
+  ["خبرُ الرجوع حاضر", FALLBACK_NOTICE, 'data-sawt="engine-fell"', true],
+  ["خبرٌ آخر لا يُحسب", FALLBACK_NOTICE, 'data-sawt="engine-progress"', false],
+  ["استثناءُ الصلاة في موضع الرجوع", FALLBACK_SALAT, 'if (halId === "salat" || !netUsable) {', true],
+  ["منعُ البدء ليس استثناءَ رجوع", FALLBACK_SALAT, 'if (halId === "salat" && !findEngine(engineId).fitsSalat) {', false],
+  ["شرطُ الإذن في الرجوع", FALLBACK_CONSENT, 'if (readConsent("browser-speech") && declaredIn().includes(halId)) {', true],
+  ["إذنٌ مطلقٌ لا يكفي", FALLBACK_CONSENT, "if (readConsent(engineId)) {", false],
+  ["استثناءُ منع الإذن", FALLBACK_DENIED, 'if (engineState === "denied") return;', true],
+  ["عطبٌ لا يُستثنى", FALLBACK_DENIED, 'if (engineState === "error") return;', false],
 ];
 for (const [name, re, sample, shouldCatch] of plants) {
   if (re.test(sample) !== shouldCatch) {
     fail("ضبطُ الفحص", shouldCatch ? `زُرع «${name}» فلم يُصطَد` : `اصطاد الفاحصُ بريئًا: «${name}»`);
   }
 }
-notes.push("ضبطٌ سالب: ثمانيةُ مزروعاتٍ اصطيدت (منها استيرادُ المرجع المحبوس وحكمٌ على تلاوةٍ ورقمُ مقدار)، وأربعةٌ بريئةٌ لم تُصطَد");
+const wanted = plants.filter(([, , , w]) => w).length;
+notes.push(
+  `ضبطٌ سالب: ${wanted} مزروعًا اصطيدت (منها استيرادُ المرجع المحبوس وحكمٌ على تلاوةٍ ورقمُ مقدار وعلاماتُ التبديل والرجوع)، و${plants.length - wanted} بريئًا لم تُصطَد`,
+);
 
 /* ═══════════ الخلاصة ═══════════ */
 

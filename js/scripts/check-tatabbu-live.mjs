@@ -17,6 +17,13 @@
  *   ٣ — **صمتُ «الصلاة»**: في أثناء التلاوة وبعد الختام، **صفرُ عنصرِ تصحيحٍ**
  *       في شجرة العرض — لا جدولَ قياسٍ ولا مواضعَ للنظر ولا تنبيهًا ولا رقمًا
  *       واحدًا بعد الختام.
+ *   ٤ — **وسطحُ القارئ خالٍ من عُدّة القياس** وهي باقيةٌ خلف بابها (ص-م٤ §٠).
+ *   ٥ — **ولا يُحبَس قارئٌ في خيارٍ لا يعمل** (ص-م٥، على بلاغ المالك): حالُ
+ *       المحرّك معروضةٌ في الشريط · والتبديلُ من موضعين (عُدّةُ التهيئة والشريطُ
+ *       ههنا، والإعداداتُ في صفحةٍ أخرى تُزار) · **ويُزرع عطبٌ في الميكروفون
+ *       فيُشهد الرجوعُ التلقائيُّ وخبرُه وتبدُّلُ الاسم** · **ولا يُرجَع في
+ *       «الصلاة» إلى محرّكٍ يُخرج الصوت بحال** · وضبطُه السالب: تشغيلةٌ سليمةٌ
+ *       لا خبرَ رجوعٍ فيها — **فخبرٌ يظهر دائمًا ليس خبرًا**.
  *
  * **ومحرّكُ التعرّف يُستبدل بساكنٍ لا يسمع شيئًا** — لأنّ المفحوصَ ههنا شجرةُ
  * العرض وسلوكُ الإذن، لا جودةُ السمع. والاستبدالُ عند حدِّ `RecognizerPort`
@@ -102,14 +109,33 @@ class StubRecognition {
 }
 Object.defineProperty(window, 'SpeechRecognition', { value: StubRecognition, writable: true, configurable: true });
 Object.defineProperty(window, 'webkitSpeechRecognition', { value: StubRecognition, writable: true, configurable: true });
+/* **إخفاقٌ يُزرع بأمرٍ لا بالبيئة** (ص-م٥): حين يُرفع \`__sawtFail\` يُردّ
+   الميكروفونُ بعطبٍ **ليس منعَ إذن** — فمنعُ الإذن لا يُبدَّل له محرّك بنصّ
+   التصميم، والمفحوصُ ههنا رجوعُ المحرّك لا حكمُ الإذن. */
+window.__sawtFail = null;
 if (navigator.mediaDevices) {
   const real = navigator.mediaDevices.getUserMedia?.bind(navigator.mediaDevices);
   navigator.mediaDevices.getUserMedia = function (...a) {
     window.__sawtSpy.getUserMedia++;
+    if (window.__sawtFail === 'gum') {
+      const err = new Error('عطبٌ مزروع');
+      err.name = 'NotReadableError';
+      return Promise.reject(err);
+    }
     return real ? real(...a) : Promise.reject(new Error('no media'));
   };
 }
-try { localStorage.removeItem('sawt.consent.v1'); localStorage.removeItem('sawt.hal.v1'); localStorage.removeItem('sawt.mark.v1'); } catch (e) {}
+/* وعاملٌ بديلٌ ما دام الإخفاقُ مزروعًا — كي لا تُنزَّل ٨٣ م.ب في بوّابة */
+(function () {
+  const RealWorker = window.Worker;
+  window.__sawtWorkers = 0;
+  function StubWorker() { window.__sawtWorkers++; this.onmessage = null; this.onerror = null; }
+  StubWorker.prototype.postMessage = function () {};
+  StubWorker.prototype.terminate = function () {};
+  function Shim(u, o) { return window.__sawtFail ? new StubWorker() : new RealWorker(u, o); }
+  Object.defineProperty(window, 'Worker', { value: Shim, writable: true, configurable: true });
+})();
+try { localStorage.removeItem('sawt.consent.v1'); localStorage.removeItem('sawt.hal.v1'); localStorage.removeItem('sawt.mark.v1'); localStorage.removeItem('sawt.engine.v1'); localStorage.removeItem('sawt.declared.v1'); } catch (e) {}
 `;
 
 /** عناصرُ التحكّم الظاهرةُ في شجرة العرض داخلَ جذر الصفحة */
@@ -502,6 +528,244 @@ async function main() {
     } else {
       notes.push(
         `الأرقامُ خلف بابها: بعد الختام ${afterMuraja.digits} رقمًا والبابُ مغلق، و${opened.digits} رقمًا إذا فُتح — نُقلت ولم تُحذف`,
+      );
+    }
+  }
+
+  /* ═══════════ ٥ — **لا يُحبَس قارئٌ في خيارٍ لا يعمل** (ص-م٥) ═══════════
+     بلاغُ المالك في فحصٍ حيٍّ على هاتفه: اختار المحرّكَ الحرَّ فلم يعمل،
+     **ولم يجد سبيلًا إلى التبديل**. **وهذا عيبُ تصميمٍ لا عيبُ محرّك** — يبقى
+     قائمًا ولو عمل المحرّكان. فيُشهد ههنا في شجرة العرض:
+       (أ) **حالُ المحرّك معروضةٌ دائمًا**، وفي التهيئة **زرٌّ يُبدّل**؛
+       (ب) **والتبديلُ من موضعين**: عُدّةُ التهيئة والشريطُ ههنا، والإعداداتُ
+           في آخر هذه البوّابة (وهي خارجَ الصفحة فتُزار بنفسها)؛
+       (ج) **ورجوعٌ تلقائيٌّ عند الإخفاق يُخبَر به** — يُزرع عطبٌ في الميكروفون
+           فيُشهد الرجوعُ والخبرُ وتبدُّلُ الاسم في الشريط؛
+       (د) **وضبطُه السالب**: تشغيلةٌ سليمةٌ لا يظهر فيها خبرُ رجوعٍ ألبتّة —
+           **فخبرٌ يظهر دائمًا ليس خبرًا**. */
+
+  await cdp.ev(click(".sawt-start")); // «تلاوةٌ أخرى» — عودةٌ إلى التهيئة
+  await cdp.until(`document.querySelector('[data-sawt="begin"]')`, 8000);
+  await sleep(400);
+
+  /** قراءةُ شريط حال المحرّك: أموجودٌ؟ وما هو؟ وأزرٌّ هو أم خبر؟ */
+  const CHIP = `
+const el = document.querySelector('[data-sawt="engine-now"]');
+if (!el) return { there: false };
+const st = getComputedStyle(el);
+const r = el.getBoundingClientRect();
+return {
+  there: true, tag: el.tagName.toLowerCase(),
+  text: ((el.getAttribute('aria-label') || '') + ' ' + (el.innerText || '')).replace(/\s+/g, ' ').trim().slice(0, 90),
+  h: Math.round(r.height),
+  vis: st.display !== 'none' && st.visibility !== 'hidden' && r.height > 1,
+};
+`;
+  const chipIdle = await cdp.ev(CHIP);
+  if (!chipIdle.there || !chipIdle.vis) {
+    fail("حالُ المحرّك معروضة", "لا شريطَ لحال المحرّك في التهيئة — فالقارئُ يحزر أيُّهما يعمل");
+  } else if (chipIdle.tag !== "button") {
+    fail("التبديلُ من الشريط", `شريطُ حال المحرّك في التهيئة ليس زرًّا (${chipIdle.tag}) — فلا يُبدَّل منه`);
+  } else if (chipIdle.h < 44) {
+    fail("التبديلُ من الشريط", `هدفُ لمسٍ دون ٤٤: ${chipIdle.h}px`);
+  } else {
+    notes.push(`حالُ المحرّك معروضةٌ في التهيئة وهي زرُّ تبديل (${chipIdle.h}px): «${chipIdle.text}»`);
+  }
+
+  /* (ب‑١) **الموضعُ الأوّل: عُدّةُ التهيئة** — يُفتح ⋯ فيُوجد زرُّ التبديل */
+  await cdp.ev(click(".sawt-m-more"));
+  await sleep(500);
+  const swapInKit = await cdp.ev(`
+const el = document.querySelector('[data-sawt="engine-swap"]');
+if (!el) return { there: false };
+const r = el.getBoundingClientRect();
+return { there: true, h: Math.round(r.height), vis: getComputedStyle(el).display !== 'none' && r.height > 1 };
+`);
+  if (!swapInKit.there || !swapInKit.vis) {
+    fail("التبديلُ من عُدّة التهيئة", "لا زرَّ تبديلٍ في عُدّة التهيئة — ومن أخطأ الاختيارَ حُبس");
+  } else if (swapInKit.h < 44) {
+    fail("التبديلُ من عُدّة التهيئة", `هدفُ لمسٍ دون ٤٤: ${swapInKit.h}px`);
+  } else {
+    await cdp.ev(click('[data-sawt="engine-swap"]'));
+    await sleep(500);
+    const opened = await cdp.ev(`return !!document.querySelector('[data-sawt="engine-choice"]');`);
+    const spied = await cdp.ev("return window.__sawtSpy;");
+    if (!opened) fail("التبديلُ من عُدّة التهيئة", "ضُغط زرُّ التبديل فلم يُفتح اختيارُ المحرّك");
+    else notes.push(`التبديلُ من عُدّة التهيئة: زرٌّ ظاهرٌ (${swapInKit.h}px) يفتح اختيارَ المحرّك بلا إعادةِ تثبيتٍ ولا محوِ بيانات`);
+    // **ولا يُشغَّل ميكروفونٌ بمجرّد فتح باب التبديل**
+    if (spied.getUserMedia !== (await cdp.ev("return window.__sawtSpy.getUserMedia;"))) {
+      fail("التبديلُ من عُدّة التهيئة", "فُتح بابُ صوتٍ عند فتح اختيار المحرّك");
+    }
+    await cdp.ev(click('[data-sawt="engine-later"]'));
+    await sleep(300);
+  }
+  await cdp.ev(click(".sawt-m-more")); // إغلاقُ عُدّة التهيئة
+  await sleep(300);
+
+  /* (ب‑٢) **ومن الشريط نفسِه** — ثمّ يُختار الشبكيُّ ليكون له إذنٌ محفوظ */
+  await cdp.ev(click('[data-sawt="engine-now"]'));
+  await sleep(500);
+  if (!(await cdp.ev(`return !!document.querySelector('[data-sawt="engine-choice"]');`))) {
+    fail("التبديلُ من الشريط", "ضُغط شريطُ حال المحرّك فلم يُفتح اختيارُ المحرّك");
+  } else {
+    notes.push("التبديلُ من الشريط: يُفتح اختيارُ المحرّك بلمسةٍ واحدةٍ في أثناء التهيئة");
+  }
+  await cdp.ev(click('[data-sawt="engine-browser-speech"]'));
+  await sleep(400);
+  // **والتبديلُ المقصودُ لا يُشغّل ميكروفونًا من تلقائه** — يُحفظ ويُغلق اللوح
+  const afterDeliberate = await cdp.ev(`
+return {
+  choice: !!document.querySelector('[data-sawt="engine-choice"]'),
+  consent: !!document.querySelector('[data-sawt="consent"]'),
+  begin: !!document.querySelector('[data-sawt="begin"]'),
+};
+`);
+  if (afterDeliberate.choice || afterDeliberate.consent || !afterDeliberate.begin) {
+    fail("التبديلُ المقصود", `بُدّل المحرّكُ فلم يعُد إلى التهيئة: ${JSON.stringify(afterDeliberate)}`);
+  } else {
+    notes.push("التبديلُ المقصود يُحفظ ويعود إلى التهيئة — ولا يُشغَّل ميكروفونٌ من تلقائه");
+  }
+
+  /* تشغيلةٌ سليمةٌ بالشبكيّ: بها يُحفظ إذنُه، **وبها يُضبط الفحصُ سالبًا**
+     (لا خبرَ رجوعٍ في تشغيلةٍ لم يُخفق فيها شيء) */
+  await cdp.ev(click('[data-sawt="begin"]'));
+  await sleep(600);
+  if (await cdp.ev(`return !!document.querySelector('[data-sawt="agree"]');`)) {
+    await cdp.ev(click('[data-sawt="agree"]'));
+  }
+  await cdp.until(`!document.querySelector('[data-sawt="begin"]')`, 8000);
+  await sleep(600);
+  const healthy = await cdp.ev(`
+const el = document.querySelector('[data-sawt="engine-fell"]');
+return { fell: !!el, chip: (document.querySelector('[data-sawt="engine-now"]')?.getAttribute('aria-label') || '') };
+`);
+  if (healthy.fell) {
+    fail("ضبطُ خبر الرجوع", "ظهر خبرُ رجوعٍ في تشغيلةٍ سليمة — فالخبرُ يظهر دائمًا ولا يشهد بشيء");
+  } else {
+    notes.push(`ضبطٌ سالب: تشغيلةٌ سليمةٌ بالشبكيّ — لا خبرَ رجوعٍ ألبتّة، وحالُ المحرّك في الشريط «${healthy.chip}»`);
+  }
+  await cdp.ev(click('[data-sawt="close"]')); // إنهاء
+  await cdp.until(`document.querySelector('[data-sawt="after"]')`, 8000);
+  await cdp.ev(click(".sawt-start"));
+  await cdp.until(`document.querySelector('[data-sawt="begin"]')`, 8000);
+  await sleep(400);
+
+  /* (ج) **الرجوعُ التلقائيُّ عند الإخفاق** — يُزرع العطبُ ثمّ يُختار الحرّ */
+  await cdp.ev(`window.__sawtFail = 'gum'; return true;`);
+  await cdp.ev(click('[data-sawt="engine-now"]'));
+  await sleep(400);
+  await cdp.ev(click('[data-sawt="engine-on-device"]'));
+  await sleep(400);
+  const spyBeforeFall = await cdp.ev("return window.__sawtSpy;");
+  await cdp.ev(click('[data-sawt="begin"]'));
+  await sleep(600);
+  // الإذنُ لا يُورَّث: يُعاد الإعلانُ للمحرّك الحرّ قبل ميكروفونه
+  if (await cdp.ev(`return !!document.querySelector('[data-sawt="agree"]');`)) {
+    await cdp.ev(click('[data-sawt="agree"]'));
+  }
+  const fellShown = await cdp.until(`document.querySelector('[data-sawt="engine-fell"]')`, 15000);
+  await sleep(800);
+  const fallen = await cdp.ev(`
+const el = document.querySelector('[data-sawt="engine-fell"]');
+const chip = document.querySelector('[data-sawt="engine-now"]');
+return {
+  fell: !!el,
+  say: el ? el.innerText.replace(/\s+/g, ' ').trim().slice(0, 140) : null,
+  chip: chip ? ((chip.getAttribute('aria-label') || '') + ' ' + (chip.innerText || '')).replace(/\s+/g, ' ').trim().slice(0, 90) : null,
+  running: !document.querySelector('[data-sawt="begin"]'),
+  consentPanel: !!document.querySelector('[data-sawt="consent"]'),
+};
+`);
+  const spyAfterFall = await cdp.ev("return window.__sawtSpy;");
+  if (!fellShown || !fallen.fell) {
+    fail("الرجوعُ عند الإخفاق", "أخفق المحرّكُ الحرُّ فلم يظهر خبرٌ ألبتّة — وهذا هو الحبسُ بعينه");
+  } else if (!fallen.chip || !fallen.chip.includes("خدمة المتصفّح")) {
+    fail("الرجوعُ عند الإخفاق", `وقع الخبرُ ولم يتبدّل اسمُ المحرّك في الشريط: «${fallen.chip}»`);
+  } else if (!fallen.running || spyAfterFall.recognizers <= spyBeforeFall.recognizers) {
+    fail(
+      "الرجوعُ عند الإخفاق",
+      `أُخبر القارئُ ولم يُرجَع فعلًا (تلاوةٌ جارية: ${fallen.running} · محرّكات ${spyBeforeFall.recognizers}←${spyAfterFall.recognizers})`,
+    );
+  } else {
+    notes.push(
+      `الرجوعُ عند الإخفاق: زُرع عطبٌ في الميكروفون ⇒ أُخبر القارئُ «${fallen.say}» ثمّ رُجع إلى الشبكيّ فعلًا (محرّكات ${spyBeforeFall.recognizers}←${spyAfterFall.recognizers}) وتبدّل الاسمُ في الشريط`,
+    );
+  }
+  await cdp.ev(`window.__sawtFail = null; return true;`);
+
+  /* (ج‑٢) **ولا يُرجَع في الصلاة إلى الشبكيّ بحال** — يُوقَف ويُقال ما وقع */
+  await cdp.ev(click('[data-sawt="close"]'));
+  await cdp.until(`document.querySelector('[data-sawt="after"]')`, 8000);
+  await cdp.ev(click(".sawt-start"));
+  await cdp.until(`document.querySelector('[data-sawt="begin"]')`, 8000);
+  await sleep(400);
+  await cdp.ev(setSelect('[data-sawt="hal"]', "salat"));
+  await sleep(300);
+  await cdp.ev(click('[data-sawt="engine-now"]'));
+  await sleep(400);
+  await cdp.ev(click('[data-sawt="engine-on-device"]'));
+  await sleep(400);
+  await cdp.ev(`window.__sawtFail = 'gum'; return true;`);
+  const spyBeforeSalatFall = await cdp.ev("return window.__sawtSpy;");
+  await cdp.ev(click('[data-sawt="begin"]'));
+  await sleep(600);
+  if (await cdp.ev(`return !!document.querySelector('[data-sawt="agree"]');`)) {
+    await cdp.ev(click('[data-sawt="agree"]'));
+  }
+  const salatFellShown = await cdp.until(`document.querySelector('[data-sawt="engine-fell"]')`, 15000);
+  await sleep(800);
+  const salatFall = await cdp.ev(`
+const el = document.querySelector('[data-sawt="engine-fell"]');
+const chip = document.querySelector('[data-sawt="engine-now"]');
+return {
+  fell: !!el,
+  say: el ? el.innerText.replace(/\s+/g, ' ').trim().slice(0, 160) : null,
+  chip: chip ? ((chip.getAttribute('aria-label') || '') + ' ' + (chip.innerText || '')).replace(/\s+/g, ' ').trim().slice(0, 90) : null,
+  idle: !!document.querySelector('[data-sawt="begin"]'),
+};
+`);
+  const spyAfterSalatFall = await cdp.ev("return window.__sawtSpy;");
+  if (!salatFellShown || !salatFall.fell) {
+    fail("الصلاةُ لا يُرجَع فيها إلى الشبكيّ", "أخفق المحرّكُ في «الصلاة» فلم يُخبَر القارئُ بشيء");
+  } else if (salatFall.chip && salatFall.chip.includes("خدمة المتصفّح")) {
+    fail("الصلاةُ لا يُرجَع فيها إلى الشبكيّ", `رُجع في «الصلاة» إلى محرّكٍ يُخرج الصوت: «${salatFall.chip}»`);
+  } else if (spyAfterSalatFall.recognizers !== spyBeforeSalatFall.recognizers) {
+    fail("الصلاةُ لا يُرجَع فيها إلى الشبكيّ", "أُنشئ محرّكٌ شبكيٌّ بعد إخفاق الحرّ في «الصلاة»");
+  } else if (!salatFall.idle) {
+    fail("الصلاةُ لا يُرجَع فيها إلى الشبكيّ", "بقيت التلاوةُ جاريةً بلا محرّكٍ يسمع");
+  } else {
+    notes.push(`الصلاةُ: أخفق الحرُّ فأُخبر القارئُ «${salatFall.say}» — **ولم يُرجَع إلى الشبكيّ** ولم يُنشأ محرّكٌ يُخرج الصوت`);
+  }
+  await cdp.ev(`window.__sawtFail = null; return true;`);
+
+  /* (ب‑٣) **الموضعُ الثاني: الإعدادات** — وهي خارجَ صفحة التتبّع فتُزار بنفسها */
+  await cdp.send("Page.navigate", { url: `http://localhost:${PORT}/#/read/2` });
+  const readBooted = await cdp.until(`!document.querySelector('.boot') && document.querySelector('.set-wrap button')`, 45000);
+  if (!readBooted) {
+    missing.push("لم تُقلع صفحةُ المصحف — فلم يُفحص موضعُ التبديل الثاني (الإعدادات)");
+  } else {
+    await cdp.ev(click(".set-wrap > button"));
+    await sleep(700);
+    const inSettings = await cdp.ev(`
+const line = document.querySelector('[data-sawt-set="engine-line"]');
+if (!line) return { there: false };
+const sec = line.closest('.set-sec');
+const btns = sec ? [...sec.querySelectorAll('.set-seg button')] : [];
+return {
+  there: true,
+  vis: line.getBoundingClientRect().height > 1,
+  line: line.innerText.replace(/\s+/g, ' ').trim().slice(0, 90),
+  names: btns.map((b) => (b.textContent || '').trim()).filter(Boolean),
+  tap: Math.min(...btns.map((b) => Math.round(b.getBoundingClientRect().height)), 999),
+};
+`);
+    if (!inSettings.there || !inSettings.vis) {
+      fail("التبديلُ من الإعدادات", "لا قسمَ لمحرّك التتبّع في الإعدادات — فالتبديلُ من موضعٍ واحد");
+    } else if (inSettings.names.length < 2) {
+      fail("التبديلُ من الإعدادات", `قسمُ المحرّك لا يعرض المحرّكين: ${JSON.stringify(inSettings.names)}`);
+    } else {
+      notes.push(
+        `التبديلُ من الإعدادات: ${inSettings.names.join(" · ")} — وسطرُ صدق المختار معه «${inSettings.line}» (أصغرُ هدفِ لمسٍ ${inSettings.tap}px)`,
       );
     }
   }
