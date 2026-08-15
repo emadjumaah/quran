@@ -35,6 +35,10 @@
   --gold: #a97e2f;
   --gold-soft: #f4ead6;
   --line: #e3dccd;
+  /* حدُّ أزرار القشرة (الرأس) وحدَه — لا `--line` العام: `--line` على `--panel`
+     ١٫٣:١ (لا يُرى)، وحدُّ الحاوية يلزمه ٣:١ (ج٦٧ §٣/٢). تعميمُ الإصلاح على
+     `--line` كلِّه كان يغيّر كلَّ حدٍّ في التطبيق — فحُصر أثرُه بالقشرة. */
+  --shell-line: #9c8a63;
   --danger: #a33a2a;
   --radius: 12px;
   --shadow: 0 1px 3px rgb(36 31 24 / 0.06), 0 4px 16px rgb(36 31 24 / 0.05);
@@ -58,6 +62,7 @@
   --gold-soft: #33290f;
   --line: #33150a12;
   --line: #322d25;
+  --shell-line: #7a6f5d;
   --shadow: 0 1px 3px rgb(0 0 0 / 0.4);
 }
 /* sepia — a warm mushaf-cream reading theme */
@@ -74,6 +79,7 @@
   --gold: #9a6f24;
   --gold-soft: #ecdcbb;
   --line: #ddceb0;
+  --shell-line: #8f7a4d;
   --shadow: 0 1px 3px rgb(67 55 31 / 0.08), 0 4px 16px rgb(67 55 31 / 0.06);
 }
 
@@ -220,9 +226,19 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
      فيتكسّر الرأس (رصد المالك 2026-07-29 بلقطة جهاز حقيقي) */
   flex-wrap: nowrap; min-width: 0;
 }
-.brand-word { font-size: 24px; }
-.topbar .brand { font-weight: 700; font-size: 16px; color: var(--ink); white-space: nowrap; }
-.topbar .brand .ar { font-family: var(--font-quran); color: var(--accent); margin-inline-start: 6px; }
+/* وحدةُ الهويّة: الشعارُ والاسمُ عنصرٌ واحدٌ على خطِّ أساسٍ واحد بمسافةٍ ثابتة
+   (ج٦٧ §١/٢) — كانت المسافةُ بين الصورة والاسم منثورةً بين CSS و`style` مضادّ
+   (`margin-inline-start: 6px` هنا يُلغيه `style={{marginInlineStart: 0}}` في
+   `main.tsx`)، فصار مصدرُها واحدًا: `gap` على الغلاف. **والحجمُ خُفِّض قليلًا**
+   (٣٥px⇐٣٠px شعارًا، ٢٤px⇐٢١px اسمًا) فلا يُساوي وزنُها البصريُّ أزرارَ
+   الرأس (٣٨px) فيزاحمها. */
+.brand-word { font-size: 21px; }
+.topbar .brand {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 16px; color: var(--ink); white-space: nowrap; text-decoration: none;
+}
+.topbar .brand .ar { font-family: var(--font-quran); color: var(--accent); }
+.topbar .brand img { width: 30px; height: 30px; }
 .topbar nav { display: flex; gap: 4px; }
 .topbar nav a {
   padding: 6px 12px; border-radius: 8px; color: var(--ink-2); font-weight: 500;
@@ -230,15 +246,23 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .topbar nav a:hover { background: var(--panel-2); text-decoration: none; }
 .topbar nav a.active { background: var(--accent-soft); color: var(--accent); }
 .topbar .spacer { flex: 1; }
-/* uniform icon buttons across the top bar (settings · bookmarks · lang · theme · menu) */
-.topbar > button, .topbar .menu-btn {
+/* uniform icon buttons across the top bar (settings · bookmarks · lang · theme
+   · menu · تتبّع) — **شكلٌ واحدٌ ومقاسٌ واحدٌ ولا استثناء** (ج٦٧ §١/١): كانت
+   `.set-wrap > button` (الإعداداتُ والمحفوظاتُ والمصادر، داخلَ غلافٍ فتفلت من
+   `> button`) و`.tatabbu-btn` (قرصٌ مستديرٌ بخلفيّةٍ أخرى) شكلين آخرين
+   يجاوران هذا الشكلَ في الرأس نفسِه. **وحدُّها `--shell-line` لا `--line`**
+   (٣٫٣:١ فأكثر على `--panel` في الأوضاع الثلاثة — كان ١٫٣:١ فلا يُرى، ج٦٧ §٣/٢). */
+.topbar > button, .topbar .menu-btn, .topbar .set-wrap > button, .topbar .tatabbu-btn, .topbar .sh-btn {
   min-width: 38px; height: 38px; border-radius: 10px; padding: 0 8px;
-  border: 1px solid var(--line); background: var(--panel-2); color: var(--ink);
+  border: 1px solid var(--shell-line); background: var(--panel-2); color: var(--ink);
   display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-  cursor: pointer; font-size: 15px; line-height: 1; flex: none;
+  cursor: pointer; font-size: 15px; line-height: 1; flex: none; text-decoration: none;
   transition: background .12s ease, border-color .12s ease;
 }
-.topbar > button:hover, .topbar .menu-btn:hover { background: var(--panel); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.topbar > button:hover, .topbar .menu-btn:hover, .topbar .set-wrap > button:hover,
+.topbar .tatabbu-btn:hover, .topbar .sh-btn:hover {
+  background: var(--panel); border-color: color-mix(in srgb, var(--accent) 45%, var(--shell-line));
+}
 
 /* desktop «المزيد ▾» dropdown */
 .nav-more { position: relative; display: inline-flex; }
@@ -674,11 +698,9 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   --mushaf-ink: #15100a;
   --mushaf-mark: #0b5f43;          /* رقمُ الآية وعلاماتُه */
   --mushaf-jamia: #7a5410;         /* علامةُ الآية الكلّيّة — ذهبٌ داكنٌ يُقرأ */
-  --mushaf-mark-soft: color-mix(in srgb, var(--panel) 86%, #0b5f43);
   --mushaf-title: #084c36;         /* لوحةُ اسم السورة */
   --mushaf-title-soft: color-mix(in srgb, var(--panel) 82%, #0b5f43);
   --mushaf-folio: #0b5f43;         /* رقمُ الصفحة */
-  --mushaf-rule: color-mix(in srgb, var(--line) 50%, #0b5f43);
   /* **الغنى مطلوبٌ لا الشحوب** (البرومبت §١): كان الإطارُ ٤٥٪ ذهبًا فبدا رماديًّا
      مصفرًّا، فصار ٦٠٪ — ذهبٌ يُرى، وهو زخرفُ حاسوبٍ لا يمسّ نصًّا فلا يخصمه حدٌّ. */
   --mushaf-frame: color-mix(in srgb, var(--gold) 60%, var(--line));
@@ -689,11 +711,9 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   --mushaf-ink: #f4efe5;           /* أنصعُ من حبر الواجهة — والتباينُ يرتفع */
   --mushaf-mark: #5cbf9b;
   --mushaf-jamia: #dcae5e;
-  --mushaf-mark-soft: color-mix(in srgb, var(--panel) 84%, #2f8a68);
   --mushaf-title: #6fcda9;
   --mushaf-title-soft: color-mix(in srgb, var(--panel) 86%, #2f8a68);
   --mushaf-folio: #5cbf9b;
-  --mushaf-rule: color-mix(in srgb, var(--line) 50%, #2f8a68);
   --mushaf-frame: color-mix(in srgb, var(--gold) 60%, var(--line));
 }
 /* الورقيُّ (سبيا): حبرٌ دافئٌ داكنٌ يوافق ورقَه — لا أسودَ زجاجيًّا عليه */
@@ -807,11 +827,10 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   }
   /* ولوحةُ السورة تمتدّ إلى حافّة **سطر النصّ** لا حافّة الشاشة (§٥ج/٤) */
   .mushaf-page .mp-surah-band { margin-inline: 0; }
-  /* حدُّ الصفحة: رقمُها وفاصلٌ خفيفٌ فوقَه — علامةٌ لا صندوق */
-  .mushaf-page .page-no {
-    margin: 14px 26% 0; padding-top: 9px; border-top: 1px solid var(--mushaf-rule);
-  }
-  .mushaf-page:last-child .page-no { border-top-color: transparent; }
+  /* **حدُّ الصفحة: رقمٌ في زخرفه، والفراغُ وحدَه يفصل** (ج٦٧ §١/٩) — كان ههنا
+     `border-top` خطًّا أفقيًّا يقطع الورقة، وصفحةُ المصحف تُطوى لا تُقطع بخطّ.
+     فزال الخطُّ، وعوّضه فراغٌ أوسعُ يفصل بين الصفحتين. والرقمُ في `﴾ ﴿` من صنعنا. */
+  .mushaf-page .page-no { margin: 18px auto 6px; padding-top: 0; letter-spacing: 0.06em; }
   /* صفحاتُ الافتتاح: تُهذَّب حدودُها بما يوافق العرضَ **ولا تُجرَّد من زخرفها** —
      إطارٌ واحدٌ وخطٌّ واحدٌ بدل أربعةٍ، وذهبٌ أخفُّ حيث زالت الحدود */
   .mushaf-page.opening {
@@ -872,8 +891,8 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 /* **ولا خلفيّةَ تحت الاسم** — الورقُ ورقٌ (ص-م٤ §٥ج/١): كان ههنا `background`
    يملأ صندوقَ الاسم، فأُسقط ولم يبقَ إلّا لونُ الحبر. */
 .mushaf-page .mp-surah-name { color: var(--mushaf-title); }
-.mushaf-page .mp-rub span { color: var(--mushaf-mark); background: var(--mushaf-mark-soft); }
-.mushaf-page .mp-margin { border-bottom-color: var(--mushaf-rule); }
+/* **بلا خلفيّة** — زال القرصُ من العلامة (ج٦٧ §١/٧)، فبقي الحبرُ وحدَه */
+.mushaf-page .mp-rub span, .mushaf-page .mp-rub .mp-mark-say { color: var(--mushaf-mark); }
 
 /* page-turn arrows below the page */
 .mushaf-pager {
@@ -927,10 +946,12 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 /* Madina-mushaf furniture for the صفحات page */
 /* هامشُ الرأس (جزء · سورة · حزب) — يبقى ولا يُمَسّ في موضعه ولا في محتواه،
    وإنّما رُفع مقاسُه إلى الحدّ المعلَن (١٥px) وفاءً بالميثاق */
+/* **هامشٌ لا شريط** (ج٦٧ §١/٨): زال `border-bottom` — والمصحفُ يجعل رأسَ صفحته
+   هامشًا هادئًا يفصله الفراغُ، لا خطًّا فاصلًا من واجهة ويب. */
 .mp-margin {
   display: flex; justify-content: space-between; align-items: center;
   font-size: 15px; color: var(--muted); padding: 0 2px 2px;
-  margin-bottom: 0; border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
 }
 /* ═══════════ لوحةُ السورة — لا وسمَ ويبٍ (رصدُ المالك ١٤ أغسطس) ═══════════
    **بنصّه:** «صدرُ الصفحة عند اسم السورة — لِمَ ليس مثل القرآن؟ الوحيدةُ التي
@@ -982,13 +1003,22 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   text-align: center; font-size: calc(23px * var(--quran-scale, 1));
   line-height: 1.55; color: var(--mushaf-title); margin: 0;
 }
+/* ═══ علامتا الحزب والسجدة — **رمزٌ متوارثٌ عارٍ، لا قرصُ واجهةِ ويب** ═══
+   كان `.mp-mark span` قرصًا (`999px` + خلفيّةٌ ملوّنة) يقطع سردَ المصحف —
+   «۞ الحزب ٦» قرصٌ أخضرُ في لقطة المالك. **فزال القرصُ والخلفيّةُ والحشوة**،
+   وبقي الرمزُ بحجم السطر بحبرِ العلامة (ج٦٧ §١/٧). **والبيانُ في الهامش**:
+   رقمُ الحزب سطرٌ دقيقٌ تحت الرمز لا في متن السطر. */
 .mp-mark { text-align: center; margin: 8px auto 4px; user-select: none; }
 .mp-mark span {
-  display: inline-block; font-family: var(--font-quran); font-size: 14px;
-  padding: 1px 16px; border-radius: 999px;
+  display: inline-block; font-family: var(--font-quran);
+  font-size: calc(22px * var(--quran-scale, 1)); line-height: 1;
 }
-.mp-rub span { color: var(--gold); background: var(--gold-soft); }
-.mp-sajda span { color: var(--accent); background: var(--accent-soft); letter-spacing: 0.02em; }
+.mp-mark .mp-mark-say {
+  display: block; font-family: var(--font-ui); font-size: 15px;
+  letter-spacing: 0.02em; opacity: 0.72; margin-top: 1px;
+}
+.mp-rub span, .mp-rub .mp-mark-say { color: var(--gold); }
+.mp-sajda span, .mp-sajda .mp-mark-say { color: var(--accent); }
 .mp-ayah { border-radius: 8px; }
 /* الآيةُ المقصودةُ في صفحة المصحف — **والقاعدةُ واحدةٌ لا قاعدتان**: كان ههنا
    انتشارٌ ٣px يقع على حروف الآية المجاورة (وسردُ المصحف متّصلٌ لا فقرات)، وهو
@@ -2336,10 +2366,14 @@ table.data tr:hover td { background: var(--panel-2); }
   .tabbar .tab {
     flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
     background: none; border: none; text-decoration: none; min-height: 44px;
-    color: var(--muted); font-size: 15px; font-weight: 600; padding: 2px 0; cursor: pointer;
+    /* **`--ink-2` لا `--muted`** (ج٦٧ §١/٤): `--muted` على `--panel` ٣٫٨:١ فاتحًا
+       و٢٫٩:١ سبيا — دون ٤٫٥:١، وهو عينُ «حتّى الفوترُ غيرُ واضح». و`--ink-2`
+       ٧٫٩ / ٩٫٦ / ٥٫٩ في الأوضاع الثلاثة. */
+    color: var(--ink-2); font-size: 15px; font-weight: 600; padding: 2px 0; cursor: pointer;
   }
   .tabbar .tab svg { width: 22px; height: 22px; }
-  .tabbar .tab.active { color: var(--accent); }
+  /* **والفعّالُ بلونٍ ووزنٍ لا بلونٍ وحدَه** (§١/٣) — فمن لا يميّز الأخضرَ يقرأ الثِّقَل */
+  .tabbar .tab.active { color: var(--accent); font-weight: 800; }
   /* pages clear the tab bar (and FAB) so their last rows stay tappable */
   .page, .mw-wrap, .jw-wrap, .aya-wrap, .fr-wrap { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
   .mm-grid { padding-bottom: 12px; }
@@ -2856,14 +2890,11 @@ table.data tr:hover td { background: var(--panel-2); }
    بحشوٍ صفر (مرّتين: `max-width: 760px` و`430px`)، فتلتصق الأيقونةُ بأوّل المحور
    ما لم تُمركَز ههنا في المصدر. (عيبٌ رصده المالكُ في الفحص الحيّ ١٤ أغسطس؛
    وكانت الأيقونةُ ١٩px في صندوقٍ ٤٤px بفجوة ٢٤/١ بدل ١٢٫٥/١٢٫٥.) */
-.tatabbu-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none;
-  border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px;
-  color: var(--ink-2); background: var(--panel); font-size: 14px; white-space: nowrap;
-}
-.tatabbu-btn:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+/* الشكلُ والحدُّ والخلفيّةُ من قاعدة `.topbar > button` الموحَّدة أعلاه —
+   كان ههنا قرصٌ (`999px`) بخلفيّةٍ أخرى، فبانت وحدَها بين الأزرار (ج٦٧ §١/١) */
+.tatabbu-btn { gap: 7px; white-space: nowrap; }
+.tatabbu-btn:hover { color: var(--accent); text-decoration: none; }
 .tatabbu-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-.tatabbu-btn.icon-only { padding: 7px; border-radius: 50%; }
 
 @media (max-width: 760px) {
   .topbar .sh-btn { width: 36px; height: 36px; min-width: 36px; padding: 0; }

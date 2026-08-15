@@ -317,15 +317,9 @@ function Home() {
 
 function Brand() {
   return (
-    <NavLink
-      to="/"
-      className="brand"
-      style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}
-    >
-      <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={35} height={35} />
-      <span className="ar brand-word" style={{ marginInlineStart: 0 }}>
-        مشكاة
-      </span>
+    <NavLink to="/" className="brand">
+      <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={30} height={30} />
+      <span className="ar brand-word">مشكاة</span>
     </NavLink>
   );
 }

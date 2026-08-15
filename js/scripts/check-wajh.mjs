@@ -609,6 +609,133 @@ async function live() {
     }
   }
 
+  /* ═══ ٦ — **انتظامُ الرأس وتباينُ القشرة** (ج٦٧ §٣/١ و٣/٢) ═══
+     رصدُ المالك: «أيقونةُ المنيو واللوغو واسمُ مشكاة كلُّها غيرُ منتظمة · شاحبةٌ
+     أيضًا». فيُقاسان معًا على ٣٩٠ في الأوضاع الثلاثة:
+       • **الانتظام**: كلُّ أزرار الرأس مقاسًا واحدًا ونصفَ قطرٍ واحدًا؛
+       • **التباين**: حبرُ الزرّ ≥٤٫٥:١ على خلفيّته، وحدُّه ≥٣:١ على ما وراءه.
+     **وضبطُهما السالب**: يُزرع زرٌّ مخالفُ الشكل ويُبهت حدُّ الأزرار، فيُصطادان. */
+  if (lastCdp) {
+    const cdp = lastCdp;
+    const SHELL = `
+      const bar = document.querySelector('.topbar');
+      if (!bar) return { error: 'لا رأسَ في الصفحة' };
+      const px = (v) => Math.round(parseFloat(v) * 10) / 10;
+      /** [ح، خ، ز، شفافيّة] — **والشفافيّةُ تُقرأ ولا تُهمَل**: لونٌ شفّافٌ تُقرأ
+          أعدادُه الثلاثةُ وحدَها فيُحسب أسودَ، فيُظنّ عاليَ التباين وهو غيرُ مرئيّ. */
+      const rgba = (v) => {
+        const p = (v.match(/[\\d.]+/g) ?? []).map(Number);
+        return [p[0] ?? 0, p[1] ?? 0, p[2] ?? 0, p[3] === undefined ? 1 : p[3]];
+      };
+      /** ويُركَّب الشفّافُ على ما تحته فيُقاس ما تراه العينُ فعلًا */
+      const over = (c, bg) => [0, 1, 2].map((i) => Math.round(c[i] * c[3] + bg[i] * (1 - c[3])));
+      const lum = (c) => {
+        const f = c.slice(0, 3).map((x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; });
+        return 0.2126 * f[0] + 0.7152 * f[1] + 0.0722 * f[2];
+      };
+      /** الخلفيّةُ الفعليّةُ: تُركَّب طبقاتُ الأسلاف حتّى تُصمت — فالشفّافُ يكشف ما تحته */
+      const bgOf = (el) => {
+        const stack = [];
+        for (let n = el; n; n = n.parentElement) {
+          const c = rgba(getComputedStyle(n).backgroundColor);
+          if (c[3] > 0) stack.push(c);
+          if (c[3] >= 0.999) break;
+        }
+        let out = [255, 255, 255];
+        for (const c of stack.reverse()) out = over(c, out);
+        return out;
+      };
+      const ratio = (a, b) => { const l1 = lum(a), l2 = lum(b); const hi = Math.max(l1, l2), lo = Math.min(l1, l2); return Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100; };
+      const btns = [...bar.querySelectorAll('button, a.tatabbu-btn')].filter((b) => {
+        const r = b.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && !b.closest('nav');
+      });
+      const shapes = btns.map((b) => {
+        const s = getComputedStyle(b), r = b.getBoundingClientRect();
+        const self = bgOf(b);
+        const behind = bgOf(b.parentElement ?? bar);
+        return {
+          what: b.getAttribute('aria-label') || b.className || b.tagName,
+          w: Math.round(r.width), h: Math.round(r.height), radius: px(s.borderTopLeftRadius),
+          ink: ratio(over(rgba(s.color), self), self),
+          edge: ratio(over(rgba(s.borderTopColor), behind), behind),
+        };
+      });
+      /** والفوتر: أيقونتُه وتسميتُه على خلفيّته */
+      const tabs = [...(document.querySelector('.tabbar')?.querySelectorAll('.tab') ?? [])].map((t) => {
+        const s = getComputedStyle(t), bg = bgOf(t);
+        return { what: t.textContent.trim().slice(0, 12), ink: ratio(over(rgba(s.color), bg), bg), weight: Number(s.fontWeight) };
+      });
+      return { shapes, tabs };
+    `;
+    const MIN_INK = 4.5, MIN_EDGE = 3;
+    const uniq = (xs) => [...new Set(xs)];
+    const themes = ["light", "dark", "sepia"];
+    const table = [];
+    let clean = null;
+    for (const th of themes) {
+      await cdp.ev(`document.documentElement.setAttribute('data-theme', '${th}'); return true;`);
+      await sleep(250);
+      const s = await cdp.ev(SHELL);
+      if (s.error) { fail("انتظامُ الرأس", s.error); break; }
+      if (th === "light") clean = s;
+      const sizes = uniq(s.shapes.map((b) => `${b.w}×${b.h}`));
+      const radii = uniq(s.shapes.map((b) => b.radius));
+      if (sizes.length > 1) fail(`انتظامُ الرأس — «${th}»`, `مقاساتٌ مختلفة: ${sizes.join(" · ")}`);
+      if (radii.length > 1) fail(`انتظامُ الرأس — «${th}»`, `أنصافُ أقطارٍ مختلفة: ${radii.join(" · ")}`);
+      const pale = s.shapes.filter((b) => b.ink < MIN_INK).map((b) => `${b.what}: حبرٌ ${b.ink}`);
+      const faint = s.shapes.filter((b) => b.edge < MIN_EDGE).map((b) => `${b.what}: حدٌّ ${b.edge}`);
+      const dimTabs = s.tabs.filter((t) => t.ink < MIN_INK).map((t) => `${t.what}: ${t.ink}`);
+      if (pale.length) fail(`تباينُ حبر القشرة < ${MIN_INK}:١ — «${th}»`, pale.join(" · "));
+      if (faint.length) fail(`تباينُ حدّ القشرة < ${MIN_EDGE}:١ — «${th}»`, faint.join(" · "));
+      if (dimTabs.length) fail(`تباينُ الفوتر < ${MIN_INK}:١ — «${th}»`, dimTabs.join(" · "));
+      table.push(
+        `«${th}»: ${s.shapes.length} زرًّا بمقاسٍ واحدٍ ${sizes[0]} ونصفِ قطرٍ ${radii[0]}px — ` +
+          `أدنى حبرٍ ${Math.min(...s.shapes.map((b) => b.ink))}:١ · أدنى حدٍّ ${Math.min(...s.shapes.map((b) => b.edge))}:١` +
+          (s.tabs.length ? ` · الفوتر أدنى حبرٍ ${Math.min(...s.tabs.map((t) => t.ink))}:١` : " · لا فوترَ في هذا القياس"),
+      );
+    }
+    await cdp.ev(`document.documentElement.setAttribute('data-theme', 'light'); return true;`);
+    await sleep(200);
+    if (table.length === themes.length) notes.push(`انتظامُ الرأس وتباينُ القشرة — ${table.join(" | ")}`);
+
+    /* ═══ ضبطُهما السالب: زرٌّ مخالفُ الشكل، وحدٌّ مُبهَت ═══ */
+    if (clean) {
+      await cdp.ev(`
+        const b = document.createElement('button');
+        b.id = '__plantOdd'; b.setAttribute('aria-label', 'زرعٌ مخالف'); b.textContent = 'ز';
+        b.style.cssText = 'width:56px;height:56px;border-radius:999px';
+        document.querySelector('.topbar').appendChild(b);
+        const st = document.createElement('style');
+        st.id = '__plantPale';
+        st.textContent = '.topbar > button, .topbar .menu-btn, .topbar .set-wrap > button, .topbar .tatabbu-btn { border-color: rgba(0,0,0,0.02) !important; }';
+        document.head.appendChild(st);
+        return true;
+      `);
+      await sleep(250);
+      const planted = await cdp.ev(SHELL);
+      await cdp.ev(`document.getElementById('__plantOdd')?.remove(); document.getElementById('__plantPale')?.remove(); return true;`);
+      await sleep(250);
+      const after = await cdp.ev(SHELL);
+
+      const oddCaught = uniq(planted.shapes.map((b) => `${b.w}×${b.h}`)).length > 1 && uniq(planted.shapes.map((b) => b.radius)).length > 1;
+      const paleCaught = planted.shapes.some((b) => b.edge < MIN_EDGE);
+      if (!oddCaught) fail("ضبطُ انتظام الرأس", "زُرع زرٌّ ٥٦px مستديرٌ في الرأس فلم يُصطَد — والفاحصُ لا يفحص");
+      if (!paleCaught) fail("ضبطُ تباين القشرة", "أُبهِت حدُّ الأزرار فلم يُصطَد");
+      if (oddCaught && paleCaught) {
+        notes.push(
+          `ضبطٌ سالب: زُرع زرٌّ ٥٦×٥٦px نصفُ قطره ٩٩٩px وأُبهِت حدُّ الأزرار — فاصطادت البوّابةُ المخالفةَ في الشكل وأدنى حدٍّ ${Math.min(...planted.shapes.map((b) => b.edge))}:١`,
+        );
+      }
+      const back =
+        uniq(after.shapes.map((b) => `${b.w}×${b.h}`)).length === 1 &&
+        uniq(after.shapes.map((b) => b.radius)).length === 1 &&
+        after.shapes.every((b) => b.edge >= MIN_EDGE);
+      if (!back) fail("ضبطُ انتظام الرأس", "أُزيل الزرعُ فلم تعُد البوّابةُ خضراء — قياسٌ غيرُ مستقرّ");
+      else notes.push("وأُزيل الزرعُ فعاد الرأسُ منتظمًا وحدُّه فوق الحدّ — قياسٌ مستقرّ");
+    }
+  }
+
   /* ═══ ٥ — **سطرُ «تجدّدت هيئةُ الصفحات» يُعرض مرّةً ثمّ لا يعود** (§٥ب) ═══
      يُزرع اختيارٌ محفوظٌ «آيات» فيُشهد ظهورُ السطر، ثمّ يُهمَل فيُشهد ألّا يعود.
      **ولا يُعرض لمن لم يبدّل قطُّ** — وهو الضبطُ السالبُ الثالث. */

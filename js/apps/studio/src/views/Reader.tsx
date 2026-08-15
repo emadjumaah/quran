@@ -311,8 +311,9 @@ function MushafPage({
           const isKulliya = !!(layers.jawami && kullReady && classOf(`${ayah.surahNo}:${ayah.ayahNo}`)?.tier === "كلّية");
           return (
             <Fragment key={ayah.location}>
-              {rub && <div className="mp-mark mp-rub"><span>۞ {num(rub)}</span></div>}
-              {ayah.sajdaType && <div className="mp-mark mp-sajda"><span>۩ موضع سجدة</span></div>}
+              {/* الرمزُ المتوارثُ عاريًا، وبيانُه سطرٌ دقيقٌ تحته لا في متن السطر (ج٦٧ §١/٧) */}
+              {rub && <div className="mp-mark mp-rub"><span>۞</span><span className="mp-mark-say">{num(rub)}</span></div>}
+              {ayah.sajdaType && <div className="mp-mark mp-sajda"><span>۩</span><span className="mp-mark-say">موضع سجدة</span></div>}
               {/* «القراءةُ أولًا»: النقرُ في أيِّ مكانٍ من الآية — حتى فوق كلماتها —
                   يعلّمها؛ وبياناتُ الكلمة بنقرٍ طويلٍ (جوال) أو بنقرةٍ بعد التعليم
                   (حاسوب) — قرار المالك 2026-07-29 */}
@@ -781,7 +782,7 @@ export default function Reader() {
               >
                 {surahs.map((s) => (
                   <option key={s.surahNo} value={s.surahNo}>
-                    {getUILang() === "ar" ? `${s.surahNo}. ${s.nameAr}` : `${s.surahNo}. ${s.nameTranslit}`}
+                    {getUILang() === "ar" ? `${num(s.surahNo)}. ${s.nameAr}` : `${s.surahNo}. ${s.nameTranslit}`}
                   </option>
                 ))}
               </select>

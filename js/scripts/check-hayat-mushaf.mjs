@@ -478,9 +478,67 @@ async function live() {
   const inkLight = measures.ink.find((i) => i.theme === "فاتح" && i.place === "صفحةٌ متّصلة");
   if (inkLight) notes.push(`وزنُ الحبر (صفحةٌ متّصلة · فاتح): بكسلاتٌ داكنة ${round(inkLight.darkRatio * 100, 2)}٪ · كثافةٌ متوسّطة ${round(inkLight.meanInk * 100, 2)}٪`);
 
+  /* ═══ ٤ — **لا قرصَ ولا خطَّ فاصلٍ في سطح المصحف** (ج٦٧ §١/٧–٩) ═══
+     قاعدةُ الأثاث الجامعة: ما احتاج تمييزًا فبالزخرف والمقاس والفراغ، لا بحدٍّ
+     وخلفيّة. فيُمسح أثاثُ الصفحة — علامةُ الحزب وسطرُ الهامش ورقمُ الصفحة —
+     فمن كانت له خلفيّةٌ غيرُ شفّافةٍ أو نصفُ قطرٍ يقرَّص أو خطٌّ فاصلٌ اصطيد. */
+  const furniture = await cdp.ev(FURNITURE);
+  if (furniture.error) fail("أثاثُ الصفحة", furniture.error);
+  else {
+    if (furniture.bad.length) {
+      fail("قرصٌ أو خطٌّ فاصلٌ في سطح المصحف", furniture.bad.map((b) => `${b.what}: ${b.why}`).join(" · "));
+    } else {
+      notes.push(`أثاثُ الصفحة بلا قرصٍ ولا خطٍّ فاصل — فُحص ${furniture.seen} عنصرًا (${furniture.names.join(" · ")})`);
+    }
+    measures.furniture = furniture;
+  }
+
   /* ═══ الضبطُ السالب: زرعٌ **له أثر** ═══ */
   await negatives(cdp);
 }
+
+/**
+ * أثاثُ صفحة المصحف: علامةُ الحزب/السجدة · سطرُ الهامش · رقمُ الصفحة · لوحةُ
+ * السورة. **والمقياسُ ثلاثةٌ**: خلفيّةٌ غيرُ شفّافة، أو نصفُ قطرٍ يقرِّص العنصر
+ * (≥٩px وهو أعرضُ من زخرفٍ)، أو خطٌّ فاصلٌ يمتدّ عرضَ العنصر. **ولوحةُ السورة
+ * مستثناةٌ من الخطّ** — إطارُها الرفيعُ زخرفُها المقصود (ج٦٧ §١/١٠)، وإنّما
+ * تُفحص خلفيّتُها وزواياها.
+ */
+const FURNITURE = `
+  const page = document.querySelector('.mushaf-page');
+  if (!page) return { error: 'لا صفحةَ مصحفٍ في المرأى' };
+  const PARTS = [
+    { sel: '.mp-mark span', what: 'علامةُ الحزب/السجدة', rule: true },
+    { sel: '.mp-margin', what: 'سطرُ الهامش', rule: true },
+    { sel: '.page-no', what: 'رقمُ الصفحة', rule: true },
+    { sel: '.mp-surah-band', what: 'لوحةُ السورة', rule: false },
+  ];
+  const opaque = (c) => {
+    const p = (c.match(/[\\d.]+/g) ?? []);
+    return p.length >= 4 ? Number(p[3]) > 0.05 : (c !== 'transparent' && !!c);
+  };
+  const bad = [], names = [];
+  let seen = 0;
+  for (const p of PARTS) {
+    for (const el of page.querySelectorAll(p.sel)) {
+      const s = getComputedStyle(el);
+      seen++;
+      names.push(p.what);
+      if (opaque(s.backgroundColor)) bad.push({ what: p.what, why: 'خلفيّةٌ غيرُ شفّافة ' + s.backgroundColor });
+      const r = parseFloat(s.borderTopLeftRadius) || 0;
+      if (r >= 9) bad.push({ what: p.what, why: 'نصفُ قطرٍ ' + r + 'px — قرصٌ لا زخرف' });
+      if (p.rule) {
+        for (const side of ['Top', 'Bottom']) {
+          const w = parseFloat(s['border' + side + 'Width']) || 0;
+          if (w > 0 && s['border' + side + 'Style'] !== 'none' && opaque(s['border' + side + 'Color'])) {
+            bad.push({ what: p.what, why: 'خطٌّ فاصلٌ ' + side.toLowerCase() + ' بعرض ' + w + 'px' });
+          }
+        }
+      }
+    }
+  }
+  return { seen, bad, names: [...new Set(names)] };
+`;
 
 /**
  * الضبطُ السالب — ثلاثةُ زروعٍ في الصفحة الحيّة، كلٌّ يُصطاد ثمّ يُزال فتعود
@@ -570,7 +628,25 @@ async function negatives(cdp) {
   if (Math.abs(back.max - base.max) > 3) fail("ضبطٌ سالب", `أُزيل الزرعُ ولم تعُد الفجوةُ (${round(base.max, 1)} ← ${round(back.max, 1)})`);
   else done.push(`وعادت بعد الإزالة (${round(back.max, 1)}px)`);
 
-  /* ٤) وبريءٌ لا يُصطاد: خطُّ الواجهة في القشرة ليس خطَّ المصحف */
+  /* ٤) **يُزرع قرصٌ في أثاث الصفحة** — فيُصطاد أثاثُ الويب في سطح المصحف (ج٦٧ §١/٧).
+     **والشاهدُ سطرُ الهامش لا علامةُ الحزب**: العلامةُ لا تقع في كلّ صفحةٍ (إنّما
+     عند انقلاب الرُّبع)، فلو زُرع عليها في صفحةٍ لا علامةَ فيها لَحُمِّرت البوّابةُ
+     على غياب الشاهد لا على العيب. وسطرُ الهامش في كلّ صفحةٍ ولا بدّ. */
+  const cleanF = await cdp.ev(FURNITURE);
+  await plant(
+    `.mushaf-page .mp-margin { border-radius: 999px !important; background: #d8e8e0 !important; }`,
+    ".mushaf-page .mp-margin",
+    "borderRadius",
+  );
+  const plantedF = await cdp.ev(FURNITURE);
+  if (!(plantedF.bad.length > cleanF.bad.length)) fail("ضبطٌ سالب", `زُرع قرصٌ في علامة الحزب فلم يُصطَد (${cleanF.bad.length} → ${plantedF.bad.length})`);
+  else done.push(`زُرع قرصٌ بخلفيّةٍ في علامة الحزب فاصطيد (${plantedF.bad.map((b) => b.why).join(" · ")})`);
+  await unplant();
+  const backF = await cdp.ev(FURNITURE);
+  if (backF.bad.length !== cleanF.bad.length) fail("ضبطٌ سالب", `أُزيل القرصُ ولم يعُد الأثاثُ إلى ما كان (${cleanF.bad.length} ← ${backF.bad.length})`);
+  else done.push(`وعاد الأثاثُ بعد الإزالة (${backF.bad.length} مخالفة)`);
+
+  /* ٥) وبريءٌ لا يُصطاد: خطُّ الواجهة في القشرة ليس خطَّ المصحف */
   await plant(`.mp-margin { font-family: "Times New Roman", serif !important; }`, ".mp-margin", "fontFamily");
   const f2 = await cdp.platformFonts(".mushaf-page .mp-text .w");
   if ((f2 ?? []).some((x) => !x.custom || !SHIPPED_FACES.includes(x.family))) fail("ضبطٌ سالب", "اصطاد الفحصُ بريئًا: خطُّ هامشٍ ليس خطَّ المصحف");
