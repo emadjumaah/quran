@@ -487,10 +487,26 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
   const loc = useLocation();
   const p = loc.pathname;
   const ar = getUILang() === "ar";
+  /** **وارتفاعُ الشريط يُقاس منه** كما يُقاس الرأس — به ينتهي سطحُ التتبّع
+   *  المركَّب فلا يقع آخرُ سطرٍ خلفه (ج٤ §١). ولا رقمَ مقدَّرٌ في الشيفرة. */
+  const barRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    const set = () =>
+      document.documentElement.style.setProperty("--tabbar-h", `${Math.round(el.getBoundingClientRect().height)}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      document.documentElement.style.removeProperty("--tabbar-h");
+    };
+  }, []);
   if (p.startsWith("/assistant")) return null; // نِبراس is a focused full-screen chat
   const on = (to: string) => (to === "/read" ? p === "/" || p.startsWith("/read") : p === to || p.startsWith(to + "/"));
   return (
-    <nav className="tabbar" aria-label={ar ? "تنقّل" : "tabs"}>
+    <nav className="tabbar" aria-label={ar ? "تنقّل" : "tabs"} ref={barRef}>
       <NavLink to="/read" className={`tab${on("/read") ? " active" : ""}`}>
         <svg viewBox="0 0 24 24" aria-hidden><path d="M4 4.5A2 2 0 0 1 6 3h5v16H6a2 2 0 0 0-2 1.2zM20 4.5A2 2 0 0 0 18 3h-5v16h5a2 2 0 0 1 2 1.2z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
         <span>{ar ? "المصحف" : "Read"}</span>
@@ -508,6 +524,22 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
         <span>{ar ? "المزيد" : "More"}</span>
       </button>
     </nav>
+  );
+}
+
+/**
+ * **وميكروفونٌ واحدٌ لا اثنان** (ج٤ §١/٢): في سطح القراءة تضع الصفحةُ ميكروفونَها
+ * في الرأس الواحد — **وهو التتبّعُ نفسُه حالًا لا صفحةً** — فلا يُزاد عليه مدخلٌ
+ * ثانٍ إلى بابٍ صار حالًا من هذه الصفحة. وفي سائر الصفحات يبقى المدخلُ كما كان.
+ */
+function MobileHeaderTools() {
+  const p = useLocation().pathname;
+  const reading = p === "/" || p.startsWith("/read") || p.startsWith("/tatabbu");
+  return (
+    <>
+      {!reading && <TatabbuButton iconOnly />}
+      <SettingsPanel />
+    </>
   );
 }
 
@@ -566,10 +598,7 @@ function App() {
             /* تنظيفُ رأس الجوال (أمر المالك 2026-08-14، وهو ينسخ أمرَ 2026-07-29 في
                تبديل اللغة): نُقلت المشاركةُ والمحفوظاتُ وتبديلُ اللغة إلى الدُّرج،
                فلا يبقى في الرأس إلّا القائمةُ والهويّةُ والتتبّعُ والإعدادات. */
-            <>
-              <TatabbuButton iconOnly />
-              <SettingsPanel />
-            </>
+            <MobileHeaderTools />
           ) : (
             <>
               <TatabbuButton />
