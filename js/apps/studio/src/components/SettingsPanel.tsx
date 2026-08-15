@@ -108,8 +108,10 @@ function SawtEngineRow({ ar }: { ar: boolean }) {
   return (
     <>
       <Row label={ar ? "محرّك التتبّع" : "Tracking engine"} hint={ar ? "يُبدَّل متى شئت" : "switch any time"}>
+        {/* **ولا افتراضَ خفيٌّ ولو في الشكل**: ما لم يُجب القارئُ بعدُ **لا يُبرَز
+            خيارٌ منهما** — فلو أُبرز أحدُهما لقُرئ اختيارًا وقع وهو لم يقع. */}
         <Seg<EngineId>
-          value={(id ?? "on-device") as EngineId}
+          value={(id ?? "") as EngineId}
           onChange={(v) => {
             saveEngineChoice(v);
             setId(v);
