@@ -13,8 +13,21 @@
  *   • **والترتيبُ بالأولويّة**: ما يُبدَّل كثيرًا أوّلًا، وما يندر يُطوى تحت
  *     «المزيد».
  * **ولم يُحذف إعدادٌ ولم يُغيَّر معناه** — إعادةُ عرضٍ لا إعادةُ وظيفة.
+ *
+ * ═══ **والورقةُ تُرحَّل من الرأس إلى الشاشة** (ج٩ §١) ═══
+ * **الواقعةُ بنصّها**: ج٨ §٣ وضعت `transform` **دائمًا** على `.topbar` (اقترانُ
+ * الانسحاب بالسكرول) — و`transform` على عنصرٍ يجعله **حاويةَ الإحداثيّات لكلّ
+ * `position: fixed` في أحفاده**. وهذه اللوحةُ تسكن الرأسَ، فصار `inset: 0`
+ * فيها **ملءَ الرأس** (٥٥px مقيسةً على المنشور) لا ملءَ الشاشة: يُرى رأسُها
+ * ومحتواها مقصوصٌ — وهو الذي بلّغه المالكُ «الإعداداتُ فارغة».
+ * **والعلاجُ أن يعود مرجعُها الشاشةَ**: تُرحَّل عند فتحها إلى `document.body`
+ * بـ`createPortal` — **العُدّةُ نفسُها التي رحّلت بها ج٨ أدواتِ الرأس**. وقواعدُها
+ * في `theme.css` تبقى كما هي فهي صحيحةٌ متى صار مرجعُها الشاشة.
+ * **والترحيلُ على عرض الهاتف وحدَه**: على الحاسوب هي منسدلةٌ `absolute` مرجعُها
+ * `.set-wrap`، ولا `transform` على رأسٍ هناك أصلًا — فلا يُنقل ما لم ينكسر.
  */
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { setSettings, useSettings, type Numerals, type QuranFont, type Script, type Theme } from "../settings";
 import { RECITERS, reloadForReciter, setLivePlaybackRate } from "./AudioButton";
 import { TAFSIR_SOURCES } from "../books";
@@ -135,18 +148,36 @@ function SawtEngineRow({ ar }: { ar: boolean }) {
   );
 }
 
+/** أعرضُ الشاشة عرضُ هاتف؟ — وعنده تصير اللوحةُ ورقةً ملءَ الشاشة (§١) */
+function usePhone(): boolean {
+  const [m, setM] = useState<boolean>(() => window.matchMedia("(max-width: 760px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 760px)");
+    const on = (e: MediaQueryListEvent) => setM(e.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return m;
+}
+
 export default function SettingsPanel() {
   useUILang();
   const s = useSettings();
   const [open, setOpen] = useState(false);
   const [more, setMore] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  /** **ومرجعُ النقر خارجَها اثنان بعد الترحيل**: الغلافُ في الرأس، واللوحةُ في
+   *  `body` — فلو قِيس بالغلاف وحدَه لأغلقت اللوحةُ نفسَها بأوّل لمسةٍ فيها. */
+  const panelRef = useRef<HTMLDivElement>(null);
+  const phone = usePhone();
   const ar = getUILang() === "ar";
 
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (ref.current?.contains(t) || panelRef.current?.contains(t)) return;
+      setOpen(false);
     };
     const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     document.addEventListener("mousedown", onDoc);
@@ -164,6 +195,11 @@ export default function SettingsPanel() {
     return () => document.body.classList.remove("set-sheet-open");
   }, [open]);
 
+  /** **الترحيلُ إلى الشاشة** (§١): على الهاتف تُركَّب اللوحةُ في `body` فيعود
+   *  مرجعُ `fixed` الشاشةَ لا الرأسَ المتحوِّل؛ وعلى الحاسوب تبقى في غلافها
+   *  منسدلةً كما هي. */
+  const portalize = (node: React.ReactNode) => (phone ? createPortal(node, document.body) : node);
+
   return (
     <div className="set-wrap" ref={ref}>
       <button onClick={() => setOpen(!open)} title={ar ? "الإعدادات" : "Settings"} aria-label={ar ? "الإعدادات" : "settings"} aria-expanded={open}>
@@ -175,8 +211,8 @@ export default function SettingsPanel() {
       </button>
       {/* `set-reading` يفصل بناءَ هذه اللوحة عن المنسدلة العامّة التي يشترك فيها
           لوحُ العلامات ولوحُ المصادر — فلا يسري تغييرُها إليهما */}
-      {open && (
-        <div className="set-panel set-reading" role="dialog" aria-label={ar ? "إعدادات القراءة" : "Reading settings"}>
+      {open && portalize(
+        <div className="set-panel set-reading" ref={panelRef} role="dialog" aria-label={ar ? "إعدادات القراءة" : "Reading settings"}>
           <div className="set-head">
             <span className="set-title">{ar ? "إعدادات القراءة" : "Reading settings"}</span>
             <button className="set-close" onClick={() => setOpen(false)} aria-label={ar ? "إغلاق" : "close"}>✕</button>
