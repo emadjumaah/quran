@@ -54,9 +54,11 @@ import {
 import {
   judge,
   loadIltiqat,
+  releaseIltiqat,
   type IltiqatHit,
   type IltiqatIndex,
 } from "../lib/sawt/iltiqat";
+import { clearCut, noteCut, pageWasReloaded, readCut } from "../lib/sawt/cut";
 import {
   HALAT,
   findHal,
@@ -142,6 +144,15 @@ const flag = (name: string): boolean => {
 const FADE_FROM_START = flag("sawt-fade-from-start");
 /** يُرسم المحمَّلُ كلُّه بلا نافذةِ عرضٍ كما كان قبل ص-م٦ (للضبط السالب وحدَه) */
 const RENDER_ALL = flag("sawt-render-all");
+/**
+ * **يُعاد صراعُ المرساة والمتابعة كما كان قبل ص٤** — للضبط السالب وحدَه.
+ *
+ * وهو بابُ الشهادة على قياس السكون: تعود المرساةُ فتعوّض **على كلّ رسمٍ** ولا
+ * تُحدَّث بعد تمريرٍ مقصود — **فيُحسب تمريرُ المتابعة انزياحًا فيُعوَّض عكسيًّا
+ * (لأعلى) ثمّ تعيد المتابعةُ النزول**، وهو تذبذبُ بلاغ المالك بحرفه. فإن فُتح
+ * هذا البابُ ولم يصطد الفحصُ تذبذبًا **فليس الفحصُ فحصًا**.
+ */
+const KEEP_STALE = flag("sawt-keep-stale");
 /** عددُ سور المصحف وأجزائه وصفحاته — عِدَدٌ ثابتةٌ لا تُستخرج من قاعدة */
 const SURAHS = 114;
 const JUZS = 30;
@@ -177,16 +188,27 @@ const scrollerOf = (el: HTMLElement | null): HTMLElement | null => {
   return null;
 };
 
+/** موضعُ التمرير الجاري — من الوعاء إن كان، وإلّا فمن الصفحة نفسِها */
+const scrollNow = (box: HTMLElement): number => {
+  const sc = scrollerOf(box);
+  return sc ? sc.scrollTop : window.scrollY;
+};
+
 /**
  * **مرساةُ التمرير**: أوّلُ علامةِ آيةٍ لم تخرج من أعلى الشاشة، وموضعُها.
  * وبها يُعوَّض ما تقصّه نافذةُ العرضِ من أعلى أو تزيدُه — **فينزلق المرسومُ ولا
  * يقفز النصُّ في يد القارئ** (ص-م٦ §١/٢).
+ *
+ * **ومعها موضعُ التمرير حين أُخذت** (ص٤ §١): موضعُ العنصر على الشاشة ينقص بقدر
+ * ما يُمرَّر سواءً بسواء، فبطرح فرق التمرير **يبقى انزياحُ الرسم وحدَه** — فلا
+ * يُحسب تمريرُ المتابعة (ولا تمريرُ القارئ) انزياحًا يُعوَّض عكسيًّا.
  */
-const firstVisibleAyah = (box: HTMLElement): { ayah: number; top: number } | null => {
+const firstVisibleAyah = (box: HTMLElement): { ayah: number; top: number; scroll: number } | null => {
   const edge = scrollerOf(box)?.getBoundingClientRect().top ?? 0;
+  const scroll = scrollNow(box);
   for (const el of Array.from(box.querySelectorAll<HTMLElement>("[data-ayah]"))) {
     const r = el.getBoundingClientRect();
-    if (r.bottom > edge) return { ayah: Number(el.dataset.ayah), top: r.top };
+    if (r.bottom > edge) return { ayah: Number(el.dataset.ayah), top: r.top, scroll };
   }
   return null;
 };
@@ -221,6 +243,8 @@ export default function Tatabbu({
 }: { embedded?: boolean; autostart?: boolean; startAt?: string | null; onClose?: () => void } = {}) {
   const nav = useNavigate();
   const mobile = useIsMobile();
+  /** أجهزةُ آبل الجوّالة — وعليها وحدَها يقع سطرُ ثقل المحرّك المحلّيّ (ص٤ §٢/٢) */
+  const appleMobile = isAppleMobile();
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [halId, setHalId] = useState<HalId>(() => readHal());
@@ -350,7 +374,12 @@ export default function Tatabbu({
   /** ورأسُ المرسوم — يُرقَب فتمتدّ نافذةُ العرض إلى الوراء لمن رجع (ص-م٦ §١/٢) */
   const headElRef = useRef<HTMLDivElement | null>(null);
   /** مرساةُ التمرير: أوّلُ آيةٍ مرئيّةٍ وموضعُها — بها لا يقفز النصُّ حين تنزلق النافذة */
-  const keepRef = useRef<{ ayah: number; top: number } | null>(null);
+  const keepRef = useRef<{ ayah: number; top: number; scroll: number } | null>(null);
+  /**
+   * **آخرُ نافذةِ رسمٍ عُوِّض انزياحُها** (ص٤ §١) — والمرساةُ إنّما بُنيت لتبدُّل
+   * النافذة، فلا تعوّض على كلّ رسمٍ فتُنازع متابعةَ المؤشّر.
+   */
+  const drawnAppliedRef = useRef<{ from: number; to: number } | null>(null);
   /** فهرسُ الالتقاط الشامل — يُبنى عند البدء لا عند الإقلاع (§٢) */
   const iltiqatRef = useRef<IltiqatIndex | null>(null);
   /** آخرُ ما وصل من رموزٍ مختومة — بها يُلتمس الموضعُ حين تخيب المحاذاةُ القريبة */
@@ -602,6 +631,18 @@ export default function Tatabbu({
     });
   }, [cursor, wordCount]);
 
+  /**
+   * **كلُّ تمريرٍ مقصودٍ يُعيد ضبط المرساة فورَه** (ص٤ §١).
+   *
+   * التمريرُ الذي نكتبه نحن **لا يمرّ برسم React** — فلو بقيت المرساةُ على ما
+   * قبله لحُسب عند الرسم التالي انزياحَ نافذةٍ فعُوِّض عكسيًّا. فتُؤخذ المرساةُ
+   * من جديدٍ على ما استقرّت عليه العينُ الآن.
+   */
+  const rebaseKeep = useCallback(() => {
+    const box = textElRef.current;
+    if (box) keepRef.current = firstVisibleAyah(box);
+  }, []);
+
   /* ── تمريرٌ يتبع المؤشّر: لا لمسَ بعد البدء، ولا تمريرَ مفاجئ ── */
   useEffect(() => {
     if (phase !== "running") return;
@@ -614,20 +655,30 @@ export default function Tatabbu({
     const band = b.height * 0.28;
     if (r.top >= b.top + band && r.bottom <= b.bottom - band) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [cursor, phase]);
+    if (!KEEP_STALE) rebaseKeep();
+  }, [cursor, phase, rebaseKeep]);
 
   /* ── **ولا يقفز النصُّ حين تنزلق نافذةُ العرض** (ص-م٦ §١/٢) ──
      قصُّ ما فوق الشاشة يرفع النصَّ بمقداره، وزيادتُه تخفضه — **وكلاهما قفزةٌ في
      يد قارئ**، وهي في مصحفٍ يُتلى أسوأُ من بطءٍ. فتُمسَك آيةٌ مرئيّةٌ مرساةً،
-     ويُعوَّض ما تبدّل من موضعها في التمرير قبل أن يراه أحد. */
+     ويُعوَّض ما تبدّل من موضعها في التمرير قبل أن يراه أحد.
+
+     **والتعويضُ لتبدُّل النافذة وحدَه** (ص٤ §١ — على بلاغ المالك بعد ج٩): كانت
+     المرساةُ تعوّض **على كلّ رسمٍ**، فصار تمريرُ المتابعة — وهو مقصودٌ لا انزياح
+     — يُقاس انزياحًا فيُعوَّض عكسيًّا (لأعلى) ثمّ تعيد المتابعةُ النزول: **ذهابٌ
+     وإيابٌ مع كلّ كلمة**. فقُيّد التعويضُ بتبدُّل `drawn.from/to` وهو ما بُنيت
+     له، **وطُرح فرقُ التمرير من الانزياح** فلا يبقى في الحساب إلّا ما فعله الرسم. */
   useLayoutEffect(() => {
     const box = textElRef.current;
     if (RENDER_ALL || !box) return;
     const prev = keepRef.current;
-    if (prev) {
+    const was = drawnAppliedRef.current;
+    const slid = !was || was.from !== drawn.from || was.to !== drawn.to;
+    if (prev && (slid || KEEP_STALE)) {
       const el = box.querySelector<HTMLElement>(`[data-ayah="${prev.ayah}"]`);
       if (el) {
-        const delta = el.getBoundingClientRect().top - prev.top;
+        const moved = el.getBoundingClientRect().top - prev.top;
+        const delta = KEEP_STALE ? moved : moved + (scrollNow(box) - prev.scroll);
         if (Math.abs(delta) > 1) {
           const sc = scrollerOf(box);
           if (sc) sc.scrollTop += delta;
@@ -635,6 +686,7 @@ export default function Tatabbu({
         }
       }
     }
+    drawnAppliedRef.current = { from: drawn.from, to: drawn.to };
     keepRef.current = firstVisibleAyah(box);
   });
 
@@ -646,7 +698,27 @@ export default function Tatabbu({
     wakeRef.current = null;
   }, []);
 
-  useEffect(() => () => stopAll(), [stopAll]);
+  /**
+   * **تفريغٌ صارمٌ — فلا يجثم النموذجُ في ذاكرة صفحةٍ لا تتتبّع** (ص٤ §٢/١).
+   *
+   * سفاري يقتل صفحةَ الويب إذا تجاوزت ذاكرتَها ويعيد تحميلها، وبعد تكرارٍ يستسلم
+   * بشاشة «A problem repeatedly occurred» — وهي شاشةُ المالك. وأثقلُ ما نحمله
+   * **أوزانُ النموذج المحلّيّ** (٨٣ م.ب على السلك تنبسط أضعافَها في الذاكرة)
+   * وعُدّةُ تشغيله، ثمّ **فهرسُ الالتقاط الشامل**. فيُطوى الجميعُ متى انقطع
+   * التتبّع: `stop()` يُنهي عاملَ التعرّف ويغلق السياقَ الصوتيَّ ويوقف
+   * الميكروفون، ويُطلَق الفهرسُ فيُبنى إن عاد القارئ.
+   */
+  const releaseHeld = useCallback(() => {
+    stopAll();
+    iltiqatRef.current = null;
+    releaseIltiqat();
+    recentRef.current = [];
+  }, [stopAll]);
+
+  /** أُفرِّغ بذهاب الصفحة؟ — فلا يقع الختامُ مرّتين إذا تتابع الحدثان */
+  const awayRef = useRef(false);
+
+  useEffect(() => () => releaseHeld(), [releaseHeld]);
 
   /* ═══════════════ الالتقاطُ من أيّ آية (§٢) ═══════════════
      **والمحلّيُّ أوّلًا دائمًا**: لا يُستدعى هذا إلّا حين تخيب المحاذاةُ القريبة
@@ -704,6 +776,33 @@ export default function Tatabbu({
     setPhase("done");
   }, [stopAll, waqfMeasured, condition]);
 
+  /* ═══ **ذهابُ الصفحة إلى الخلفيّة يُنهي التتبّع ويُفرّغ ما يُمسَك** (ص٤ §٢/١) ═══
+     وليس هذا تشدّدًا: الصفحةُ المخفيّةُ **لا تسمع أصلًا** — يُجمَّد جدولُها ويُقطع
+     ميكروفونُها، فيبقى النموذجُ جاثمًا في الذاكرة **بلا نفعٍ وبكلِّ ثمنه** حتّى
+     يقتل المتصفّحُ الصفحةَ كلَّها. فيُنهى التتبّعُ ختامًا صريحًا: **يُحفظ الموضعُ**
+     فيعود القارئُ إلى حيث وقف، **وتُكتب علامةُ الانقطاع** (§٣) فإن قُتلت الصفحةُ
+     بعدها قال السطرُ سببَه ولم يُترك القارئُ لصمت. */
+  useEffect(() => {
+    const away = () => {
+      if (awayRef.current) return;
+      awayRef.current = true;
+      if (phase === "running") {
+        noteCut("page", activeEngine);
+        finish();
+      }
+      releaseHeld();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "hidden") away();
+    };
+    window.addEventListener("pagehide", away);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("pagehide", away);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [phase, activeEngine, finish, releaseHeld]);
+
   /* ── البدء: لمسةٌ واحدة، ثمّ لا لمسَ البتّة ── */
   // **المحرّكُ يُمرَّر لا يُقرأ من الحال**: من اختار محرّكًا الآن بدأ به الآن —
   // وحالُ رياكت تتأخّر إلى إعادة الرسم، فلو قُرئت لبدأ بالمحرّك السابق.
@@ -719,6 +818,8 @@ export default function Tatabbu({
     skipsRef.current = 0;
     autoRef.current = 0;
     stallRef.current = 0;
+    // بدءٌ جديدٌ ⇒ يُفتح بابُ التفريغ عند الذهاب من جديد (ص٤ §٢/١)
+    awayRef.current = false;
     lastAdvanceRef.current = 0;
     relocsRef.current = 0;
     recentRef.current = [];
@@ -1055,6 +1156,12 @@ export default function Tatabbu({
     return () => clearTimeout(t);
   }, [phase, heard]);
 
+  /* **وجلسةٌ وصلها الصوتُ ليست منقطعة** (§٣): تُمحى العلامةُ عند أوّل صوتٍ يصل،
+     فلا يُحتجّ بانقطاعٍ قديمٍ على صمتٍ سببُه غيرُه. */
+  useEffect(() => {
+    if (heard) clearCut();
+  }, [heard]);
+
   const chooseHal = (id: HalId) => {
     setHalId(id);
     setAsking(false);
@@ -1085,6 +1192,27 @@ export default function Tatabbu({
   /* ═══════════════ قِطَعٌ تُشترك فيها الشاشتان ═══════════════ */
 
   const halNote = (h: Hal) => (h.suspended ? h.suspended : h.what);
+
+  /* ═══ **«لم يصل صوت» يُشخَّص ولا يُداوى عمياء** (ص٤ §٣) ═══
+     كان السطرُ يقول للقارئ شيئًا واحدًا مهما كان السببُ: «أطفئ قياسَ زمن التتبّع».
+     وهو دواءُ علّةٍ واحدةٍ من ثلاث — وأشدُّها في هاتف المالك أنّ **الصفحةَ قُتلت
+     وأُعيد تحميلُها**، فمات السمعُ معها. فيُقرأ ما قُيّد عند الانقطاع (علامةٌ
+     تُكتب في جلسة المتصفّح لا في القرص) **ويُقال السببُ المقيسُ باسمه**؛ وما لم
+     يُقَس يبقى السطرُ على حاله ولا يُدَّعى فيه شيء. */
+  const cut = useMemo(() => readCut(), []);
+  const reloaded = useMemo(() => pageWasReloaded(), []);
+  const cutSay =
+    !cut || !(cut.engine === "on-device" || activeEngine === "on-device")
+      ? null
+      : cut.why === "worker"
+        ? "تعثّر في الجلسة السابقة المحرّكُ الذي يعمل على جهازك — جرِّب محرّكَ المتصفّح."
+        : `انقطعت الجلسةُ السابقة${reloaded ? " وأُعيد تحميلُ الصفحة" : ""} — وأكثرُ ما يقع ذلك حين تضيق ذاكرةُ الجهاز بالمحرّك الذي يعمل عليه. جرِّب محرّكَ المتصفّح.`;
+  /** سطرُ الصمت: سببُه المقيسُ إن عُرف، وإلّا فالنصيحةُ التي كانت */
+  const noSoundSay = (long: boolean) =>
+    cutSay ??
+    (long
+      ? "لم يصل صوتٌ بعدُ. إن طال ذلك فأنهِ، ثمّ أطفئ «قياسَ زمن التتبّع» وأعد البدء — فقد يتنازع مجرى القياس والمحرّكَ على الميكروفون في بعض الأجهزة."
+      : "لم يصل صوتٌ بعدُ. إن طال ذلك فأنهِ، ثمّ أطفئ «قياسَ زمن التتبّع» وأعد البدء.");
 
   /**
    * **وافتراضُ الإشعال مطفأ في «الصلاة»** (§٥هـ/١) — لا زينةَ تشغل المصلّي،
@@ -1269,6 +1397,17 @@ export default function Tatabbu({
           );
         })}
       </div>
+      {/* ═══ **سطرُ صدقٍ على أجهزة آبل الجوّالة** (ص٤ §٢/٢) ═══
+          المحرّكُ الذي يعمل على الجهاز يحمل أوزانَه وعُدّةَ تشغيله في ذاكرة
+          الصفحة، **وسفاري يقتل صفحةً ضاقت ذاكرتُها** ثمّ يستسلم بشاشته. وقد وقع
+          ذلك للمالك على هاتفه. **فيُقال قبل الاختيار ولا يُخفى، ولا يُمنع**:
+          الخيارُ خيارُه، وله وضعُ الصلاة الذي لا يُفتح بغيره. */}
+      {appleMobile && (
+        <p className="muted sawt-note" data-sawt="engine-ios">
+          والمحرّكُ الذي يعمل على جهازك ثقيلٌ على أجهزة iOS اليوم — إن انقطع فمحرّكُ المتصفّح
+          أثبتُ عليها.
+        </p>
+      )}
       <div className="sawt-warn-acts">
         <button className="sawt-copy" data-sawt="engine-later" onClick={() => setAskingEngine(false)}>
           ليس الآن
@@ -2075,8 +2214,8 @@ export default function Tatabbu({
         )}
 
         {phase === "running" && hal.after !== "silent" && slow && !heard && (
-          <p className="muted sawt-hint">
-            لم يصل صوتٌ بعدُ. إن طال ذلك فأنهِ، ثمّ أطفئ «قياسَ زمن التتبّع» وأعد البدء.
+          <p className="muted sawt-hint" data-sawt="no-sound">
+            {noSoundSay(false)}
           </p>
         )}
       </div>
@@ -2117,9 +2256,8 @@ export default function Tatabbu({
         {fellView(false)}
         {textView()}
         {hal.after !== "silent" && slow && !heard && (
-          <p className="muted sawt-hint">
-            لم يصل صوتٌ بعدُ. إن طال ذلك فأنهِ، ثمّ أطفئ «قياسَ زمن التتبّع» وأعد البدء — فقد
-            يتنازع مجرى القياس والمحرّكَ على الميكروفون في بعض الأجهزة.
+          <p className="muted sawt-hint" data-sawt="no-sound">
+            {noSoundSay(true)}
           </p>
         )}
         {hal.after !== "silent" && engineState === "denied" && (

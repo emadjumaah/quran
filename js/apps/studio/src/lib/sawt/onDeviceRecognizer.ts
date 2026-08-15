@@ -14,6 +14,7 @@
  * من محرّك المتصفّح ولو ساواه في الإصابة. وهذا يُعلَن للقارئ ولا يُكتم.
  */
 
+import { noteCut } from "./cut";
 import type { RecognizerPort, RecognizerResult, RecognizerState } from "./recognizer";
 
 /**
@@ -237,6 +238,9 @@ export class OnDeviceRecognizer implements RecognizerPort {
     };
     this.worker.onerror = (e) => {
       this.note(`عطبٌ في عامل التعرّف: ${e.message}`);
+      // **وعطبُ العامل يُقيَّد لجلسة المتصفّح** (ص٤ §٣): إن قُتلت الصفحةُ بعده
+      // وأُعيد تحميلُها وجد السطرُ سببَه مكتوبًا، فلم يُترك القارئُ مع صمتٍ بلا اسم.
+      noteCut("worker", "on-device");
       this.emit("error", "تعثّر محرّكُ جهازك أثناء التهيئة");
     };
     this.worker.postMessage({ type: "load", model: MODEL_ID, dtype: MODEL_DTYPE });

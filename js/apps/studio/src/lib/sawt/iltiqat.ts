@@ -176,10 +176,26 @@ export function judge(
 
 let building: Promise<IltiqatIndex> | null = null;
 let built: IltiqatIndex | null = null;
+/** جيلُ البناء — يزيد عند الإطلاق، فلا يعود بناءٌ سابقٌ فيُثبِّت نفسَه بعد إطلاقه */
+let gen = 0;
 /** زمنُ البناء بالمللي — يُقاس ولا يُقدَّر، وتقرؤه البوّابةُ الحيّة */
 export let buildMs: number | null = null;
 
 export const iltiqatReady = (): IltiqatIndex | null => built;
+
+/**
+ * **يُطلَق حين لا تتتبّع الصفحة** (ص٤ §٢/١): هذا الفهرسُ صفُّ المصحف كلِّه
+ * مطبَّعًا ومعه خريطةُ ثلاثيّاته — **ذاكرةٌ قائمةٌ لا حاجةَ إليها في صفحةٍ
+ * مخفيّةٍ أو مغلقة**، وأجهزةُ آبل تقتل الصفحةَ إذا ضاقت. **ولا يُفقد به شيء**:
+ * يُبنى من جديدٍ عند البدء التالي من قاعدة المصحف التي في الجهاز، وزمنُه مقيسٌ
+ * في `buildMs` تقرؤه البوّابة.
+ */
+export function releaseIltiqat(): void {
+  gen++;
+  built = null;
+  building = null;
+  buildMs = null;
+}
 
 /**
  * يُبنى مرّةً واحدةً ويبقى، **من قاعدة المصحف التي في الجهاز** — فلا طلبَ شبكةٍ
@@ -188,6 +204,7 @@ export const iltiqatReady = (): IltiqatIndex | null => built;
 export function loadIltiqat(): Promise<IltiqatIndex> {
   if (built) return Promise.resolve(built);
   if (building) return building;
+  const mine = gen;
   building = allAyahs()
     .then((rows) => {
       const t0 = performance.now();
@@ -203,8 +220,12 @@ export function loadIltiqat(): Promise<IltiqatIndex> {
           text: w.textUthmani,
         })),
       );
-      buildMs = Math.round(performance.now() - t0);
-      built = idx;
+      // **وما أُطلق لا يُثبِّت نفسَه بعد إطلاقه**: بناءٌ بدأ قبل الإخفاء يعود
+      // فيجد جيلَه قد مضى، فيُسلّم فهرسَه لمن طلبه ولا يبقى في الذاكرة محفوظًا.
+      if (mine === gen) {
+        buildMs = Math.round(performance.now() - t0);
+        built = idx;
+      }
       return idx;
     })
     .catch((e) => {
