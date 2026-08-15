@@ -233,11 +233,12 @@ return {
   text: pick('.mp-text'),
   marker: pick('.ayah-marker'),
   surahName: pick('.mp-surah-name'),
-  folio: pick('.page-no'),
+  folio: pick('.mp-head-folio'),
   rub: pick('.mp-rub span'),
-  margin: pick('.mp-margin span'),
+  margin: pick('.mp-head-cell'),
   jamia: pick('.ayah-marker.jamia'),
   basmala: pick('.mp-basmala'),
+  star: pick('.mp-kull-star'),
   gaps: { n: gaps.length, lines: lineTops.length, max: gaps.length ? Math.max(...gaps) : 0, mean, sd, median },
   clip: { x: qr.left + window.scrollX, y: qr.top + window.scrollY, w: qr.width, h: Math.min(qr.height, 520) },
   quranBox: { w: qr.width, h: qr.height, words: words.length },
@@ -442,6 +443,7 @@ async function live() {
     row["علامةُ الآية"] = r.marker ? round(contrast(r.marker.color, r.marker.paper) ?? 0) : null;
     row["اسمُ السورة"] = r.surahName ? round(contrast(r.surahName.color, r.surahName.paper) ?? 0) : null;
     row["رقمُ الصفحة"] = r.folio ? round(contrast(r.folio.color, r.folio.paper) ?? 0) : null;
+    row["خانةُ الترويسة"] = r.margin ? round(contrast(r.margin.color, r.margin.paper) ?? 0) : null;
     row["۞"] = r.rub ? round(contrast(r.rub.color, r.rub.paper) ?? 0) : null;
     row["علامةُ الكلّيّة"] = r.jamia ? round(contrast(r.jamia.color, r.jamia.paper) ?? 0) : null;
     row["البسملة"] = r.basmala ? round(contrast(r.basmala.color, r.basmala.paper) ?? 0) : null;
@@ -452,7 +454,7 @@ async function live() {
   if (lowText.length) fail(`تباينُ نصّ المصحف < ${MIN_TEXT_CONTRAST}:١`, lowText.map((r) => `${r.place} (${r.theme}): ${r["نصّ"]}`).join(" · "));
   else notes.push(`تباينُ نصّ المصحف ≥ ${MIN_TEXT_CONTRAST}:١ في ${table.length} حالةً — أدناه ${round(Math.min(...table.map((r) => r["نصّ"])))}`);
 
-  const MARKS = ["علامةُ الآية", "اسمُ السورة", "رقمُ الصفحة", "۞", "علامةُ الكلّيّة", "البسملة"];
+  const MARKS = ["علامةُ الآية", "اسمُ السورة", "رقمُ الصفحة", "خانةُ الترويسة", "۞", "علامةُ الكلّيّة", "البسملة"];
   const lowMark = [];
   for (const r of table) for (const k of MARKS) if (r[k] != null && r[k] < MIN_MARK_CONTRAST) lowMark.push(`${k} — ${r.place} (${r.theme}): ${r[k]}`);
   if (lowMark.length) fail(`تباينُ علاماتِ المصحف < ${MIN_MARK_CONTRAST}:١`, lowMark.join(" · "));
@@ -493,6 +495,22 @@ async function live() {
     measures.furniture = furniture;
   }
 
+  /* ═══ ٥ — **نظامُ الصفحة**: ترويسةٌ مؤطَّرةٌ · لا بيانَ في المتن · بسملةٌ بحبره (ج٨ §٦) ═══ */
+  const sys = await cdp.ev(PAGESYS);
+  if (sys.error) fail("نظامُ الصفحة", sys.error);
+  else {
+    measures.pageSystem = sys;
+    if (sys.bad.length) fail("ترويسةُ الصفحة", sys.bad.join(" · "));
+    else notes.push(`ترويسةٌ مؤطَّرةٌ في كلّ صفحةٍ مقيسة (${sys.pages} صفحةً): إطارٌ مرئيٌّ واسمُ سورةٍ ورقمُ صفحة`);
+    if (sys.says) fail("بيانٌ في وسط عمود المتن", `${sys.says} سطرًا من «mp-mark-say» في المتن — وموضعُه الترويسةُ لا الصفحة`);
+    else notes.push("ولا بيانَ في وسط عمود المتن: ۞ و۩ رمزان متوارَثان بلا سطرِ شرحٍ تحتهما");
+    const same = (a, b) => a && b && a === b;
+    if (!sys.basmala || !sys.ink) fail("البسملة", "لم تُقرأ ألوانُ البسملة أو المتن");
+    else if (!same(sys.basmala, sys.ink)) {
+      fail("لونُ البسملة", `البسملةُ ${sys.basmala} وحبرُ المتن ${sys.ink}${sys.bandInk === sys.basmala ? " — وهي بلون لوحة السورة" : ""}`);
+    } else notes.push(`والبسملةُ بحبر المتن نفسِه (${sys.ink}) لا بخضرة اللوحة (${sys.bandInk}) — وهو عرفُ المصاحف`);
+  }
+
   /* ═══ الضبطُ السالب: زرعٌ **له أثر** ═══ */
   await negatives(cdp);
 }
@@ -509,8 +527,8 @@ const FURNITURE = `
   if (!page) return { error: 'لا صفحةَ مصحفٍ في المرأى' };
   const PARTS = [
     { sel: '.mp-mark span', what: 'علامةُ الحزب/السجدة', rule: true },
-    { sel: '.mp-margin', what: 'سطرُ الهامش', rule: true },
-    { sel: '.page-no', what: 'رقمُ الصفحة', rule: true },
+    { sel: '.mp-head-folio', what: 'رقمُ الصفحة', rule: true },
+    { sel: '.mp-head', what: 'ترويسةُ الصفحة', rule: false },
     { sel: '.mp-surah-band', what: 'لوحةُ السورة', rule: false },
   ];
   const opaque = (c) => {
@@ -541,7 +559,58 @@ const FURNITURE = `
 `;
 
 /**
- * الضبطُ السالب — ثلاثةُ زروعٍ في الصفحة الحيّة، كلٌّ يُصطاد ثمّ يُزال فتعود
+ * **نظامُ الصفحة** (ج٨ §٦) — ثلاثةٌ تُلحق بالقائم، تُقاس في كلّ صفحةٍ في المرأى:
+ *
+ *   ١ — **ترويسةٌ مؤطَّرةٌ في كلّ صفحة**: عنصرُها موجودٌ، وبه **حدٌّ مرئيّ**
+ *       (عرضٌ وأسلوبٌ ولونٌ غيرُ شفّاف)، **واسمُ سورةٍ ورقمُ صفحة** — فما نفعُ
+ *       ترويسةٍ لا تقول أين أنت؟
+ *   ٢ — **ولا `.mp-mark-say` في وسط عمود المتن**: بيانُ الحزب موضعُه الترويسةُ
+ *       لا المتن (§١ب)، ومعنى ۞ و۩ متوارَثٌ لا يُشرح في سطر.
+ *   ٣ — **والبسملةُ بحبر المتن**: **يُقاس اللونُ لا اسمُ الرمز** — فتُقارن
+ *       بحبر `.mp-text` نفسِه، وتُنفى عنها خضرةُ لوحة السورة. وعرفُ المصاحف
+ *       بسملةٌ بحبر المتن، وهي من المقروء لا من أثاث الصفحة.
+ */
+const PAGESYS = `
+  const pages = [...document.querySelectorAll('.mushaf-page')];
+  if (!pages.length) return { error: 'لا صفحةَ مصحفٍ في المرأى' };
+  const cs = (el) => getComputedStyle(el);
+  const opaque = (c) => {
+    const p = (c.match(/[\\d.]+/g) ?? []);
+    return p.length >= 4 ? Number(p[3]) > 0.05 : (c !== 'transparent' && !!c);
+  };
+  const bad = [];
+  for (let i = 0; i < pages.length; i++) {
+    const head = pages[i].querySelector('.mp-head');
+    if (!head) { bad.push('الصفحةُ ' + (i + 1) + ': لا ترويسةَ فيها'); continue; }
+    /* **وترويسةٌ لا تُرسم ليست ترويسة**: الوجودُ في الشجرة لا يكفي — يُقاس صندوقُها */
+    const r = head.getBoundingClientRect();
+    if (!(r.width > 0 && r.height > 0)) { bad.push('الصفحةُ ' + (i + 1) + ': ترويسةٌ لا تُرسم'); continue; }
+    const s = cs(head);
+    const w = parseFloat(s.borderTopWidth) || 0;
+    if (!(w > 0 && s.borderTopStyle !== 'none' && opaque(s.borderTopColor))) {
+      bad.push('الصفحةُ ' + (i + 1) + ': ترويسةٌ بلا إطارٍ مرئيّ (' + w + 'px ' + s.borderTopStyle + ')');
+    }
+    const cells = [...head.querySelectorAll('.mp-head-cell')].map((c) => c.textContent.trim()).filter(Boolean);
+    const folio = head.querySelector('.mp-head-folio')?.textContent.trim() ?? '';
+    if (!cells.length) bad.push('الصفحةُ ' + (i + 1) + ': ترويسةٌ بلا اسم سورةٍ ولا جزء');
+    if (!folio) bad.push('الصفحةُ ' + (i + 1) + ': ترويسةٌ بلا رقم صفحة');
+  }
+  const says = document.querySelectorAll('.mushaf-page .mp-mark-say').length;
+  const text = document.querySelector('.mushaf-page .mp-text');
+  const bas = document.querySelector('.mp-basmala');
+  const band = document.querySelector('.mp-surah-name');
+  return {
+    pages: pages.length,
+    bad,
+    says,
+    basmala: bas ? cs(bas).color : null,
+    ink: text ? cs(text).color : null,
+    bandInk: band ? cs(band).color : null,
+  };
+`;
+
+/**
+ * الضبطُ السالب — أربعةُ زروعٍ في الصفحة الحيّة، كلٌّ يُصطاد ثمّ يُزال فتعود
  * القياساتُ إلى ما كانت. **وزرعٌ لا أثرَ له ليس ضبطًا** (قاعدةُ الإدارة).
  */
 async function negatives(cdp) {
@@ -634,8 +703,8 @@ async function negatives(cdp) {
      على غياب الشاهد لا على العيب. وسطرُ الهامش في كلّ صفحةٍ ولا بدّ. */
   const cleanF = await cdp.ev(FURNITURE);
   await plant(
-    `.mushaf-page .mp-margin { border-radius: 999px !important; background: #d8e8e0 !important; }`,
-    ".mushaf-page .mp-margin",
+    `.mushaf-page .mp-head-folio { border-radius: 999px !important; background: #d8e8e0 !important; }`,
+    ".mushaf-page .mp-head-folio",
     "borderRadius",
   );
   const plantedF = await cdp.ev(FURNITURE);
@@ -647,11 +716,32 @@ async function negatives(cdp) {
   else done.push(`وعاد الأثاثُ بعد الإزالة (${backF.bad.length} مخالفة)`);
 
   /* ٥) وبريءٌ لا يُصطاد: خطُّ الواجهة في القشرة ليس خطَّ المصحف */
-  await plant(`.mp-margin { font-family: "Times New Roman", serif !important; }`, ".mp-margin", "fontFamily");
+  await plant(`.mp-head { font-family: "Times New Roman", serif !important; }`, ".mp-head", "fontFamily");
   const f2 = await cdp.platformFonts(".mushaf-page .mp-text .w");
   if ((f2 ?? []).some((x) => !x.custom || !SHIPPED_FACES.includes(x.family))) fail("ضبطٌ سالب", "اصطاد الفحصُ بريئًا: خطُّ هامشٍ ليس خطَّ المصحف");
   else done.push("وبريءٌ لم يُصطَد: خطٌّ غريبٌ في هامش الصفحة لا يمسّ نصَّ المصحف");
   await unplant();
+
+  /* ٦) **وتُزال الترويسةُ من صفحةٍ فتُصطاد** (ج٨ §٦) — وهي الشاهدُ على أنّ
+     الشرطَ يُقاس في كلّ صفحةٍ لا في أوّلها وحدَها، ثمّ تُردّ فتعود خضراء. */
+  const cleanSys = await cdp.ev(PAGESYS);
+  await cdp.ev(`
+    const st = document.createElement('style');
+    st.id = '__plantNoHead';
+    st.textContent = '.mushaf-page:nth-of-type(2) .mp-head { display: none !important; }';
+    document.head.appendChild(st);
+    return true;
+  `);
+  const gone = await cdp.ev(PAGESYS);
+  await cdp.ev(`document.getElementById('__plantNoHead')?.remove(); return true;`);
+  const backSys = await cdp.ev(PAGESYS);
+  if (!(gone.bad.length > cleanSys.bad.length)) {
+    fail("ضبطٌ سالب", `أُزيلت ترويسةُ صفحةٍ فلم تُصطَد (${cleanSys.bad.length} → ${gone.bad.length})`);
+  } else {
+    done.push(`أُزيلت ترويسةُ صفحةٍ فاصطيدت (${gone.bad[0]})`);
+  }
+  if (backSys.bad.length !== cleanSys.bad.length) fail("ضبطٌ سالب", "رُدّت الترويسةُ ولم تعُد البوّابةُ إلى ما كانت");
+  else done.push(`ورُدّت فعادت الصفحاتُ كلُّها بترويساتها (${backSys.pages} صفحةً · ${backSys.bad.length} مخالفة)`);
 
   notes.push("ضبطٌ سالبٌ حيّ: " + done.join(" · "));
 }

@@ -507,13 +507,21 @@ async function live() {
       };
       const at0 = { top: dy(top), tab: dy(tab) };
       const display = getComputedStyle(top).display;
+      /* **والانسحابُ صار مقترنًا بالسكرول** (ج٨ §٣): في أثناء السحب **لا انتقالَ
+         بتّةً** — الإصبعُ هو المحرّك؛ **والانتقالُ زمنُ الالتقاط** عند سكونه.
+         فيُمرَّر أوّلًا (فيُشهد أنّ التمرير يحرّكه)، **ثمّ تنقضي نافذةُ السحب**
+         فيُقاس الانتقالُ على قلبِ الحال — وهو الانزلاقُ الموعود. */
       main.scrollTop = 600;
-      await wait(120);
-      let byScroll = document.body.classList.contains('reading-immersive');
-      if (!byScroll) {
-        document.body.classList.add('reading-immersive');
-        await wait(30);
-      }
+      await wait(400);
+      const byScroll = document.body.classList.contains('reading-immersive');
+      const coupled = Math.round(Number(getComputedStyle(document.body).getPropertyValue('--shell-p') || 0) * 100) / 100;
+      document.body.classList.remove('shell-drag');
+      document.body.classList.remove('reading-immersive');
+      document.documentElement.style.setProperty('--shell-p', '0');
+      await wait(300);
+      document.documentElement.style.removeProperty('--shell-p');
+      document.body.classList.add('reading-immersive');
+      await wait(30);
       /** الانتقالاتُ الجاريةُ على العنصر — نوعُها ومدّتُها وأين بلغت */
       const runs = (el) =>
         el.getAnimations().map((a) => {
@@ -551,7 +559,8 @@ async function live() {
       const end = { top: dy(top), tab: dy(tab) };
       main.scrollTop = 0;
       document.body.classList.remove('reading-immersive');
-      return { h, at0, mid, end, target, display, byScroll, topRuns, tabRuns };
+      document.documentElement.style.removeProperty('--shell-p');
+      return { h, at0, mid, end, target, display, byScroll, coupled, topRuns, tabRuns };
     `;
 
     const slide = await cdp.evAsync(SLIDE);
@@ -582,7 +591,7 @@ async function live() {
         `انسحابُ القشرة انزلاقٌ لا قفزة: انتقالٌ جارٍ على التحويل — الرأسُ ${trans(slide.topRuns).dur} مِث (${trans(slide.topRuns).ease}، بلغ ${trans(slide.topRuns).at}) والشريطُ ${trans(slide.tabRuns).dur} مِث — ` +
           `ومنتهاه ${slide.target.top} للرأس (وارتفاعُه ${slide.h}) و+${slide.target.tab} للشريط — فيخرجان من الشاشة ولا يُخلّفان فراغًا · ولا إخفاءَ بـdisplay` +
           (slide.byScroll
-            ? " · وانقلبت الحالُ بالتمرير"
+            ? ` · وانقلبت الحالُ بالتمرير (مقدارُ الاقتران بلغ ${slide.coupled})`
             : " · **والحالُ قُلبت كما تقلبها الصفحةُ لا بالتمرير** — فالمتصفّحُ المقطوعُ عن العرض لا يبعث حدثَ التمرير، وهذا حدُّ ما شُهد ههنا"),
       );
     }
@@ -654,11 +663,18 @@ async function live() {
         const s = getComputedStyle(b), r = b.getBoundingClientRect();
         const self = bgOf(b);
         const behind = bgOf(b.parentElement ?? bar);
+        /** **أعارٍ هو أم مؤطَّر؟** — الحدُّ إنّما يكون حدًّا بعرضٍ وأسلوبٍ ولونٍ
+            غيرِ شفّافٍ تمامًا؛ فإن انتفى واحدٌ منها فلا حدَّ ألبتّة **بإعلان**،
+            ولا يُقاس تباينُ ما لا يُرسم. (وهذا نمطُ الأزرار العارية — ج٨ §٢أ.) */
+        const bw = parseFloat(s.borderTopWidth) || 0;
+        const ba = rgba(s.borderTopColor)[3];
+        const bare = !(bw > 0 && s.borderTopStyle !== 'none' && ba > 0);
         return {
           what: b.getAttribute('aria-label') || b.className || b.tagName,
           w: Math.round(r.width), h: Math.round(r.height), radius: px(s.borderTopLeftRadius),
           ink: ratio(over(rgba(s.color), self), self),
-          edge: ratio(over(rgba(s.borderTopColor), behind), behind),
+          bare,
+          edge: bare ? null : ratio(over(rgba(s.borderTopColor), behind), behind),
         };
       });
       /** والفوتر: أيقونتُه وتسميتُه على خلفيّته */
@@ -704,14 +720,20 @@ async function live() {
       if (sizes.length > 1) fail(`انتظامُ الرأس — «${th}»`, `مقاساتٌ مختلفة: ${sizes.join(" · ")}`);
       if (radii.length > 1) fail(`انتظامُ الرأس — «${th}»`, `أنصافُ أقطارٍ مختلفة: ${radii.join(" · ")}`);
       const pale = s.shapes.filter((b) => b.ink < MIN_INK).map((b) => `${b.what}: حبرٌ ${b.ink}`);
-      const faint = s.shapes.filter((b) => b.edge < MIN_EDGE).map((b) => `${b.what}: حدٌّ ${b.edge}`);
+      /* **حدٌّ ≥٣:١ أو لا حدَّ البتّةَ بإعلان** (ج٨ §٦): الزرُّ العاري لا حدَّ
+         له أصلًا فلا يُطالَب بتباين حدٍّ لا يُرسم — **والحدُّ نصفُ المرئيّ هو
+         المخالفة**: يُرسم فلا يُرى، فيوهم إطارًا ويعطي شحوبًا. وحبرُ الزرّ
+         يبقى مقيسًا على كلّ حال، فهو الذي يُميّزه إذ لا حدَّ يُميّزه. */
+      const faint = s.shapes.filter((b) => !b.bare && b.edge < MIN_EDGE).map((b) => `${b.what}: حدٌّ ${b.edge}`);
       const dimTabs = s.tabs.filter((t) => t.ink < MIN_INK).map((t) => `${t.what}: ${t.ink}`);
       if (pale.length) fail(`تباينُ حبر القشرة < ${MIN_INK}:١ — «${th}»`, pale.join(" · "));
       if (faint.length) fail(`تباينُ حدّ القشرة < ${MIN_EDGE}:١ — «${th}»`, faint.join(" · "));
       if (dimTabs.length) fail(`تباينُ الفوتر < ${MIN_INK}:١ — «${th}»`, dimTabs.join(" · "));
+      const edged = s.shapes.filter((b) => !b.bare);
       table.push(
         `«${th}»: ${s.shapes.length} زرًّا بمقاسٍ واحدٍ ${sizes[0]} ونصفِ قطرٍ ${radii[0]}px — ` +
-          `أدنى حبرٍ ${Math.min(...s.shapes.map((b) => b.ink))}:١ · أدنى حدٍّ ${Math.min(...s.shapes.map((b) => b.edge))}:١` +
+          `أدنى حبرٍ ${Math.min(...s.shapes.map((b) => b.ink))}:١ · ` +
+          (edged.length ? `أدنى حدٍّ ${Math.min(...edged.map((b) => b.edge))}:١` : `وكلُّها عاريةٌ بلا حدٍّ (${s.shapes.length}/${s.shapes.length}) — فالتمييزُ بالحبر`) +
           (s.tabs.length ? ` · الفوتر أدنى حبرٍ ${Math.min(...s.tabs.map((t) => t.ink))}:١` : " · لا فوترَ في هذا القياس"),
       );
     }
@@ -738,7 +760,9 @@ async function live() {
         document.querySelector('.topbar').appendChild(b);
         const st = document.createElement('style');
         st.id = '__plantPale';
-        st.textContent = '.topbar > button, .topbar .menu-btn, .topbar .set-wrap > button, .topbar .tatabbu-btn { border-color: rgba(0,0,0,0.02) !important; }';
+        /* **حدٌّ نصفُ مرئيّ**: يُرسم (عرضٌ وأسلوبٌ) ولونُه شفّافٌ إلّا قليلًا —
+           فهو المخالفةُ بعينها، لا الزرُّ العاري الذي لا حدَّ له بإعلان. */
+        st.textContent = '.topbar > button, .topbar .menu-btn, .topbar .set-wrap > button, .topbar .tatabbu-btn, .topbar .sh-btn { border: 1px solid rgba(0,0,0,0.02) !important; }';
         document.head.appendChild(st);
         return true;
       `);
@@ -749,20 +773,20 @@ async function live() {
       const after = await cdp.ev(SHELL);
 
       const oddCaught = uniq(planted.shapes.map((b) => `${b.w}×${b.h}`)).length > 1 && uniq(planted.shapes.map((b) => b.radius)).length > 1;
-      const paleCaught = planted.shapes.some((b) => b.edge < MIN_EDGE);
+      const paleCaught = planted.shapes.some((b) => !b.bare && b.edge < MIN_EDGE);
       if (!oddCaught) fail("ضبطُ انتظام الرأس", "زُرع زرٌّ ٥٦px مستديرٌ في الرأس فلم يُصطَد — والفاحصُ لا يفحص");
       if (!paleCaught) fail("ضبطُ تباين القشرة", "أُبهِت حدُّ الأزرار فلم يُصطَد");
       if (oddCaught && paleCaught) {
         notes.push(
-          `ضبطٌ سالب: زُرع زرٌّ ٥٦×٥٦px نصفُ قطره ٩٩٩px وأُبهِت حدُّ الأزرار — فاصطادت البوّابةُ المخالفةَ في الشكل وأدنى حدٍّ ${Math.min(...planted.shapes.map((b) => b.edge))}:١`,
+          `ضبطٌ سالب: زُرع زرٌّ ٥٦×٥٦px نصفُ قطره ٩٩٩px وزُرع حدٌّ نصفُ مرئيٍّ (شفافيّة ٠٫٠٢) — فاصطادت البوّابةُ المخالفةَ في الشكل وأدنى حدٍّ ${Math.min(...planted.shapes.filter((b) => !b.bare).map((b) => b.edge))}:١`,
         );
       }
       const back =
         uniq(after.shapes.map((b) => `${b.w}×${b.h}`)).length === 1 &&
         uniq(after.shapes.map((b) => b.radius)).length === 1 &&
-        after.shapes.every((b) => b.edge >= MIN_EDGE);
+        after.shapes.every((b) => b.bare || b.edge >= MIN_EDGE);
       if (!back) fail("ضبطُ انتظام الرأس", "أُزيل الزرعُ فلم تعُد البوّابةُ خضراء — قياسٌ غيرُ مستقرّ");
-      else notes.push("وأُزيل الزرعُ فعاد الرأسُ منتظمًا وحدُّه فوق الحدّ — قياسٌ مستقرّ");
+      else notes.push("وأُزيل الزرعُ فعادت أزرارُ الرأس منتظمةً عاريةً كما كانت — قياسٌ مستقرّ");
     }
   }
 

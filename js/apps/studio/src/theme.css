@@ -138,6 +138,10 @@ body.focus-mode .app-shell { grid-template-rows: 1fr; }
      أدواتُ المصحف في الرأس الواحد ضاق الصفُّ على ٣٩٠px — والاسمُ مكرَّرٌ في
      الهلال الذي بجانبه، وأدواتُ القارئ أولى بالعرض من تكرار الهويّة. */
   body.reading-surface .brand-word { display: none; }
+  /* **وهدفُ اللمس لا ينقص بنقصان النصّ** (ميثاقُ الوجه §١، واصطادته بوّابتُه):
+     لمّا طُوي الاسمُ بقيت الهويّةُ صورةً ٢٩px وهي رابطٌ يُلمس — فتُوسَّع حشوتُها
+     إلى ٤٤ شفّافةً، والصورةُ على حالها. */
+  body.reading-surface .topbar .brand { min-width: 44px; min-height: 44px; justify-content: center; }
   /* الرأسُ طبقةٌ عليا في سطح القراءة وحدَه — وسائرُ الصفحات على حالها */
   body.reading-surface .app-shell { grid-template-rows: 1fr; }
   body.reading-surface .topbar {
