@@ -143,7 +143,7 @@ function ThemeToggle() {
 /** أيقونةُ التتبّع: موجُ صوتٍ يمرّ على سطر — لا ميكروفونَ، فالبابُ تتبُّعٌ لا تسجيل */
 function TatabbuIcon() {
   return (
-    <svg viewBox="0 0 24 24" width={19} height={19} aria-hidden focusable="false">
+    <svg viewBox="0 0 24 24" aria-hidden focusable="false">
       <path
         d="M3.2 12h1.6M8 8v8M12 4.8v14.4M16 8v8M19.2 12h1.6"
         fill="none"
@@ -529,13 +529,22 @@ function App() {
       <div className="app-shell">
         <header className="topbar" ref={topbarRef}>
           {mobile && (
+            /* **أيقونةٌ مرسومةٌ لا محرفٌ نصّيّ** (ج٨ §٢أ — بلاغُ المالك «الأيقونات
+               غيرُ مسنترةٍ بعضُها»): كان ههنا «☰» حرفًا من الخطّ، ومقاسُ الحرف
+               وخطُّ أساسِه غيرُ مقاس الأيقونات المرسومة — فكان يقع أعلى أو أدنى
+               من جيرانه. فصارت كلُّها SVG في `viewBox` واحدٍ ومقاسٍ واحد. */
             <button className="menu-btn" onClick={() => setDrawer(true)} aria-label={getUILang() === "ar" ? "القائمة" : "menu"}>
-              ☰
+              <svg viewBox="0 0 24 24" aria-hidden focusable="false">
+                <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
             </button>
           )}
           <Brand />
           {!mobile && <Nav />}
           <span className="spacer" />
+          {/* **موضعُ أدوات الصفحة في الرأس الواحد** (ج٨ §٢ب): تضع فيه صفحةُ
+              القراءة بحثَها و«⋯» — فلا يقوم لها شريطٌ ثانٍ تحت الرأس. */}
+          <span className="topbar-slot" id="topbar-slot" />
           {mobile ? (
             /* تنظيفُ رأس الجوال (أمر المالك 2026-08-14، وهو ينسخ أمرَ 2026-07-29 في
                تبديل اللغة): نُقلت المشاركةُ والمحفوظاتُ وتبديلُ اللغة إلى الدُّرج،

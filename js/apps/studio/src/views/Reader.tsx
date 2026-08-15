@@ -10,6 +10,7 @@
  * تنطوي قائمةُ السور ويحلّ محلَّها مُنتقٍ.
  */
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ChangeEvent } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getWord, listAyahs, listSurahs, listWords, surahNameAr } from "../db";
@@ -678,24 +679,133 @@ export default function Reader() {
   const listenSurah = () => playContinuous((surahBase.get(surahNo) ?? 0) + 1);
 
 
-  /** الجوال: مبدّلُ «صفحات | آيات» ظاهرٌ في الصفِّ اللاصق نفسِه بأيقونتين
-   *  مصغّرتين + ▶ للسورة — لا رأسَ ثالثًا ولا قائمةَ ⋮ (أمر المالك 2026-07-29:
-   *  «يريدون التاب كما في الكمبيوتر ولا أريد ٣ هيدر فوق بعض»). */
-  const MobileControls = () => (
-    <div className="rd-ctrl rd-ctrl-m">
-      <button className="rd-listen" onClick={listenSurah} title={ar ? "استمع للسورة كاملةً" : "listen to the sura"}>▶</button>
-      <div className="rd-seg rd-seg-m" role="tablist" aria-label={ar ? "طريقة العرض" : "view mode"}>
-        <button role="tab" aria-selected={mode === "pages"} className={mode === "pages" ? "on" : ""} onClick={() => switchMode("pages")}
-          title={ar ? "صفحات المصحف" : "mushaf pages"} aria-label={ar ? "صفحات" : "pages"}>
-          <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="2.5" width="14" height="15" rx="2"/><path d="M10 2.5v15"/></svg>
-        </button>
-        <button role="tab" aria-selected={mode === "ayat"} className={mode === "ayat" ? "on" : ""} onClick={() => switchMode("ayat")}
-          title={ar ? "آياتٌ بأدواتها" : "verses with tools"} aria-label={ar ? "آيات" : "verses"}>
-          <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3.5 4.5h13M3.5 10h13M3.5 15.5h9"/></svg>
-        </button>
-      </div>
-    </div>
-  );
+  /* ═══ **أدواتُ المصحف في الرأس الواحد** (ج٨ §٢ب) ═══
+     كان للجوال شريطٌ ثانٍ لاصقٌ تحت رأس التطبيق — **شريطان فوق المتن**، وهو أوّلُ
+     ما يفضح «الموقع» في صفحةٍ يُقرأ فيها القرآن. فطُوي الشريطُ في الرأس:
+
+       • **البحثُ أيقونةٌ** تفتح حقلًا **منزلقًا يغطّي الرأسَ مؤقّتًا** ثمّ ينصرف
+         — فلا يشغل عرضًا دائمًا في رأسٍ ضيّق.
+       • **و«⋯» يفتح ورقةً سفليّة** (بناءُ الورقة القائمُ يُعاد استعماله لا
+         يُستأنف غيرُه) فيها ما كان في الشريط: السورةُ والاستماعُ ونمطُ العرض
+         **بأسمائها مكتوبةً** لا بأيقوناتٍ تُحزَر.
+       • **واسمُ السورة الجاري في ترويسة الصفحة** (§١أ) فلا يلزمه شريطٌ يحمله.
+
+     والأيقونتان تُزرعان في الرأس نفسِه بـ`createPortal` — فالرأسُ عنصرٌ واحدٌ في
+     القشرة، وهذه أدواتُ صفحةٍ تسكنه ما دامت الصفحةُ مفتوحة. */
+  const ReaderHeadTools = () => {
+    const [slot, setSlot] = useState<HTMLElement | null>(null);
+    const [find, setFind] = useState(false);
+    const [sheet, setSheet] = useState(false);
+    useEffect(() => setSlot(document.getElementById("topbar-slot")), []);
+    if (!slot) return null;
+    const modeRow = (m: Mode, label: string) => (
+      <button
+        key={m}
+        role="tab"
+        aria-selected={mode === m}
+        className={`rd-sheet-seg-btn${mode === m ? " on" : ""}`}
+        onClick={() => switchMode(m)}
+      >
+        {label}
+      </button>
+    );
+    return (
+      <>
+        {createPortal(
+          <>
+            <button
+              className="sh-btn rd-find-btn"
+              onClick={() => setFind(true)}
+              aria-label={ar ? "ابحث في المصحف" : "search the mushaf"}
+              title={ar ? "ابحث في المصحف" : "search the mushaf"}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <circle cx="10.8" cy="10.8" r="6.3" />
+                <path d="M15.4 15.4 20.5 20.5" />
+              </svg>
+            </button>
+            <button
+              className="sh-btn rd-more-btn"
+              onClick={() => setSheet(true)}
+              aria-expanded={sheet}
+              aria-label={ar ? "أدوات المصحف" : "mushaf tools"}
+              title={ar ? "أدوات المصحف" : "mushaf tools"}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden fill="currentColor">
+                <circle cx="5" cy="12" r="1.8" />
+                <circle cx="12" cy="12" r="1.8" />
+                <circle cx="19" cy="12" r="1.8" />
+              </svg>
+            </button>
+            {/* الحقلُ المنزلق — يغطّي الرأسَ ما دام البحثُ قائمًا ثمّ ينصرف */}
+            {find && (
+              <div className="topbar-find" role="search">
+                <div className="topbar-find-field"><InlineOmni /></div>
+                <button
+                  className="topbar-find-x"
+                  onClick={() => setFind(false)}
+                  aria-label={ar ? "إغلاق البحث" : "close search"}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
+                    <path d="M6 6 18 18M18 6 6 18" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </>,
+          slot,
+        )}
+        {sheet && (
+          <>
+            <div className="sheet-backdrop" onClick={() => setSheet(false)} />
+            <div className="word-sheet rd-sheet" role="dialog" aria-label={ar ? "أدوات المصحف" : "mushaf tools"}>
+              <div className="word-sheet-grip" />
+              <button className="word-sheet-close" onClick={() => setSheet(false)} aria-label={ar ? "إغلاق" : "close"}>
+                ✕
+              </button>
+              <div className="word-sheet-body">
+                <label className="rd-sheet-row">
+                  <span className="rd-sheet-label">{ar ? "السورة" : "Sura"}</span>
+                  <select
+                    className="rd-sheet-pick"
+                    value={surahNo}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                      goTo(Number(e.target.value));
+                      setSheet(false);
+                    }}
+                    aria-label={t("reader.filter")}
+                  >
+                    {surahs.map((s) => (
+                      <option key={s.surahNo} value={s.surahNo}>
+                        {getUILang() === "ar" ? `${num(s.surahNo)}. ${s.nameAr}` : `${s.surahNo}. ${s.nameTranslit}`}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  className="rd-sheet-act"
+                  onClick={() => {
+                    setSheet(false);
+                    listenSurah();
+                  }}
+                >
+                  <span className="rd-sheet-act-icon" aria-hidden>▶</span>
+                  {ar ? "استمع للسورة كاملةً" : "Listen to the whole sura"}
+                </button>
+                <div className="rd-sheet-row">
+                  <span className="rd-sheet-label">{ar ? "طريقةُ العرض" : "View"}</span>
+                  <div className="rd-sheet-seg" role="tablist" aria-label={ar ? "طريقة العرض" : "view mode"}>
+                    {modeRow("pages", t("reader.pages"))}
+                    {modeRow("ayat", t("reader.ayat"))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </>
+    );
+  };
 
   /** الحاسوب: الضوابطُ ظاهرةً — ▶ استمع + مبدّل «صفحات | آيات». */
   const HeaderControls = () => (
@@ -784,30 +894,12 @@ export default function Reader() {
         className={`page reader-main${mode === "pages" ? " reader-pages" : ""}`}
         style={{ flex: 1, minWidth: 0 }}
       >
-        {/* Mobile: ONE sticky header — surah picker (carries the name), the
-            on-page search, a compact ▶, and the mode toggle. Stays under the
-            app header so you switch surah / jump / change view without scrolling
-            up; no second bar. */}
-        {surah && narrow && (
-          <>
-            <div className="reader-sticky">
-              <div className="reader-sticky-search"><InlineOmni /></div>
-              <select
-                className="reader-surah-pick"
-                value={surahNo}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => goTo(Number(e.target.value))}
-                aria-label={t("reader.filter")}
-              >
-                {surahs.map((s) => (
-                  <option key={s.surahNo} value={s.surahNo}>
-                    {getUILang() === "ar" ? `${num(s.surahNo)}. ${s.nameAr}` : `${s.surahNo}. ${s.nameTranslit}`}
-                  </option>
-                ))}
-              </select>
-              <MobileControls />
-            </div>
-          </>
-        )}
+        {/* **رأسٌ واحدٌ لا رأسان** (ج٨ §٢ب): كان ههنا شريطٌ ثانٍ لاصقٌ تحت رأس
+            التطبيق (بحثٌ · منتقي سورةٍ · ▶ · أنماط) — **شريطان فوق متن المصحف**.
+            فطُوي في الرأس الواحد: البحثُ أيقونةٌ تفتح حقلًا منزلقًا، والسورةُ
+            والتشغيلُ والأنماطُ في ورقةٍ سفليّةٍ يفتحها «⋯»، **واسمُ السورة
+            الجاري يُقرأ من ترويسة الصفحة** فلا يلزمه شريط. */}
+        {surah && narrow && <ReaderHeadTools />}
 
         {/* Desktop: name · meta · on-page search · listen · modes. */}
         {surah && !narrow && (

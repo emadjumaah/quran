@@ -119,6 +119,10 @@ body.focus-mode .app-shell { grid-template-rows: 1fr; }
   body.reading-immersive .reader-sticky,
   body.reading-surface.reading-immersive .topbar { transition-timing-function: ease-in; }
 
+  /* **وفي سطح القراءة يُطوى اسمُ الهويّة ويبقى هلالُها** (ج٨ §٢ب): لمّا صارت
+     أدواتُ المصحف في الرأس الواحد ضاق الصفُّ على ٣٩٠px — والاسمُ مكرَّرٌ في
+     الهلال الذي بجانبه، وأدواتُ القارئ أولى بالعرض من تكرار الهويّة. */
+  body.reading-surface .brand-word { display: none; }
   /* الرأسُ طبقةٌ عليا في سطح القراءة وحدَه — وسائرُ الصفحات على حالها */
   body.reading-surface .app-shell { grid-template-rows: 1fr; }
   body.reading-surface .topbar {
@@ -165,7 +169,7 @@ button:active, .tab:active, .chip:active, a.ap-btn:active { filter: brightness(0
 html, body { overscroll-behavior: none; }
 /* ٥ — قائمةُ النظام والتحديدُ يُمنعان **على الأدوات وحدَها**. و**نصُّ القرآن
    يبقى منتقًى منسوخًا** — فمن أخفى وظيفةً ليُشبه تطبيقًا فقد خسر الأمرين. */
-button, .chip, .topbar, .tabbar, .drawer, .set-panel, .reader-sticky,
+button, .chip, .topbar, .tabbar, .drawer, .set-panel, .topbar-find,
 .ap-head, .ap-row, .sawt-m-bar, .mushaf-pager, .set-more {
   -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
 }
@@ -252,17 +256,95 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
    `> button`) و`.tatabbu-btn` (قرصٌ مستديرٌ بخلفيّةٍ أخرى) شكلين آخرين
    يجاوران هذا الشكلَ في الرأس نفسِه. **وحدُّها `--shell-line` لا `--line`**
    (٣٫٣:١ فأكثر على `--panel` في الأوضاع الثلاثة — كان ١٫٣:١ فلا يُرى، ج٦٧ §٣/٢). */
+/* ═══ **أزرارُ الرأس عاريةٌ — نمطُ التطبيقات لا نمطُ الويب** (ج٨ §٢أ) ═══
+   كان كلُّ زرٍّ صندوقًا: حدٌّ وخلفيّةٌ ونصفُ قطر — **وأربعةُ صناديقَ متجاورةٍ في
+   رأسٍ واحدٍ هيئةُ شريط أدواتِ موقع**. والتطبيقُ الأصيلُ **أيقونةٌ عاريةٌ بحبرٍ
+   كامل**، وهدفُ اللمس فيها حشوةٌ شفّافةٌ لا صندوقٌ مرسوم.
+
+   • **الحبرُ كاملٌ `--ink`** — إذ لا حدَّ يُعين على تمييزها، فالتمييزُ بالحبر.
+   • **وهدفُ اللمس ٤٤×٤٤** (ميثاقُ الوجه) شفّافًا.
+   • **والضغطةُ وحدَها تُظهر خلفيّةً لحظيّة** (`:active`) — فيُطمأنّ إلى أنّها
+     وقعت، بلا صندوقٍ مقيم. (وعلى الفأرة وحدَها يبقى تلميحُ الحوم — إذ لا لمسَ
+     يُطمئن هناك، ولا يرى الجوالُ منه شيئًا.) */
 .topbar > button, .topbar .menu-btn, .topbar .set-wrap > button, .topbar .tatabbu-btn, .topbar .sh-btn {
-  min-width: 38px; height: 38px; border-radius: 10px; padding: 0 8px;
-  border: 1px solid var(--shell-line); background: var(--panel-2); color: var(--ink);
-  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  min-width: 44px; height: 44px; border-radius: 12px; padding: 0 6px;
+  border: none; background: none; color: var(--ink);
+  /* **شبكةٌ بتمركُزٍ في المحورين** — لا محاذاةَ يدويّةً تُزيح أيقونةً عن أختها */
+  display: inline-grid; grid-auto-flow: column; place-items: center; gap: 5px;
   cursor: pointer; font-size: 15px; line-height: 1; flex: none; text-decoration: none;
-  transition: background .12s ease, border-color .12s ease;
+  transition: background .12s ease;
 }
-.topbar > button:hover, .topbar .menu-btn:hover, .topbar .set-wrap > button:hover,
-.topbar .tatabbu-btn:hover, .topbar .sh-btn:hover {
-  background: var(--panel); border-color: color-mix(in srgb, var(--accent) 45%, var(--shell-line));
+/* **وأيقونةٌ واحدةٌ بمقاسٍ واحدٍ في الرأس كلِّه** (بلاغُ المالك: بعضُها غيرُ مسنتر) */
+.topbar > button svg, .topbar .menu-btn svg, .topbar .set-wrap > button svg,
+.topbar .tatabbu-btn svg, .topbar .sh-btn svg {
+  width: 24px; height: 24px; display: block; vertical-align: middle; flex: none;
 }
+.topbar > button:active, .topbar .menu-btn:active, .topbar .set-wrap > button:active,
+.topbar .tatabbu-btn:active, .topbar .sh-btn:active {
+  background: var(--panel-2);
+}
+@media (hover: hover) and (pointer: fine) {
+  .topbar > button:hover, .topbar .menu-btn:hover, .topbar .set-wrap > button:hover,
+  .topbar .tatabbu-btn:hover, .topbar .sh-btn:hover { background: var(--panel-2); }
+}
+
+/* ═══ **موضعُ أدوات الصفحة في الرأس الواحد** (ج٨ §٢ب) ═══
+   تزرع فيه صفحةُ القراءة أيقونتيها (البحثُ و«⋯») فلا يقوم لها شريطٌ ثانٍ تحت
+   الرأس. وهو صفٌّ فارغٌ لا يشغل شيئًا حتّى تسكنه صفحةٌ. */
+.topbar-slot { display: inline-flex; align-items: center; gap: 2px; }
+/* والرأسُ حاويةُ الحقل المنزلق — فيغطّيه ولا يغطّي غيرَه */
+.topbar { position: relative; }
+/* **حقلُ البحث المنزلق**: يغطّي الرأسَ ما دام مطلوبًا ثمّ ينصرف — فلا يشغل
+   عرضًا دائمًا في رأسٍ ضيّق، ولا يستوطن فوق النصّ. */
+.topbar-find {
+  position: absolute; inset: 0; z-index: 3;
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 10px calc(0px) 10px;
+  padding-block-start: env(safe-area-inset-top, 0px);
+  background: var(--panel);
+  animation: find-in 160ms ease-out;
+}
+.topbar-find-field { flex: 1 1 auto; min-width: 0; }
+.topbar-find .inline-omni, .topbar-find .page-search { margin-bottom: 0; }
+.topbar-find .page-search input { min-height: 44px; }
+.topbar-find-x {
+  flex: none; width: 44px; height: 44px; border: none; background: none;
+  color: var(--ink); display: inline-grid; place-items: center; cursor: pointer; border-radius: 12px;
+}
+.topbar-find-x svg { width: 22px; height: 22px; display: block; }
+.topbar-find-x:active { background: var(--panel-2); }
+@keyframes find-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .topbar-find { animation: none; } }
+
+/* ═══ **ورقةُ أدوات المصحف** (ج٨ §٢ب) — بناءُ الورقة القائمُ يُعاد استعماله ═══ */
+.rd-sheet { min-height: 0; }
+.rd-sheet .word-sheet-body { padding-top: 6px; }
+.rd-sheet-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 52px; padding: 4px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.rd-sheet-row:last-child { border-bottom: none; }
+.rd-sheet-label { font-size: 15px; font-weight: 600; color: var(--ink); }
+.rd-sheet-pick {
+  flex: 0 1 62%; height: 44px; border-radius: 10px;
+  border: 1px solid var(--shell-line); background: var(--panel-2); color: var(--ink);
+  font-size: 15px; padding-inline: 10px;
+}
+.rd-sheet-act {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  min-height: 52px; padding: 4px 2px;
+  border: none; background: none; color: var(--ink); font-size: 15px; font-weight: 600;
+  cursor: pointer; border-bottom: 1px solid var(--line); text-align: start;
+}
+.rd-sheet-act:active { background: var(--panel-2); }
+.rd-sheet-act-icon { color: var(--accent); font-size: 13px; }
+.rd-sheet-seg { display: inline-flex; gap: 4px; background: var(--panel-2); border-radius: 12px; padding: 3px; }
+.rd-sheet-seg-btn {
+  min-width: 76px; height: 40px; border-radius: 9px; border: none;
+  background: none; color: var(--ink-2); font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.rd-sheet-seg-btn.on { background: var(--panel); color: var(--accent); font-weight: 700; }
 
 /* desktop «المزيد ▾» dropdown */
 .nav-more { position: relative; display: inline-flex; }
@@ -293,10 +375,11 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .nav-more-menu a.active { background: var(--accent-soft); color: var(--accent); }
 
 /* mobile drawer navigation */
+/* زرُّ القائمة كأخواته: عارٍ بهدف لمسٍ ٤٤ (ج٨ §٢أ) — ولا صندوقَ حول أيقونة */
 .menu-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 38px; height: 38px; border-radius: 10px; font-size: 19px;
-  border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); cursor: pointer; flex: none;
+  display: inline-grid; place-items: center;
+  width: 44px; height: 44px; border-radius: 12px;
+  border: none; background: none; color: var(--ink); cursor: pointer; flex: none;
 }
 .drawer-backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / .45); z-index: 80; animation: fadein .15s ease-out; }
 .drawer {
@@ -442,9 +525,9 @@ mark.hl { background: var(--gold-soft); color: inherit; border-radius: 3px; padd
    نفسِه** (وهو `position: sticky` فيصلح حاويةً للمطلق) فتنزل تحته أيًّا كان
    ارتفاعُه، وتأخذ عرضَه كاملًا. */
 @media (max-width: 900px) {
-  .reader-sticky { position: sticky; }
-  .reader-sticky .inline-omni { position: static; }
-  .reader-sticky .inline-omni-results {
+  /* (زال الشريطُ اللاصقُ — ج٨ §٢ب — وصار الحقلُ في الرأس، فتُعلَّق نتائجُه به) */
+  .topbar-find .inline-omni { position: static; }
+  .topbar-find .inline-omni-results {
     position: absolute; inset-inline: 0; top: calc(100% + 4px);
     max-height: calc(100dvh - 46vh); min-height: 180px; z-index: 60;
   }
@@ -484,17 +567,7 @@ mark.hl { background: var(--gold-soft); color: inherit; border-radius: 3px; padd
 }
 [dir="ltr"] .reader-surah-pick, html[lang="en"] .reader-surah-pick { background-position: right 8px center; padding-inline-start: 10px; padding-inline-end: 24px; }
 
-/* Reader — ONE compact sticky ROW on mobile (picker · ⌕ · ▶ · modes). The
-   on-page search opens as a row beneath on demand, so the header is one line. */
-.reader-sticky {
-  position: sticky; top: 0; z-index: 16;
-  display: flex; align-items: center; gap: 6px; flex-wrap: nowrap;
-  /* يمتدّ على كامل العرض ويأكل حوافَّ الصفحة — والفائضُ لحقل البحث
-     (رصد المالك على أندرويد 2026-07-29: «الحقل صغير جدًّا وهناك بادنغ») */
-  margin: 0 -12px 10px; padding: 8px 8px;
-  background: var(--bg); border-bottom: 1px solid var(--line);
-}
-.reader-sticky-search { flex: 1 1 140px; min-width: 120px; }
+/* (زال `.reader-sticky` — شريطُ القارئ الثاني طُوي في الرأس الواحد، ج٨ §٢ب) */
 /* the reader drops the page's top padding on mobile so its sticky header sits
    flush under the app header (a sticky element ignores negative margin, so the
    padding is what has to go). */
@@ -834,8 +907,7 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
   .mushaf-page.opening::before { content: ""; inset: 5px; border-width: 1px; opacity: 0.42; }
   /* الورقُ سطحُ القراءة نفسُه — **لا لوحةٌ داخل لوحة**: سطحُ المصحف كلُّه ورقةٌ
      واحدةٌ متّصلةٌ من الحافّة إلى الحافّة (وفي نمط «آيات» لا يُمَسّ شيء) */
-  .reader-main.reader-pages,
-  .reader-main.reader-pages .reader-sticky { background: var(--mushaf-paper); }
+  .reader-main.reader-pages { background: var(--mushaf-paper); }
 }
 
 /* ═══════════ ميداليّةُ الآية — تُصنع عندنا ولا تُنسخ عن ناشر ═══════════
@@ -1044,7 +1116,6 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
     var(--knot) no-repeat right top / 13px 13px,
     var(--knot) no-repeat left bottom / 13px 13px,
     var(--knot) no-repeat right bottom / 13px 13px;
-  -webkit-mask-composite: source-over;
   opacity: 0.9;
   pointer-events: none;
 }
@@ -2441,9 +2512,13 @@ table.data tr:hover td { background: var(--panel-2); }
        ٧٫٩ / ٩٫٦ / ٥٫٩ في الأوضاع الثلاثة. */
     color: var(--ink-2); font-size: 15px; font-weight: 600; padding: 2px 0; cursor: pointer;
   }
-  .tabbar .tab svg { width: 22px; height: 22px; }
-  /* **والفعّالُ بلونٍ ووزنٍ لا بلونٍ وحدَه** (§١/٣) — فمن لا يميّز الأخضرَ يقرأ الثِّقَل */
+  /* **ووزنُ الرسم واحدٌ في الأربع** (ج٨ §٢ج): كانت ١٫٧ و١٫٨ فيبدو بعضُها أدقَّ
+     من بعضٍ في صفٍّ واحد — والفرقُ يُرى ولا يُفسَّر. */
+  .tabbar .tab svg { width: 22px; height: 22px; stroke-width: 1.8; }
+  /* **والفعّالُ بلونٍ ووزنٍ لا بلونٍ وحدَه** (§١/٣) — فمن لا يميّز الأخضرَ يقرأ
+     الثِّقَل: رسمُه أثقلُ، وحبرُه لونُ الهويّة، وعنوانُه تحته. */
   .tabbar .tab.active { color: var(--accent); font-weight: 800; }
+  .tabbar .tab.active svg { stroke-width: 2.3; }
   /* pages clear the tab bar (and FAB) so their last rows stay tappable */
   .page, .mw-wrap, .jw-wrap, .aya-wrap, .fr-wrap { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
   .mm-grid { padding-bottom: 12px; }
@@ -2761,22 +2836,17 @@ table.data tr:hover td { background: var(--panel-2); }
    السطر، والسورةُ في الطرف المقابل، والاستماعُ وطريقةُ العرض تحت ⋮ */
 /* محاذاةٌ واحدة: كلُّ عناصر الترويسة بارتفاعٍ واحدٍ ووسطٍ واحد */
 .reader-bar-search { flex: 1 1 340px; max-width: 460px; }
-.reader-sticky-search { flex: 1 1 auto; min-width: 0; }
-.reader-sticky .reader-surah-pick { flex: 0 0 auto; max-width: 40%; }
-.reader-sticky, .reader-bar { align-items: center; }
-.reader-sticky > *, .reader-bar > * { align-self: center; }
+.reader-bar { align-items: center; }
+.reader-bar > * { align-self: center; }
 /* **ارتفاعٌ واحدٌ ٤٤px** — محاذاةُ الترويسة تبقى، والمقاسُ يرتفع إلى حدّ
    الميثاق (كان ٣٨px، وكان هو الذي يَنقُض ٤٤px المكتوبةَ في كتلة الجوال) */
-.reader-sticky .reader-surah-pick,
-.reader-sticky .v-more-btn,
-.reader-sticky .page-search input,
 .reader-bar .page-search input,
 .reader-bar .v-more-btn {
   height: 44px; box-sizing: border-box; border-radius: 10px;
 }
-.reader-sticky .page-search, .reader-bar .page-search { margin-bottom: 0; }
-.reader-sticky .inline-omni, .reader-bar .inline-omni { margin-bottom: 0; }
-.reader-sticky .v-more-btn, .reader-bar .v-more-btn { width: 44px; justify-content: center; padding: 0; }
+.reader-bar .page-search { margin-bottom: 0; }
+.reader-bar .inline-omni { margin-bottom: 0; }
+.reader-bar .v-more-btn { width: 44px; justify-content: center; padding: 0; }
 .rd-menu { flex: 0 0 auto; margin-inline-start: 2px; }
 
 /* شبكةُ الجذور وحدَها تأخذ عرضَ الشاشة كاملًا — الرسمُ يحتاج المساحة
@@ -3095,18 +3165,10 @@ table.data tr:hover td { background: var(--panel-2); }
 }
 .rd-seg button.on { background: var(--panel); color: var(--accent); font-weight: 700; box-shadow: 0 1px 2px rgb(36 31 24 / 0.08); }
 
-/* الجوال: الصفُّ اللاصق يتّسع لعناصره — البحثُ يتمدّد وما سواه ثابت.
-   **وكلُّ ما فيه هدفُ لمسٍ ٤٤px** (ميثاقُ الوجه §١): كان ٣٢–٣٨px، ونصفُ ما
-   يلزم الإبهامَ ليس هدفَ لمس. وهذا الشريطُ ينسحب أثناء القراءة فلا يكلّف
-   ارتفاعُه الجديدُ شيئًا من سطح المصحف. */
+/* الجوال: **كلُّ ما يُلمس ٤٤px** (ميثاقُ الوجه §١) — وقد زال الشريطُ اللاصقُ
+   وصارت أدواتُه في الرأس وورقتِه (ج٨ §٢ب)، فبقي ما يعمّ. */
 @media (max-width: 760px) {
-  .reader-sticky { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
-  .reader-sticky-search { flex: 1 1 auto; min-width: 0; }
   .reader-surah-pick { flex: 0 1 auto; min-width: 84px; max-width: 34vw; height: 44px; line-height: 42px; }
-  /* الحقلُ ضاق لمّا اتّسعت أهدافُ اللمس، فبدا «ابح…» مبتورًا — والحشوةُ
-     الزائدةُ حولَ الأيقونة هي المستغنى عنها لا نصُّ الحقل */
-  .reader-sticky .page-search input { padding-inline: 34px 10px; }
-  .reader-sticky .page-search-icon { inset-inline-start: 9px; }
   .rd-seg button { padding: 0 10px; min-width: 44px; height: 44px; font-size: 12.5px; }
   .rd-seg { padding: 0; border-radius: 12px; }
   .rd-listen { width: 44px; height: 44px; }
@@ -3229,7 +3291,6 @@ table.data tr:hover td { background: var(--panel-2); }
 /* **وههنا كان آخرُ ما ينقُض ٤٤px**: ▶ بـ٣٠×٣٢px في آخر كتلةٍ من الملفّ — فما
    كُتب فوقُ لا يُغني إن نُقض تحتُ (رصدُ بوّابة الميثاق 2026-08-14) */
 @media (max-width: 900px) {
-  .reader-sticky .reader-surah-pick { max-width: 24vw; padding-inline-start: 18px; padding-inline-end: 6px; background-position: left 4px center; }
   .rd-ctrl-m .rd-listen { width: 44px; height: 44px; font-size: 11px; }
   .rd-ctrl-m { gap: 3px; }
   .rd-seg-m button { padding: 0 6px; min-width: 44px; height: 44px; }
