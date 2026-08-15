@@ -277,6 +277,18 @@ export default function Tatabbu() {
    * (`RENDER_MAX_WORDS`) تنزلق عنده انزلاقًا فلا تنتفخ.
    */
   const [drawn, setDrawn] = useState({ from: 0, to: RENDER_AHEAD });
+  /** مرآةُ المرسوم في مرجع — يقرؤها رقيبُ الطرفين فلا يتقادم في إغلاق */
+  const drawnRef = useRef(drawn);
+  drawnRef.current = drawn;
+  /**
+   * **نموٌّ واحدٌ في وقتٍ واحد** (ص-م٦ — اصطاده تسييرُ البوّابة).
+   *
+   * صار طرفُ المرسوم يُرقَب **بالتمرير** لا برقيبٍ يُنبّه مرّةً، والتمريرُ يقع
+   * عشراتِ المرّات في الثانية — **فكان يُطلَب النموُّ وهو جارٍ فتتراكم استعلاماتُ
+   * القاعدة**، حتّى وقف الخيطُ الرئيس فلم يُرسم إطارٌ في أربع ثوانٍ. فيُحرَس
+   * بمرجعٍ واحد: **من طلب نموًّا وهو جارٍ رُدّ**، ولا يُفقد شيءٌ إذ الرقيبُ يعود.
+   */
+  const growingRef = useRef(false);
   const [engineState, setEngineState] = useState<RecognizerState>("idle");
   const [engineDetail, setEngineDetail] = useState<string | null>(null);
   const [report, setReport] = useState<SawtReport | null>(null);
@@ -418,15 +430,26 @@ export default function Tatabbu() {
     };
   }, [specKey, from]);
 
+  const growLoad = useCallback((win: SawtWindow, words: number) => {
+    if (growingRef.current || !win.more) return;
+    growingRef.current = true;
+    void win
+      .grow(words + WINDOW_WORDS)
+      .then((grew) => {
+        if (grew) setGrowth((g) => g + 1);
+      })
+      .finally(() => {
+        growingRef.current = false;
+      });
+  }, []);
+
   /* ── تُوسَّع النافذةُ قبل أن يبلغ المؤشّرُ طرفَها ── */
   useEffect(() => {
     const win = winRef.current;
     if (!win || !win.more) return;
     if (win.script.words.length - cursor > WINDOW_AHEAD) return;
-    void win.grow(win.script.words.length + WINDOW_WORDS).then((grew) => {
-      if (grew) setGrowth((g) => g + 1);
-    });
-  }, [cursor, growth]);
+    growLoad(win, win.script.words.length);
+  }, [cursor, growth, growLoad]);
 
   /* ── **ولا يُوهَم القارئُ أنّ الاختيارَ ناقص** (رصدُ المالك ١٤ أغسطس · §١/١) ──
      «اخترتُ المصحفَ كلَّه فلم يُفتح إلّا قسمٌ منه» — وهو **نافذةُ العمل بحكم
@@ -434,55 +457,89 @@ export default function Tatabbu() {
      التمريرَ يمتدّ إلى ما بعدها فتنمو تلقائيًّا قبل أن يبلغ طرفَها لا عندَه** —
      فلا يقف السردُ في يده. والرقيبُ `IntersectionObserver` بهامشٍ سخيّ، فيصلح
      للجوال (وعاءٌ يمرّر) وللحاسوب (الصفحةُ تمرّر) بلا فرق. */
-  useEffect(() => {
-    const el = endElRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        const win = winRef.current;
-        if (!win) return;
-        // **المرسومُ أوّلًا ثمّ المحمَّل**: إن بقي من المحمَّل ما لم يُرسم مُدّت
-        // نافذةُ العرض إليه؛ فإذا استُوفي المرسومُ المحمَّلَ كلَّه نما التحميل.
-        const words = win.script.words.length;
-        if (!RENDER_ALL && drawn.to < words - 1) {
-          setDrawn((d) => {
-            const to = Math.min(words - 1, d.to + RENDER_STEP);
-            // **السقفُ المعلَن**: تنزلق النافذةُ ولا تنتفخ
-            return { from: Math.max(d.from, to - RENDER_MAX_WORDS + 1), to };
-          });
-          return;
-        }
-        if (!win.more) return;
-        void win.grow(win.script.words.length + WINDOW_WORDS).then((grew) => {
-          if (grew) setGrowth((g) => g + 1);
-        });
-      },
-      // **قبل الطرف لا عنده**: يُنبَّه ومسافةُ شاشةٍ ونصفٍ باقيةٌ أمام القارئ
-      { root: null, rootMargin: "0px 0px 150% 0px", threshold: 0 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [ready, growth, drawn]);
-
-  /* ── ومن رجع إلى الوراء امتدّ له المرسومُ إلى الوراء (ص-م٦ §١/٢) ── */
-  useEffect(() => {
-    const el = headElRef.current;
-    if (!el || RENDER_ALL) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
+  /**
+   * **طرفا المرسوم يُرقَبان بالتمرير لا برقيبٍ يُنبّه نفسَه** (ص-م٦ §١/٢).
+   *
+   * وكان الرقيبُ `IntersectionObserver`، فلمّا صار المرسومُ **ينزلق** عند السقف
+   * (يُزاد من أمامه ويُقصّ من خلفه بالقدر نفسِه) **بقي ارتفاعُ الصفحة كما هو
+   * فبقي الطرفُ في مرمى الرقيب**، فيُنبّه فيَنزلق فيُنبّه — **دورةٌ لا تقف حتّى
+   * يُحمَّل المصحفُ كلُّه**. (اصطادها تسييرُ البوّابة ههنا قبل أن تخرج.)
+   * ⇒ **قاعدةٌ تُقيَّد**: النافذةُ **تنمو من نفسها** ما دامت دون السقف (فكلُّ
+   * زيادةٍ تُبعد الطرفَ فتقف الدورة)، **ولا تنزلق إلّا بتمريرِ قارئٍ أو بتقدّم
+   * مؤشّر** — فلا حركةَ بلا سبب.
+   */
+  const checkEdges = useCallback((allowSlide: boolean) => {
+    const box = textElRef.current;
+    const win = winRef.current;
+    if (!box || !win) return;
+    const sc = scrollerOf(box);
+    const r = sc ? sc.getBoundingClientRect() : null;
+    const top = r ? r.top : 0;
+    const bottom = r ? r.bottom : window.innerHeight;
+    // **قبل الطرف لا عنده**: شاشةٌ ونصفٌ باقيةٌ أمام القارئ، فلا يقف السردُ في يده
+    const margin = (bottom - top) * 1.5;
+    const words = win.script.words.length;
+    const endTop = endElRef.current?.getBoundingClientRect().top ?? Infinity;
+    const headBottom = headElRef.current?.getBoundingClientRect().bottom ?? -Infinity;
+    /* **وبابُ الضبط السالب يُعطّل نافذةَ العرض وحدَها** — لا نموَّ التحميل: ولو
+       عُطّلا معًا لقيس «القبلُ» على مقطعٍ لم يَنمُ، **فكان القياسُ على غير
+       السيناريو**. (اصطاده تسييرُ البوّابة: بقي المحمَّلُ ٩٠٤ كلمةً مهما مُرّر.) */
+    if (RENDER_ALL) {
+      if (endTop < bottom + margin) growLoad(win, words);
+      return;
+    }
+    if (endTop < bottom + margin) {
+      if (drawnRef.current.to < words - 1) {
         setDrawn((d) => {
-          if (d.from === 0) return d;
-          const fromIx = Math.max(0, d.from - RENDER_STEP);
-          return { from: fromIx, to: Math.min(d.to, fromIx + RENDER_MAX_WORDS - 1) };
+          const to = Math.min(words - 1, d.to + RENDER_STEP);
+          const fromIx = Math.max(d.from, to - RENDER_MAX_WORDS + 1);
+          if (fromIx > d.from && !allowSlide) return d;
+          return d.to === to && d.from === fromIx ? d : { from: fromIx, to };
         });
-      },
-      { root: null, rootMargin: "150% 0px 0px 0px", threshold: 0 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [ready, growth, drawn]);
+      } else {
+        growLoad(win, words);
+      }
+    }
+    if (headBottom > top - margin && drawnRef.current.from > 0) {
+      setDrawn((d) => {
+        if (d.from === 0) return d;
+        const fromIx = Math.max(0, d.from - RENDER_STEP);
+        const to = Math.min(d.to, fromIx + RENDER_MAX_WORDS - 1);
+        if (to < d.to && !allowSlide) return d;
+        return d.from === fromIx && d.to === to ? d : { from: fromIx, to };
+      });
+    }
+  }, [growLoad]);
+
+  /* ── **ولا يُوهَم القارئُ أنّ الاختيارَ ناقص** (رصدُ المالك ١٤ أغسطس · §١/١) ──
+     «اخترتُ المصحفَ كلَّه فلم يُفتح إلّا قسمٌ منه» — وهو **نافذةُ العمل بحكم
+     التصميم والأداء**، لا نقصٌ في الاختيار. فيبقى التحميلُ نافذةً، **ولكن
+     التمريرَ يمتدّ إلى ما بعدها فتنمو تلقائيًّا قبل أن يبلغ طرفَها لا عندَه**.
+     والتمريرُ يُلتقط **في مرحلة الالتقاط** فيصلح للجوال (وعاءٌ يمرّر) وللحاسوب
+     (الصفحةُ تمرّر) بلا فرق — وههنا **يُؤذن بالانزلاق**، إذ حرّكه قارئ. */
+  useEffect(() => {
+    let queued = false;
+    const on = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        checkEdges(true);
+      });
+    };
+    window.addEventListener("scroll", on, true);
+    window.addEventListener("resize", on);
+    return () => {
+      window.removeEventListener("scroll", on, true);
+      window.removeEventListener("resize", on);
+    };
+  }, [checkEdges]);
+
+  /* ── والملءُ الأوّل: ما دامت النافذةُ دون السقف تنمو حتّى تُبعد طرفَها ── */
+  useEffect(() => {
+    const id = requestAnimationFrame(() => checkEdges(false));
+    return () => cancelAnimationFrame(id);
+  }, [ready, growth, drawn, checkEdges]);
 
   const script = winRef.current?.script ?? null;
   const wordCount = script ? script.words.length : 0;
@@ -998,7 +1055,10 @@ export default function Tatabbu() {
         dir="rtl"
         ref={textElRef}
         data-sawt="text"
+        /* **المحمَّلُ والمرسومُ يُقرآن من الصفحة نفسِها** — فتقيس البوّابةُ الفرقَ
+           بينهما بعدٍّ لا بتقدير (ص-م٦ §٤/٢) */
         data-sawt-drawn={`${aFrom}-${aTo}`}
+        data-sawt-words={wordCount}
       >
         {/* رأسُ المرسوم — يُرقَب فيمتدّ إلى الوراء لمن رجع (ص-م٦ §١/٢) */}
         <div ref={headElRef} className="sawt-end" aria-hidden />
