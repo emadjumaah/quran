@@ -89,6 +89,12 @@ export class OnDeviceRecognizer implements RecognizerPort {
   /** كم إطارَ صوتٍ وصل من الميكروفون فعلًا — **عدٌّ لا ظنّ** */
   private frames = 0;
   private inputTimer: number | null = null;
+  /** آخرُ نسبةِ تنزيلٍ بلغها النموذج — **وبها يُعرف أين وقف** إن وقف */
+  private pct = 0;
+  private notedDownload = false;
+  private notedFirstText = false;
+  /** أوّلُ نافذةٍ أُرسلت إلى العامل — بها يُفرَّق «لم يُرسَل» من «أُرسل فلم يعُد» */
+  private notedFirstSend = false;
   /**
    * **أثرُ الإقلاع — يُقرأ خلف باب «للفحص» وحدَه** (لا في سطح القارئ): مراحلُ
    * البدء بأسمائها وحالُ السياق الصوتيّ وأوّلُ عطبٍ بنصّه. وبه يُشخَّص جهازٌ
@@ -188,9 +194,22 @@ export class OnDeviceRecognizer implements RecognizerPort {
     // العاملُ أوّلًا: تحميلُ النموذج أطولُ ما في البدء، ويجري والميكروفونُ يُطلب
     this.note("يُنشأ عاملُ التعرّف");
     this.worker = new Worker(new URL("./asrWorker.ts", import.meta.url), { type: "module" });
-    this.worker.onmessage = (e: MessageEvent<{ type: string; text?: string; pct?: number; detail?: string }>) => {
+    this.worker.onmessage = (
+      e: MessageEvent<{ type: string; text?: string; pct?: number; detail?: string; line?: string }>,
+    ) => {
       const m = e.data;
+      // **مراحلُ العامل تُقيَّد في الأثر نفسِه** (ص-م٦ §٢/١): مصدرُ عُدّة التشغيل
+      // وSIMD والخزانة · وأيُّ ملفٍّ نُزّل · وإنشاءُ خطّ التعرّف · وأوّلُ استدلال.
+      if (m.type === "stage") {
+        this.note(m.line ?? "—");
+        return;
+      }
       if (m.type === "progress") {
+        this.pct = m.pct ?? 0;
+        if (!this.notedDownload) {
+          this.notedDownload = true;
+          this.note("بدأ تنزيلُ النموذج");
+        }
         this.emit("starting", `يُنزَّل مرّةً واحدة… ${m.pct ?? 0}٪`);
         return;
       }
@@ -203,6 +222,10 @@ export class OnDeviceRecognizer implements RecognizerPort {
       if (m.type === "text") {
         this.busy = false;
         const text = (m.text ?? "").trim();
+        if (!this.notedFirstText) {
+          this.notedFirstText = true;
+          this.note(`أوّلُ نصٍّ من المحرّك: ${text ? `«${text.slice(0, 40)}»` : "فارغ"}`);
+        }
         if (text) this.resultCb?.({ text, isFinal: true, at: performance.now() });
         return;
       }
@@ -354,6 +377,10 @@ export class OnDeviceRecognizer implements RecognizerPort {
     this.buf = [tail];
     this.bufLen = tail.length;
     this.busy = true;
+    if (!this.notedFirstSend) {
+      this.notedFirstSend = true;
+      this.note(`أوّلُ نافذةِ صوتٍ أُرسلت إلى العامل (${window.length} عيّنة)`);
+    }
     this.worker?.postMessage({ type: "audio", id: ++this.seq, pcm: window }, [window.buffer]);
   }
 
@@ -369,7 +396,13 @@ export class OnDeviceRecognizer implements RecognizerPort {
       clearTimeout(this.inputTimer);
       this.inputTimer = null;
     }
-    this.note(`أُوقف — إطاراتُ صوتٍ وصلت: ${this.frames}`);
+    // **وخلاصةُ الوقفة تُقيَّد بموضعها**: أين وقف النموذجُ، وأوصل صوتٌ أصلًا،
+    // وأخرج المحرّكُ نصًّا — ثلاثةٌ تفرّق بين علّة شبكةٍ وعلّة ميكروفونٍ وعلّة محرّك.
+    this.note(
+      `أُوقف — إطاراتُ صوتٍ وصلت: ${this.frames} · النموذج: ${
+        this.ready ? "جاهز" : `وقف عند ${this.pct}٪`
+      } · نصٌّ من المحرّك: ${this.notedFirstText ? "وصل" : "لم يصل"}`,
+    );
     try {
       this.node?.disconnect();
       this.source?.disconnect();

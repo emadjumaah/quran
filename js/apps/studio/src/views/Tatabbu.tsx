@@ -1455,9 +1455,22 @@ export default function Tatabbu() {
           <>ولا محرّكَ آخرَ يعمل على هذا الجهاز.</>
         )}{" "}
         {withAct ? (
-          <button className="sawt-engine-swap" data-sawt="engine-back" onClick={openEngineSwap}>
-            بدِّل المحرّك
-          </button>
+          <>
+            <button className="sawt-engine-swap" data-sawt="engine-back" onClick={openEngineSwap}>
+              بدِّل المحرّك
+            </button>{" "}
+            {/* **وتقريرُ العطل يُنسخ من الخبر نفسِه** (ص-م٦ §٢/٢): من أخفق عنده
+                المحرّكُ لا يُطلب منه أن يفتح بابًا آخرَ ليصف عطلَه — الأثرُ ههنا
+                بلمسة. **وفي أثناء التلاوة لا يظهر** فلا يُزاد على «ثلاثةٍ لا رابعَ
+                لها» أداة. */}
+            <button
+              className="sawt-engine-swap"
+              data-sawt="fell-copy"
+              onClick={() => copy("fell", `${fell.why}\n${diagText}`)}
+            >
+              {copied === "fell" ? "نُسخ" : "انسخ تقريرَ العطل"}
+            </button>
+          </>
         ) : (
           <span className="sawt-engine-hint">ولك أن تعود إليه من ⋯</span>
         )}
