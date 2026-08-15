@@ -1,18 +1,18 @@
 {
-  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ ١٤ أغسطس الثالثة — بإذن المالك الدائم «ادفع متى ترى مناسبًا»: دُفع عملُ ص-م٣ المقبول وأعمالُ الإدارة (c0bad7a → d0525ef).",
+  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ ١٥ أغسطس — بالإذن الدائم: دُفع ص-م٤ وص٠ وج٥ وأعمالُ الإدارة ليفحص المالكُ الحالَ الحقيقيّة لا القديمة.",
   "branch": "main",
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "d0525ef43874b83f6b906a8ce1fd3e7ba9af738d",
-    "refs/remotes/origin/main": "d0525ef43874b83f6b906a8ce1fd3e7ba9af738d"
+    "refs/remotes/origin/HEAD": "43b5d91a1562b1d2afb845e88cf151ce2159309a",
+    "refs/remotes/origin/main": "43b5d91a1562b1d2afb845e88cf151ce2159309a"
   },
-  "lastPush": "d0525ef refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "43b5d91 refs/remotes/origin/main@{0}: update by push",
   "previous": {
-    "recorded": "إعادةُ تثبيتٍ بعد دفعِ ١٤ أغسطس الثاني بأمر المالك (ليفحص على هاتفه): قُبلت ص-م٢ وج٣ فدُفع عملُهما — db70e47 ← c0bad7a.",
+    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ ١٤ أغسطس الثالثة — بإذن المالك الدائم «ادفع متى ترى مناسبًا»: دُفع عملُ ص-م٣ المقبول وأعمالُ الإدارة (c0bad7a → d0525ef).",
     "branch": "main",
     "remoteRefs": {
-      "refs/remotes/origin/HEAD": "c0bad7a90a5f5d1116cdf72cacb1ed799e6af6f3",
-      "refs/remotes/origin/main": "c0bad7a90a5f5d1116cdf72cacb1ed799e6af6f3"
+      "refs/remotes/origin/HEAD": "d0525ef43874b83f6b906a8ce1fd3e7ba9af738d",
+      "refs/remotes/origin/main": "d0525ef43874b83f6b906a8ce1fd3e7ba9af738d"
     },
-    "lastPush": "c0bad7a refs/remotes/origin/main@{0}: update by push"
+    "lastPush": "d0525ef refs/remotes/origin/main@{0}: update by push"
   }
 }
