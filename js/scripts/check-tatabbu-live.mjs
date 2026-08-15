@@ -274,7 +274,9 @@ async function main() {
   await cdp.send("Page.addScriptToEvaluateOnNewDocument", { source: PRELUDE });
   await cdp.send("Page.navigate", { url: URL });
 
-  const booted = await cdp.until(`!document.querySelector('.boot') && document.querySelector('[data-sawt="root"]')`);
+  // مهلةُ الإقلاع ١٨٠ ث كأختها في check-sawt-view — فأوّلُ فتحٍ بعد بناءٍ جديدٍ
+  // يجلب عُدّةَ التشغيل ويملأ الخزانة (قاسته ص-م٦: ٧–١١٤ ث)، و٤٥ ث تحمّر المهلةَ لا الشيفرة
+  const booted = await cdp.until(`!document.querySelector('.boot') && document.querySelector('[data-sawt="root"]')`, 180000);
   if (!booted) {
     missing.push("لم تُقلع الصفحةُ في المتصفّح");
     return;
