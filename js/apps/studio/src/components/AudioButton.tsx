@@ -2,8 +2,8 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { getUILang, num, t, useUILang } from "../i18n";
 import { getSettings } from "../settings";
 import { useReading } from "../reading";
-import { LAST_AYAH, locationOf, pad3 } from "../lib/sawt/mushafIndex";
-import { mirrorOf, offlineObjectUrl } from "../lib/sawt/tilawa";
+import { LAST_AYAH, locationOf, pad3 } from "@mishkat/quran-core/lib/sawt/mushafIndex";
+import { mirrorOf, offlineObjectUrl } from "@mishkat/quran-core/lib/sawt/tilawa";
 import RecitationCredit, { type CreditSource } from "./RecitationCredit";
 import "../styles/sawt-tilawa.css";
 

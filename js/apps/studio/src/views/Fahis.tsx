@@ -17,7 +17,7 @@ import {
   type FahisCardData, type FahisKind, type FahisVerdict,
   KIND_LABEL, VERDICT_META, loadFahisCards,
 } from "../lib/fahisCards";
-import { normalizeAr } from "../lib/arabicSearch";
+import { normalizeAr } from "@mishkat/quran-core/lib/arabicSearch";
 import { getUILang, num, useUILang } from "../i18n";
 
 const VERDICT_ORDER: FahisVerdict[] = ["tastaqim", "taqyid", "la-tastaqim", "lam-yatabayyan", "mawquf", "kharij-babina"];

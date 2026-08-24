@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { allAyahs, fuzzyRoots, listWords, wordsByLemma, wordsByRoot, wordsByText } from "../db";
-import { normalizeAr } from "../lib/arabicSearch";
+import { normalizeAr } from "@mishkat/quran-core/lib/arabicSearch";
 import { type RefHit, refsForAyah, refsForRoot } from "../lib/refs";
 import { type Card, examineOpen } from "../lib/fahisOpen";
 import { num } from "../i18n";

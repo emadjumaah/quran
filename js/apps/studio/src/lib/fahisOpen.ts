@@ -11,7 +11,7 @@
  * الفرقُ بين فحصٍ وإجابةٍ معقولة.
  */
 import { allAyahs, listWords, wordsByLemma, wordsByText } from "../db";
-import { normalizeAr } from "./arabicSearch";
+import { normalizeAr } from "@mishkat/quran-core/lib/arabicSearch";
 import { refsForAyah, refsForRoot } from "./refs";
 import type { AyahDoc } from "../types";
 

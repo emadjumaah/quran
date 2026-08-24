@@ -28,14 +28,14 @@
  */
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DEFAULT_ALIGN, alignUtterance, speechTokens } from "../lib/sawt/align";
-import { SawtMeter, type SawtReport } from "../lib/sawt/metrics";
+import { DEFAULT_ALIGN, alignUtterance, speechTokens } from "@mishkat/quran-core/lib/sawt/align";
+import { SawtMeter, type SawtReport } from "@mishkat/quran-core/lib/sawt/metrics";
 import {
   WebSpeechRecognizer,
   type RecognizerPort,
   type RecognizerState,
   webSpeechAvailable,
-} from "../lib/sawt/recognizer";
+} from "@mishkat/quran-core/lib/sawt/recognizer";
 import {
   RENDER_AHEAD,
   RENDER_BEHIND,
@@ -50,15 +50,15 @@ import {
   type SawtScript,
   type SawtWindow,
   type SegmentSpec,
-} from "../lib/sawt/script";
+} from "@mishkat/quran-core/lib/sawt/script";
 import {
   judge,
   loadIltiqat,
   releaseIltiqat,
   type IltiqatHit,
   type IltiqatIndex,
-} from "../lib/sawt/iltiqat";
-import { clearCut, noteCut, pageWasReloaded, readCut } from "../lib/sawt/cut";
+} from "@mishkat/quran-core/lib/sawt/iltiqat";
+import { clearCut, noteCut, pageWasReloaded, readCut } from "@mishkat/quran-core/lib/sawt/cut";
 import {
   HALAT,
   findHal,
@@ -71,7 +71,7 @@ import {
   noteDeclared,
   type Hal,
   type HalId,
-} from "../lib/sawt/halat";
+} from "@mishkat/quran-core/lib/sawt/halat";
 import {
   ENGINE_GRACE_MS,
   ENGINE_GRACE_S,
@@ -81,9 +81,9 @@ import {
   saveEngineChoice,
   type EngineDescriptor,
   type EngineId,
-} from "../lib/sawt/engines";
-import { OnDeviceRecognizer, onDeviceAvailable } from "../lib/sawt/onDeviceRecognizer";
-import { isAppleMobile, startVad, type VadHandle } from "../lib/sawt/vad";
+} from "@mishkat/quran-core/lib/sawt/engines";
+import { OnDeviceRecognizer, onDeviceAvailable } from "@mishkat/quran-core/lib/sawt/onDeviceRecognizer";
+import { isAppleMobile, startVad, type VadHandle } from "@mishkat/quran-core/lib/sawt/vad";
 import {
   CONDITIONS,
 
@@ -93,11 +93,11 @@ import {
 
   saveRun,
   type SawtRunRow,
-} from "../lib/sawt/runs";
+} from "@mishkat/quran-core/lib/sawt/runs";
 import { surahNameAr } from "../db";
-import { clearMawdi, LOCAL_ONLY_NOTE, readMawdi, saveMawdi, type MawdiId } from "../lib/mawadi";
+import { clearMawdi, LOCAL_ONLY_NOTE, readMawdi, saveMawdi, type MawdiId } from "@mishkat/quran-core/lib/mawadi";
 import { TAJWID, tajwidWords, type TajwidRule } from "../tajwid";
-import TAJWID_BANK from "../lib/sawt/tajwid-bank.json";
+import TAJWID_BANK from "@mishkat/quran-core/lib/sawt/tajwid-bank.json";
 import "../styles/sawt-engine.css";
 import { num } from "../i18n";
 

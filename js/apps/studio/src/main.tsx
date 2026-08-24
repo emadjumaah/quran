@@ -4,7 +4,7 @@ import { HashRouter, Link, NavLink, Navigate, Route, Routes, useLocation, usePar
 import { initDb, listSurahs } from "./db";
 import { ensureLayers } from "./layers";
 import { applyUILang, getUILang, setUILang, t, useUILang } from "./i18n";
-import { parseMawdi, readMawdi } from "./lib/mawadi";
+import { parseMawdi, readMawdi } from "@mishkat/quran-core/lib/mawadi";
 
 // سجل الطبقات (rag-manifest) يُحمَّل مع الإقلاع كي ترى كلُّ الشاشات — لا نبراس
 // وحده — الكتبَ والطبقاتِ المضافة قيودَ مانيفست («العائلات المفتوحة»)

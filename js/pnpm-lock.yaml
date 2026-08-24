@@ -26,6 +26,12 @@ importers:
       '@huggingface/transformers':
         specifier: ^4.2.0
         version: 4.2.0
+      '@mishkat/quran-assets':
+        specifier: workspace:*
+        version: link:../../packages/quran-assets
+      '@mishkat/quran-core':
+        specifier: workspace:*
+        version: link:../../packages/quran-core
       '@monlite/core':
         specifier: ^2.11.0
         version: 2.11.0
@@ -75,6 +81,21 @@ importers:
       vite-plugin-pwa:
         specifier: ^1.3.0
         version: 1.3.0(vite@6.4.3(@types/node@22.20.1)(terser@5.49.0))(workbox-build@7.4.1(@types/babel__core@7.20.5))(workbox-window@7.4.1)
+
+  packages/quran-assets: {}
+
+  packages/quran-core:
+    dependencies:
+      '@huggingface/transformers':
+        specifier: ^4.2.0
+        version: 4.2.0
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.3(@types/node@22.20.1)(terser@5.49.0)
 
   packages/quran-kg:
     devDependencies:

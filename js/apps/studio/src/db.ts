@@ -11,6 +11,7 @@ import { createDb } from "@monlite/core";
 import { fts } from "@monlite/fts";
 import { wasmDriver } from "@monlite/wasm";
 import { SCHEMAS } from "../../../shared/monlite-schemas.mjs";
+import { provideQuranText } from "@mishkat/quran-core/db";
 import type { AyahDoc, RootDoc, RootEdgeDoc, SurahDoc, WordDoc } from "./types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -495,3 +496,10 @@ export function ayahLocationsOfRoot(rootDoc: RootDoc): string[] {
   }
   return out;
 }
+
+/**
+ * **تسجيلُ منفذ نصّ المصحف** — شيفرةُ التتبّع صارت في الحزمة المشتركة (ف١)
+ * فتأخذ آياتِها وكلماتِها من ههنا بأسمائها نفسِها. والتسجيلُ عند تحميل هذه
+ * الوحدة، وهي محمَّلةٌ في إقلاع مشكاة (`main.tsx`) قبل أن يُفتح بابُ التتبّع.
+ */
+provideQuranText({ allAyahs, listSurahs, wordsBetween });

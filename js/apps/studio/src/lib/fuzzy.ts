@@ -13,7 +13,7 @@
  * صورَ الكلمة الواحدة.
  */
 
-import { normalizeAr, stemAr } from "./arabicSearch";
+import { normalizeAr, stemAr } from "@mishkat/quran-core/lib/arabicSearch";
 
 /** التطبيعُ واحدٌ في المشروع كلِّه: محلِّلُ العربيّة (lib/arabicSearch). */
 export const fuzzyNorm = (s: string): string => normalizeAr(s);

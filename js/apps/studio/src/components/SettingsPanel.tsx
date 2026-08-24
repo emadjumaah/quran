@@ -39,7 +39,7 @@ import {
   readEngineChoice,
   saveEngineChoice,
   type EngineId,
-} from "../lib/sawt/engines";
+} from "@mishkat/quran-core/lib/sawt/engines";
 import OfflineReadiness from "./OfflineReadiness";
 import RecitationCredit from "./RecitationCredit";
 import "../styles/sawt-tilawa.css";

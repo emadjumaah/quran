@@ -23,9 +23,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getUILang, num } from "../i18n";
 import { getSettings, setSettings } from "../settings";
-import { HALAT } from "../lib/sawt/halat";
-import { ON_DEVICE_WIRE_MB } from "../lib/sawt/engines";
-import { MODEL_ID } from "../lib/sawt/onDeviceRecognizer";
+import { HALAT } from "@mishkat/quran-core/lib/sawt/halat";
+import { ON_DEVICE_WIRE_MB } from "@mishkat/quran-core/lib/sawt/engines";
+import { MODEL_ID } from "@mishkat/quran-core/lib/sawt/onDeviceRecognizer";
 import RecitationCredit from "./RecitationCredit";
 import {
   appKeyOfMirror,
@@ -44,7 +44,7 @@ import {
   type Unit,
   type UnitKind,
   type UnitState,
-} from "../lib/sawt/tilawa";
+} from "@mishkat/quran-core/lib/sawt/tilawa";
 
 const MB = 1024 * 1024;
 const GB = 1024 * 1024 * 1024;

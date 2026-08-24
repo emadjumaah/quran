@@ -41,7 +41,7 @@ import AyahPanel from "../components/AyahPanel";
 import WelcomeQuestions from "../components/WelcomeQuestions";
 import { EnTransBar, EnVerseLine } from "../components/EnVerse";
 import { wbwOf, type WbwEntry } from "../lib/wbw";
-import { parseMawdi, readMawdi, saveMawdi } from "../lib/mawadi";
+import { parseMawdi, readMawdi, saveMawdi } from "@mishkat/quran-core/lib/mawadi";
 
 /** **بابُ التتبّع يُركَّب في سطح القراءة** (ج٤ §١) — كسولًا: لا يُحمَّل شيءٌ منه
  *  لمن لم يلمس الميكروفون، فيبقى المصحفُ خفيفًا لمن جاء يقرأ. */

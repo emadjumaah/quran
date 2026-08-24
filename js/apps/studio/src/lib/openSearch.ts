@@ -16,7 +16,7 @@
 import MiniSearch from "minisearch";
 import { allAyahs, ayahLocationsOfRoot, fuzzyRoots, searchAyahs } from "../db";
 import type { AyahDoc } from "../types";
-import { dePrefixAr, normalizeAr, stemAr, variantsAr } from "./arabicSearch";
+import { dePrefixAr, normalizeAr, stemAr, variantsAr } from "@mishkat/quran-core/lib/arabicSearch";
 
 export type MatchHow = "عبارة" | "نص" | "تقريب" | "جذر" | "بعض";
 export interface OpenHit {
