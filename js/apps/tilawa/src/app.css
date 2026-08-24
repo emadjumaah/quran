@@ -1,41 +1,282 @@
-/* هيكلٌ لا هويّة: خطُّ المصحف من الأصول المشتركة، وصفحةٌ ساكنةٌ ريثما تُبنى.
-   وهويّةُ التلاوة وصفحتُها الأولى في ف٣ (خارطة المخرج §م٣). */
+/* ═══════════════ التلاوة — سطحُ القراءة وقشرتُه ═══════════════
+   **وهيئةُ صفحة المصحف ليست ههنا**: مصدرُها الحزمةُ المشتركة، تقرأها التلاوةُ
+   ومشكاةُ من ملفٍّ واحد (ف٢ §١). وما في هذا الملفّ ثلاثةٌ لا رابعَ لها:
+   الرموزُ التي تسدُّها هيئةُ الصفحة · وقشرةُ التلاوة (رأسُها وأوراقُها) ·
+   وتظليلُ الآية المسموعة. **ولا شيءَ يُبنى ههنا لا يخدم قراءةً أو استماعًا.** */
+@import "@mishkat/quran-core/mushaf.css";
+
+/* ── الخطوط ─────────────────────────────────────────────────────────────
+   **أميري قرآن هو خطُّ المصحف** — رخصتُه وحدَها ثابتةٌ نظيفة (`CREDITS.md` §٦)؛
+   وخطُّ المجمَّع وشهرزادُ **رخصتاهما موقوفتان** فلا يكونان افتراضًا لأحد، وهما
+   مشحونان للقارئ يختارهما بيده. */
+@font-face {
+  font-family: "Amiri Quran";
+  src: url("/fonts/amiri-quran.woff2") format("woff2");
+  font-display: swap;
+}
 @font-face {
   font-family: "KFGQPC Hafs";
   src: url("/fonts/kfgqpc-hafs.woff2") format("woff2");
   font-display: swap;
 }
+@font-face {
+  font-family: "Scheherazade Q";
+  src: url("/fonts/scheherazade.woff2") format("woff2");
+  font-display: swap;
+}
+:root[data-quran-font="amiri"] { --font-quran: "Amiri Quran", "KFGQPC Hafs", serif; }
+:root[data-quran-font="kfgqpc"] { --font-quran: "KFGQPC Hafs", "Amiri Quran", serif; }
+:root[data-quran-font="scheherazade"] { --font-quran: "Scheherazade Q", "Amiri Quran", serif; }
 
+/* ── الرموز ─────────────────────────────────────────────────────────────
+   الثمانيةُ الأولى **تسدُّ ما تطلبه هيئةُ الصفحة** من مستضيفها (وهي معلَنةٌ في
+   رأس `mushaf.css`)، وما بعدها قشرةُ التلاوة. **والأوضاعُ ثلاثةٌ**: فاتحٌ في
+   `:root`، وداكنٌ وورقيٌّ مشتقّان منه. */
 :root {
-  color-scheme: light dark;
-  --ink: #1c1c1a;
-  --ground: #faf8f3;
+  --panel: #fffdf9;
+  --panel-2: #f1ede4;
+  --gold: #a97e2f;
+  --line: #e3dccd;
+  --ink: #241f18;
+  --ink-2: #57503f;
+  --shadow: 0 1px 3px rgb(36 31 24 / 0.06), 0 4px 16px rgb(36 31 24 / 0.05);
+  --font-quran: "Amiri Quran", "KFGQPC Hafs", serif;
+  --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --quran-scale: 1;
+
+  --bg: #f7f4ee;
+  --muted: #8a8171;
+  --accent: #0b6e56;
+  --accent-soft: #e0f0ea;
+  /* حدُّ أزرار القشرة وحدَه — `--line` على `--panel` لا يُرى (١٫٣:١)، وحدُّ
+     الحاوية يلزمه ٣:١ (درسُ ج٦٧ §٣/٢) */
+  --shell-line: #9c8a63;
+  /* ارتفاعُ الرأس — يُقاس من الرأس نفسِه فلا رقمَ مقدَّرٌ في الشيفرة */
+  --topbar-h: 56px;
+}
+:root[data-theme="dark"] {
+  --panel: #1d1a16;
+  --panel-2: #26221c;
+  --gold: #d3a558;
+  --line: #322d25;
+  --ink: #ece6da;
+  --ink-2: #c9c0ad;
+  --shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+  --bg: #141210;
+  --muted: #968c77;
+  --accent: #37b892;
+  --accent-soft: #12352a;
+  --shell-line: #7a6f5d;
+}
+:root[data-theme="sepia"] {
+  --panel: #f7efdd;
+  --panel-2: #e8dcc2;
+  --gold: #9a6f24;
+  --line: #ddceb0;
+  --ink: #43371f;
+  --ink-2: #6a5a3b;
+  --shadow: 0 1px 3px rgb(67 55 31 / 0.08), 0 4px 16px rgb(67 55 31 / 0.06);
+  --bg: #efe6d2;
+  --muted: #9b8a67;
+  --accent: #0b6e56;
+  --accent-soft: #dcebd7;
+  --shell-line: #8f7a4d;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #ece7dc;
-    --ground: #14140f;
-  }
-}
-
+/* ── الأساس ───────────────────────────────────────────────────────────────
+   **ولا نصَّ في القشرة دون ١٥px ولا هدفَ لمسٍ دون ٤٤** (ميثاقُ الوجه §١):
+   وقد قِيست الأسطحُ الأربعةُ على عرض ٣٩٠ فما وقع منها شيء. **ويبقى واحدٌ
+   مقيَّدًا**: رقمُ الصفحة في خرطوش الترويسة ١٤px — قاعدةٌ منقولةٌ حرفًا من
+   مشكاة في `mushaf.css`، ورفعُها تغييرُ قاعدةٍ يمنعه شرطُ النقل (ف٢ §١). */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
 body {
   margin: 0;
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  background: var(--ground);
+  background: var(--bg);
   color: var(--ink);
-  font-family: "KFGQPC Hafs", serif;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  overscroll-behavior-y: none;
+}
+.quran { font-family: var(--font-quran); }
+button {
+  font-family: inherit; font-size: 15px; color: var(--ink-2);
+  background: transparent; border: none; cursor: pointer;
 }
 
-.wait {
-  text-align: center;
-  padding: 2rem;
+/* ── الرأسُ العاري (نمطُ ج٨) ────────────────────────────────────────────
+   **سطرٌ واحدٌ لا غير**: الهويّةُ · الانتقالُ · الاستماعُ · الإعدادات. ولا شارةَ
+   ولا عدّادَ ولا شيءَ لا يخدم قراءةً. وكلُّ هدفِ لمسٍ ٤٤×٤٤ (ميثاقُ الوجه §١). */
+.tw-top {
+  position: fixed; inset-inline: 0; inset-block-start: 0; z-index: 40;
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 10px;
+  padding-block-start: calc(6px + env(safe-area-inset-top, 0px));
+  background: var(--panel);
+  border-block-end: 1px solid var(--line);
+  /* **الإصبعُ يحرّكه بمقداره** (ج٨ §٣): لا انتقالَ ما دام يسحب، والالتقاطُ عند
+     السكون بانتقالٍ واحدٍ ٢٠٠ مِث */
+  transform: translateY(calc(-100% * var(--shell-p, 0)));
+  transition: transform 200ms ease-out;
+}
+body.tw-drag .tw-top { transition: none; }
+body.tw-immersive .tw-top { transition-timing-function: ease-in; }
+@media (prefers-reduced-motion: reduce) { .tw-top { transition: none; } }
+
+.tw-brand {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-width: 44px; min-height: 44px; padding-inline: 6px;
+  font-size: 17px; font-weight: 600; color: var(--accent);
+}
+.tw-brand svg { flex: none; }
+.tw-spacer { flex: 1; }
+.tw-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-width: 44px; height: 44px; padding-inline: 10px;
+  border-radius: 999px; font-size: 15px; color: var(--ink-2);
+}
+.tw-btn:hover { background: var(--panel-2); }
+.tw-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.tw-btn svg { flex: none; }
+.tw-where { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── سطحُ القراءة ─────────────────────────────────────────────────────── */
+.tw-read {
+  height: 100dvh; overflow-y: auto; overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  /* حشوةٌ **ثابتةٌ** بمقدار الرأس: يمرّ النصُّ تحته ولا يقفز حين ينزلق */
+  padding-block-start: var(--topbar-h, 56px);
+  padding-block-end: calc(28px + env(safe-area-inset-bottom, 0px));
+}
+.tw-loading, .tw-fail {
+  padding: 30vh 24px; text-align: center; color: var(--muted); font-size: 16px;
+}
+.tw-fail { color: var(--ink-2); }
+
+/* سطرُ العودة — **لا يظهر إلّا لموضعٍ محفوظٍ فعلًا** (درسُ ج٩ §٤)، ويُقال حيث
+   وقف القارئ لا في رأس سيلٍ لن يراه؛ **ثمّ ينصرف من نفسه** فلا يقيم فوق المصحف. */
+.tw-resume {
+  position: fixed; inset-inline: 0; z-index: 30;
+  inset-block-start: calc(var(--topbar-h, 56px) + 8px);
+  display: flex; justify-content: center;
+  margin: 0; padding: 0 12px;
+  pointer-events: none;
+}
+.tw-resume button {
+  pointer-events: auto;
+  min-height: 44px; padding-inline: 18px; border-radius: 999px;
+  border: 1px solid var(--shell-line); background: var(--panel);
+  color: var(--ink-2); font-size: 15px; box-shadow: var(--shadow);
+  animation: tw-fade 0.2s ease;
 }
 
-.wait h1 {
-  margin: 0;
-  font-size: clamp(1.75rem, 6vw, 2.75rem);
-  font-weight: 400;
+/* ── تظليلُ الآية المسموعة ─────────────────────────────────────────────
+   **بلون التظليل القائم** ولا لونَ ثانٍ يُخترع؛ و`slice` تشقّ الخلفيّةَ على
+   الأسطر فتبلغ حافّةَ السطر ولا تُعيد رسمَ صندوقٍ في كلّ سطر — وهي هيئةُ
+   التظليل في المصحف. **ولا ظِلَّ ولا انتشارَ**: لا يُرسم شيءٌ خارجَ صندوق حرفٍ
+   قرآنيّ (ميثاقُ الوجه §١٣). */
+.mp-ayah.tw-now {
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding-inline: 3px; margin-inline: -3px;
+  -webkit-box-decoration-break: slice; box-decoration-break: slice;
 }
+
+/* ── الأوراقُ السفليّة ─────────────────────────────────────────────────
+   **بأرضيّةٍ معتمةٍ خلفها** (درسُ ج٩ §٢): الورقةُ تُرسم من أسفل الشاشة فوق
+   ظهيرٍ خافت، وخلفيّتُها في أساسها لا في صنفٍ يُنسى — فلا تختلط عناصرُها بنصّ
+   المصحف. **وهي بورتالٌ في `body`** لا داخلَ رأسٍ متحوِّل (درسُ ج٩ §١):
+   و`transform` على عنصرٍ يجعله مرجعَ `fixed` لما تحته فتنهار اللوحة. */
+.tw-backdrop {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgb(0 0 0 / 0.34);
+  animation: tw-fade 0.15s ease;
+}
+.tw-sheet {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 92;
+  display: flex; flex-direction: column;
+  max-height: 82vh;
+  background: var(--panel);
+  border-radius: 20px 20px 0 0;
+  padding: 0 14px calc(14px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -12px 40px rgb(0 0 0 / 0.22);
+  animation: tw-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tw-grip { width: 40px; height: 4px; border-radius: 999px; background: var(--line); margin: 9px auto 4px; flex: none; }
+.tw-sheet h2 { margin: 2px 0 8px; font-size: 16px; font-weight: 600; color: var(--ink-2); }
+.tw-sheet-body { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+@keyframes tw-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes tw-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tw-sheet, .tw-backdrop { animation: none; } }
+@media (min-width: 761px) {
+  .tw-sheet {
+    inset-inline: auto; left: 50%; bottom: auto; inset-block-start: 50%;
+    transform: translate(-50%, -50%);
+    width: min(560px, 92vw); max-height: 80vh;
+    border-radius: 18px; border: 1px solid var(--line);
+    padding: 0 18px 16px;
+    animation: none;
+  }
+  .tw-grip { display: none; }
+}
+
+/* صفّا الانتقال: سورةٌ وصفحة */
+.tw-seg {
+  display: flex; gap: 4px; padding: 3px; margin-bottom: 10px;
+  background: var(--panel-2); border-radius: 999px;
+}
+.tw-seg button {
+  flex: 1; min-height: 44px; border-radius: 999px; font-size: 15px; color: var(--ink-2);
+}
+.tw-seg button[aria-pressed="true"] { background: var(--panel); color: var(--accent); font-weight: 600; }
+.tw-grid { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); }
+.tw-grid.pages { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+.tw-grid button {
+  display: flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 6px 10px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel);
+  color: var(--ink); font-size: 15px; text-align: start;
+}
+.tw-grid.pages button { justify-content: center; font-variant-numeric: tabular-nums; }
+.tw-grid button:hover { border-color: var(--accent); color: var(--accent); }
+.tw-grid b { font-family: var(--font-quran); font-weight: 400; font-size: 17px; }
+.tw-grid i { font-style: normal; color: var(--muted); font-size: 15px; margin-inline-start: auto; }
+
+/* ── الإعداداتُ الدنيا ────────────────────────────────────────────────── */
+.tw-set-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.tw-set-row > span { flex: 1; font-size: 15px; color: var(--ink-2); }
+.tw-steps { display: inline-flex; align-items: center; gap: 4px; }
+.tw-steps button {
+  width: 44px; height: 44px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink-2); font-size: 18px;
+}
+.tw-steps button:disabled { opacity: 0.4; }
+.tw-steps span { min-width: 52px; text-align: center; font-size: 15px; font-variant-numeric: tabular-nums; }
+.tw-modes { display: flex; gap: 4px; padding: 3px; background: var(--panel-2); border-radius: 999px; }
+.tw-modes button { min-height: 44px; padding-inline: 14px; border-radius: 999px; font-size: 15px; }
+.tw-modes button[aria-pressed="true"] { background: var(--panel); color: var(--accent); font-weight: 600; }
+.tw-note { margin: 10px 0 0; font-size: 15px; line-height: 1.7; color: var(--muted); }
+
+/* ── الاستماع ─────────────────────────────────────────────────────────
+   شريطٌ سفليٌّ رقيقٌ **لا يظهر إلّا عند التشغيل**، ولا يقيم فوق النصّ حين
+   يسكت الصوت. */
+.tw-play {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 50;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: var(--panel); border-block-start: 1px solid var(--line);
+  box-shadow: 0 -6px 20px rgb(0 0 0 / 0.08);
+}
+.tw-play-where { flex: 1; min-width: 0; font-size: 15px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tw-play-where b { font-family: var(--font-quran); font-weight: 400; }
+.tw-play button { min-width: 44px; height: 44px; border-radius: 999px; font-size: 16px; color: var(--ink-2); }
+.tw-play button:hover { background: var(--panel-2); }
+.tw-credit { font-size: 15px; line-height: 1.7; color: var(--muted); margin: 8px 0 0; }
+.tw-credit b { font-weight: 600; color: var(--ink-2); }
+.tw-reciters { display: flex; flex-direction: column; gap: 6px; }
+.tw-reciters button {
+  display: block; width: 100%; min-height: 44px; padding: 8px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 15px; text-align: start;
+}
+.tw-reciters button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.tw-reciters small { display: block; font-size: 15px; color: var(--muted); }
