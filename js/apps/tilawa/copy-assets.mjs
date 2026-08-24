@@ -19,6 +19,10 @@ console.log(
   `shared assets → public/ : ${rows.map((r) => `${r.file} ${kb(r.bytes)}KB${r.copied ? " (copied)" : ""}`).join(", ")}`,
 );
 
+/** **أيقونةُ التطبيق المؤقّتة** — مُودَعةٌ في جذر التطبيق لا في `public` (وهو
+ *  مولَّدٌ بالتجاهل)، وتُنسخ إليه في كلّ بناءٍ كسائر الأصول. */
+fs.copyFileSync(path.join(HERE, "icon.svg"), path.join(PUB, "icon.svg"));
+
 /* **عُدّةُ تشغيل المحرّك الحرّ — من الرزمة المثبَّتة إلى أصلنا** (ف٣ §٢):
    السكربتُ نفسُه الذي تنسخ به مشكاة (`ort-assets.mjs` في الحزمة)، والمقصدُ
    `public/ort/` — يجدها العاملُ على `/ort/` كما هي مكتوبةٌ في `asrWorker.ts`
