@@ -36,6 +36,19 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const STUDIO = join(ROOT, "js", "apps", "studio");
 const SRC = join(STUDIO, "src");
 const DIST = join(STUDIO, "dist");
+/**
+ * **ونطاقُ الفحص الساكن يشمل «التلاوة»** (ف٢ §٥ — بنصّ الإدارة: «يُوسَّع الفحصُ
+ * الساكنُ في `check-wajh.mjs` ليشمل `apps/tilawa/src`: لا حوارات، لا أرقامَ خطٍّ
+ * في JSX»). فالميثاقُ واحدٌ على التطبيقين، **وحراسةُ التلاوة الحيّةُ تُبنى في ف٣**
+ * — وما ههنا ساكنٌ لا يفتح متصفّحًا على التلاوة، فلا يُقال إنّها قِيست حيّةً.
+ */
+const TILAWA_SRC = join(ROOT, "js", "apps", "tilawa", "src");
+/**
+ * **وهيئةُ صفحة المصحف انتقلت إلى الحزمة** (ف٢ §١)، فيتبعها فحصُ §١٣: كانت
+ * قواعدُها في `theme.css` فكانت تُقرأ، ولو تُركت لخرجت من الحرس صامتةً — **وهذا
+ * تتبُّعُ ملفٍّ نُقل، لا بوّابةٌ جديدة**.
+ */
+const MUSHAF_CSS = join(ROOT, "js", "packages", "quran-core", "src", "mushaf.css");
 const OUT = join(ROOT, "js", "data", "gates", "WAJH.json");
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const PORT = 4183;
@@ -91,8 +104,11 @@ function walk(dir, out = []) {
 const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 
 function staticChecks() {
-  const files = walk(SRC);
-  const core = new Set(CORE_FILES.map((f) => join(SRC, f)));
+  /* **وملفّاتُ التلاوة كلُّها أساسيّة**: ليس فيها صفحةٌ داخلة — التطبيقُ كلُّه
+     مصحفٌ يُقرأ ويُستمع إليه (خارطةُ المخرج §١)، فلا يُستثنى منه شيء. */
+  const tilawa = existsSync(TILAWA_SRC) ? walk(TILAWA_SRC) : [];
+  const files = [...walk(SRC), ...tilawa];
+  const core = new Set([...CORE_FILES.map((f) => join(SRC, f)), ...tilawa]);
 
   /* حواراتُ المتصفّح — أفضحُ علامةٍ على الإطلاق (§١/٨) */
   const DIALOG = /(^|[^\w.$])(alert|confirm|prompt)\s*\(|window\.(alert|confirm|prompt)\s*\(/;
@@ -107,7 +123,7 @@ function staticChecks() {
   if (dialogCore.length) {
     fail("حوارُ متصفّحٍ في صفحةٍ أساسيّة", dialogCore.map((h) => `${h.file}:${h.line}`).join(" · "));
   } else {
-    notes.push(`لا «alert» ولا «confirm» ولا «prompt» في الصفحات الأساسيّة (فُحص ${files.length} ملفًّا)`);
+    notes.push(`لا «alert» ولا «confirm» ولا «prompt» في الصفحات الأساسيّة — فُحص ${files.length} ملفًّا في التطبيقين (${tilawa.length} منها للتلاوة)`);
   }
   for (const h of dialogHits.filter((x) => !x.core)) {
     debts.push({ what: "حوارُ متصفّح", where: `${h.file}:${h.line}`, why: "صفحةٌ داخلة — خارجُ النطاق بحدّ المالك" });
@@ -123,7 +139,7 @@ function staticChecks() {
     });
   }
   if (fsHits.length) fail("رقمُ خطٍّ مكتوبٌ نصًّا في JSX", fsHits.join(" · "));
-  else notes.push("لا رقمَ خطٍّ مكتوبٌ نصًّا في JSX الصفحات الأساسيّة — السلّمُ رموزٌ في theme.css");
+  else notes.push("لا رقمَ خطٍّ مكتوبٌ نصًّا في JSX الصفحات الأساسيّة في التطبيقين — السلّمُ رموزٌ في أوراق الأنماط");
 
   /* المكوّناتُ غيرُ المركَّبة: تُقيَّد ولا تُقاس، فلا يُقال فُحصت فمرّت */
   for (const u of UNRENDERED) {
@@ -180,7 +196,8 @@ function staticChecks() {
     return `غبش ${blur} · انتشار ${spread}`;
   };
   const glyphPaint = [];
-  for (const { sel, body } of cssBlocks(readFileSync(join(SRC, "theme.css"), "utf8"))) {
+  const styleSheets = [join(SRC, "theme.css"), MUSHAF_CSS].filter((f) => existsSync(f));
+  for (const { sel, body } of styleSheets.flatMap((f) => cssBlocks(readFileSync(f, "utf8")))) {
     if (!QURAN_GLYPH.test(" " + sel)) continue;
     const sh = body.match(/box-shadow\s*:\s*([^;]+)/);
     if (!sh) continue;
@@ -188,7 +205,7 @@ function staticChecks() {
     if (why) glyphPaint.push(`${sel} — ${why}`);
   }
   if (glyphPaint.length) fail("رسمٌ خارجَ صندوق حرفٍ قرآنيّ", glyphPaint.join(" · "));
-  else notes.push("لا ظِلَّ يرسم صفيحةً خارجَ صندوق حرفٍ قرآنيّ (§١٣) — فُحصت قواعدُ theme.css كلُّها");
+  else notes.push(`لا ظِلَّ يرسم صفيحةً خارجَ صندوق حرفٍ قرآنيّ (§١٣) — فُحصت قواعدُ ${styleSheets.length} ملفًّا: theme.css وهيئةُ صفحة المصحف في الحزمة`);
 
   /* ── ضبطٌ سالبٌ ساكن: يُزرع `confirm` في ملفٍّ أساسيٍّ ذهنيًّا (بلا كتابةٍ على القرص) ── */
   const planted = stripComments(`function x() { if (confirm("زرع")) return 1; }`);
@@ -1060,7 +1077,9 @@ writeFileSync(
       gate: "wajh",
       ok,
       checkedAt: null,
-      scope: "الصفحاتُ الأساسيّة وحدَها (المصحف · التتبّع · الإعدادات · القشرة) — والصفحاتُ الداخلةُ خارجُ النطاق بحدّ المالك، لم تُفحص ولم يُقل إنّها مرّت",
+      scope:
+        "الصفحاتُ الأساسيّة وحدَها (المصحف · التتبّع · الإعدادات · القشرة) — والصفحاتُ الداخلةُ خارجُ النطاق بحدّ المالك، لم تُفحص ولم يُقل إنّها مرّت. " +
+        "**والقياسُ الحيُّ على مشكاة وحدَها**؛ وأمّا «التلاوة» فيسري عليها الفحصُ الساكنُ وحدَه (لا حوارات · لا أرقامَ خطٍّ في JSX) — وحراستُها الحيّةُ تُبنى في ف٣، فلا يُقال إنّها قِيست حيّةً فمرّت",
       thresholds: { tap: MIN_TAP, text: MIN_TEXT },
       notes,
       failures,
