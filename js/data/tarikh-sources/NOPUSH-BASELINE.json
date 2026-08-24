@@ -1,18 +1,18 @@
 {
-  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف٣ — التتبّعُ في التلاوة على كلمات الصفحة عينِها.",
+  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ن١ — بابُ التثبيت في التلاوة.",
   "branch": "main",
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "f94a2ca1bdfd714a336b5d6984fa87d3b2bc9874",
-    "refs/remotes/origin/main": "f94a2ca1bdfd714a336b5d6984fa87d3b2bc9874"
+    "refs/remotes/origin/HEAD": "7d6abf8c075e7de6909d9d2e75ff9ebf341c22b9",
+    "refs/remotes/origin/main": "7d6abf8c075e7de6909d9d2e75ff9ebf341c22b9"
   },
-  "lastPush": "f94a2ca refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "7d6abf8 refs/remotes/origin/main@{0}: update by push",
   "previous": {
-    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف٢ (16902f7) — قارئُ التلاوة ونظامُ الصفحة مصدرًا واحدًا.",
+    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف٣ — التتبّعُ في التلاوة على كلمات الصفحة عينِها.",
     "branch": "main",
     "remoteRefs": {
-      "refs/remotes/origin/HEAD": "16902f706d5ed68922ea9c2c54a4fe79c974eb70",
-      "refs/remotes/origin/main": "16902f706d5ed68922ea9c2c54a4fe79c974eb70"
+      "refs/remotes/origin/HEAD": "f94a2ca1bdfd714a336b5d6984fa87d3b2bc9874",
+      "refs/remotes/origin/main": "f94a2ca1bdfd714a336b5d6984fa87d3b2bc9874"
     },
-    "lastPush": "16902f7 refs/remotes/origin/main@{0}: update by push"
+    "lastPush": "f94a2ca refs/remotes/origin/main@{0}: update by push"
   }
 }
