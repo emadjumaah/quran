@@ -1,19 +1,19 @@
 {
   "ok": true,
   "branch": "main",
-  "head": "4c4f48d1bccd71040a565799ef4318cb82e60488",
-  "main": "4c4f48d1bccd71040a565799ef4318cb82e60488",
-  "originMain": "0f1865d93f28369e714fe67e43359b2df4c97e4a",
+  "head": "1fa5467fe3bdec14eb50b951aa44aacfb677b945",
+  "main": "1fa5467fe3bdec14eb50b951aa44aacfb677b945",
+  "originMain": "4553cf55ec420c4ecec65a14520c860c1c13fc86",
   "ahead": 1,
   "behind": 0,
   "localCommits": [
-    "4c4f48d ص٦: النموذجُ يُصدَّر عندنا فينزل من ٩٨ م.ب إلى ٤٣ — والعلّةُ التي تُغرق سفاري وُجدت بعينها"
+    "1fa5467 إدارة: تثبيتُ أساس «لا دفع» بعد دفعة ص٦"
   ],
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "0f1865d93f28369e714fe67e43359b2df4c97e4a",
-    "refs/remotes/origin/main": "0f1865d93f28369e714fe67e43359b2df4c97e4a"
+    "refs/remotes/origin/HEAD": "4553cf55ec420c4ecec65a14520c860c1c13fc86",
+    "refs/remotes/origin/main": "4553cf55ec420c4ecec65a14520c860c1c13fc86"
   },
-  "lastPush": "0f1865d refs/remotes/origin/main@{0}: update by push",
-  "baselineLastPush": "0f1865d refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "4553cf5 refs/remotes/origin/main@{0}: update by push",
+  "baselineLastPush": "4553cf5 refs/remotes/origin/main@{0}: update by push",
   "failures": []
 }

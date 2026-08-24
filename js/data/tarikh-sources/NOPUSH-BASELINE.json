@@ -1,18 +1,18 @@
 {
-  "recorded": "إعادةُ تثبيتٍ على 0f1865d (دفعةُ تحديث برومبت ص٦ من الإدارة بالإذن الدائم) — قبل مراجعة ص٦.",
+  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ص٦ — النموذجُ الأصغرُ من مستودعنا.",
   "branch": "main",
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "0f1865d93f28369e714fe67e43359b2df4c97e4a",
-    "refs/remotes/origin/main": "0f1865d93f28369e714fe67e43359b2df4c97e4a"
+    "refs/remotes/origin/HEAD": "4553cf55ec420c4ecec65a14520c860c1c13fc86",
+    "refs/remotes/origin/main": "4553cf55ec420c4ecec65a14520c860c1c13fc86"
   },
-  "lastPush": "0f1865d refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "4553cf5 refs/remotes/origin/main@{0}: update by push",
   "previous": {
-    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف٥ — مدخلُ مشكاة العمليّ ورفعُ نافذة الاستقبال.",
+    "recorded": "إعادةُ تثبيتٍ على 0f1865d (دفعةُ تحديث برومبت ص٦ من الإدارة بالإذن الدائم) — قبل مراجعة ص٦.",
     "branch": "main",
     "remoteRefs": {
-      "refs/remotes/origin/HEAD": "eac7ef37e3ed386b0c2129dc112abf6584e5f6b3",
-      "refs/remotes/origin/main": "eac7ef37e3ed386b0c2129dc112abf6584e5f6b3"
+      "refs/remotes/origin/HEAD": "0f1865d93f28369e714fe67e43359b2df4c97e4a",
+      "refs/remotes/origin/main": "0f1865d93f28369e714fe67e43359b2df4c97e4a"
     },
-    "lastPush": "eac7ef3 refs/remotes/origin/main@{0}: update by push"
+    "lastPush": "0f1865d refs/remotes/origin/main@{0}: update by push"
   }
 }
