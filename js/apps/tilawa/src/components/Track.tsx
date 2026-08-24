@@ -224,7 +224,7 @@ export function AfterSheet({ t, mushaf }: { t: Tatabbu; mushaf: Mushaf }) {
     return `${mushaf.surahName(s)} ${num(a)}`;
   };
   return (
-    <Sheet title="تقبّل الله" onClose={t.close}>
+    <Sheet title="تقبّل الله" onClose={t.dismissReport}>
       <div data-track="after">
         {t.reached && (
           <p className="tw-reached">

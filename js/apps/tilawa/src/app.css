@@ -147,6 +147,14 @@ body.tw-immersive .tw-top { transition-timing-function: ease-in; }
   /* حشوةٌ **ثابتةٌ** بمقدار الرأس: يمرّ النصُّ تحته ولا يقفز حين ينزلق */
   padding-block-start: var(--topbar-h, 56px);
   padding-block-end: calc(28px + env(safe-area-inset-bottom, 0px));
+  /* ═══ **وحشوةٌ جانبيّةٌ تقابل هامشَ المسرح السالب** (اصطادته بوّابةُ ف٣) ═══
+     `.mushaf-stage` على الجوال `margin-inline: -12px` — قاعدةٌ في الحزمة تُلغي بها
+     صفحةُ المصحف حشوةَ مستضيفها فتبلغ الحافّتين (أمرُ المالك ١٤ أغسطس). وحشوةُ
+     مشكاة ١٢px فيستوي الأمرُ عندها؛ **وسطحُ التلاوة كان بلا حشوةٍ جانبيّةٍ ألبتّة
+     فخرج المصحفُ ٢٤px عن العرض** — يُقاس تسريبًا أفقيًّا في سطح القراءة (١٢px
+     في اتّجاه الكتابة)، ويبلغ متنُ القرآن حافّةَ الزجاج ويجاوزها. فتُردّ الحشوةُ
+     ههنا **في التطبيق لا في الحزمة**، فيستقيم الطرفان ولا يُمَسّ ما هو مشترك. */
+  padding-inline: 12px;
 }
 .tw-loading, .tw-fail {
   padding: 30vh 24px; text-align: center; color: var(--muted); font-size: 16px;
@@ -290,7 +298,9 @@ body.tw-immersive .tw-top { transition-timing-function: ease-in; }
   background: var(--accent-soft);
   border-radius: 6px;
   padding-inline: 3px; margin-inline: -3px;
-  -webkit-box-decoration-break: slice; box-decoration-break: slice;
+  /* **و`clone` لا `slice`** — هذه كلمةٌ لا آية: إن وقعت على سطرين سلِمت حاشيتُها
+     في الشقّين (وهو اختيارُ مؤشّر مشكاة نفسِه)، بخلاف تظليل الآية الممتدّ. */
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
 
 /* شريطُ الحال — **رفيعٌ واحدٌ** في أسفل الشاشة، يبقى والرأسُ منسحبٌ في التلاوة */

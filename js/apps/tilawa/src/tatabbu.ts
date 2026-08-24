@@ -121,6 +121,8 @@ export interface Tatabbu {
   takeMark: () => void;
   report: SawtReport | null;
   reached: string | null;
+  /** يُطوى خبرُ الختام ويبقى الشريطُ — فمن أراد حالًا أخرى بدّلها ثمّ بدأ */
+  dismissReport: () => void;
   /** لمسةُ الميكروفون: تبدأ من أوّل آيةٍ مرئيّةٍ الآن */
   arm: (location: string) => void;
   agree: () => void;
@@ -227,10 +229,14 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
 
   useEffect(() => () => release(), [release]);
 
-  /* ── الالتقاطُ من موضعٍ بعيد: يُفتح المقطعُ عنده وتُستأنف المِسطرة ── */
-  const relocate = useCallback(
-    async (hit: IltiqatHit) => {
-      const { win, startWord } = await openSegment(SPEC, hit.location);
+  /**
+   * **يُفتح المقطعُ عند موضعٍ بعينه وتُستأنف المِسطرةُ منه** — يشترك فيه
+   * الالتقاطُ من موضعٍ بعيد وسطرُ «تتابع من موضعك؟»؛ فالفعلُ واحدٌ في الحالين
+   * (نافذةٌ جديدةٌ عند الموضع، ومؤشّرٌ عليه، وقياسٌ يصف الشوطَ الأخير).
+   */
+  const openAt = useCallback(
+    async (location: string) => {
+      const { win, startWord } = await openSegment(SPEC, location);
       winRef.current = win;
       cursorRef.current = startWord;
       anchorRef.current = startWord;
@@ -243,6 +249,9 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
     },
     [showCursor],
   );
+
+  /* ── الالتقاطُ من موضعٍ بعيد: يُفتح المقطعُ عنده وتُستأنف المِسطرة ── */
+  const relocate = useCallback(async (hit: IltiqatHit) => openAt(hit.location), [openAt]);
 
   /* ── الختام: يُحفظ الموضعُ لهذه الحال، وتُقرأ المِسطرة ── */
   const finish = useCallback(() => {
@@ -526,6 +535,13 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
   );
 
   /** **التبديلُ حقٌّ في كلّ وقتٍ لا خطوةٌ في طقس بدء** — فلا يُشغَّل ميكروفونٌ بعده */
+  /**
+   * **طيُّ ورقة الختام لا إغلاقُ السطح**: يبقى الشريطُ فيُبدَّل الحالُ ويُبدأ من
+   * جديد. **وبغير هذا لا سبيلَ إلى تبديل الحال بعد أوّل إذن** — إذ اللمسةُ تبدأ
+   * في الحال، والحالُ لا تُبدَّل والتلاوةُ جارية.
+   */
+  const dismissReport = useCallback(() => setPhase("armed"), []);
+
   const swapEngine = useCallback(() => {
     resumeAfterChoiceRef.current = false;
     setAsk("engine");
@@ -559,14 +575,27 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
     meterRef.current = null;
   }, [release]);
 
-  /* **سطرُ «تتابع من موضعك؟»** — للختمة وحدَها (حالٌ تستأنف)، وإن خالف المرئيَّ */
+  /**
+   * **سطرُ «تتابع من موضعك؟»** — للختمة وحدَها (حالٌ تستأنف)، وإن خالف المرئيَّ.
+   *
+   * **ويبقى معروضًا في أثناء التلاوة كذلك**: لمسةُ الميكروفون تبدأ من الصفحة
+   * التي أمام القارئ في الحال (لا شاشةَ بدءٍ يُسأل فيها)، فلو لم يُعرض إلّا قبل
+   * البدء **لما رآه أحدٌ قطُّ**. فهو سطرٌ خفيفٌ يُهمَل بلا أثر، ومن لمسه نُقل
+   * موضعُه ثَمَّ **في مكانه** بلا إعادة بدء (درسُ ج٩ §٣).
+   */
   const offerMark =
-    phase === "armed" && !!hal.resumes && !!mark && !!seenRef.current && mark.location !== seenRef.current;
+    (phase === "armed" || phase === "running") &&
+    !!hal.resumes &&
+    !!mark &&
+    !!seenRef.current &&
+    mark.location !== seenRef.current;
   const takeMark = useCallback(() => {
-    if (mark) fromRef.current = mark.location;
+    if (!mark) return;
+    fromRef.current = mark.location;
     seenRef.current = null;
-    start();
-  }, [mark, start]);
+    if (phase === "running") void openAt(mark.location);
+    else start();
+  }, [mark, openAt, phase, start]);
 
   return {
     phase,
@@ -588,6 +617,7 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
     takeMark,
     report,
     reached,
+    dismissReport,
     arm,
     agree,
     chooseEngine,
