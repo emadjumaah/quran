@@ -6,7 +6,8 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
-import { copyOrt } from "./ort-assets.mjs";
+import { copyOrt } from "@mishkat/quran-core/ort-assets";
+import { copyShared } from "@mishkat/quran-assets";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PUB = path.join(HERE, "public");
@@ -34,10 +35,18 @@ if (fs.existsSync(emb)) {
   console.warn("quran-embeddings.bin missing — Meaning search disabled (run export-embeddings.mjs)");
 }
 /** عُدّةُ تشغيل المحرّك الحرّ من الرزمة المثبَّتة إلى أصلنا — لا من شبكة طرفٍ ثالث */
-const ort = copyOrt();
+const ort = copyOrt(PUB);
 const mb = (n) => (n / 1024 / 1024).toFixed(1);
 console.log(
   `ort runtime → public/ort/ : ${ort.map((r) => `${r.file} ${mb(r.bytes)}MB${r.copied ? " (copied)" : ""}`).join(", ")}`,
+);
+
+/** الأصولُ المشتركةُ بين التطبيقين (الخطّان · فروق التنزيل · دليلُ التلاوات):
+ *  مصدرُها `@mishkat/quran-assets` وحدَه، ونسخةُ `public` مولَّدةٌ في كلّ بناء. */
+const shared = copyShared(PUB);
+const kb = (n) => (n / 1024).toFixed(0);
+console.log(
+  `shared assets → public/ : ${shared.map((r) => `${r.file} ${kb(r.bytes)}KB${r.copied ? " (copied)" : ""}`).join(", ")}`,
 );
 
 console.log("assets copied to public/");

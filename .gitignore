@@ -19,6 +19,12 @@ js/apps/studio/public/quran-app.db
 js/apps/studio/public/quran-embeddings.bin
 # عُدّةُ تشغيل المحرّك الحرّ — تُنسخ من الرزمة المثبَّتة في كلّ بناء (ort-assets.mjs)
 js/apps/studio/public/ort/
+# الأصولُ المشتركة — مصدرُها الوحيدُ js/packages/quran-assets/assets، وما في
+# public منسوخٌ عنه في كلّ بناء (assets.mjs) — ولا نسختان تُودَعان
+js/apps/studio/public/fonts/
+js/apps/studio/public/furuq.json
+js/apps/studio/public/audio-manifest.json
+js/apps/tilawa/public/
 
 # originals kept out of version control (large PDFs etc.)
 archive/research/

@@ -23,8 +23,12 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
-/** مجلَّدُ العُدّة في الأصل — يدخل `.gitignore`: مصدرُه الرزمةُ لا المستودع */
-export const ORT_DIR = path.join(HERE, "public", "ort");
+/**
+ * مجلَّدُ العُدّة في أصل التطبيق المستهلك — يدخل `.gitignore`: مصدرُه الرزمةُ
+ * لا المستودع. وصار وسيطًا لمّا صارت الحزمةُ مشتركةً بين التطبيقين (ف١):
+ * الشيفرةُ واحدةٌ وأصلُ كلِّ تطبيقٍ عنده.
+ */
+export const ortDir = (destPublic) => path.join(destPublic, "ort");
 
 /** مسارُ العُدّة على الشبكة كما يطلبه العامل — رمزٌ واحدٌ ههنا وفي `asrWorker.ts` */
 export const ORT_BASE = "/ort/";
@@ -58,12 +62,13 @@ export const sha256 = (p) => createHash("sha256").update(fs.readFileSync(p)).dig
  * ينسخ ما تغيّر حجمُه أو غاب — فالنسخُ يجري في كلّ بناءٍ ولا يُعيد ٣٦ م.ب بلا
  * موجب. (والمطابقةُ بالتجزئة على البوّابة لا على البناء.)
  */
-export function copyOrt() {
-  fs.mkdirSync(ORT_DIR, { recursive: true });
+export function copyOrt(destPublic) {
+  const dir = ortDir(destPublic);
+  fs.mkdirSync(dir, { recursive: true });
   const rows = [];
   for (const file of ORT_FILES) {
     const src = ortSource(file);
-    const dst = path.join(ORT_DIR, file);
+    const dst = path.join(dir, file);
     const bytes = fs.statSync(src).size;
     const fresh = fs.existsSync(dst) && fs.statSync(dst).size === bytes;
     if (!fresh) fs.copyFileSync(src, dst);
