@@ -1,3 +1,4 @@
+import type { HuntEvent } from "@mishkat/quran-core/lib/sawt/align";
 import { ENGINES } from "@mishkat/quran-core/lib/sawt/engines";
 import { HALAT } from "@mishkat/quran-core/lib/sawt/halat";
 import { isAppleMobile } from "@mishkat/quran-core/lib/sawt/vad";
@@ -19,12 +20,70 @@ import Sheet from "./Sheet";
  * على الآخر.
  */
 
+/**
+ * **سطرُ صدق الاصطياد** — يُقال حيثما قيل الاصطياد، **والأمانةُ قبل الدعوى**:
+ * لا يُوهَم أنّ الآلةَ تحكم على تلاوةٍ، ولا يُسكَت عمّا يفوتها.
+ */
+const HUNT_SAY =
+  "الاصطيادُ محسوبٌ من محاذاة صوتك على نصَّي الزوج — وقد يفوته انزلاقٌ ولا يُتّهم مصيب.";
+
+/**
+ * **بيانُ اصطيادٍ واحد** — «جريتَ على ٥٤:٣٣ — هنا ﴿…﴾ وهناك ﴿…﴾».
+ *
+ * **ولغتُه لغةُ خبرٍ لا إنذار**: يُقال ما جرى ويُرى الوجهان، ولا يُقال «أخطأت».
+ * **والوجهان مقصوصان من رسم المصحف** لا مكتوبين ههنا (فهرسُ النظائر يحملهما من
+ * `mushaf-text.json` نفسِه)؛ ووجهٌ خالٍ يُقال فيه «تنتهي الآيةُ ههنا» بلا حرفٍ
+ * يُختلق.
+ */
+function SlipSay({ e, mushaf }: { e: HuntEvent; mushaf: Mushaf }) {
+  const say = (loc: string) => {
+    const [s, a] = loc.split(":").map(Number);
+    return `${mushaf.surahName(s)} ${num(a)}`;
+  };
+  return (
+    <li>
+      <span>
+        جريتَ على <b>{say(e.there)}</b> —{" "}
+        {e.faceHere ? (
+          <>
+            هنا <span className="quran">﴿{e.faceHere}﴾</span>
+          </>
+        ) : (
+          <>هنا تنتهي الآية</>
+        )}{" "}
+        {e.faceThere ? (
+          <>
+            وهناك <span className="quran">﴿{e.faceThere}﴾</span>
+          </>
+        ) : (
+          <>وهناك تنتهي الآية</>
+        )}
+      </span>
+    </li>
+  );
+}
+
 /** شريطُ الحال — رفيعٌ في أسفل الشاشة، يبقى والرأسُ منسحبٌ في التلاوة */
-export function TrackBar({ t }: { t: Tatabbu }) {
+export function TrackBar({ t, mushaf }: { t: Tatabbu; mushaf: Mushaf | null }) {
   const live = t.phase === "running";
   const now = live ? t.active : t.engine;
   return (
     <div className="tw-track" data-track="bar">
+      {/* **البيانُ الكاملُ عند أوّل وقفة** — ولا مقاطعةَ في أثناء الجريان: سطرٌ
+          في الشريط لا لوحٌ يعلو المصحف، ويُطوى بلمسةٍ ويُهمَل بلا أثر. */}
+      {mushaf && t.bayan && t.bayan.length > 0 && (
+        <div className="tw-slip-say" data-track="bayan" role="status">
+          <ul className="tw-slips">
+            {t.bayan.map((e, i) => (
+              <SlipSay key={`${e.key}-${e.at}-${i}`} e={e} mushaf={mushaf} />
+            ))}
+          </ul>
+          <p className="tw-slip-note">{HUNT_SAY}</p>
+          <button className="tw-slip-x" data-track="bayan-x" onClick={t.dismissBayan}>
+            حسنًا
+          </button>
+        </div>
+      )}
       {t.fell && (
         <p className="tw-track-fell" data-track="fell" role="status">
           <b>{t.fell.why}.</b>{" "}
@@ -234,6 +293,22 @@ export function AfterSheet({ t, mushaf }: { t: Tatabbu; mushaf: Mushaf }) {
         <p className="tw-note">
           حُفظ موضعُك في هذا الجهاز، فتستأنف منه في المجلس القادم. موضعٌ وتاريخُه لا غير.
         </p>
+        {/* **ما اصطيد في المجلس** — يُقدَّم على «مواضعَ للنظر» لأنّه أخصُّ منه
+            وأبينُ: هذا زوجٌ بعينه وموضعُ مفرقه، وذاك التماسٌ لم يتبيّن. */}
+        {t.hunting && t.slips.length > 0 && (
+          <div data-track="slips">
+            <p className="tw-note">
+              مواضعُ جريتَ فيها على النظيرة — <b>وقد قُيّدت في سجلّ المفارق</b> فتُعاد
+              عليك في التثبيت.
+            </p>
+            <ul className="tw-slips">
+              {t.slips.map((e, i) => (
+                <SlipSay key={`${e.key}-${e.at}-${i}`} e={e} mushaf={mushaf} />
+              ))}
+            </ul>
+            <p className="tw-note">{HUNT_SAY}</p>
+          </div>
+        )}
         {t.hal.after === "places" && (
           <>
             <p className="tw-note">

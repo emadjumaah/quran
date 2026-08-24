@@ -51,6 +51,8 @@
   /* حدُّ أزرار القشرة وحدَه — `--line` على `--panel` لا يُرى (١٫٣:١)، وحدُّ
      الحاوية يلزمه ٣:١ (درسُ ج٦٧ §٣/٢) */
   --shell-line: #9c8a63;
+  /* أرضيّةُ وميض الاصطياد — من حبر العلامة القائم (`--gold`) لا لونُ خطأ */
+  --slip-soft: #f6e7c4;
   /* ارتفاعُ الرأس — يُقاس من الرأس نفسِه فلا رقمَ مقدَّرٌ في الشيفرة */
   --topbar-h: 56px;
 }
@@ -67,6 +69,7 @@
   --accent: #37b892;
   --accent-soft: #12352a;
   --shell-line: #7a6f5d;
+  --slip-soft: #3a3020;
 }
 :root[data-theme="sepia"] {
   --panel: #f7efdd;
@@ -80,6 +83,7 @@
   --muted: #9b8a67;
   --accent: #0b6e56;
   --accent-soft: #dcebd7;
+  --slip-soft: #eedfba;
   --shell-line: #8f7a4d;
 }
 
@@ -379,6 +383,38 @@ body.tw-immersive .tw-top { transition-timing-function: ease-in; }
   font-size: 15px; color: var(--muted);
 }
 .tw-places .quran { font-size: 17px; color: var(--ink); }
+
+/* ═══════ **وميضُ الاصطياد** — الإشارةُ البصريّةُ الهادئة (ن٢ §١) ═══════
+   **مراتبُ القرار ١٠ حاكمة**: لا مقاطعةَ في أثناء الجريان — فلا صوتَ، ولا لوحَ
+   يطمس النصّ، ولا لونَ خطأٍ على كلمة. **أرضيّةٌ خفيفةٌ تخفت من تلقائها** عند
+   موضع المفرق، من حبر العلامة القائم في التطبيق لا من لونٍ يُبتكَر للتخطئة.
+   **والقاعدةُ لونٌ لا تنضيد**: حشوةٌ ٣px يقابلها هامشٌ سالبٌ يساويها كنمط
+   المؤشّر سواءً بسواء، فلا تتزحزح كلمةٌ ولا يتبدّل قَطعُ سطر. */
+.mp-w.tw-slip {
+  background: var(--slip-soft);
+  border-radius: 6px;
+  padding-inline: 3px; margin-inline: -3px;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  animation: tw-slip-out 2.6s ease-out both;
+}
+@keyframes tw-slip-out { from { background: var(--slip-soft); } to { background: transparent; } }
+/* ومن كره الحركةَ بقيت له الأرضيّةُ ساكنةً حتّى تنطفئ بالمؤقّت نفسِه */
+@media (prefers-reduced-motion: reduce) { .mp-w.tw-slip { animation: none; } }
+
+/* بيانُ الاصطياد — **سطرٌ في الشريط لا لوحٌ يعلو المصحف**، يُطوى بلمسة */
+.tw-slip-say {
+  margin: 0 0 8px; padding: 8px 10px; border-radius: 10px;
+  background: var(--panel-2); border: 1px solid var(--line);
+}
+.tw-slips { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.tw-slips li { font-size: 15px; line-height: 1.7; color: var(--ink-2); }
+.tw-slips b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.tw-slips .quran { font-size: 18px; color: var(--ink); }
+.tw-slip-note { margin: 8px 0 0; font-size: 15px; line-height: 1.6; color: var(--muted); }
+.tw-slip-x {
+  min-height: 44px; margin-top: 6px; padding-inline: 18px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink-2); font-size: 15px;
+}
 
 /* **حجابُ حال التثبيت** — يبقى موضعُ الكلمة وطولُها ولا يُقرأ حرفُها (نمطُ مشكاة
    نفسِه): لونٌ وخطٌّ منقوطٌ لا غير، **فلا يتزحزح تنضيدُ الصفحة** بالحجاب ولا

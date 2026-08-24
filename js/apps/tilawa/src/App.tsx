@@ -55,7 +55,7 @@ export default function App() {
   const play = usePlayState();
   /** **التتبّعُ حالٌ من هذه الصفحة** — منطقُه في الحزمة، وتدبيرُه في `tatabbu.ts` */
   const surahName = useCallback((n: number) => mushafRef.current?.surahName(n) ?? "", []);
-  const track = useTatabbu(surahName);
+  const track = useTatabbu(surahName, mushaf);
   /** **بابُ التثبيت** — مادّتُه لا تُجلب إلّا لمن فتحه (`tathbit.ts`) */
   const fix = useTathbit(mushaf);
 
@@ -486,6 +486,9 @@ export default function App() {
                      صفحةٍ ما يخصّها وحدَه، فتسكن أخواتُها (الأداءُ شرطٌ لا زينة). */
                   playingId={play.id !== null && pageOf(mushaf, play.id) === p.page ? play.id : null}
                   cursor={track.cursor && cursorPage(mushaf, track.cursor) === p.page ? track.cursor : null}
+                  /* **وميضُ الاصطياد** (ن٢): موضعُ المفرق يومض هادئًا ثمّ ينطفئ —
+                     ويُقصَر على صفحته كالمؤشّر، فلا تُعاد أخواتُها رسمًا. */
+                  slip={track.flash && cursorPage(mushaf, track.flash) === p.page ? track.flash : null}
                   /* **وحجابُ التثبيت يُحسب بالصفحة**: ما دون صفحة المؤشّر مكشوفٌ،
                      وصفحتُه تنكشف إليه، وما بعدها محجوبٌ كلُّه (`halat.ts`). */
                   veil={veilOf(mushaf, track, p.page)}
@@ -509,7 +512,7 @@ export default function App() {
       )}
 
       {/* **سطحُ التتبّع**: شريطٌ رفيعٌ واحدٌ وورقتان — ولا يُرسم نصٌّ ثانٍ فوق المصحف */}
-      {track.phase !== "off" && <TrackBar t={track} />}
+      {track.phase !== "off" && <TrackBar t={track} mushaf={mushaf} />}
       {track.ask === "engine" && <EngineSheet t={track} />}
       {track.ask === "consent" && <ConsentSheet t={track} />}
       {track.phase === "done" && mushaf && <AfterSheet t={track} mushaf={mushaf} />}

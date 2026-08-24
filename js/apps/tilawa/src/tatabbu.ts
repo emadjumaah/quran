@@ -25,7 +25,13 @@
  *    الحال وتُكتب به عند الختام — فختمتُه لا تمحو مراجعتَه.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { DEFAULT_ALIGN, alignUtterance, speechTokens } from "@mishkat/quran-core/lib/sawt/align";
+import {
+  DEFAULT_ALIGN,
+  alignUtterance,
+  speechTokens,
+  type HuntEvent,
+  type HuntIndex,
+} from "@mishkat/quran-core/lib/sawt/align";
 import { SawtMeter, type SawtReport } from "@mishkat/quran-core/lib/sawt/metrics";
 import {
   WebSpeechRecognizer,
@@ -74,13 +80,39 @@ import {
 } from "@mishkat/quran-core/lib/sawt/halat";
 import { noteCut } from "@mishkat/quran-core/lib/sawt/cut";
 import { readMawdi, saveMawdi, type Mawdi, type MawdiId } from "@mishkat/quran-core/lib/mawadi";
-import { num } from "./mushaf";
+import { loadHuntIndex } from "./furuq";
+import { noteSlips } from "./tathbit";
+import { num, type Mushaf } from "./mushaf";
 
 /** المصحفُ كلُّه مقطعُ التلاوة — القارئُ يقرأ سيلًا فلا يُقصّ عليه مدًى */
 const SPEC: SegmentSpec = { id: "mushaf", title: "المصحف كلُّه", kind: "mushaf" };
 
 /** كم نتيجةً مختومةً يقف عندها المؤشّرُ قبل أن يمضيَ من تلقائه */
 const STALL_BEFORE_ADVANCE = 3;
+
+/* ═══════ **بابُ الاصطياد الصوتيّ — حالاتٌ مسمّاةٌ لا استنباط** (ن٢ §٠) ═══════
+   من فتح المصحفَ ليقرأ لا يمسّه من هذا شيء، ولا مَن يتلو في «الختمة» (سجلُّ
+   موضعٍ لا غير) ولا في «العَرْض» (بابُ أحكامٍ لا تسميع). **والحالاتُ تُسمّى
+   ههنا ولا يُزاد في عقد الأحوال حرف.** */
+
+/** الحالاتُ التي يُفتح فيها البابُ — **تسميعٌ يُمسَك عليه** */
+const HUNT_IN: HalId[] = ["murajaa", "tathbit", "salat"];
+
+/**
+ * ومن هذه: **من يُبيَّن له في مجلسه**. **وفي الصلاة صمتٌ تامّ** — لا وميضٌ ولا
+ * بيانٌ ولا شيءَ بعد الختام؛ يُقيَّد الاصطيادُ في السجلّ وحدَه فيعود الزوجُ في
+ * التدريب، ولا يُقال للمصلّي في صلاته شيء.
+ */
+const HUNT_SHOWN: HalId[] = ["murajaa", "tathbit"];
+
+/** كم يمكث وميضُ المفرق قبل أن ينطفئ — إشارةٌ تُهمَل ولا تُنتظر */
+const FLASH_MS = 2600;
+
+/**
+ * **أوّلُ وقفة** — كم من الصمت بعد آخر ما وصل من المحرّك يُعدّ وقفةً يُبان عندها.
+ * **ولا مقاطعةَ في أثناء الجريان بحال**: ما دام الصوتُ يصل يُعاد العدُّ من أوّله.
+ */
+const WAQFA_MS = 2400;
 
 /** أطوارُ السطح: مطفأ · مهيَّأٌ بالشريط · يتلو · بعد الختام */
 export type Phase = "off" | "armed" | "running" | "done";
@@ -119,6 +151,18 @@ export interface Tatabbu {
   /** يُعرض سطرُ «تتابع من موضعك؟» — للختمة وحدَها وإن خالف المرئيَّ */
   offerMark: boolean;
   takeMark: () => void;
+  /**
+   * **موضعُ وميض الاصطياد الآن** `"سورة:آية:كلمة"` — إشارةٌ بصريّةٌ هادئةٌ
+   * تنطفئ من تلقائها. و`null` في الصلاة أبدًا.
+   */
+  flash: string | null;
+  /** **بيانُ ما اصطيد** — يُعرض عند أوّل وقفة، ويُطوى بلمسة. وفي الصلاة `null` */
+  bayan: HuntEvent[] | null;
+  dismissBayan: () => void;
+  /** ما اصطيد في هذا المجلس كلِّه — يُقرأ بعد الختام */
+  slips: HuntEvent[];
+  /** أبابُ الاصطياد مفتوحٌ في هذه الحال؟ — يُقال ولا يُخفى */
+  hunting: boolean;
   report: SawtReport | null;
   reached: string | null;
   /** يُطوى خبرُ الختام ويبقى الشريطُ — فمن أراد حالًا أخرى بدّلها ثمّ بدأ */
@@ -136,8 +180,10 @@ export interface Tatabbu {
 
 /**
  * @param surahName اسمُ السورة للعرض — من نصّ المصحف عند التطبيق لا من جدولٍ ثانٍ
+ * @param mushaf نصُّ المصحف — **منه وحدَه يُبنى فهرسُ النظائر** (ن٢ §١)، فلا
+ *   تقرأ المحاذاةُ ملفًّا بنفسها ولا يُشحن شيءٌ لمن لا يُسمِّع
  */
-export function useTatabbu(surahName: (n: number) => string): Tatabbu {
+export function useTatabbu(surahName: (n: number) => string, mushaf: Mushaf | null): Tatabbu {
   const [phase, setPhase] = useState<Phase>("off");
   const [ask, setAsk] = useState<Ask>(null);
   const [halId, setHalId] = useState<HalId>(() => readHal());
@@ -156,12 +202,23 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
   const [reached, setReached] = useState<string | null>(null);
   const [markTick, setMarkTick] = useState(0);
   const [heard, setHeard] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
+  const [bayan, setBayan] = useState<HuntEvent[] | null>(null);
+  const [slips, setSlips] = useState<HuntEvent[]>([]);
 
   const winRef = useRef<SawtWindow | null>(null);
   const recRef = useRef<RecognizerPort | null>(null);
   const meterRef = useRef<SawtMeter | null>(null);
   const wakeRef = useRef<WakeLockish | null>(null);
   const iltiqatRef = useRef<IltiqatIndex | null>(null);
+  /** فهرسُ النظائر — **و`null` هو إغلاقُ الباب**: لا يُبنى إلّا في حالٍ تصطاد */
+  const huntRef = useRef<HuntIndex | null>(null);
+  /** ما اصطيد في المجلس، وما لم يُبَّن بعدُ، ومفاتيحُ ما قُيّد كي لا يُعاد */
+  const caughtRef = useRef<HuntEvent[]>([]);
+  const pendingRef = useRef<HuntEvent[]>([]);
+  const seenSlipRef = useRef<Set<string>>(new Set());
+  const flashRef = useRef(0);
+  const waqfaRef = useRef(0);
   const cursorRef = useRef(0);
   const anchorRef = useRef(0);
   const stallRef = useRef(0);
@@ -209,6 +266,47 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
       });
   }, []);
 
+  /**
+   * **موضعُ الإعلان بمراتب القرار ١٠** — ولا مقاطعةَ في أثناء الجريان بحال:
+   * وميضٌ خفيفٌ عند موضع المفرق (لا صوتَ ولا لوحَ يطمس النصّ)، والبيانُ الكامل
+   * يُؤجَّل إلى **أوّل وقفة** أو إلى الختام. **وفي الصلاة لا وميضَ ولا بيان.**
+   */
+  const noteHunts = useCallback((evs: HuntEvent[]) => {
+    const shown = HUNT_SHOWN.includes(halRef.current);
+    let last: HuntEvent | null = null;
+    for (const e of evs) {
+      const k = `${e.key}|${e.at}`;
+      if (seenSlipRef.current.has(k)) continue; // تُعاد محاذاةُ الجملة فيتكرّر الخبر
+      seenSlipRef.current.add(k);
+      caughtRef.current.push(e);
+      if (!shown) continue;
+      pendingRef.current.push(e);
+      last = e;
+    }
+    if (!last) return;
+    setFlash(last.at);
+    window.clearTimeout(flashRef.current);
+    flashRef.current = window.setTimeout(() => setFlash(null), FLASH_MS);
+  }, []);
+
+  /** **العدُّ إلى الوقفة يُعاد من أوّله كلّما وصل صوت** — فلا يُقاطَع جريان */
+  const armWaqfa = useCallback(() => {
+    window.clearTimeout(waqfaRef.current);
+    if (!pendingRef.current.length) return;
+    waqfaRef.current = window.setTimeout(() => {
+      const due = pendingRef.current;
+      pendingRef.current = [];
+      setBayan((b) => [...(b ?? []), ...due]);
+    }, WAQFA_MS);
+  }, []);
+
+  /** يُطفأ ما عُلّق من مؤقّتات — عند الختام وعند الإغلاق وعند ذهاب الصفحة */
+  const hushHunt = useCallback(() => {
+    window.clearTimeout(flashRef.current);
+    window.clearTimeout(waqfaRef.current);
+    setFlash(null);
+  }, []);
+
   const stopAll = useCallback(() => {
     recRef.current?.stop();
     recRef.current = null;
@@ -222,10 +320,12 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
    */
   const release = useCallback(() => {
     stopAll();
+    hushHunt();
     iltiqatRef.current = null;
+    huntRef.current = null;
     releaseIltiqat();
     recentRef.current = [];
-  }, [stopAll]);
+  }, [stopAll, hushHunt]);
 
   useEffect(() => () => release(), [release]);
 
@@ -259,6 +359,15 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
     const win = winRef.current;
     const rec = recRef.current;
     stopAll();
+    hushHunt();
+    /* **وههنا تكتمل الحلقة**: تسميعٌ ⇐ اصطيادٌ ⇐ سجلُّ الخلط بالزوج ⇐ جدولٌ
+       يعيده في التدريب. **ويُقيَّد عند الختام لا في أثنائه** — فلا يُكتب في
+       تخزين الجهاز والقارئُ يتلو، **وفي الصلاة يُقيَّد ولا يُعرض منه شيء**. */
+    const caught = caughtRef.current;
+    setSlips(caught.slice());
+    setBayan(null);
+    pendingRef.current = [];
+    noteSlips([...new Set(caught.map((e) => e.key))]);
     let r: SawtReport | null = null;
     if (meter && win) {
       r = meter.finish({
@@ -284,7 +393,7 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
     setSeeking(false);
     /* **وفي الصلاة صمتٌ تامّ**: لا شيءَ بعد الختام — لا موضعٌ ولا مواضعُ للنظر */
     setPhase(findHal(halRef.current).after === "silent" ? "armed" : "done");
-  }, [stopAll, surahName]);
+  }, [stopAll, hushHunt, surahName]);
 
   /* ── ذهابُ الصفحة يُنهي التتبّعَ ويُفرّغ ما يُمسَك (درسُ ص٤) ── */
   useEffect(() => {
@@ -322,11 +431,18 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
       recentRef.current = [];
       seekingRef.current = false;
       awayRef.current = false;
+      caughtRef.current = [];
+      pendingRef.current = [];
+      seenSlipRef.current = new Set();
+      huntRef.current = null;
+      hushHunt();
       setSeeking(false);
       setReport(null);
       setReached(null);
       setHeard(false);
       setAsk(null);
+      setBayan(null);
+      setSlips([]);
 
       const rec: RecognizerPort = chosen.onDevice
         ? new OnDeviceRecognizer()
@@ -347,7 +463,19 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
         const tokens = speechTokens(r.text);
         if (!tokens.length) return;
         const before = anchorRef.current;
-        const step = alignUtterance(win.norms, tokens, before, DEFAULT_ALIGN);
+        /* **الاصطيادُ إعدادٌ يُمرَّر لا شيءٌ يُقرأ** (ن٢ §١): الفهرسُ يُبنى ههنا
+           ويُسلَّم، والمواضعُ **تُقرأ دالّةً** فلا تُنسخ مصفوفةُ سبعةٍ وسبعين ألفًا
+           في كلّ نتيجةٍ جزئيّة. وحيث لا فهرسَ فلا مسارَ جديدٌ ألبتّة. */
+        const ix = huntRef.current;
+        const step = alignUtterance(
+          win.norms,
+          tokens,
+          before,
+          DEFAULT_ALIGN,
+          ix ? { index: ix, locOf: (i) => win.script.words[i]?.location } : undefined,
+        );
+        if (step.hunts.length) noteHunts(step.hunts);
+        armWaqfa();
         if (step.cursor !== cursorRef.current) {
           cursorRef.current = step.cursor;
           showCursor(step.cursor);
@@ -420,6 +548,19 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
           iltiqatRef.current = null;
         });
 
+      /* **وفهرسُ النظائر كذلك — في الحالات المسمّاة وحدَها.** ومادّتُه تُجلب
+         شبكةً أوّلَ مرّة، فإن تعذّرت بقي البابُ مغلقًا والتتبّعُ يعمل كما هو:
+         **لا يُعطَّل تسميعٌ لأجل اصطياد**. */
+      if (HUNT_IN.includes(halRef.current) && mushaf) {
+        void loadHuntIndex(mushaf)
+          .then((ix) => {
+            huntRef.current = ix;
+          })
+          .catch(() => {
+            huntRef.current = null;
+          });
+      }
+
       /* الشاشةُ تبقى مضاءةً — القارئُ لا يلمس شيئًا بعد البدء */
       void (async () => {
         try {
@@ -430,7 +571,7 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
         }
       })();
     },
-    [engineId, growIfNeeded, relocate, showCursor],
+    [engineId, growIfNeeded, relocate, showCursor, mushaf, noteHunts, armWaqfa, hushHunt],
   );
 
   /**
@@ -542,6 +683,9 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
    */
   const dismissReport = useCallback(() => setPhase("armed"), []);
 
+  /** يُطوى البيانُ بلمسة — **خبرٌ يُهمَل بلا أثر**، والقيدُ في السجلّ قائمٌ سواه */
+  const dismissBayan = useCallback(() => setBayan(null), []);
+
   const swapEngine = useCallback(() => {
     resumeAfterChoiceRef.current = false;
     setAsk("engine");
@@ -569,6 +713,11 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
     setReached(null);
     setFell(null);
     setAsk(null);
+    setBayan(null);
+    setSlips([]);
+    caughtRef.current = [];
+    pendingRef.current = [];
+    seenSlipRef.current = new Set();
     setActiveId(null);
     setEngineState("idle");
     winRef.current = null;
@@ -612,6 +761,11 @@ export function useTatabbu(surahName: (n: number) => string): Tatabbu {
     fell,
     cursor,
     seeking,
+    flash,
+    bayan,
+    dismissBayan,
+    slips,
+    hunting: HUNT_IN.includes(halId),
     mark,
     offerMark,
     takeMark,

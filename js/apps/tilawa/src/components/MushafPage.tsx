@@ -29,6 +29,7 @@ function MushafPage({
   mushaf,
   playingId,
   cursor,
+  slip = null,
   veil = "none",
   marks = null,
 }: {
@@ -40,6 +41,12 @@ function MushafPage({
    *  **ويُقصَر على صفحته قصدًا**: فلا تُعاد صفحاتُ النافذة رسمًا كلَّما تقدّمت
    *  كلمةٌ واحدة (الأداءُ شرطٌ لا زينة). */
   cursor: string | null;
+  /**
+   * **موضعُ وميض الاصطياد** `"سورة:آية:كلمة"` إن كان في هذه الصفحة (ن٢).
+   * **إشارةٌ هادئةٌ تنطفئ من تلقائها** — أرضيّةٌ تخفت لا لونُ خطأٍ ولا لوحٌ يطمس
+   * النصّ؛ وحشوتُها يقابلها هامشٌ سالبٌ يساويها فلا يتزحزح تنضيدُ الصفحة.
+   */
+  slip?: string | null;
   /**
    * **حجابُ حال التثبيت** (`halat.ts`: «النصُّ محجوبٌ ينكشف بالتلاوة، وما بعده
    * يبقى محجوبًا»): `"none"` صفحةٌ مكشوفةٌ · `"from"` تنكشف إلى المؤشّر وتُحجب
@@ -113,6 +120,7 @@ function MushafPage({
               {ayahTokens(a.id, a.text).map((t, i) => {
                 const at = `${a.surahNo}:${a.ayahNo}:${t.no}`;
                 const now = cursor === at;
+                const slipped = slip === at;
                 /* **ما بلغه القارئُ مكشوفٌ وما بعده محجوب** — والمؤشّرُ حدُّهما.
                    والرتبةُ `ord` لا الاسمُ `no`: علامةُ الوقف تتبع كلمتَها. */
                 const hidden =
@@ -124,7 +132,9 @@ function MushafPage({
                     {sep}
                     <span
                       data-w={at}
-                      className={`mp-w${now ? " tw-cursor" : ""}${hidden ? " tw-veil" : ""}`}
+                      className={`mp-w${now ? " tw-cursor" : ""}${slipped ? " tw-slip" : ""}${
+                        hidden ? " tw-veil" : ""
+                      }`}
                     >
                       {t.text}
                     </span>
