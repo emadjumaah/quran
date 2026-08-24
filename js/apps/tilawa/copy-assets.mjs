@@ -3,13 +3,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { copyShared } from "@mishkat/quran-assets";
+import { MUSHAF_TEXT, copyAssets, copyShared } from "@mishkat/quran-assets";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PUB = path.join(HERE, "public");
 fs.mkdirSync(PUB, { recursive: true });
 
-const rows = copyShared(PUB);
+/* المشتركُ بين التطبيقين، **ونصُّ المصحف معه**: التلاوةُ تقرأ منه رسمَها
+   وحدودَ صفحاتها (ف٢ §٢)، ومشكاةُ تقرأ من قاعدتها فلا يُنسخ إليها. */
+const rows = [...copyShared(PUB), ...copyAssets(PUB, MUSHAF_TEXT)];
 const kb = (n) => (n / 1024).toFixed(0);
 console.log(
   `shared assets → public/ : ${rows.map((r) => `${r.file} ${kb(r.bytes)}KB${r.copied ? " (copied)" : ""}`).join(", ")}`,

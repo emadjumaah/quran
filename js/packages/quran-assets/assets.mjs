@@ -28,17 +28,29 @@ export const SHARED_ASSETS = [
   "audio-manifest.json",
 ];
 
+/**
+ * **نصُّ المصحف — أصلٌ مُودَعٌ ههنا، ولا يُشحن إلّا لمن يقرأ منه.**
+ *
+ * مُخرَجُ `js/scripts/export-mushaf-text.mjs` من `quran-app.db` نفسِها: رسمُ
+ * الآي وحدودُ المصحف. **تستهلكه التلاوةُ وحدَها** — فمشكاةُ تفتح القاعدةَ نفسَها
+ * فتقرأ منها، ونسخُه إلى `public` عندها يزيد في تخزينها المسبَق ميغابايتًا
+ * ونصفًا من نصٍّ تملكه. **والمصدرُ واحدٌ على الحالين**: هذا الملفُّ مولَّدٌ من
+ * تلك القاعدة، لا مكتوبٌ ثانيةً بيد.
+ */
+export const MUSHAF_TEXT = ["mushaf-text.json"];
+
 /** موضعُ الأصل في الحزمة — به تقرأ السكربتاتُ والبوّاباتُ المصدرَ لا المنسوخ */
 export const assetPath = (rel) => path.join(ASSETS_DIR, rel);
 
 /**
- * ينسخ الأصولَ المشتركةَ إلى `public` تطبيقٍ بعينه.
+ * ينسخ جردًا بعينه إلى `public` تطبيقٍ بعينه.
  * @param {string} destPublic مجلَّدُ `public` عند التطبيق المستهلك
+ * @param {string[]} list الجردُ المنسوخ
  * @returns {{file: string, bytes: number, copied: boolean}[]}
  */
-export function copyShared(destPublic) {
+export function copyAssets(destPublic, list) {
   const rows = [];
-  for (const rel of SHARED_ASSETS) {
+  for (const rel of list) {
     const src = assetPath(rel);
     const dst = path.join(destPublic, rel);
     const bytes = fs.statSync(src).size;
@@ -51,3 +63,6 @@ export function copyShared(destPublic) {
   }
   return rows;
 }
+
+/** ينسخ الأصولَ المشتركةَ بين التطبيقين (وهي ما يستهلكه كلاهما) */
+export const copyShared = (destPublic) => copyAssets(destPublic, SHARED_ASSETS);
