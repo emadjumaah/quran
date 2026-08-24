@@ -278,7 +278,10 @@
   position: relative; isolation: isolate;
   min-width: 3.2em; padding: 1px 0.7em;
   text-align: center; font-variant-numeric: tabular-nums;
-  font-size: 14px; color: var(--mushaf-folio);
+  /* **١٥px حدُّ الميثاق** (قرارُ قبول ف٢ — بندُ ف٣ §٠): كان ١٤px فوقع تحت
+     الحدّ في قياس التلاوة؛ ورفعُه ههنا **قاعدةٌ واحدةٌ في المصدر الواحد**
+     تسري على التطبيقين معًا، فلا رقمان يتباعدان. */
+  font-size: 15px; color: var(--mushaf-folio);
 }
 .mp-head-folio::before {
   content: "";
