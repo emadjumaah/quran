@@ -54,9 +54,10 @@ const ThematicThread = lazy(() => import("./views/ThematicThread"));
 const Learn = lazy(() => import("./views/Learn"));
 const EraabDrill = lazy(() => import("./views/EraabDrill"));
 const Assistant = lazy(() => import("./views/Assistant"));
-// «التتبّع» — صار بابًا في الواجهة بأمر المالك 2026-08-14 بعد فحصه المسبارَ على
-// كروم: مدخلُه في الرأس على العرضين، وصفحتُه قائمةٌ بنفسها بلا هيكل التطبيق.
-const Tatabbu = lazy(() => import("./views/Tatabbu"));
+// «التتبّع» خرج من مشكاة إلى تطبيق التلاوة (خارطةُ المخرج §١، ف٤ §١)، **ولم
+// يُحذف مسارُه**: يبقى `/tatabbu` بطاقةَ عبورٍ تفتح البابَ حيث صار — فلا يُكسر
+// رابطٌ منشورٌ ولا محفوظُ قارئ.
+const Ubur = lazy(() => import("./views/Ubur"));
 import SettingsPanel from "./components/SettingsPanel";
 import BookmarksPanel from "./components/BookmarksPanel";
 import FocusExit from "./components/FocusExit";
@@ -142,39 +143,6 @@ function ThemeToggle() {
     >
       {isDark ? "☀" : "☾"}
     </button>
-  );
-}
-
-/** أيقونةُ التتبّع: موجُ صوتٍ يمرّ على سطر — لا ميكروفونَ، فالبابُ تتبُّعٌ لا تسجيل */
-function TatabbuIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden focusable="false">
-      <path
-        d="M3.2 12h1.6M8 8v8M12 4.8v14.4M16 8v8M19.2 12h1.6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-/** مدخلُ «التتبّع» في الرأس: على الحاسوب زرٌّ بعنوانٍ وأيقونة — لا أيقونةً صمّاء —
- *  وعلى الجوال أيقونةٌ بجوار الإعدادات (أمر المالك 2026-08-14). */
-function TatabbuButton({ iconOnly = false }: { iconOnly?: boolean }) {
-  const lang = useUILang();
-  const label = lang === "ar" ? "التتبّع" : t("nav.tatabbu");
-  return (
-    <NavLink
-      to="/tatabbu"
-      className={`tatabbu-btn${iconOnly ? " icon-only" : ""}`}
-      title={t("nav.tatabbu.hint")}
-      aria-label={label}
-    >
-      <TatabbuIcon />
-      {!iconOnly && <span>{label}</span>}
-    </NavLink>
   );
 }
 
@@ -477,8 +445,10 @@ function NibrasFab() {
   // من حدودها. **ولا يُحذف البابُ ولا يُغيَّر مسارُه** — إعادةُ موضعٍ لا إلغاءُ
   // ميزة: يدخل من أدوات الآية («اسأل عن هذه الآية» مسبوقًا بموضعه) ومن التنقّل
   // العامّ (الرأسُ والدُّرج). ويبقى على سائر الصفحات كما كان.
+  // **ولا يُستثنى `/tatabbu`**: صار بطاقةَ عبورٍ — صفحةٌ عاديّةٌ لا سطحَ تلاوةٍ
+  // يُجرَّد لها الوجه (ف٤ §١).
   const overMushaf = loc.pathname === "/" || loc.pathname.startsWith("/read");
-  if (overMushaf || loc.pathname.startsWith("/assistant") || loc.pathname.startsWith("/tatabbu")) return null;
+  if (overMushaf || loc.pathname.startsWith("/assistant")) return null;
   return (
     <NavLink
       ref={fabRef}
@@ -540,9 +510,12 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
         <svg viewBox="0 0 24 24" aria-hidden><path d="M4 4.5A2 2 0 0 1 6 3h5v16H6a2 2 0 0 0-2 1.2zM20 4.5A2 2 0 0 0 18 3h-5v16h5a2 2 0 0 1 2 1.2z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
         <span>{ar ? "المصحف" : "Read"}</span>
       </NavLink>
-      <NavLink to="/tatabbu" className={`tab${on("/tatabbu") ? " active" : ""}`}>
-        <TatabbuIcon />
-        <span>{ar ? "التتبّع" : t("nav.tatabbu")}</span>
+      {/* **«اسأل» موضعَ «التتبّع»** (ف٤ §١): لمّا خرج التتبّعُ إلى تطبيقه صار
+          الموضعُ لقلب مشكاة البحثيّ — نِبراس — فالأربعةُ تبقى أربعةً: المصحفُ
+          واسألْ والبحثُ والمزيد. */}
+      <NavLink to="/assistant" className={`tab${on("/assistant") ? " active" : ""}`}>
+        <span className="ai-spark tab-spark" aria-hidden />
+        <span>{ar ? "اسأل" : "Ask"}</span>
       </NavLink>
       <NavLink to="/search" className={`tab${on("/search") ? " active" : ""}`}>
         <svg viewBox="0 0 24 24" aria-hidden><path d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15zM21 21l-5.2-5.2" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>
@@ -554,32 +527,6 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
       </button>
     </nav>
   );
-}
-
-/**
- * **وميكروفونٌ واحدٌ لا اثنان** (ج٤ §١/٢): في سطح القراءة تضع الصفحةُ ميكروفونَها
- * في الرأس الواحد — **وهو التتبّعُ نفسُه حالًا لا صفحةً** — فلا يُزاد عليه مدخلٌ
- * ثانٍ إلى بابٍ صار حالًا من هذه الصفحة. وفي سائر الصفحات يبقى المدخلُ كما كان.
- */
-function MobileHeaderTools() {
-  const p = useLocation().pathname;
-  const reading = p === "/" || p.startsWith("/read") || p.startsWith("/tatabbu");
-  return (
-    <>
-      {!reading && <TatabbuButton iconOnly />}
-      <SettingsPanel />
-    </>
-  );
-}
-
-/**
- * **التتبّعُ حالٌ من القراءة لا صفحةٌ أخرى** (ج٤ §١/٥) — وعلى الجوال يُفتح
- * الرابطُ **على المصحف في حال التتبّع**، فروابطُ الناس لا تُكسَر ولا يُنقل
- * قارئٌ إلى سطحٍ ثانٍ له رأسُه. وعلى الحاسوب يبقى البابُ صفحتَه كما كان.
- */
-function TatabbuRoute() {
-  const mobile = useIsMobile();
-  return mobile ? <Reader tatabbu /> : <Tatabbu />;
 }
 
 function App() {
@@ -627,10 +574,9 @@ function App() {
             /* تنظيفُ رأس الجوال (أمر المالك 2026-08-14، وهو ينسخ أمرَ 2026-07-29 في
                تبديل اللغة): نُقلت المشاركةُ والمحفوظاتُ وتبديلُ اللغة إلى الدُّرج،
                فلا يبقى في الرأس إلّا القائمةُ والهويّةُ والتتبّعُ والإعدادات. */
-            <MobileHeaderTools />
+            <SettingsPanel />
           ) : (
             <>
-              <TatabbuButton />
               <ShareButton />
               <BookmarksPanel />
               <LangToggle />
@@ -712,8 +658,9 @@ function App() {
           <Route path="/assistant/:id" element={<Assistant />} />
           <Route path="/today" element={<Today />} />
           <Route path="/goto/:kind/:n" element={<Goto />} />
-          {/* مستور — لا يُدرج في التنقّل ولا في التوثيق حتّى يُقرَّر بعد الفحص */}
-          <Route path="/tatabbu" element={<TatabbuRoute />} />
+          {/* **المسارُ يبقى ولا بابَ خلفه**: بطاقةُ عبورٍ إلى تطبيق التلاوة على
+              الوجهتين معًا — جوّالًا وسطحَ مكتب (ف٤ §١). */}
+          <Route path="/tatabbu" element={<Ubur />} />
         </Routes>
         </RouteBoundary>
         <NowPlayingBar />

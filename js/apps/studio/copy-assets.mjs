@@ -6,7 +6,6 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
-import { copyOrt } from "@mishkat/quran-core/ort-assets";
 import { copyShared } from "@mishkat/quran-assets";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -34,12 +33,9 @@ if (fs.existsSync(emb)) {
 } else {
   console.warn("quran-embeddings.bin missing — Meaning search disabled (run export-embeddings.mjs)");
 }
-/** عُدّةُ تشغيل المحرّك الحرّ من الرزمة المثبَّتة إلى أصلنا — لا من شبكة طرفٍ ثالث */
-const ort = copyOrt(PUB);
-const mb = (n) => (n / 1024 / 1024).toFixed(1);
-console.log(
-  `ort runtime → public/ort/ : ${ort.map((r) => `${r.file} ${mb(r.bytes)}MB${r.copied ? " (copied)" : ""}`).join(", ")}`,
-);
+/* **ولا تُنسخ عُدّةُ تشغيل المحرّك الحرّ إلى مشكاة** (ف٤ §١): كانت تُنسخ ههنا
+   لصفحة التتبّع (٣٦ م.ب على القرص)، وقد صار التتبّعُ إلى تطبيق التلاوة —
+   **ومشكاةُ لا تشحن عُدّةً لا تستعملها**. ونسخُها في `apps/tilawa` قائمٌ كما هو. */
 
 /** الأصولُ المشتركةُ بين التطبيقين (الخطّان · فروق التنزيل · دليلُ التلاوات):
  *  مصدرُها `@mishkat/quran-assets` وحدَه، ونسخةُ `public` مولَّدةٌ في كلّ بناء. */

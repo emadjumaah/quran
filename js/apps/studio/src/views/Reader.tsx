@@ -9,7 +9,7 @@
  * يُفتح بالنقر (أُلغي الجانبُ الأيمن بقرار المالك 2026-07-21). ودون ٩٠٠ بكسل
  * تنطوي قائمةُ السور ويحلّ محلَّها مُنتقٍ.
  */
-import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ChangeEvent } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -41,11 +41,10 @@ import AyahPanel from "../components/AyahPanel";
 import WelcomeQuestions from "../components/WelcomeQuestions";
 import { EnTransBar, EnVerseLine } from "../components/EnVerse";
 import { wbwOf, type WbwEntry } from "../lib/wbw";
-import { parseMawdi, readMawdi, saveMawdi } from "@mishkat/quran-core/lib/mawadi";
+import { saveMawdi } from "@mishkat/quran-core/lib/mawadi";
 
 /** **بابُ التتبّع يُركَّب في سطح القراءة** (ج٤ §١) — كسولًا: لا يُحمَّل شيءٌ منه
  *  لمن لم يلمس الميكروفون، فيبقى المصحفُ خفيفًا لمن جاء يقرأ. */
-const TatabbuSurface = lazy(() => import("./Tatabbu"));
 
 const MODE_KEY = "quran-studio:reader-mode";
 /** أنّ سطرَ «تجدّدت هيئةُ الصفحات» عُرض — فيُعرض مرّةً ثمّ لا يعود (§٥ب) */
@@ -390,7 +389,7 @@ function MushafPage({
   );
 }
 
-export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) {
+export default function Reader() {
   useUILang();
   const params = useParams<{ surahNo: string; ayahNo?: string }>();
   const navigate = useNavigate();
@@ -406,31 +405,9 @@ export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) 
   // ?know=twin|links|wujuh — سؤالُ الاستقبال يفتح جوابَه: الآيةُ تُعلَّم ولوحتُها تُفتح
   const [searchParams] = useSearchParams();
   const knowParam = searchParams.get("know") as "twin" | "links" | "wujuh" | null;
-  /** **ومن جاء برابط `/tatabbu` بلا سورة** فُتح على آخر موضعٍ له (ج٤ §١/٥ و§٣/٤) */
-  const resumeFor = tatabbu && params.surahNo == null ? parseMawdi(readMawdi("mushaf")) : null;
-  const surahNo = params.surahNo != null ? Number(params.surahNo) : (resumeFor?.surahNo ?? 1);
-  const targetAyahNo = params.ayahNo != null ? Number(params.ayahNo) : (resumeFor?.ayahNo ?? null);
+  const surahNo = params.surahNo != null ? Number(params.surahNo) : 1;
+  const targetAyahNo = params.ayahNo != null ? Number(params.ayahNo) : null;
   const narrow = useNarrow();
-  /* ═══ **التتبّعُ حالٌ من القراءة** (ج٤ §١) ═══
-     لا صفحةَ ثانيةَ ولا انتقالَ ولا شاشةَ بدء: لمسةُ الميكروفون في الرأس الواحد
-     تقلب هذه الصفحةَ إلى حال تتبّعٍ في مكانها، والإغلاقُ يردّها إلى القراءة.
-     **ومن جاء برابط `/tatabbu` فُتحت له الحالُ نفسُها** — فروابطُ الناس لا تُكسر. */
-  const [tracking, setTracking] = useState(tatabbu);
-  /** أبدأ التتبّعُ بلمسةٍ مقصودةٍ الآن؟ — فيُطلب البدءُ من نفسه (لا عند فتح التطبيق) */
-  const [micTouched, setMicTouched] = useState(false);
-  /**
-   * **موضعُ الدخول إلى السطح المدموج** — `"سورة:آية"` أوّلِ المرئيّ في الصفحة
-   * الجارية (ج٩ §٣).
-   *
-   * **الواقعةُ بنصّها**: كان السطحُ يُركَّب **بلا أيّ موضع**، فيفتح على محفوظه
-   * (`readMawdi(halId)` — وهو للزائر الفاتحة). فمن كان في آل عمران فلمس
-   * الميكروفونَ رُمي إلى الفاتحة، **فبدا التتبّعُ صفحةً منفصلةً** لا حالًا من
-   * الصفحة التي بين يديه — وذلك نقضُ ج٤ §١ نفسِه.
-   * **والصفحةُ المعروضةُ مقدَّمةٌ على المحفوظ** عند الدخول من لمسة الميكروفون؛
-   * والمحفوظُ يبقى لفتح `/tatabbu` المباشر (فذاك موضعُه)، **ولحال الختمة
-   * خاصّةً** — ويُعرض هناك سطرُ خيارٍ خفيفٌ داخل السطح لا قفزةٌ صامتة.
-   */
-  const [startAt, setStartAt] = useState<string | null>(null);
   // صفحات is the default (easiest for most readers); آيات is opt-in for its
   // tools/translation/«مثلها». A returning reader's explicit choice is remembered.
   const [mode, setMode] = useState<Mode>(
@@ -721,30 +698,6 @@ export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) 
 
   const listenSurah = () => playContinuous((surahBase.get(surahNo) ?? 0) + 1);
 
-  /**
-   * **أوّلُ آيةٍ مرئيّةٍ في الصفحة الجارية** (ج٩ §٣) — وهي موضعُ الدخول إلى
-   * سطح التتبّع. **وتُقاس من الشجرة لحظتَها** ولا تُخمَّن من الحال: القارئُ قد
-   * مرّر بعيدًا عن الآية الهدف، فالهدفُ يقول أين دخل لا أين هو الآن.
-   * **وحدُّ المرئيّ حافّةُ المحتوى لا حافّةُ الوعاء**: الرأسُ طبقةٌ عليا تمرّ
-   * تحتها الحشوةُ الثابتة، فما تحتها ليس مرئيًّا وإن وقع داخلَ الوعاء.
-   * وإن أخفقت القراءةُ رُدَّ إلى الموضع المعلوم من الحال — فلا يبقى بلا موضع.
-   */
-  const firstVisibleLoc = (): string => {
-    const el = mainRef.current;
-    if (el) {
-      const box = el.getBoundingClientRect();
-      const pad = parseFloat(getComputedStyle(el).paddingBlockStart) || 0;
-      const edge = box.top + pad;
-      for (const a of document.querySelectorAll<HTMLElement>('[id^="ayah-"]')) {
-        if (a.getBoundingClientRect().bottom <= edge + 1) continue;
-        const [, s, n] = a.id.split("-");
-        if (s && n) return `${Number(s)}:${Number(n)}`;
-      }
-    }
-    return `${surahNo}:${targetAyahNo ?? 1}`;
-  };
-
-
   /* ═══ **أدواتُ المصحف في الرأس الواحد** (ج٨ §٢ب) ═══
      كان للجوال شريطٌ ثانٍ لاصقٌ تحت رأس التطبيق — **شريطان فوق المتن**، وهو أوّلُ
      ما يفضح «الموقع» في صفحةٍ يُقرأ فيها القرآن. فطُوي الشريطُ في الرأس:
@@ -788,26 +741,6 @@ export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) 
               <svg viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                 <circle cx="10.8" cy="10.8" r="6.3" />
                 <path d="M15.4 15.4 20.5 20.5" />
-              </svg>
-            </button>
-            {/* **الميكروفونُ لمسةٌ لا افتراض** (ج٤ §١/٣): لا يُطلب إذنُه عند فتح
-                التطبيق بحال — من فتح وجد مصحفًا نافعًا بذاته؛ ومن لمسه هنا
-                تبع المؤشّرُ صوتَه **في الصفحة نفسِها**. */}
-            <button
-              className={`sh-btn rd-mic-btn${tracking ? " on" : ""}`}
-              onClick={() => {
-                // **يُقرأ الموضعُ قبل الانقلاب** — فبعده لا تبقى صفحةُ المصحف
-                // في الشجرة ليُقرأ منها أوّلُ المرئيّ (ج٩ §٣)
-                setStartAt(firstVisibleLoc());
-                setMicTouched(true);
-                setTracking(true);
-              }}
-              aria-pressed={tracking}
-              aria-label={ar ? "تتبّعْ تلاوتي" : "follow my recitation"}
-              title={ar ? "تتبّعْ تلاوتي" : "follow my recitation"}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                <path d="M3.2 12h1.6M8 8v8M12 4.8v14.4M16 8v8M19.2 12h1.6" />
               </svg>
             </button>
             <button
@@ -1030,25 +963,6 @@ export default function Reader({ tatabbu = false }: { tatabbu?: boolean } = {}) 
             والتشغيلُ والأنماطُ في ورقةٍ سفليّةٍ يفتحها «⋯»، **واسمُ السورة
             الجاري يُقرأ من ترويسة الصفحة** فلا يلزمه شريط. */}
         {surah && narrow && <ReaderHeadTools />}
-
-        {/* ═══ **حالُ التتبّع — في الصفحة نفسِها** (ج٤ §١) ═══
-            لا انتقالَ ولا شاشةَ بدءٍ ولا صفحةٌ ثانية: يُركَّب سطحُ التتبّع فوق
-            سطح القراءة **تحت الرأس الواحد**، فإذا بدأت التلاوةُ خلا الوجهُ إلّا
-            من القرآن (`sawt-live`)، وإذا أُغلق عاد القارئُ إلى مكانه من المصحف. */}
-        {tracking && narrow && (
-          <Suspense fallback={null}>
-            <TatabbuSurface
-              embedded
-              autostart={micTouched}
-              startAt={startAt}
-              onClose={() => {
-                setTracking(false);
-                setMicTouched(false);
-                setStartAt(null);
-              }}
-            />
-          </Suspense>
-        )}
 
         {/* Desktop: name · meta · on-page search · listen · modes. */}
         {surah && !narrow && (

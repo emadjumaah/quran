@@ -190,10 +190,10 @@ html, body { overscroll-behavior: none; }
 /* ٥ — قائمةُ النظام والتحديدُ يُمنعان **على الأدوات وحدَها**. و**نصُّ القرآن
    يبقى منتقًى منسوخًا** — فمن أخفى وظيفةً ليُشبه تطبيقًا فقد خسر الأمرين. */
 button, .chip, .topbar, .tabbar, .drawer, .set-panel, .topbar-find,
-.ap-head, .ap-row, .sawt-m-bar, .mushaf-pager, .set-more {
+.ap-head, .ap-row, .mushaf-pager, .set-more {
   -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
 }
-.quran, .mushaf-page, .sawt-text, .ayah-card, .ws-ayah, .mu-msg {
+.quran, .mushaf-page, .ayah-card, .ws-ayah, .mu-msg {
   -webkit-touch-callout: default; -webkit-user-select: text; user-select: text;
 }
 
@@ -271,10 +271,9 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 .topbar nav a.active { background: var(--accent-soft); color: var(--accent); }
 .topbar .spacer { flex: 1; }
 /* uniform icon buttons across the top bar (settings · bookmarks · lang · theme
-   · menu · تتبّع) — **شكلٌ واحدٌ ومقاسٌ واحدٌ ولا استثناء** (ج٦٧ §١/١): كانت
+   · menu) — **شكلٌ واحدٌ ومقاسٌ واحدٌ ولا استثناء** (ج٦٧ §١/١): كانت
    `.set-wrap > button` (الإعداداتُ والمحفوظاتُ والمصادر، داخلَ غلافٍ فتفلت من
-   `> button`) و`.tatabbu-btn` (قرصٌ مستديرٌ بخلفيّةٍ أخرى) شكلين آخرين
-   يجاوران هذا الشكلَ في الرأس نفسِه. **وحدُّها `--shell-line` لا `--line`**
+   `> button`) شكلًا آخر يجاور هذا الشكلَ في الرأس نفسِه. **وحدُّها `--shell-line` لا `--line`**
    (٣٫٣:١ فأكثر على `--panel` في الأوضاع الثلاثة — كان ١٫٣:١ فلا يُرى، ج٦٧ §٣/٢). */
 /* ═══ **أزرارُ الرأس عاريةٌ — نمطُ التطبيقات لا نمطُ الويب** (ج٨ §٢أ) ═══
    كان كلُّ زرٍّ صندوقًا: حدٌّ وخلفيّةٌ ونصفُ قطر — **وأربعةُ صناديقَ متجاورةٍ في
@@ -286,7 +285,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
    • **والضغطةُ وحدَها تُظهر خلفيّةً لحظيّة** (`:active`) — فيُطمأنّ إلى أنّها
      وقعت، بلا صندوقٍ مقيم. (وعلى الفأرة وحدَها يبقى تلميحُ الحوم — إذ لا لمسَ
      يُطمئن هناك، ولا يرى الجوالُ منه شيئًا.) */
-.topbar > button, .topbar .menu-btn, .topbar .set-wrap > button, .topbar .tatabbu-btn, .topbar .sh-btn {
+.topbar > button, .topbar .menu-btn, .topbar .set-wrap > button, .topbar .sh-btn {
   min-width: 44px; height: 44px; border-radius: 12px; padding: 0 6px;
   border: none; background: none; color: var(--ink);
   /* **شبكةٌ بتمركُزٍ في المحورين** — لا محاذاةَ يدويّةً تُزيح أيقونةً عن أختها */
@@ -296,16 +295,16 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 }
 /* **وأيقونةٌ واحدةٌ بمقاسٍ واحدٍ في الرأس كلِّه** (بلاغُ المالك: بعضُها غيرُ مسنتر) */
 .topbar > button svg, .topbar .menu-btn svg, .topbar .set-wrap > button svg,
-.topbar .tatabbu-btn svg, .topbar .sh-btn svg {
+.topbar .sh-btn svg {
   width: 24px; height: 24px; display: block; vertical-align: middle; flex: none;
 }
 .topbar > button:active, .topbar .menu-btn:active, .topbar .set-wrap > button:active,
-.topbar .tatabbu-btn:active, .topbar .sh-btn:active {
+.topbar .sh-btn:active {
   background: var(--panel-2);
 }
 @media (hover: hover) and (pointer: fine) {
   .topbar > button:hover, .topbar .menu-btn:hover, .topbar .set-wrap > button:hover,
-  .topbar .tatabbu-btn:hover, .topbar .sh-btn:hover { background: var(--panel-2); }
+  .topbar .sh-btn:hover { background: var(--panel-2); }
 }
 
 /* ═══ **موضعُ أدوات الصفحة في الرأس الواحد** (ج٨ §٢ب) ═══
@@ -448,7 +447,7 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
      الإبهامَ. والحشوةُ نقصت بمقدارِ ما زاد الزرُّ فلم يعلُ الرأسُ إلّا قليلًا.
      **وتُذكر ههنا أزرارُ الرأس كلُّها** — فالإعداداتُ والتتبّعُ في غلافٍ فلا
      يصيبهما `> button`، وكانا يفلتان من القاعدة. */
-  .topbar > button, .topbar .menu-btn, .topbar .set-wrap > button, .topbar .tatabbu-btn {
+  .topbar > button, .topbar .menu-btn, .topbar .set-wrap > button {
     width: 44px; height: 44px; min-width: 44px; padding: 0;
   }
 }
@@ -851,7 +850,7 @@ button.chip:hover, .chip.link:hover { background: var(--accent-soft); color: var
 .mp-ayah { border-radius: 8px; }
 /* الآيةُ المقصودةُ في صفحة المصحف — **والقاعدةُ واحدةٌ لا قاعدتان**: كان ههنا
    انتشارٌ ٣px يقع على حروف الآية المجاورة (وسردُ المصحف متّصلٌ لا فقرات)، وهو
-   عينُ عيب `.sawt-now`. اصطادته بوّابةُ الميثاق حين حُرست القاعدةُ آليًّا. */
+   عينُ عيبِ مؤشّر التتبّع يومَ كان ههنا. اصطادته بوّابةُ الميثاق حين حُرست القاعدةُ آليًّا. */
 /* **شريطٌ يمتدّ عرضَ السطر، لا صندوقٌ حول كلمات** (البرومبت §١، واقتباسُ هيئةِ
    الشريط من صورة المالك — **ولونُه لونُنا القائمُ لا يُبدَّل**، بأمره نصًّا).
    و`clone` كانت تُعيد رسمَ حواشي الصندوق على كلّ سطرٍ فيبدو صناديقَ متتابعة؛
@@ -2203,6 +2202,10 @@ table.data tr:hover td { background: var(--panel-2); }
   /* **ووزنُ الرسم واحدٌ في الأربع** (ج٨ §٢ج): كانت ١٫٧ و١٫٨ فيبدو بعضُها أدقَّ
      من بعضٍ في صفٍّ واحد — والفرقُ يُرى ولا يُفسَّر. */
   .tabbar .tab svg { width: 22px; height: 22px; stroke-width: 1.8; }
+  /* **وهلالُ «اسأل» يُقاس بمقاسها** (ف٤ §١): هو قناعٌ لا رسمٌ محبَّر، فلا يأخذ
+     `stroke-width`؛ ووزنُه في الفعّال يُقرأ من عنوانه ومن سعته. */
+  .tabbar .tab .tab-spark { width: 22px; height: 22px; vertical-align: 0; }
+  .tabbar .tab.active .tab-spark { width: 24px; height: 24px; }
   /* **والفعّالُ بلونٍ ووزنٍ لا بلونٍ وحدَه** (§١/٣) — فمن لا يميّز الأخضرَ يقرأ
      الثِّقَل: رسمُه أثقلُ، وحبرُه لونُ الهويّة، وعنوانُه تحته. */
   .tabbar .tab.active { color: var(--accent); font-weight: 800; }
@@ -2718,12 +2721,6 @@ table.data tr:hover td { background: var(--panel-2); }
    بحشوٍ صفر (مرّتين: `max-width: 760px` و`430px`)، فتلتصق الأيقونةُ بأوّل المحور
    ما لم تُمركَز ههنا في المصدر. (عيبٌ رصده المالكُ في الفحص الحيّ ١٤ أغسطس؛
    وكانت الأيقونةُ ١٩px في صندوقٍ ٤٤px بفجوة ٢٤/١ بدل ١٢٫٥/١٢٫٥.) */
-/* الشكلُ والحدُّ والخلفيّةُ من قاعدة `.topbar > button` الموحَّدة أعلاه —
-   كان ههنا قرصٌ (`999px`) بخلفيّةٍ أخرى، فبانت وحدَها بين الأزرار (ج٦٧ §١/١) */
-.tatabbu-btn { gap: 7px; white-space: nowrap; }
-.tatabbu-btn:hover { color: var(--accent); text-decoration: none; }
-.tatabbu-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-
 @media (max-width: 760px) {
   .topbar .sh-btn { width: 36px; height: 36px; min-width: 36px; padding: 0; }
 }
@@ -2993,7 +2990,7 @@ table.data tr:hover td { background: var(--panel-2); }
    ما فوقه — والضيقُ يُعالَج بالحشو والفجوة لا بتصغير ما يُلمس. */
 @media (max-width: 430px) {
   .topbar { gap: 4px; padding: 5px 8px; }
-  .topbar > button, .topbar .menu-btn, .topbar .sh-btn, .topbar .set-wrap > button, .topbar .tatabbu-btn {
+  .topbar > button, .topbar .menu-btn, .topbar .sh-btn, .topbar .set-wrap > button {
     width: 44px; min-width: 44px; height: 44px; padding: 0; font-size: 13px;
   }
   .brand-word { font-size: 19px; }
@@ -3022,230 +3019,6 @@ table.data tr:hover td { background: var(--panel-2); }
 /* حاويةُ المحادثة مرجعُ offsetTop لرسائلها */
 .mu-thread { position: relative; }
 
-/* ═══════════ التتبّع — بابٌ قائمٌ بنفسه (findings/SESSION-SAWT-M2-PROMPT.md §٤) ═══════════
-   صفحةُ تلاوةٍ لا صفحةُ تصفّح: يُخفى هيكلُ التطبيق كلُّه ما دامت الصفحةُ مفتوحة
-   (`sawt-page`) لا أثناء التلاوة وحدَها — لا رأسَ ولا تبويبَ ولا دُرجَ ولا زرًّا
-   طائرًا، وزرُّ إغلاقٍ واحدٌ في الصفحة نفسِها. والتصحيحُ ممنوعٌ أثناء التلاوة —
-   فلا لونَ إنذارٍ ههنا البتّة: المؤشّرُ بلونِ اللهجة الهادئ، وعدمُ انكشاف الكلمة
-   في حال التثبيت هو التنبيه. */
-body.sawt-page .topbar,
-body.sawt-page .tabbar,
-body.sawt-page .nibras-fab,
-body.sawt-page .npb,
-body.sawt-page .focus-exit,
-body.sawt-live .topbar,
-body.sawt-live .tabbar,
-body.sawt-live .nibras-fab,
-body.sawt-live .npb,
-body.sawt-live .focus-exit { display: none; }
-body.sawt-page .app-shell,
-body.sawt-live .app-shell { grid-template-rows: 1fr; }
-body.sawt-page { overflow: hidden; }
-
-/* ── صدرُ الصفحة على الحاسوب: العنوانُ وزرُّ الإغلاق ── */
-.sawt-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.sawt-x {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 50%;
-  width: 42px; height: 42px; font-size: 19px; color: var(--ink-2); cursor: pointer;
-  display: flex; align-items: center; justify-content: center; flex: none;
-}
-.sawt-link { background: none; border: none; padding: 0; color: var(--accent); cursor: pointer; font: inherit; font-size: 15px; text-decoration: underline; }
-
-/* ── الحالاتُ المسمّاة: حالٌ واحدةٌ تُختار باسمها فتضبط ما تحتها ── */
-.sawt-halat { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.sawt-hal {
-  display: flex; flex-direction: column; gap: 4px; text-align: start; cursor: pointer;
-  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 12px 14px; color: var(--ink); font-family: inherit;
-}
-.sawt-hal.on { border-color: var(--accent); background: var(--accent-soft); }
-/* الموقوفةُ تُعرض رماديّةً وتحتها سببُها — تُعرض ولا تُخفى، فلا تُظنّ نسيانًا */
-.sawt-hal.off { opacity: .62; border-style: dashed; }
-.sawt-hal.off .sawt-hal-n { color: var(--muted); }
-.sawt-hal-n { font-weight: 700; font-size: 16px; }
-.sawt-hal-w { font-size: 15px; color: var(--ink-2); line-height: 1.7; }
-.sawt-hal-name { font-family: var(--font-quran); color: var(--accent); font-size: 21px; margin: 0 0 2px; }
-
-.sawt-pick-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
-.sawt-mini { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink-2); min-height: 44px; }
-.sawt-mini input {
-  width: 92px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
-  min-height: 44px; padding: 0 12px; color: var(--ink); font-family: inherit; font-size: 15px;
-}
-.sawt-warn-loud { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--gold); }
-.sawt-warn-acts { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
-.sawt-warn-acts .sawt-start { margin: 0; }
-.sawt-reached { font-family: var(--font-quran); font-size: 26px; color: var(--accent); margin: 6px 0; }
-
-/* ═══════════ الجوال: ملءُ الشاشة، وثلاثةٌ لا رابعَ لها ═══════════
-   النصُّ هو الشاشةُ كلُّها، ومعه **شريطٌ واحدٌ** فيه أداتان وزرُّ الإغلاق.
-   **ولا لوحَ عند القدوم** (أمر المالك 2026-08-14، ونقضُ إقرار ص-م٢): يأتي
-   القارئُ فيجد المصحفَ صافيًا لا مطموسًا ولا محجوبًا؛ والبدءُ من الشريط،
-   والإعلانُ ينفتح عنه الشريطُ حيث يقع الفعل، وعُدّةُ التهيئة بطلبٍ لا بقدوم.
-   وكلُّ ما ينفتح **ينزل من الشريط فيدفع النصَّ** ولا يعلوه. */
-.sawt-m { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; }
-.sawt-m .sawt-text { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 14px 18px 26px; }
-.sawt-m-bar {
-  flex: none; display: flex; align-items: center; gap: 8px;
-  padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 8px;
-  background: var(--bg); border-bottom: 1px solid var(--line);
-}
-.sawt-m .sawt-x { width: 44px; height: 44px; font-size: 18px; }
-.sawt-hal-select {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
-  padding: 8px 14px; color: var(--ink-2); font-family: inherit; font-size: 15px; max-width: 58vw;
-}
-.sawt-m-bar .sawt-hal-select { flex: 1 1 auto; min-width: 0; max-width: none; min-height: 44px; }
-/* «المزيد» — بابُ عُدّةِ التهيئة، فلا تُفتح إلّا بطلب */
-.sawt-m-more {
-  flex: none; width: 44px; height: 44px; border-radius: 999px; padding: 0;
-  border: 1px solid var(--line); background: var(--panel); color: var(--ink-2);
-  font-size: 19px; line-height: 1; cursor: pointer;
-}
-.sawt-m-more.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-/* «ابدأ» في الشريط — فيعرف القارئُ كيف يبدأ بلا أن يُستوقَف */
-.sawt-m-start {
-  flex: none; min-height: 44px; padding: 0 20px; border-radius: 999px; border: none;
-  background: var(--accent); color: #fff; font-family: inherit; font-size: 16px;
-  font-weight: 700; cursor: pointer;
-}
-.sawt-m-start:disabled { background: var(--muted); cursor: not-allowed; }
-/* اللوحُ المنفتحُ عن الشريط: يدفع النصَّ ولا يغطّيه، ولا طمسَ فيه ألبتّة */
-.sawt-m-panel {
-  flex: none; max-height: 56dvh; overflow-y: auto; overscroll-behavior: contain;
-  background: var(--panel); border-bottom: 1px solid var(--line); padding: 12px 14px 18px;
-}
-.sawt-m-panel > :first-child { margin-top: 0; }
-.sawt-m-panel .sawt-warn { margin-top: 0; }
-.sawt-big .sawt-w { font-size: 1.22em; }
-.sawt-text-wait { flex: 1; }
-
-/* ما بعد الختام: شاشةٌ مستقلّةٌ مصمتة — والتلاوةُ قد انتهت فلا قرآنَ تحتها
-   يُطمس (ميثاقُ الوجه §١٣) */
-.sawt-sheet {
-  position: absolute; inset: 0; background: var(--bg);
-  display: flex; align-items: flex-end; z-index: 5;
-}
-.sawt-sheet-in {
-  width: 100%; max-height: 100dvh; overflow-y: auto; overscroll-behavior: contain;
-  background: var(--panel); border-top: 1px solid var(--line); border-radius: 18px 18px 0 0;
-  padding: 18px 16px calc(26px + env(safe-area-inset-bottom, 0px));
-}
-
-.sawt-h1 { font-family: var(--font-quran); color: var(--accent); font-size: 30px; margin: 8px 0 4px; line-height: 1.5; }
-.sawt-h2 { font-size: 17px; color: var(--ink-2); margin: 22px 0 8px; }
-.sawt-lede { margin: 0 0 16px; }
-.sawt-note { font-size: 15px; margin: 8px 0; line-height: 1.75; }
-
-.sawt-warn {
-  background: var(--gold-soft); border: 1px solid var(--gold); border-radius: var(--radius);
-  padding: 12px 14px; font-size: 14px; line-height: 1.9; color: var(--ink); margin: 14px 0;
-}
-.sawt-warn-hard { background: color-mix(in srgb, var(--danger) 10%, var(--panel)); border-color: var(--danger); }
-
-.sawt-segs { display: flex; flex-wrap: wrap; gap: 8px; }
-/* أدواتُ التتبّع على سلّم الميثاق: ≥ ٤٤px لمسًا و≥ ١٥px نصًّا */
-.sawt-seg {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
-  min-height: 44px; padding: 0 16px; cursor: pointer; color: var(--ink);
-  font-family: inherit; font-size: 15px;
-}
-.sawt-seg.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 700; }
-
-.sawt-check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; color: var(--ink-2); margin: 18px 0; line-height: 1.75; min-height: 44px; }
-.sawt-check input { width: 22px; height: 22px; margin-top: 4px; flex: none; accent-color: var(--accent); }
-
-.sawt-start {
-  display: block; width: 100%; margin: 18px 0 6px; padding: 18px;
-  background: var(--accent); color: #fff; border: none; border-radius: var(--radius);
-  font-size: 19px; font-weight: 700; cursor: pointer; font-family: inherit;
-}
-.sawt-start:disabled { background: var(--muted); cursor: not-allowed; }
-
-/* ── التلاوة ── */
-.sawt-run { min-height: 100dvh; background: var(--bg); display: flex; flex-direction: column; }
-.sawt-run-bar {
-  position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px calc(10px); background: var(--bg); border-bottom: 1px solid var(--line);
-}
-.sawt-where { font-family: var(--font-quran); color: var(--accent); font-size: 17px; font-weight: 700; }
-.sawt-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); margin-inline-end: auto; }
-.sawt-dot-listening { background: var(--accent); }
-.sawt-dot-restarting, .sawt-dot-starting { background: var(--gold); }
-.sawt-dot-denied, .sawt-dot-error, .sawt-dot-unsupported { background: var(--danger); }
-.sawt-skip, .sawt-end {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
-  padding: 7px 15px; cursor: pointer; color: var(--ink-2); font-family: inherit; font-size: 14px;
-}
-
-/* ═══ **السردُ على هيئة المصحف** (رصدُ المالك ١٤ أغسطس · ص-م٤ §٤) ═══
-   **بنصّه:** «مُزاحٌ للوسط منصَّف… وكلُّ آيةٍ تبدأ سطرًا جديدًا — غريبٌ على نصّ
-   القرآن». **والعلّةُ** كانت ههنا: `text-align: center` مع فقرةٍ لكلّ آية.
-   **والعلاجُ يُقتبس ولا يُخترع**: نسقُ `.mushaf-page .quran` نفسُه — تسويةٌ
-   `justify` وآخرُ سطرٍ متوسّط، فيصير سيلًا متّصلًا تفصل آياتِه علاماتُها. */
-.sawt-text {
-  flex: 1; padding: 16px 18px 55vh; font-family: var(--font-quran);
-  font-size: clamp(27px, 5.6vw, 42px); line-height: 2.25;
-  text-align: justify; text-align-last: center;
-}
-/* رأسُ السورة فاصلٌ بيّنٌ في السيل — سطرٌ لنفسه، ولا يُنصَّف معه النصّ */
-.sawt-end { height: 1px; }
-.sawt-w { transition: color 120ms linear, background-color 120ms linear; }
-.sawt-past { color: var(--muted); }
-.sawt-next { color: var(--ink); }
-/* المؤشّرُ هادئ: لهجةٌ لا إنذار — ولا أحمرَ في هذه الصفحة ألبتّة.
-   **ولا يُرسم شيءٌ خارجَ صندوق حرفٍ قرآنيّ** (ميثاقُ الوجه — وبوّابتُه تحرسه):
-   كان ههنا `box-shadow` بانتشار ٤px يمدُّ لونًا مصمتًا **فوق أوّل الكلمة التالية**
-   (مقيسًا: صندوقُ المؤشّر ينتهي عند ٢٨١٫٩ وجارتُه تبدأ عندها، فالأربعةُ تقع على
-   حرفها) — عيبٌ رصده المالكُ في الفحص الحيّ ١٤ أغسطس. فصار التنفُّسُ **حشوًا داخل
-   الصندوق**، ويُقابله هامشٌ سالبٌ مساوٍ **فلا يزحف السطرُ كلّما تقدّم المؤشّر** —
-   والزحفُ في نصٍّ يُتلى أسوأُ من التظليل. و`box-decoration-break: clone` لتسلمَ
-   الكلمةُ المنقسمةُ على سطرين. */
-.sawt-now {
-  color: var(--accent); background: var(--accent-soft); border-radius: 6px;
-  padding-inline: 3px; margin-inline: -3px;
-  -webkit-box-decoration-break: clone; box-decoration-break: clone;
-}
-/* الحجابُ في وضع الكشف: يبقى موضعُ الكلمة وطولُها ولا يُقرأ حرفُها */
-.sawt-veil { color: transparent; border-bottom: 2px dotted var(--line); }
-.sawt-veil.sawt-now { background: transparent; border-bottom-color: var(--accent); }
-
-/* ── بعد الختام ── */
-.sawt-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin: 14px 0; }
-.sawt-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.sawt-table td { padding: 9px 6px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.7; }
-.sawt-table tr:last-child td { border-bottom: none; }
-.sawt-table td:first-child { color: var(--ink-2); white-space: nowrap; }
-.sawt-table td.ok { color: var(--accent); font-weight: 700; white-space: nowrap; }
-.sawt-table td.no { color: var(--danger); font-weight: 700; white-space: nowrap; }
-.sawt-felt { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
-.sawt-copy { margin-top: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 8px 18px; cursor: pointer; color: var(--ink-2); font-family: inherit; font-size: 14px; }
-.sawt-places { list-style: none; padding: 0; margin: 0; }
-.sawt-places li { display: flex; gap: 10px; flex-wrap: wrap; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
-.sawt-places li:last-child { border-bottom: none; }
-.sawt-place-ref { font-family: var(--font-quran); color: var(--accent); min-width: 120px; }
-.sawt-place-note { color: var(--ink-2); }
-.sawt-quiet { text-align: center; padding: 22vh 0; }
-.sawt-quiet-word { font-family: var(--font-quran); font-size: 30px; color: var(--accent); margin-bottom: 26px; }
-.sawt-select { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; min-height: 44px; padding: 0 14px; color: var(--ink); font-family: inherit; font-size: 15px; }
-.sawt-hint { padding: 0 18px 14px; font-size: 15px; line-height: 1.8; text-align: center; }
-/* **سطرُ «تتابع من موضعك؟»** (ج٩ §٣) — خفيفٌ في الصفحة لا لوحٌ فوقها، ولا يُطمس
-   به متنٌ ولا يُعترض به قارئ؛ ويُهمَل بلا أثرٍ فيبقى السطحُ على صفحته. */
-.sawt-resume-ask {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: calc(100% - 36px); margin: 0 18px 12px; min-height: 44px;
-  padding: 0 14px; border: 1px solid var(--line); border-radius: 999px;
-  background: var(--panel-2); color: var(--ink-2); font-size: 15px; cursor: pointer;
-}
-.sawt-resume-ask:active { background: var(--accent-soft); }
-.sawt-resume-where { font-family: var(--font-quran); color: var(--accent); font-size: 16px; }
-.sawt-surah {
-  display: block; font-size: 17px; font-family: var(--font-quran);
-  color: var(--mushaf-title); letter-spacing: .02em;
-  margin: 22px auto 10px; padding: 4px 0 5px; max-width: 70%;
-  border-top: 1px solid var(--mushaf-title); border-bottom: 1px solid var(--mushaf-title);
-  text-align: center; text-align-last: center;
-}
 
 /* ═══ سطرُ «تجدّدت هيئةُ الصفحات» — يُعرض مرّةً ثمّ لا يعود (ص-م٤ §٥ب) ═══
    **سطرٌ في الصفحة لا لوحٌ فوقها** (ميثاقُ الوجه §١٣): خفيفٌ يُهمَل بلا أثر،
@@ -3268,44 +3041,8 @@ body.sawt-page { overflow: hidden; }
   background: none; border: 1px solid var(--line); color: var(--muted); font-size: 15px;
 }
 
-/* ═══ سطحُ القارئ وعُدّةُ القياس — بابٌ واحدٌ يفصلهما (ص-م٤ §٠) ═══
-   الصفحةُ وُلدت مسبارًا فبقيت لغةُ المسبار فيها. **ولا تُحذف العُدّة** — بها
-   يُقاس المحرّكان وتُعاد تشغيلاتُ المحكّ — وإنّما تُنقل خلف بابٍ مسمًّى **بلا
-   لغة أدواتٍ في اسمه**، لا يُفتح إلّا بطلب. */
-.sawt-fahs-door {
-  display: block; margin: 20px 0 0; min-height: 44px; padding: 0 18px;
-  border-radius: 999px; cursor: pointer; font-family: inherit; font-size: 15px;
-  background: transparent; border: 1px dashed var(--line); color: var(--muted);
-}
-.sawt-fahs-door.on { border-style: solid; border-color: var(--accent); color: var(--accent); }
-.sawt-fahs { margin-top: 10px; padding-top: 4px; border-top: 1px solid var(--line); }
 
-/* تصفيرُ الموضع — مخرجٌ صريحٌ لا يُخبَّأ (§٣) */
-.sawt-reset { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
 
-/* إشارةُ الالتماس — هادئةٌ في الشريط، لا شاشةَ ولا لوح (§٢/٤) */
-.sawt-seek {
-  margin: 0; padding: 4px 12px; font-size: 15px; color: var(--muted);
-  font-family: var(--font-ui); text-align: center; white-space: nowrap;
-}
-.sawt-run-bar .sawt-seek { padding: 0; }
-/* «تقبّل الله» صارت أوّلَ ما يراه القارئُ بعد الختام في الأحوال كلِّها */
-.sawt-after-word { margin: 10px 0 18px; text-align: center; }
-
-/* بنكُ تمارين الأحكام — مواضعُ في النصّ لا حكمٌ على تلاوة (ص-م٤ §٥هـ/٢) */
-.sawt-bank { margin-top: 14px; }
-.sawt-bank-row {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 15px;
-}
-.sawt-bank-row:last-child { border-bottom: none; }
-.sawt-bank-name { font-weight: 700; min-width: 92px; }
-.sawt-bank-spots { display: flex; flex-wrap: wrap; gap: 6px; margin-inline-start: auto; }
-.sawt-bank-spot {
-  min-height: 44px; padding: 0 12px; border-radius: 999px; cursor: pointer;
-  background: var(--panel); border: 1px solid var(--line);
-  color: var(--ink-2); font-family: var(--font-quran); font-size: 15px;
-}
 
 /* **سطرُ العودة إلى الموضع** (ج٤ §٣/٤) — خفيفٌ في الصفحة لا لوحٌ فوقها، يُهمَل
    وينصرف من نفسه. ولا زرَّ إغلاقٍ يُطلب من قارئٍ فتح المصحفَ ليقرأ. */
@@ -3318,32 +3055,33 @@ body.sawt-page { overflow: hidden; }
 @keyframes resumed-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .reader-resumed { animation: none; } }
 
-/* ═══ **التتبّعُ مركَّبًا في سطح القراءة** (ج٤ §١) ═══
-   سطحُ التتبّع طبقةٌ ثابتةٌ تملأ الشاشة؛ ومركَّبًا في المصحف **يبدأ تحت الرأس
-   الواحد** — فالرأسُ رأسُ التطبيق لا رأسٌ ثانٍ للتتبّع (§٢). **وأثناء التلاوة**
-   يُخفى الرأسُ (`sawt-live`) فيملأ السطحُ الشاشةَ: القرآنُ وحدَه، ثلاثةٌ لا
-   رابعَ لها. */
-.sawt-m.sawt-embed {
-  /* **بين الرأس الواحد والشريط السفليّ** — فهو حالٌ داخل التطبيق لا صفحةٌ تحلّ
-     محلَّه؛ وكلاهما مقيسٌ من نفسِه لا مقدَّرٌ في الشيفرة. */
-  inset-block-start: var(--topbar-h, 56px);
-  inset-block-end: var(--tabbar-h, 0px);
-  /* **ويعلو متنَ المصحف**: صفحاتُ المصحف عناصرُ موضوعةٌ (`position: relative`)
-     تلي هذا في الشجرة، فلولا رتبةٌ صريحةٌ لَرسمت فوقه ورُئي النصّان معًا.
-     ورتبتُه دون رتبة الرأس (٤٠) — فالرأسُ يبقى فوقَه ظاهرًا. */
-  z-index: 35;
-}
-/* وأثناء التلاوة: يملأ الشاشةَ — القرآنُ وحدَه، ثلاثةٌ لا رابعَ لها */
-body.sawt-live .sawt-m.sawt-embed { inset-block: 0; }
-/* والميكروفونُ في الرأس: عارٍ كأخواته، وحبرُ الهويّة يقول إنّ التتبّعَ قائم */
-.rd-mic-btn.on { color: var(--accent); }
 
-/* **وأثناء التلاوة ينزلق الرأسُ ولا يقفز** (ج٤ §٢): البابُ القائمُ بنفسه يُخفي
-   القشرةَ بـ`display: none` — **و`display` لا يقبل انتقالًا**، فيقفز. ومركَّبًا
-   في سطح القراءة يُدفَع بمقدار الانسحاب نفسِه (`--shell-p`) بتوقيته الواحد
-   (ج٨ §٣) — فيغيب الرأسُ والشريطُ كما يغيبان بالتمرير سواءً بسواء. */
-@media (max-width: 760px) {
-  body.reading-surface.sawt-live { --shell-p: 1; }
-  body.reading-surface.sawt-live .topbar { display: flex; }
-  body.reading-surface.sawt-live .tabbar { display: flex; }
+
+/* ═══════════ بطاقةُ العبور — `/tatabbu` بعد أن انتقل التتبّع (ف٤ §١) ═══════════
+   **لا يُكسر رابطٌ منشور**: المسارُ باقٍ، وخلفه بطاقةٌ تقول أين صار البابُ
+   وتفتحه عند موضع القارئ. **وهي صفحةٌ عاديّةٌ بهيكل التطبيق** — لا سطحُ تلاوةٍ
+   يُجرَّد له الوجه. ومقاييسُها مقاييسُ الميثاق: لمسٌ ≥٤٤ ونصٌّ ≥١٥. */
+.ubur { display: flex; justify-content: center; }
+.ubur-card {
+  max-width: 620px; width: 100%; margin: 6vh 0 0;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 26px 22px 22px;
+}
+.ubur-h1 {
+  font-family: var(--font-quran); color: var(--accent);
+  font-size: 30px; line-height: 1.55; margin: 0 0 14px;
+}
+.ubur-lede { margin: 0 0 12px; font-size: 16px; line-height: 1.9; color: var(--ink-2); }
+.ubur-go {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 48px; margin-top: 10px; padding: 0 22px;
+  border-radius: 999px; background: var(--accent); color: #fff;
+  font-size: 16px; font-weight: 700; text-decoration: none;
+}
+.ubur-go:hover { text-decoration: none; opacity: .92; }
+.ubur-where { margin: 12px 0 0; font-size: 15px; line-height: 1.9; color: var(--ink-2); }
+.ubur-where b { color: var(--accent); font-size: 19px; }
+.ubur-back {
+  display: inline-flex; align-items: center; min-height: 44px;
+  margin-top: 14px; font-size: 15px; color: var(--ink-2);
 }

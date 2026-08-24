@@ -60,8 +60,6 @@ export function ayahsCount(n: number): string {
 const AR: Record<string, string> = {
   "nav.today": "اليوم",
   "nav.reader": "المصحف",
-  "nav.tatabbu": "التتبّع",
-  "nav.tatabbu.hint": "التتبّع: تتلو فيجري المؤشّرُ مع صوتك في المصحف",
   "nav.mawdui": "المواضيع",
   "nav.furuq": "فروق التنزيل",
   "nav.lisan": "الفروق اللغوية",
@@ -223,8 +221,6 @@ const AR: Record<string, string> = {
 const EN: Record<string, string> = {
   "nav.today": "Today",
   "nav.reader": "Reader",
-  "nav.tatabbu": "Follow along",
-  "nav.tatabbu.hint": "Follow along: recite, and the cursor tracks your voice through the mushaf",
   "nav.mawdui": "Topics",
   "nav.furuq": "Furūq",
   "nav.lisan": "Distinctions",
