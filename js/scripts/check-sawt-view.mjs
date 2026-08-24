@@ -48,7 +48,8 @@ const log = (s) => console.error(`[${String(Math.round((Date.now() - t0) / 1000)
 
 /** **السقفُ المعلَن يُقرأ من موضع إعلانه** — فلا رقمان يفترقان في صمت */
 function declaredCap() {
-  const src = readFileSync(join(STUDIO, "src", "lib", "sawt", "script.ts"), "utf8");
+  // شيفرةُ المسبار في الحزمة المشتركة منذ التقسيم الصامت (ف١)
+  const src = readFileSync(join(ROOT, "js", "packages", "quran-core", "src", "lib", "sawt", "script.ts"), "utf8");
   const m = src.match(/export const RENDER_MAX_WORDS = (\d+)/);
   return m ? Number(m[1]) : null;
 }

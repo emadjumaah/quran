@@ -20,7 +20,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const SAWT = join(ROOT, "js", "apps", "studio", "src", "lib", "sawt");
+/** شيفرةُ المسبار ومحلِّلُ العربيّة في الحزمة المشتركة منذ التقسيم الصامت (ف١) */
+const SAWT = join(ROOT, "js", "packages", "quran-core", "src", "lib", "sawt");
 const GATE = join(ROOT, "js", "scripts", "check-tatabbu.mjs");
 const REPORT = join(ROOT, "js", "data", "gates", "TATABBU.json");
 
@@ -29,7 +30,7 @@ const P = {
   script: join(SAWT, "script.ts"),
   view: join(ROOT, "js", "apps", "studio", "src", "views", "Tatabbu.tsx"),
   engines: join(SAWT, "engines.ts"),
-  analyzer: join(ROOT, "js", "apps", "studio", "src", "lib", "arabicSearch.ts"),
+  analyzer: join(ROOT, "js", "packages", "quran-core", "src", "lib", "arabicSearch.ts"),
 };
 
 const read = (p) => readFileSync(p, "utf8");

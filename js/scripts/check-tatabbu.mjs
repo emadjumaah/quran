@@ -41,7 +41,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const SAWT = join(ROOT, "js", "apps", "studio", "src", "lib", "sawt");
+/** شيفرةُ المسبار ومحلِّلُ العربيّة في الحزمة المشتركة منذ التقسيم الصامت (ف١) */
+const SAWT = join(ROOT, "js", "packages", "quran-core", "src", "lib", "sawt");
 const OUT = join(ROOT, "js", "data", "gates", "TATABBU.json");
 
 const read = (p) => readFileSync(p, "utf8");
@@ -66,7 +67,7 @@ const fail = (check, detail) => failures.push({ check, detail });
 
 /* ═══════════ المُطبِّعُ مجتزأً من مصدره الحيّ ═══════════ */
 
-const ANALYZER = join(ROOT, "js", "apps", "studio", "src", "lib", "arabicSearch.ts");
+const ANALYZER = join(ROOT, "js", "packages", "quran-core", "src", "lib", "arabicSearch.ts");
 const analyzerSrc = read(ANALYZER);
 
 function liveNormalizer() {

@@ -19,7 +19,7 @@
  *
  * Reads quran-twins.json + quran-kg.db. Writes:
  *   findings/FURUQ.md                 summary + category examples (human)
- *   js/apps/studio/public/furuq.json  aligned-diff catalog (app layer)
+ *   js/packages/quran-assets/assets/furuq.json  aligned-diff catalog (app layer)
  * Usage: node scripts/compute-furuq.mjs
  */
 import { DatabaseSync } from "node:sqlite";
@@ -32,7 +32,9 @@ const ROOT = path.resolve(HERE, "../..");
 const DB = path.join(ROOT, "quran-kg.db");
 const TWINS = path.join(ROOT, "quran-twins.json");
 const MD = path.join(ROOT, "findings/FURUQ.md");
-const APP = path.join(ROOT, "js/apps/studio/public/furuq.json");
+/** فروقُ التنزيل أصلُها في الحزمة المشتركة منذ التقسيم الصامت (ف١) — تُكتب
+ *  ههنا مرّةً، وتنسخها البناءاتُ إلى أصل كلِّ تطبيق */
+const APP = path.join(ROOT, "js/packages/quran-assets/assets/furuq.json");
 
 // —— المعاملات المعلنة ——————————————————————————————————————————————
 const NEAR_BAR = 0.6; // أدنى حصة تطابق lemma ليُعرَض الزوج محاذًى كلمةً كلمة
@@ -351,5 +353,5 @@ for (const c of CAT_ORDER) {
 }
 fs.writeFileSync(MD, md);
 console.log(`\n→ findings/FURUQ.md (${(fs.statSync(MD).size / 1024).toFixed(0)} KB)`);
-console.log(`→ public/furuq.json (${(fs.statSync(APP).size / 1024).toFixed(0)} KB)`);
+console.log(`→ quran-assets/furuq.json (${(fs.statSync(APP).size / 1024).toFixed(0)} KB)`);
 if (famousMiss) console.log(`⚠ ${famousMiss} من الأزواج الشهيرة غائب — يُراجَع قبل النشر`);

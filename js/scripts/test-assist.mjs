@@ -13,6 +13,7 @@
  */
 import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
+import { assetPath } from "../packages/quran-assets/assets.mjs";
 
 const ROOT = "/Volumes/data/new-projects/quran";
 const env = fs.readFileSync(`${ROOT}/.env`, "utf-8");
@@ -112,6 +113,9 @@ function runTool(name, args) {
 // ——— سجل الطبقات (مرآة src/layers.ts على الملفات الحقيقية) ———
 const PUB = `${ROOT}/js/apps/studio/public`;
 const pubJson = (f) => JSON.parse(fs.readFileSync(`${PUB}/${f}`, "utf-8"));
+/** فروقُ التنزيل أصلُها في الحزمة المشتركة منذ التقسيم الصامت (ف١) — تُقرأ
+ *  من مصدرها لا من المنسوخ في أصل مشكاة */
+const furuqJson = () => JSON.parse(fs.readFileSync(assetPath("furuq.json"), "utf-8"));
 const manifest = pubJson("rag-manifest.json");
 const bare = (s) => String(s).replace(TASHKEEL, "").replace(/\u0671/g, "ا").trim();
 const AYA_RE = /^\d{1,3}:\d{1,3}$/;
@@ -181,7 +185,7 @@ function layerOfMock(layer, anchor) {
   anchor = resolveAyaMock(anchor) ?? String(anchor).trim();
   if (id === "furuq") {
     if (!AYA_RE.test(anchor)) return { error: "المرسى آيةٌ بصيغة رقم_السورة:رقم_الآية" };
-    const hits = pubJson("furuq.json").furuq.filter((p) => p.a === anchor || p.b === anchor).slice(0, 3);
+    const hits = furuqJson().furuq.filter((p) => p.a === anchor || p.b === anchor).slice(0, 3);
     if (!hits.length) return { layer: id, found: false, note: `لا زوجَ متشابهٍ عند ${anchor}` };
     const vAt = (r) => { const [s, a] = r.split(":").map(Number); return verseU(s, a) || verse(s, a) || ""; };
     return {
@@ -309,7 +313,7 @@ function hintsMock(kind, key) {
       if (card) out.push(`بطاقةُ بيانٍ محررة «${card.title}» — layer_of(bayan, ${card.title})`);
     } else {
       const a = key.trim();
-      const pair = pubJson("furuq.json").furuq.find((p) => p.a === a || p.b === a);
+      const pair = furuqJson().furuq.find((p) => p.a === a || p.b === a);
       if (pair) out.push(`لهذا الموضع نظيرٌ متشابهٌ محسوب (${pair.a} ↔ ${pair.b}) — layer_of(furuq, ${a})`);
       const u = unitFor(a);
       if (u) for (const bab of pubJson("topics-v1.json").babs) {

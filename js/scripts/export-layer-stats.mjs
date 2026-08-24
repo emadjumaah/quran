@@ -7,6 +7,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assetPath } from "../packages/quran-assets/assets.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PUB = path.resolve(HERE, "../apps/studio/public");
@@ -14,7 +15,9 @@ const read = (f) => JSON.parse(fs.readFileSync(path.join(PUB, f), "utf8"));
 
 const jawami = read("jawami.json").meta ?? {};
 const muhkamat = read("muhkamat.json").meta ?? {};
-const furuq = read("furuq.json").meta ?? {};
+/** فروقُ التنزيل أصلُها في الحزمة المشتركة منذ التقسيم الصامت (ف١) — تُقرأ
+ *  من مصدرها لا من المنسوخ في أصل مشكاة */
+const furuq = JSON.parse(fs.readFileSync(assetPath("furuq.json"), "utf8")).meta ?? {};
 const verseIndex = read("verse-index.json").meta ?? {};
 // mawdui.json merged into the unified verse index — its stats live there now
 const mawdui = { sections: verseIndex.sections, topics: verseIndex.topics, verses: verseIndex.verses };

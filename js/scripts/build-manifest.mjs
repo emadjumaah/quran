@@ -10,6 +10,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { assetPath } from "../packages/quran-assets/assets.mjs";
 
 const PUB = "/Volumes/data/new-projects/quran/js/apps/studio/public";
 const read = (f) => JSON.parse(fs.readFileSync(path.join(PUB, f), "utf-8"));
@@ -85,7 +86,9 @@ const books = BOOKS.map((b) => {
 });
 
 // ——— الطبقات المحسوبة/المهيكلة (دفعة م١ — والقادم يُضاف قيودًا هنا) ———
-const furuq = read("furuq.json");
+/** فروقُ التنزيل أصلُها في الحزمة المشتركة منذ التقسيم الصامت (ف١) — تُقرأ
+ *  من مصدرها لا من المنسوخ في أصل مشكاة */
+const furuq = JSON.parse(fs.readFileSync(assetPath("furuq.json"), "utf-8"));
 const lexnet = read("lexnet.json");
 const wujuh = read("wujuh.json");
 const amthal = read("amthal.json");

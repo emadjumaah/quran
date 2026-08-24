@@ -25,16 +25,21 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ORT_DIR, ORT_FILES, ortSource, sha256 } from "../apps/studio/ort-assets.mjs";
+import { ORT_FILES, ortDir, ortSource, sha256 } from "../packages/quran-core/ort-assets.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SRC = join(ROOT, "js", "apps", "studio", "src");
+/** شيفرةُ المسبار (`lib/…`) في الحزمة المشتركة منذ التقسيم الصامت (ف١)،
+ *  وصفحتُه وأحكامُه في مشكاة — فيُقرأ كلٌّ من موضعه */
+const CORE = join(ROOT, "js", "packages", "quran-core", "src");
+/** وعُدّةُ التشغيل تُنسخ إلى أصل كلِّ تطبيق؛ والمفحوصُ ههنا أصلُ مشكاة */
+const ORT_DIR = ortDir(join(ROOT, "js", "apps", "studio", "public"));
 const OUT = join(ROOT, "js", "data", "gates", "SAWT-ENGINE.json");
 
 const failures = [];
 const notes = [];
 const fail = (check, detail) => failures.push({ check, detail });
-const read = (p) => readFileSync(join(SRC, p), "utf8");
+const read = (p) => readFileSync(join(p.startsWith("lib/") ? CORE : SRC, p), "utf8");
 /** يُسقط التعليقاتِ كي لا يُصطاد ذِكرُ الممنوع في شرحِ منعه */
 const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 

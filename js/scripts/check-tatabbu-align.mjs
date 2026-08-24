@@ -25,7 +25,8 @@ import { pathToFileURL } from "node:url";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const SRC = join(ROOT, "js", "apps", "studio", "src");
+/** شيفرةُ المسبار ومحلِّلُ العربيّة في الحزمة المشتركة منذ التقسيم الصامت (ف١) */
+const SRC = join(ROOT, "js", "packages", "quran-core", "src");
 const SAWT = join(SRC, "lib", "sawt");
 
 /* ═══════════ تحميلُ المحاذاة الحيّة كما هي ═══════════

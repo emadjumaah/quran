@@ -13,6 +13,7 @@ import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assetPath } from "../packages/quran-assets/assets.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PUB = path.resolve(HERE, "../apps/studio/public");
@@ -70,7 +71,9 @@ addSheet("الحقول الدلالية",
   [10, 70]);
 
 // ── فروق التنزيل ──
-const fr = readJson("furuq.json");
+/** فروقُ التنزيل أصلُها في الحزمة المشتركة منذ التقسيم الصامت (ف١) — تُقرأ
+ *  من مصدرها لا من المنسوخ في أصل مشكاة */
+const fr = JSON.parse(fs.readFileSync(assetPath("furuq.json"), "utf8"));
 const catLabel = (c) => (c === "زيادة/نقص" ? "زيادة وإيجاز" : c); // إيجاز, not «نقص» (see furuq.ts)
 const frRows = [["الآية الأولى", "الآية الثانية", "المستوى", "التصنيف", "نصّ الأولى", "نصّ الثانية"]];
 for (const d of fr.furuq) {

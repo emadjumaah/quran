@@ -14,6 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
+import { assetPath } from "../packages/quran-assets/assets.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../..");
@@ -22,7 +23,9 @@ const rd = (p) => JSON.parse(fs.readFileSync(p, "utf-8"));
 const mawdui = rd(path.join(PUB, "mawdui.json"));
 const jawami = rd(path.join(PUB, "jawami.json"));
 const muhk = rd(path.join(PUB, "muhkamat.json"));
-const furuq = rd(path.join(PUB, "furuq.json"));
+/** فروقُ التنزيل أصلُها في الحزمة المشتركة منذ التقسيم الصامت (ف١) — تُقرأ
+ *  من مصدرها لا من المنسوخ في أصل مشكاة */
+const furuq = rd(assetPath("furuq.json"));
 
 const db = new DatabaseSync(path.join(ROOT, "quran-kg.db"), { readOnly: true });
 const allLocs = db.prepare("SELECT location FROM ayah ORDER BY ayah_id").all().map((r) => r.location);

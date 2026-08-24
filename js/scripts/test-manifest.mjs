@@ -8,6 +8,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { assetPath } from "../packages/quran-assets/assets.mjs";
 
 const PUB = "/Volumes/data/new-projects/quran/js/apps/studio/public";
 const MAIN = "/Volumes/data/new-projects/quran/js/apps/studio/src/main.tsx";
@@ -61,7 +62,9 @@ for (const l of m.layers) {
 }
 
 // ——— بنى الطبقات الخمس (عينات) ———
-const furuq = read("furuq.json");
+/** فروقُ التنزيل أصلُها في الحزمة المشتركة منذ التقسيم الصامت (ف١) — تُقرأ
+ *  من مصدرها لا من المنسوخ في أصل مشكاة */
+const furuq = JSON.parse(fs.readFileSync(assetPath("furuq.json"), "utf-8"));
 ok(Array.isArray(furuq.furuq) && furuq.furuq[0].a && furuq.furuq[0].b && Array.isArray(furuq.furuq[0].ops), "furuq: بنية الأزواج {a,b,ops}");
 const lexnet = read("lexnet.json");
 ok(lexnet.roots && lexnet.fields && Object.values(lexnet.roots)[0].near, "lisan: بنية {roots{near},fields}");

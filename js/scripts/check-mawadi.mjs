@@ -29,6 +29,8 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SRC = join(ROOT, "js", "apps", "studio", "src");
+/** وطبقةُ المواضع في الحزمة المشتركة منذ التقسيم الصامت (ف١) */
+const CORE = join(ROOT, "js", "packages", "quran-core", "src");
 const OUT = join(ROOT, "js", "data", "gates", "MAWADI.json");
 
 const failures = [];
@@ -47,7 +49,7 @@ class MemStore {
 const store = new MemStore();
 globalThis.localStorage = store;
 
-const M = await import(join(SRC, "lib", "mawadi.ts"));
+const M = await import(join(CORE, "lib", "mawadi.ts"));
 
 /* ═══════════ ١ — أربعةُ أحوالٍ بأربعة مواضع ═══════════ */
 
@@ -100,7 +102,7 @@ else notes.push("والجديدُ يعلو القديمَ ولا يكتب فيه
 
 /* ═══════════ ٤ — الختمةُ تقدّمٌ لا نقطة (فحصٌ نصّيّ) ═══════════ */
 
-const layer = readFileSync(join(SRC, "lib", "mawadi.ts"), "utf8");
+const layer = readFileSync(join(CORE, "lib", "mawadi.ts"), "utf8");
 const bookmarks = readFileSync(join(SRC, "bookmarks.ts"), "utf8");
 const PROG_KEY = /PROG_KEY\s*=\s*"([^"]+)"/.exec(bookmarks)?.[1] ?? null;
 if (!PROG_KEY) fail("مفتاحُ تقدّم الختمة", "لم يُقرأ `PROG_KEY` من bookmarks.ts");
