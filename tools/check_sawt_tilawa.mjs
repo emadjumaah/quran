@@ -31,14 +31,24 @@ const SRC = `${ROOT}/js/apps/studio/src`;
    وفاتت هذه البوّابةُ تحديثَ ف١ لأنها تقرأ عبر متغيّرٍ لا استيراد. */
 const CORE = `${ROOT}/js/packages/quran-core/src`;
 
+/* تشذيبُ ف٤ (إدارة 2026-08-17): لوحةُ الجاهزيّة (`OfflineReadiness`) خرجت من مشكاة
+   مع سطح التتبّع — ففحوصُها **مُعلَّقةٌ بوقفٍ معلَنٍ** حتى يُبنى تنزيلُ الأوفلاين في
+   التلاوة فتعود على سطحه. وتبقى فاعلةً فحوصُ ما بقي: منطقُ الخزانة والتجزئة في
+   القلب (تستهلكه التلاوة)، والإسنادُ (شرطُ رخصةٍ) حيث يُسمع الصوتُ في مشكاة،
+   وجدولُ الآي، ولا `\b`، ولا صوتَ في git. */
 const FILES = {
   tilawa: `${CORE}/lib/sawt/tilawa.ts`,
-  panel: `${SRC}/components/OfflineReadiness.tsx`,
   credit: `${SRC}/components/RecitationCredit.tsx`,
   audio: `${SRC}/components/AudioButton.tsx`,
   settings: `${SRC}/components/SettingsPanel.tsx`,
   index: `${CORE}/lib/sawt/mushafIndex.ts`,
 };
+/** فحوصٌ سطحُها زال — تُعلَن موقوفةً ولا تُحذف (فالحذفُ نسيان) */
+const SUSPENDED = new Set([
+  "اللوحةُ تقرأ الحالَ من `unitStates` وتُعيد القراءة",
+  "لا تنزيلَ يبدأ من نفسه",
+  "ثباتُ التخزين يُعرض بجوابه لا بوعد",
+]);
 
 /** لغةُ الأدوات — لا تظهر في نصٍّ يقرؤه القارئ */
 const TOOL_WORDS = [
@@ -149,7 +159,7 @@ check(
   "قاعدةُ المشروع: لا أسماءَ نماذجَ ولا مساراتٍ داخليّةٍ في صفحات القارئ",
   (s) => {
     const bad = [];
-    for (const file of ["panel", "credit", "audio"])
+    for (const file of ["credit", "audio"])
       for (const str of readerStrings(s[file]))
         for (const w of TOOL_WORDS)
           if (str.toLowerCase().includes(w.toLowerCase()) && !CREDIT_ALLOW.some((a) => str.includes(a)))
@@ -200,6 +210,10 @@ function load() {
 function run(sources, quiet = false) {
   let bad = 0;
   for (const c of checks) {
+    if (SUSPENDED.has(c.name)) {
+      if (!quiet) console.log(`⏸ موقوفٌ (سطحُه انتقل — يعود مع أوفلاين التلاوة): ${c.name}`);
+      continue;
+    }
     const fail = c.fn(sources);
     if (fail) bad++;
     if (!quiet) console.log(`${fail ? "✗" : "✓"} ${c.name}${fail ? ` — ${fail}` : ""}`);
@@ -212,8 +226,7 @@ const SABOTAGE = [
   ["الجاهزيّةُ محسوبةٌ من الخزانة", (s) => ({ ...s, tilawa: s.tilawa.replace("ready: have === ayat.length", "ready: true") })],
   ["تجزئةُ كلِّ ملفٍّ تُحسب وتُقابَل", (s) => ({ ...s, tilawa: s.tilawa.replace(/crypto\.subtle\.digest\("SHA-256"/, 'noop("SHA-256"') })],
   ["الإسنادُ حاضرٌ حيث يُسمع الصوت وحيث يُختار القارئ", (s) => ({ ...s, audio: s.audio.replaceAll("RecitationCredit", "Nothing") })],
-  ["ثباتُ التخزين يُعرض بجوابه لا بوعد", (s) => ({ ...s, panel: s.panel.replace(/قد يمحو النظامُ/g, "لا يمحو") })],
-  ["لا لغةَ أدواتٍ في المعروض", (s) => ({ ...s, panel: s.panel.replace('className="tlw">', 'className="tlw">{"يُنزَّل النموذجُ من huggingface الآن"}') })],
+  ["لا لغةَ أدواتٍ في المعروض", (s) => ({ ...s, audio: s.audio.replace(">", '>{"يُنزَّل النموذجُ من huggingface الآن"}', 1) })],
   ["جدولُ عدد الآي واحدٌ لا يتكرّر", (s) => ({ ...s, index: s.index.replace("7, 286,", "7, 285,") })],
 ];
 
@@ -221,6 +234,7 @@ const base = load();
 if (process.argv.includes("--selfcheck")) {
   let blind = 0;
   for (const [name, spoil] of SABOTAGE) {
+    if (SUSPENDED.has(name)) continue;
     const c = checks.find((x) => x.name === name);
     const caught = Boolean(c.fn(spoil(base)));
     console.log(`${caught ? "✓" : "✗"} ضبطٌ سالب: ${name}${caught ? " — اصطيد" : " — مرّ! الفحصُ أعمى"}`);
