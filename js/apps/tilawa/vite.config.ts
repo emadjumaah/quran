@@ -35,11 +35,20 @@ export default defineConfig({
         start_url: "/",
         display: "standalone",
         orientation: "portrait",
-        theme_color: "#fffdf9",
+        /* **أخضرُ الهويّة** (م٣ §١) — وهو لونُ المؤسسة في مشكاة نفسِه: يصبغ
+           شاشةَ الإقلاع التي يرسمها النظامُ وبطاقةَ التطبيق في مبدِّل المهامّ.
+           **ولا ينازع ميثاقَ الوجه §١١**: `theme-color` في الوسم هو الذي يوافق
+           خلفيّةَ الوضع ويتبدّل معه، وهذا وسمُ هويّةٍ لا وسمُ صفحة. */
+        theme_color: "#0b6e56",
         background_color: "#f7f4ee",
+        /* **نقطيّاتٌ لا SVG**: ما يُثبَّت على الأجهزة يقرؤه نظامُها لا متصفّحُنا
+           — وأندرويدُ يطلب ١٩٢ و٥١٢ ومقنَّعةً، وآبلُ لا تعرف SVG في أيقونتها.
+           ومصدرُها كلِّها `icons/icon.svg` المكتوبةُ بأيدينا. */
         icons: [
+          { src: "pwa-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "pwa-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "pwa-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
           { src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
-          { src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
         ],
       },
       workbox: {

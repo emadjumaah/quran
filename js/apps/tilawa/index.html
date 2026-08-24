@@ -3,13 +3,56 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- **يوافق خلفيّةَ الوضع الجاري** (ميثاقُ الوجه §١/١١) — وهذه قيمةُ الفاتح،
+         ويبدّلها ما دونَه من سطرٍ قبل الرسم ثمّ `applySettings` مع كلّ تبديل. -->
     <meta name="theme-color" content="#fffdf9" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-    <meta name="description" content="مصحفٌ يُقرأ ويُستمع إليه." />
+    <link rel="icon" href="/pwa-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="التلاوة" />
+    <meta name="description" content="مصحفٌ يُقرأ ويُستمع إليه، ويُسمَّع عليه الوردُ فيجري المؤشّرُ مع صوتك." />
     <title>التلاوة</title>
+    <script>
+      /**
+       * **وضعُ الصفحة قبل أوّل رسم** — فلا يرى الفاتحُ وثبةً من فاتحٍ إلى داكن.
+       * (ميثاقُ الوجه §١/١٠: قشرةٌ فوريّةٌ لا صفحةٌ بيضاءُ ثمّ دوّامة.)
+       *
+       * **ولا جدولَ ألوانٍ ثانيًا ههنا**: الوضعُ يوضع على الجذر، ثمّ يُقرأ لونُ
+       * القشرة `--panel` من الأنماط نفسِها ويوضع في `theme-color` — فمصدرُ اللون
+       * واحدٌ (`app.css`)، وإن لم تكن الأنماطُ قد وصلت بقي ما في الوسم أعلاه
+       * ثمّ صحّحه `applySettings` عند التركيب. ومفتاحُ الخزانة مفتاحُ
+       * `settings.ts` عينُه — ومن بدّله بدّلهما.
+       */
+      try {
+        var s = JSON.parse(localStorage.getItem("tilawa.settings.v1") || "{}");
+        var r = document.documentElement;
+        r.dataset.theme =
+          s.theme === "dark" || s.theme === "sepia" || s.theme === "light"
+            ? s.theme
+            : matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        if (s.font) r.dataset.quranFont = s.font;
+        if (s.scale) r.style.setProperty("--quran-scale", String(s.scale));
+        var panel = getComputedStyle(r).getPropertyValue("--panel").trim();
+        if (panel) document.querySelector('meta[name="theme-color"]').setAttribute("content", panel);
+      } catch (e) {
+        /* الجهازُ قد يمنع التخزين — لا يُبطل الإقلاع */
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- **شاشةُ الإقلاع** — خلفيّةُ الوضع وهلالُ الهويّة، **ولا نصَّ دعائيًّا**
+         ولا اسمَ تطبيقٍ يُقرأ ثمّ يزول. ويستبدلها ريأكت بأوّل رسم. -->
+    <div id="root">
+      <div class="tw-boot" aria-hidden="true">
+        <svg width="72" height="72" viewBox="0 0 512 512">
+          <path fill="currentColor" d="M313 118A76 76 0 1 0 313 250 67 67 0 0 1 313 118Z" />
+        </svg>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

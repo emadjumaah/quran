@@ -160,10 +160,38 @@ body.tw-immersive .tw-top { transition-timing-function: ease-in; }
      ههنا **في التطبيق لا في الحزمة**، فيستقيم الطرفان ولا يُمَسّ ما هو مشترك. */
   padding-inline: 12px;
 }
-.tw-loading, .tw-fail {
-  padding: 30vh 24px; text-align: center; color: var(--muted); font-size: 16px;
+.tw-fail {
+  padding: 30vh 24px; text-align: center; color: var(--ink-2); font-size: 16px;
 }
-.tw-fail { color: var(--ink-2); }
+
+/* ── **شاشةُ الإقلاع** (م٣ §١) ───────────────────────────────────────────
+   خلفيّةُ الوضع وهلالُ الهويّة لا غير — **ولا نصَّ دعائيًّا ولا دوّامةَ تحميل**
+   (ميثاقُ الوجه §١/١٠). وسمُها في `index.html` نفسِه فتُرسم مع أوّل بايت،
+   ويستبدلها ريأكت بأوّل تركيب. */
+.tw-boot {
+  position: fixed; inset: 0; z-index: 1;
+  display: grid; place-items: center;
+  background: var(--bg); color: var(--gold);
+}
+
+/* ── **هيكلُ انتظارٍ بمقاس المحتوى** ─────────────────────────────────────
+   بين شاشة الإقلاع وقيام المصحف يُجلب نصُّه (١٫٣ م.ب): **فيُرسم شكلُ الصفحة
+   لا فراغٌ ولا دوّامة** — إطارٌ وترويسةٌ ولوحةُ سورةٍ وأسطرُ متنٍ بمقاساتها،
+   فيقع المصحفُ في موضعه حين يصل ولا تثب الصفحة. **ولا حرفَ فيه يُقرأ**. */
+.tw-skeleton { padding-block: 8px; }
+.tw-sk-page {
+  border: 1px solid var(--line); border-radius: 14px;
+  background: var(--panel); padding: 10px 12px 18px;
+}
+.tw-sk-bar { border-radius: 999px; background: var(--panel-2); }
+.tw-sk-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.tw-sk-head .tw-sk-bar { height: 22px; }
+.tw-sk-line { height: calc(30px * var(--quran-scale, 1)); margin-block-end: 14px; }
+.tw-skeleton, .tw-sk-page { animation: tw-breathe 1.6s ease-in-out infinite; }
+@keyframes tw-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.62; } }
+@media (prefers-reduced-motion: reduce) {
+  .tw-skeleton, .tw-sk-page { animation: none; opacity: 0.8; }
+}
 
 /* سطرُ العودة — **لا يظهر إلّا لموضعٍ محفوظٍ فعلًا** (درسُ ج٩ §٤)، ويُقال حيث
    وقف القارئ لا في رأس سيلٍ لن يراه؛ **ثمّ ينصرف من نفسه** فلا يقيم فوق المصحف. */
@@ -217,6 +245,9 @@ body.tw-immersive .tw-top { transition-timing-function: ease-in; }
 .tw-grip { width: 40px; height: 4px; border-radius: 999px; background: var(--line); margin: 9px auto 4px; flex: none; }
 .tw-sheet h2 { margin: 2px 0 8px; font-size: 16px; font-weight: 600; color: var(--ink-2); }
 .tw-sheet-body { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+/* ذيلُ الورقة الثابت — لا يجري مع التمرير، وخطٌّ يفصله عمّا فوقه */
+.tw-sheet-foot { flex: none; padding-block-start: 8px; border-block-start: 1px solid var(--line); }
+.tw-sheet-foot > .tw-about-link { margin-top: 6px; }
 @keyframes tw-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes tw-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .tw-sheet, .tw-backdrop { animation: none; } }
@@ -269,6 +300,26 @@ body.tw-immersive .tw-top { transition-timing-function: ease-in; }
 .tw-modes button[aria-pressed="true"] { background: var(--panel); color: var(--accent); font-weight: 600; }
 .tw-note { margin: 10px 0 0; font-size: 15px; line-height: 1.7; color: var(--muted); }
 
+/* ── «عن التطبيق» وبابُ مشكاة ────────────────────────────────────────────
+   **ولا رابطَ مسطَّرٌ ولا «اضغط هنا»** (ميثاقُ الوجه §١/١٢): بابٌ مقاسُه مقاسُ
+   الأزرار، عليه عنوانُه وسطرُ ما وراءه — يُلمس كما تُلمس أزرارُ الورقة سواء. */
+.tw-about-open {
+  display: block; width: 100%; min-height: 44px; margin-top: 14px;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel-2);
+  color: var(--ink-2); font-size: 15px; text-align: start;
+}
+.tw-about-lead { margin: 0 0 4px; font-size: 16px; line-height: 1.9; color: var(--ink); }
+.tw-about-lead b { font-weight: 600; }
+.tw-about-link {
+  display: flex; flex-direction: column; gap: 4px;
+  min-height: 44px; margin-top: 14px; padding: 10px 12px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--panel-2);
+  color: var(--ink-2); font-size: 15px; line-height: 1.7; text-decoration: none;
+}
+.tw-about-link b { font-size: 16px; font-weight: 600; color: var(--accent); }
+.tw-about-link:hover { border-color: var(--accent); }
+
 /* ── الاستماع ─────────────────────────────────────────────────────────
    شريطٌ سفليٌّ رقيقٌ **لا يظهر إلّا عند التشغيل**، ولا يقيم فوق النصّ حين
    يسكت الصوت. */
@@ -314,29 +365,41 @@ body.tw-immersive .tw-top { transition-timing-function: ease-in; }
   box-shadow: 0 -6px 20px rgb(0 0 0 / 0.08);
   padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px));
 }
-.tw-track-row { display: flex; align-items: center; gap: 6px; }
+/* **سطرٌ واحدٌ لا يلتفّ** (م٣ §٣): كان اسمُ المحرّك «عبر خدمة المتصفّح» ينكسر
+   ثلاثةَ أسطرٍ عند ٣٩٠ فيصير الشريطُ كتلةً (لُوحظ في لقطات ف٣). فههنا ثلاثةٌ:
+   الاسمُ **لا يلتفّ** ويُقصّ بنقاطٍ إن ضاق · والحالُ في أثناء التلاوة **نصٌّ لا
+   قائمةٌ معطَّلة** فيُفرَّغ عرضُها · والفراغُ الفاصلُ يتقلّص قبل الأسماء. */
+.tw-track-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .tw-track-hal {
-  min-height: 44px; padding: 0 10px;
+  flex: 0 1 auto; min-width: 0; min-height: 44px; padding: 0 10px;
   border: 1px solid var(--shell-line); border-radius: 999px;
   background: var(--panel); color: var(--ink); font-family: inherit; font-size: 15px;
 }
+/* الحالُ في أثناء التلاوة — خبرٌ يُقرأ لا هدفَ لمس */
+.tw-track-now {
+  flex: none; display: inline-flex; align-items: center; min-height: 44px;
+  padding-inline: 2px; font-size: 15px; font-weight: 600; color: var(--ink); white-space: nowrap;
+}
 .tw-track-eng {
   display: inline-flex; align-items: center; gap: 6px;
+  flex: 0 1 auto; min-width: 0;
   min-height: 44px; padding-inline: 10px; border-radius: 999px;
   font-size: 15px; color: var(--ink-2);
 }
+.tw-eng-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tw-track-swap { border: 1px solid var(--line); background: var(--panel); }
 .tw-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
 .tw-dot-listening { background: var(--accent); }
 .tw-dot-starting, .tw-dot-restarting { background: var(--gold); }
 .tw-dot-denied, .tw-dot-error, .tw-dot-unsupported { background: #b4553d; }
 .tw-track-act {
-  min-height: 44px; min-width: 76px; padding-inline: 16px; border-radius: 999px;
+  flex: none;
+  min-height: 44px; min-width: 76px; padding-inline: 14px; border-radius: 999px;
   border: 1px solid var(--accent); background: var(--accent-soft);
   color: var(--accent); font-size: 15px; font-weight: 600;
 }
 .tw-track-act:disabled { opacity: 0.45; }
-.tw-track-x { min-width: 44px; height: 44px; border-radius: 999px; font-size: 16px; }
+.tw-track-x { flex: none; min-width: 44px; height: 44px; border-radius: 999px; font-size: 16px; }
 .tw-track-x:hover { background: var(--panel-2); }
 .tw-track-fell, .tw-track-seek, .tw-track-note {
   margin: 0 0 6px; font-size: 15px; line-height: 1.6; color: var(--ink-2);

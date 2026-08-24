@@ -19,9 +19,18 @@ console.log(
   `shared assets → public/ : ${rows.map((r) => `${r.file} ${kb(r.bytes)}KB${r.copied ? " (copied)" : ""}`).join(", ")}`,
 );
 
-/** **أيقونةُ التطبيق المؤقّتة** — مُودَعةٌ في جذر التطبيق لا في `public` (وهو
- *  مولَّدٌ بالتجاهل)، وتُنسخ إليه في كلّ بناءٍ كسائر الأصول. */
-fs.copyFileSync(path.join(HERE, "icon.svg"), path.join(PUB, "icon.svg"));
+/** **أيقونةُ التطبيق وأحجامُها** (م٣ §١) — مُودَعةٌ في `icons/` من جذر التطبيق
+ *  لا في `public` (وهو مولَّدٌ بالتجاهل)، وتُنسخ إليه في كلّ بناءٍ كسائر الأصول.
+ *  والأصلُ SVG مكتوبٌ بأيدينا، والنقطيّاتُ مشتقّةٌ منه بـ`make-tilawa-icons.mjs`. */
+/* **ولا تُشحن `icon-maskable.svg`**: هي أصلُ رسمٍ تُشتقّ منه النقطيّتان
+   المقنَّعةُ وأيقونةُ آبل، ولا يطلبها متصفّحٌ ولا نظام — فتبقى في المستودع
+   ولا تدخل التخزينَ المسبَق. */
+const icons = fs
+  .readdirSync(path.join(HERE, "icons"))
+  .filter((f) => f !== "icon-maskable.svg")
+  .sort();
+for (const f of icons) fs.copyFileSync(path.join(HERE, "icons", f), path.join(PUB, f));
+console.log(`icons → public/ : ${icons.join(", ")}`);
 
 /* **عُدّةُ تشغيل المحرّك الحرّ — من الرزمة المثبَّتة إلى أصلنا** (ف٣ §٢):
    السكربتُ نفسُه الذي تنسخ به مشكاة (`ort-assets.mjs` في الحزمة)، والمقصدُ

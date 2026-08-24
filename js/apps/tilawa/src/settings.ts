@@ -54,10 +54,11 @@ export function applySettings(): void {
   r.dataset.theme = current.theme;
   r.dataset.quranFont = current.font;
   r.style.setProperty("--quran-scale", String(current.scale));
-  document.querySelector('meta[name="theme-color"]')?.setAttribute(
-    "content",
-    current.theme === "dark" ? "#1d1a16" : current.theme === "sepia" ? "#f7efdd" : "#fffdf9",
-  );
+  /* **شريطُ الحال يوافق الوضعَ الجاري** (ميثاقُ الوجه §١/١١) — **ولونُه يُقرأ
+     من الأنماط لا يُكتب ههنا**: `--panel` بعد وضع الوضع على الجذر، فمصدرُ
+     الألوان واحدٌ (`app.css`) ولا جدولان ينحرف أحدُهما عن الآخر. */
+  const panel = getComputedStyle(r).getPropertyValue("--panel").trim();
+  if (panel) document.querySelector('meta[name="theme-color"]')?.setAttribute("content", panel);
 }
 
 export function setSettings(patch: Partial<Settings>): void {

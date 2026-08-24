@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="التلاوة">
+  <!--
+    **النظيرةُ المربّعةُ** — لأقنعة أندرويد (`purpose: maskable`) ولأيقونة آبل.
+
+    **والرسمُ رسمُ `icon.svg` حرفًا**، وفرقُها عنه واحدٌ لا ثانيَ له: **بلاطةٌ
+    مربّعةٌ ملأى بلا استدارة** — فالقناعُ هو الذي يستدير، وأركانُ المستديرة
+    تحته شفّافةٌ (وآبلُ تُسوِّد الشفّاف).
+
+    **والمنطقةُ الآمنةُ محسوبةٌ لا مقدَّرة**: أبعدُ ما في الرسم عن المركز ركنُ
+    المصحف (١٤٨، ٣٩٢) على بُعد ١٧٤ من (٢٥٦، ٢٥٦)، وحدُّ الأمان ٢٠٥ (٨٠٪ الوسطى)
+    — فيسع الرسمُ بحاله بلا تصغير، ولا يقصُّ القناعُ منه حرفًا.
+  -->
+  <defs>
+    <linearGradient id="twm-tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12977a" />
+      <stop offset="1" stop-color="#084c3b" />
+    </linearGradient>
+    <linearGradient id="twm-hilal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3d089" />
+      <stop offset="1" stop-color="#e9a93f" />
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#twm-tile)" />
+
+  <path fill="url(#twm-hilal)" d="M313 118A76 76 0 1 0 313 250 67 67 0 0 1 313 118Z" />
+
+  <path
+    fill="#f4ecda"
+    d="M256 302c-24-16-66-22-108-18v90c42-4 84 2 108 18 24-16 66-22 108-18v-90c-42-4-84 2-108 18Z"
+  />
+  <path fill="none" stroke="#0b6e56" stroke-width="8" stroke-linecap="round" d="M256 302v90" />
+</svg>
