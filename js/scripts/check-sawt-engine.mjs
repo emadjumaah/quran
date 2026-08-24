@@ -30,16 +30,27 @@ import { ORT_FILES, ortDir, ortSource, sha256 } from "../packages/quran-core/ort
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SRC = join(ROOT, "js", "apps", "studio", "src");
 /** شيفرةُ المسبار (`lib/…`) في الحزمة المشتركة منذ التقسيم الصامت (ف١)،
- *  وصفحتُه وأحكامُه في مشكاة — فيُقرأ كلٌّ من موضعه */
+ *  **وسطحُه في تطبيق التلاوة منذ تصفيةِ مشكاة** (ف٤ §١) — فيُقرأ كلٌّ من موضعه */
 const CORE = join(ROOT, "js", "packages", "quran-core", "src");
-/** وعُدّةُ التشغيل تُنسخ إلى أصل كلِّ تطبيق؛ والمفحوصُ ههنا أصلُ مشكاة */
-const ORT_DIR = ortDir(join(ROOT, "js", "apps", "studio", "public"));
+const TILAWA = join(ROOT, "js", "apps", "tilawa", "src");
+/** وعُدّةُ التشغيل تُنسخ إلى أصل التطبيق الذي يشحنها — **وهو التلاوة وحدَها**
+ *  بعد أن كفّت مشكاةُ عن شحن عُدّةٍ لا تستعملها (ف٤ §١) */
+const ORT_DIR = ortDir(join(ROOT, "js", "apps", "tilawa", "public"));
 const OUT = join(ROOT, "js", "data", "gates", "SAWT-ENGINE.json");
 
 const failures = [];
 const notes = [];
 const fail = (check, detail) => failures.push({ check, detail });
-const read = (p) => readFileSync(join(p.startsWith("lib/") ? CORE : SRC, p), "utf8");
+/** `lib/…` من القلب · `tilawa/…` من سطح التلاوة · وما سواهما من مشكاة */
+const read = (p) =>
+  readFileSync(
+    p.startsWith("lib/")
+      ? join(CORE, p)
+      : p.startsWith("tilawa/")
+        ? join(TILAWA, p.slice("tilawa/".length))
+        : join(SRC, p),
+    "utf8",
+  );
 /** يُسقط التعليقاتِ كي لا يُصطاد ذِكرُ الممنوع في شرحِ منعه */
 const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 
@@ -97,38 +108,25 @@ if (!desc["on-device"] || !desc["browser-speech"]) {
   }
 }
 
-/** والصفحةُ نفسُها لا تكتب دعوى استقلالٍ بيدها — بل تعرض سطرَ المحرّك */
-const viewShown = stripComments(read("views/Tatabbu.tsx"));
 /**
- * وصارت الإعداداتُ موضعًا ثانيًا للتبديل (ص-م٥) — فيسري عليها الحكمُ نفسُه.
+ * **والسطحُ نفسُه لا يكتب دعوى استقلالٍ بيده** — بل يعرض سطرَ المحرّك.
  *
- * **ويُقتطع منها قسمُ المحرّك وحدَه لا الملفُّ كلُّه**: فأوّلُ تشغيلٍ لهذا الفحص
- * ردَّ البوّابةَ حمراءَ على «جاهزيّة العمل بلا إنترنت» — وهي **دعوى صادقةٌ في
- * بابها** (خزانةُ البيانات لا صوتُ القارئ). **والحارسُ الذي يصطاد الصادقَ في
- * غير بابه ليس حارسًا** — فحُدَّ نطاقُه بقسمه كما حُدّت واصفاتُ المحرّكات.
+ * **وسطحُ التتبّع صار في تطبيق التلاوة** (ف٤ §١): خرج من مشكاة، **والحكمُ هو
+ * هو، والمقيسُ يتبع المفحوصَ حيث صار**. وهو ثنائيٌّ: `Track.tsx` فيه العبارةُ
+ * المعروضةُ والإعلانُ والشريط، و`tatabbu.ts` فيه تدبيرُ الحال والرجوعُ ومنعُ
+ * البدء. **وفحصُ `lib/sawt/` يبقى على القلب بحرفه** — فحراسةُ «لا يُمسَك صوت»
+ * لا تسقط ساعةً واحدة.
  */
-const setFull = stripComments(read("components/SettingsPanel.tsx"));
-const setShown = (() => {
-  const from = setFull.indexOf("function SawtEngineRow");
-  if (from < 0) {
-    fail("قسمُ المحرّك في الإعدادات", "لم يُوجد قسمُ محرّك التتبّع في الإعدادات — فأين موضعُ التبديل الثاني؟");
-    return "";
-  }
-  const rest = setFull.slice(from + 1);
-  const to = rest.search(/\nexport default function|\nfunction /);
-  return to < 0 ? rest : rest.slice(0, to);
-})();
+const viewShown = stripComments(read("tilawa/components/Track.tsx"));
+/** وتدبيرُ الحال في السطح نفسِه — منطقًا لا عبارةً */
+const halShown = stripComments(read("tilawa/tatabbu.ts"));
 for (const [name, re] of CLAIMS) {
-  if (re.test(viewShown)) fail("دعوى في الصفحة", `الصفحةُ تكتب «${name}» بيدها بدل سطر المحرّك`);
-  if (re.test(setShown)) fail("دعوى في الإعدادات", `قسمُ المحرّك في الإعدادات يكتب «${name}» بيده بدل سطر المحرّك`);
+  if (re.test(viewShown)) fail("دعوى في الصفحة", `السطحُ يكتب «${name}» بيده بدل سطر المحرّك`);
 }
 if (!/privacyLine/.test(viewShown)) {
-  fail("سطرُ المحرّك", "الصفحةُ لا تعرض `privacyLine` — فمن أين يعلم القارئُ حالَ صوته؟");
-}
-if (!/privacyLine/.test(setShown)) {
-  fail("سطرُ المحرّك في الإعدادات", "موضعُ التبديل الثاني لا يعرض سطرَ صدق المحرّك");
+  fail("سطرُ المحرّك", "السطحُ لا يعرض `privacyLine` — فمن أين يعلم القارئُ حالَ صوته؟");
 } else {
-  notes.push("قسمُ المحرّك في الإعدادات يعرض سطرَ صدق المحرّك المختار ولا يكتب دعوى بيده");
+  notes.push("سطحُ التتبّع يعرض سطرَ صدق المحرّك المختار ولا يكتب دعوى بيده");
 }
 
 /* ═══════════ ٢ — لا يُمسَك صوت ═══════════ */
@@ -152,7 +150,8 @@ const AUDIO_FILES = [
   "lib/sawt/vad.ts",
   "lib/sawt/runs.ts",
   "lib/sawt/engines.ts",
-  "views/Tatabbu.tsx",
+  "tilawa/components/Track.tsx",
+  "tilawa/tatabbu.ts",
 ];
 const caught = [];
 for (const f of AUDIO_FILES) {
@@ -170,8 +169,8 @@ if (desc["browser-speech"] && /fitsSalat:\s*true/.test(desc["browser-speech"])) 
 if (desc["on-device"] && !/fitsSalat:\s*true/.test(desc["on-device"])) {
   fail("الصلاةُ بالحرّ", "واصفةُ المحرّك على الجهاز لا تقول إنّه يصلح للصلاة");
 }
-if (!/halId === "salat" && !findEngine\(engineId\)\.fitsSalat/.test(viewShown)) {
-  fail("منعُ البدء", "الصفحةُ لا تمنع البدءَ في «الصلاة» بمحرّكٍ لا يصلح لها");
+if (!/halId === "salat" && !findEngine\(engineId\)\.fitsSalat/.test(halShown)) {
+  fail("منعُ البدء", "السطحُ لا يمنع البدءَ في «الصلاة» بمحرّكٍ لا يصلح لها");
 }
 if (!failures.some((f) => f.check.includes("الصلاة"))) {
   notes.push("وضعُ الصلاة: الشبكيُّ لا يصلح لها وصفًا، والصفحةُ تمنع البدءَ به فيها");
@@ -200,7 +199,11 @@ const ARD_LINE = [
   ["مولّدُ البنك", readFileSync(join(ROOT, "js", "scripts", "build-tajwid-bank.mjs"), "utf8")],
   ["محرّكُ الأحكام", read("tajwid.ts")],
   ["بنكُ التمارين", read("lib/sawt/tajwid-bank.json")],
-  ["الصفحة", read("views/Tatabbu.tsx")],
+  /* **ومستهلِكُ الأحكام صار سطحَ المصحف في مشكاة** (ف٤ §٣): خرجت صفحةُ التتبّع
+     ومعها بنكُ تمارينها، **وبقي تلوينُ الأحكام على متن المصحف** — وهو الموضعُ
+     الذي يلزمه ألّا يقرأ المرجعَ المحبوس. */
+  ["سطحُ الأحكام", read("components/AyahText.tsx")],
+  ["المصحف", read("views/Reader.tsx")],
 ];
 let lockedHits = 0;
 for (const [name, body] of ARD_LINE) {
@@ -213,7 +216,7 @@ for (const [name, body] of ARD_LINE) {
   }
 }
 if (!lockedHits) {
-  notes.push("خطُّ «العَرْض» لا يقرأ المرجعَ المحبوسَ ولا مخرجاتِه — أربعةُ ملفّاتٍ فُحصت");
+  notes.push(`خطُّ «العَرْض» لا يقرأ المرجعَ المحبوسَ ولا مخرجاتِه — ${ARD_LINE.length} ملفّاتٍ فُحصت`);
 }
 
 /** ما لا يجوز أن يُعرض في سطح العَرْض: حكمٌ على تلاوةٍ أو رقمُ مقدار */
@@ -226,7 +229,11 @@ const VERDICT_WORDS = [
 ];
 let verdictHits = 0;
 for (const [why, re] of VERDICT_WORDS) {
-  for (const [name, body] of [["الصفحة", viewShown], ["الأحوال", stripComments(read("lib/sawt/halat.ts"))]]) {
+  for (const [name, body] of [
+    ["سطحُ التتبّع", viewShown],
+    ["سطحُ الأحكام", stripComments(read("components/AyahText.tsx"))],
+    ["الأحوال", stripComments(read("lib/sawt/halat.ts"))],
+  ]) {
     if (re.test(body)) {
       verdictHits++;
       fail("حكمٌ على تلاوة في سطح العَرْض", `${name}: ${why}`);
@@ -236,11 +243,21 @@ for (const [why, re] of VERDICT_WORDS) {
 if (!verdictHits) {
   notes.push("سطحُ «العَرْض» خالٍ من كلّ حكمٍ على تلاوةٍ ومن كلّ رقمِ مقدار — يَعرض ولا يَسمع أصلًا");
 }
-/** وبإزائه: الحدُّ يُقال بنصّه، فلا يُظنُّ الوقفُ نسيانًا */
-if (!/ينتظران\s+ثبوتَ\s+رخصةِ\s+مرجعهما/.test(viewShown)) {
-  fail("نصُّ الوقف", "الصفحةُ لا تقول ما الذي بقي موقوفًا ولماذا");
+/**
+ * وبإزائه: **الحدُّ يُقال بنصّه، فلا يُظنُّ الوقفُ نسيانًا**.
+ *
+ * **ويُقرأ من مصدره الحيّ لا من عارضه** (ف٤ §٣): كان يُلتمس في صفحة التتبّع،
+ * وهي إنّما كانت **تعرضه**؛ ونصُّه مكتوبٌ حيث كُتب حكمُه — في واصفة الحال
+ * بالحزمة (`halat.ts`). **فلمّا خرجت الصفحةُ لم يخرج النصّ**، وسطحُ التلاوة
+ * يعرضه من موضعه نفسِه. **والنسخةُ تشيخ في صمت، والمصدرُ لا يشيخ.**
+ */
+const halatSrc = stripComments(read("lib/sawt/halat.ts"));
+if (!/ينتظران\s+ثبوتَ\s+رخصةِ\s+مرجعهما/.test(halatSrc)) {
+  fail("نصُّ الوقف", "واصفةُ الحال لا تقول ما الذي بقي موقوفًا ولماذا");
+} else if (!/hal\.suspended/.test(viewShown)) {
+  fail("عرضُ الوقف", "السطحُ لا يعرض نصَّ الوقف — فيُكتب الحدُّ ولا يبلغ القارئ");
 } else {
-  notes.push("نصُّ الوقف مكتوبٌ بحدّه: تُعرض الأحكامُ محسوبةً، وتنتظر المقاديرُ رخصةَ مرجعها ومختصَّ التجويد");
+  notes.push("نصُّ الوقف مكتوبٌ بحدّه في واصفة الحال، والسطحُ يعرضه: تُعرض الأحكامُ محسوبةً، وتنتظر المقاديرُ رخصةَ مرجعها ومختصَّ التجويد");
 }
 
 /* ═══════════ ٥ — لا يُحبَس قارئٌ في خيارٍ لا يعمل (ص-م٥) ═══════════
@@ -248,38 +265,42 @@ if (!/ينتظران\s+ثبوتَ\s+رخصةِ\s+مرجعهما/.test(viewShown)
    **فلم يعمل، ولم يجد سبيلًا إلى التبديل**. **وثانيهما عيبُ تصميمٍ لا عيبُ
    محرّك** — يبقى قائمًا ولو عمل المحرّكان. فثلاثةٌ تُحرَس ههنا بالآلة:
 
-     أ — **التبديلُ متاحٌ من موضعين**: عُدّةُ تهيئة التتبّع (وشريطُها)،
-         **والإعدادات** — ولا يُخبَّأ خلف إعادةِ تثبيتٍ ولا محوِ بيانات.
+     أ — **التبديلُ متاحٌ ولا يُخبَّأ** خلف إعادةِ تثبيتٍ ولا محوِ بيانات.
+         **وموضعُه في سطح التلاوة واحدٌ حاضرٌ دائمًا** لا اثنان متفرّقان: شريطُ
+         الحال نفسُه زرُّ تبديلٍ ما دامت التلاوةُ لم تبدأ — فالبابُ بين يدي
+         القارئ حيث هو، لا في صفحةٍ يُهتدى إليها. **وسقط الموضعُ الثاني (قسمُ
+         المحرّك في إعدادات مشكاة) بخروج التتبّع منها** (ف٤ §١) — ولم يسقط
+         الحكمُ: التبديلُ متاحٌ في كلّ وقت.
      ب — **ورجوعٌ تلقائيٌّ عند الإخفاق** بمهلةٍ **معلَنة**، **ويُخبَر به**
          صراحةً — **ولا يُرجَع في الصلاة إلى الشبكيّ بحال**، **ولا يُشغَّل
          محرّكٌ يُخرج الصوتَ بلا إذنٍ له**.
      ج — **وحالُ المحرّك معروضة**: أيُّهما يعمل الآن، فلا يحزر القارئ. */
 
-/** موضعا التبديل — كلٌّ بعلامته في مصدره */
-const SWAP_IN_PAGE = /data-sawt="engine-swap"/;
-const SWAP_IN_BAR = /data-sawt="engine-now"/;
-const SWAP_IN_SETTINGS = /saveEngineChoice\(/;
+/** موضعُ التبديل وحالُ المحرّك — كلٌّ بعلامته في مصدره */
+const SWAP_IN_BAR = /onClick=\{t\.swapEngine\}/;
+const SWAP_SAVED = /saveEngineChoice\(/;
+const ENGINE_SHOWN = /data-track="engine"/;
 /** الرجوعُ التلقائيُّ وخبرُه */
 const FALLBACK_FN = /const fallback = useCallback\(/;
 const FALLBACK_GRACE = /ENGINE_GRACE_MS/;
-const FALLBACK_NOTICE = /data-sawt="engine-fell"/;
+const FALLBACK_NOTICE = /data-track="fell"/;
 /** والصلاةُ مستثناةٌ من الرجوع — بحرفها في موضع الرجوع لا في غيره */
-const FALLBACK_SALAT = /halId === "salat" \|\| !netUsable/;
+const FALLBACK_SALAT = /=== "salat" \|\| !netUsable/;
 /** والإذنُ لا يُورَّث ولو كان الرجوعُ اضطراريًّا */
 const FALLBACK_CONSENT = /readConsent\("browser-speech"\) && declaredIn\(\)/;
 /** و«لم يُؤذَن بالميكروفون» ليس عيبَ محرّكٍ فلا يُبدَّل له محرّك */
 const FALLBACK_DENIED = /engineState === "denied"\) return/;
 
 const doorFive = [
-  ["التبديلُ من صفحة التتبّع", SWAP_IN_PAGE, viewShown, "لا زرَّ تبديلٍ في عُدّة التهيئة"],
-  ["حالُ المحرّك في الشريط", SWAP_IN_BAR, viewShown, "حالُ المحرّك ليست معروضةً في الشريط"],
-  ["التبديلُ من الإعدادات", SWAP_IN_SETTINGS, setShown, "قسمُ المحرّك في الإعدادات لا يحفظ اختيارًا — فالتبديلُ من موضعٍ واحد"],
-  ["الرجوعُ التلقائيّ", FALLBACK_FN, viewShown, "لا رجوعَ تلقائيًّا عند إخفاق المحرّك"],
-  ["المهلةُ معلَنة", FALLBACK_GRACE, viewShown, "لا مهلةَ معلَنةً قبل الحكم بالإخفاق"],
+  ["التبديلُ من الشريط", SWAP_IN_BAR, viewShown, "لا زرَّ تبديلٍ في شريط الحال — ومن أخطأ الاختيارَ حُبس"],
+  ["حالُ المحرّك معروضة", ENGINE_SHOWN, viewShown, "حالُ المحرّك ليست معروضةً في الشريط"],
+  ["التبديلُ يُحفظ", SWAP_SAVED, halShown, "التبديلُ لا يُحفظ — فيُسأل القارئُ في كلّ مرّة"],
+  ["الرجوعُ التلقائيّ", FALLBACK_FN, halShown, "لا رجوعَ تلقائيًّا عند إخفاق المحرّك"],
+  ["المهلةُ معلَنة", FALLBACK_GRACE, halShown, "لا مهلةَ معلَنةً قبل الحكم بالإخفاق"],
   ["خبرُ الرجوع", FALLBACK_NOTICE, viewShown, "يقع الرجوعُ ولا يُخبَر به القارئ"],
-  ["الصلاةُ لا يُرجَع فيها إلى الشبكيّ", FALLBACK_SALAT, viewShown, "الرجوعُ التلقائيُّ لا يستثني «الصلاة»"],
-  ["الإذنُ لا يُورَّث في الرجوع", FALLBACK_CONSENT, viewShown, "يُرجَع إلى محرّكٍ يُخرج الصوتَ بلا إذنٍ له"],
-  ["منعُ الإذن ليس عيبَ محرّك", FALLBACK_DENIED, viewShown, "يُبدَّل المحرّكُ لمن لم يأذن بالميكروفون — وتبديلُه لا يصنع شيئًا"],
+  ["الصلاةُ لا يُرجَع فيها إلى الشبكيّ", FALLBACK_SALAT, halShown, "الرجوعُ التلقائيُّ لا يستثني «الصلاة»"],
+  ["الإذنُ لا يُورَّث في الرجوع", FALLBACK_CONSENT, halShown, "يُرجَع إلى محرّكٍ يُخرج الصوتَ بلا إذنٍ له"],
+  ["منعُ الإذن ليس عيبَ محرّك", FALLBACK_DENIED, halShown, "يُبدَّل المحرّكُ لمن لم يأذن بالميكروفون — وتبديلُه لا يصنع شيئًا"],
 ];
 let fiveBad = 0;
 for (const [name, re, body, why] of doorFive) {
@@ -290,7 +311,7 @@ for (const [name, re, body, why] of doorFive) {
 }
 if (!fiveBad) {
   notes.push(
-    "لا حبسَ في خيار: التبديلُ من موضعين (عُدّةُ التتبّع وشريطُها · والإعدادات) · ورجوعٌ تلقائيٌّ بمهلةٍ معلَنةٍ يُخبَر به · والصلاةُ مستثناةٌ منه · والإذنُ لا يُورَّث فيه · وحالُ المحرّك معروضة",
+    "لا حبسَ في خيار: التبديلُ من شريط الحال نفسِه في كلّ تهيئةٍ ويُحفظ · ورجوعٌ تلقائيٌّ بمهلةٍ معلَنةٍ يُخبَر به · والصلاةُ مستثناةٌ منه · والإذنُ لا يُورَّث فيه · وحالُ المحرّك معروضة — **وسقط الموضعُ الثاني بخروج التتبّع من إعدادات مشكاة، وهو قيدٌ معلَنٌ للإدارة**",
   );
 }
 
@@ -325,7 +346,7 @@ if (ORT_THIRD_PARTY.test(workerSrc)) {
 }
 
 /** ناتجُ البناء: كلُّ حزمةٍ تذكر العُدّةَ يجب أن يكون أصلُنا فيها */
-const DIST = join(ROOT, "js", "apps", "studio", "dist");
+const DIST = join(ROOT, "js", "apps", "tilawa", "dist");
 let distOk = 0;
 let distBad = 0;
 if (existsSync(DIST)) {
@@ -367,12 +388,12 @@ if (existsSync(DIST)) {
 /** والعُدّةُ حاضرةٌ مطابقة */
 const ortRows = [];
 if (!existsSync(ORT_DIR)) {
-  fail("عُدّةُ التشغيل غائبة", "`public/ort/` غيرُ موجود — لم يُنفَّذ نسخُ البناء (copy-assets.mjs)");
+  fail("عُدّةُ التشغيل غائبة", "`apps/tilawa/public/ort/` غيرُ موجود — لم يُنفَّذ نسخُ البناء (copy-assets.mjs)");
 } else {
   for (const f of ORT_FILES) {
     const dst = join(ORT_DIR, f);
     if (!existsSync(dst)) {
-      fail("ملفٌّ من العُدّة غائب", `${f} ليس في public/ort/`);
+      fail("ملفٌّ من العُدّة غائب", `${f} ليس في apps/tilawa/public/ort/`);
       continue;
     }
     const here = sha256(dst);
@@ -406,19 +427,19 @@ const plants = [
   ["ذِكرُ الإخفاء بريء", VERDICT_WORDS[1][1], "موضعُ إخفاءٍ ههنا", false],
   // وضبطُ باب ص-م٥: لكلّ علامةٍ زرعٌ يُصطاد وبريءٌ يُشبهها فلا يُصطاد —
   // **فالعلامةُ تُميّز ما وُضعت له**، ولا تكتفي بأن توجد في الملفّ حيثما كان.
-  ["زرُّ تبديلٍ حاضر", SWAP_IN_PAGE, 'data-sawt="engine-swap"', true],
-  ["علامةُ عودةٍ لا تُحسب تبديلًا", SWAP_IN_PAGE, 'data-sawt="engine-back"', false],
-  ["حالُ المحرّك معروضة", SWAP_IN_BAR, 'data-sawt="engine-now"', true],
-  ["سطرُ وصفٍ لا يُحسب حالًا", SWAP_IN_BAR, 'data-sawt="engine-line"', false],
-  ["حفظُ الاختيار في الإعدادات", SWAP_IN_SETTINGS, "saveEngineChoice(v);", true],
-  ["قراءةُ الاختيار وحدَها لا تكفي", SWAP_IN_SETTINGS, "readEngineChoice()", false],
+  ["زرُّ تبديلٍ حاضر", SWAP_IN_BAR, "<button onClick={t.swapEngine}>", true],
+  ["فعلٌ آخرُ لا يُحسب تبديلًا", SWAP_IN_BAR, "<button onClick={t.dismissAsk}>", false],
+  ["حالُ المحرّك معروضة", ENGINE_SHOWN, 'data-track="engine"', true],
+  ["اختيارُ محرّكٍ لا يُحسب عرضًا للحال", ENGINE_SHOWN, 'data-track="engine-choice"', false],
+  ["حفظُ الاختيار", SWAP_SAVED, "saveEngineChoice(id);", true],
+  ["قراءةُ الاختيار وحدَها لا تكفي", SWAP_SAVED, "readEngineChoice()", false],
   ["رجوعٌ تلقائيٌّ حاضر", FALLBACK_FN, "const fallback = useCallback(", true],
   ["دالّةٌ أخرى لا تُحسب رجوعًا", FALLBACK_FN, "const finish = useCallback(", false],
-  ["خبرُ الرجوع حاضر", FALLBACK_NOTICE, 'data-sawt="engine-fell"', true],
-  ["خبرٌ آخر لا يُحسب", FALLBACK_NOTICE, 'data-sawt="engine-progress"', false],
-  ["استثناءُ الصلاة في موضع الرجوع", FALLBACK_SALAT, 'if (halId === "salat" || !netUsable) {', true],
+  ["خبرُ الرجوع حاضر", FALLBACK_NOTICE, 'data-track="fell"', true],
+  ["خبرٌ آخر لا يُحسب", FALLBACK_NOTICE, 'data-track="seek"', false],
+  ["استثناءُ الصلاة في موضع الرجوع", FALLBACK_SALAT, 'if (halRef.current === "salat" || !netUsable) {', true],
   ["منعُ البدء ليس استثناءَ رجوع", FALLBACK_SALAT, 'if (halId === "salat" && !findEngine(engineId).fitsSalat) {', false],
-  ["شرطُ الإذن في الرجوع", FALLBACK_CONSENT, 'if (readConsent("browser-speech") && declaredIn().includes(halId)) {', true],
+  ["شرطُ الإذن في الرجوع", FALLBACK_CONSENT, 'if (readConsent("browser-speech") && declaredIn().includes(halRef.current)) {', true],
   ["إذنٌ مطلقٌ لا يكفي", FALLBACK_CONSENT, "if (readConsent(engineId)) {", false],
   ["استثناءُ منع الإذن", FALLBACK_DENIED, 'if (engineState === "denied") return;', true],
   ["عطبٌ لا يُستثنى", FALLBACK_DENIED, 'if (engineState === "error") return;', false],

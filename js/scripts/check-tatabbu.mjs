@@ -43,6 +43,8 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 /** شيفرةُ المسبار ومحلِّلُ العربيّة في الحزمة المشتركة منذ التقسيم الصامت (ف١) */
 const SAWT = join(ROOT, "js", "packages", "quran-core", "src", "lib", "sawt");
+/** وسطحُ التتبّع في تطبيق التلاوة منذ تصفيةِ مشكاة (ف٤ §١) */
+const TILAWA = join(ROOT, "js", "apps", "tilawa", "src");
 const OUT = join(ROOT, "js", "data", "gates", "TATABBU.json");
 
 const read = (p) => readFileSync(p, "utf8");
@@ -56,10 +58,17 @@ const FILES = [
   ["vad", join(SAWT, "vad.ts")],
   ["runs", join(SAWT, "runs.ts")],
   ["iltiqat", join(SAWT, "iltiqat.ts")],
-  ["view", join(ROOT, "js", "apps", "studio", "src", "views", "Tatabbu.tsx")],
+  /* **وسطحُ التتبّع صار في تطبيق التلاوة** (ف٤ §٣): خرجت صفحتُه من مشكاة،
+     فيُقرأ العرضُ حيث صار — لا حيث كان. **والأحكامُ هي هي**: كلمةٌ تُطبع كما
+     هي، ولا دعوى استقلالٍ عن الشبكة في المعروض، والإعلانُ يعرض سطرَ محرّكه.
+     وسطحُ التلاوة **ملفّان لا ملفٌّ واحد**: الشريطُ والأوراقُ فيه العبارةُ
+     والإعلان، وصفحةُ المصحف فيها موضعُ عرض الكلمة. */
+  ["view", join(TILAWA, "components", "Track.tsx")],
+  ["page", join(TILAWA, "components", "MushafPage.tsx")],
 ];
-/** موضعُ ملفّ الصفحة في `FILES` — تُقرأ منه فحوصُ العرض */
-const VIEW = FILES.length - 1;
+/** موضعا ملفَّي السطح في `FILES` — تُقرأ منهما فحوصُ العرض */
+const VIEW = FILES.length - 2;
+const PAGE = FILES.length - 1;
 
 const failures = [];
 const missing = [];
@@ -178,12 +187,12 @@ for (const src of ["script", "iltiqat"]) {
 }
 
 /** والعرضُ نفسُه: الكلمةُ تُطبع كما هي، بلا تحويلٍ في موضع العرض */
-const viewSrc = stripComments(read(FILES[VIEW][1]));
-if (!/\{w\.text\}/.test(viewSrc)) {
-  missing.push("موضعُ عرض الكلمة في الصفحة — لم يُوجد {w.text}");
+const pageSrc = stripComments(read(FILES[PAGE][1]));
+if (!/\{t\.text\}/.test(pageSrc)) {
+  missing.push("موضعُ عرض الكلمة في صفحة المصحف — لم يُوجد {t.text}");
 }
-for (const bad of [/w\.text\.replace/, /w\.text\.normalize/, /w\.text\.slice/, /w\.text\.trim/]) {
-  if (bad.test(viewSrc)) fail("حرفيّةُ المعروض", `تحويلٌ على الكلمة في موضع العرض: ${bad}`);
+for (const bad of [/t\.text\.replace/, /t\.text\.normalize/, /t\.text\.slice/, /t\.text\.trim/]) {
+  if (bad.test(pageSrc)) fail("حرفيّةُ المعروض", `تحويلٌ على الكلمة في موضع العرض: ${bad}`);
 }
 
 /* ═══════════ ٣ — تمامُ المقطع ═══════════ */
@@ -543,8 +552,8 @@ if (!/يرسل\s+صوتَك\s+إلى\s+خادم/.test(enginesSrc)) {
 }
 /** والموضعُ الذي يلزم فيه السطرُ هو **الإعلانُ قبل الميكروفون** لا أيُّ موضع */
 const consentBlock = viewShown.slice(
-  Math.max(0, viewShown.indexOf('data-sawt="consent"') - 400),
-  viewShown.indexOf('data-sawt="consent"') + 900,
+  Math.max(0, viewShown.indexOf('data-track="consent"') - 400),
+  viewShown.indexOf('data-track="consent"') + 900,
 );
 if (!/privacyLine/.test(consentBlock)) {
   missing.push("الإعلانُ قبل الميكروفون لا يعرض سطرَ صدق المحرّك (`privacyLine`)");

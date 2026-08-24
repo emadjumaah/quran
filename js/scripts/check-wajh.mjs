@@ -65,7 +65,10 @@ const MIN_TEXT = 15;
 const CORE_FILES = [
   "main.tsx",
   "views/Reader.tsx",
-  "views/Tatabbu.tsx",
+  // **وحلّت بطاقةُ العبور محلَّ `views/Tatabbu.tsx`** (ف٤ §٣): خرج سطحُ التتبّع
+  // من مشكاة إلى تطبيق التلاوة، **وبقي مسارُه** بطاقةً تفتح البابَ حيث صار —
+  // فتُقاس بالميثاق كما يُقاس غيرُها، ولا يخرج من الحرس مسارٌ يزوره الناس.
+  "views/Ubur.tsx",
   "components/SettingsPanel.tsx",
   "components/AyahPanel.tsx",
   "components/InlineOmni.tsx",
@@ -140,6 +143,39 @@ function staticChecks() {
   }
   if (fsHits.length) fail("رقمُ خطٍّ مكتوبٌ نصًّا في JSX", fsHits.join(" · "));
   else notes.push("لا رقمَ خطٍّ مكتوبٌ نصًّا في JSX الصفحات الأساسيّة في التطبيقين — السلّمُ رموزٌ في أوراق الأنماط");
+
+  /* ═══ **ولا يعود التتبّعُ إلى مشكاة من بابٍ خلفيّ** (ف٤ §٣) ═══
+     خرج سطحُ التتبّع إلى تطبيق التلاوة، **والخروجُ يُحرَس كما تُحرَس المقاييس**:
+     فسطحٌ يُعاد تركيبُه في مشكاة — استيرادًا لصفحته، أو نسقَ `sawt-*`، أو وسمَ
+     `data-sawt` — يُصطاد ههنا ولا يمرّ صامتًا.
+
+     **والمصطادُ أثرُ سطحٍ لا لفظٌ في جملة**: بطاقةُ العبور نفسُها تقول «التتبّع»
+     في نصّها الفصيح — وهو خبرٌ للقارئ لا سطحَ تتبّع. فلو صِيد باللفظ لاصطيدت
+     البطاقةُ التي كُتبت لأجل الخروج، **وحارسٌ يصطاد الصادقَ ليس حارسًا**.
+
+     **ونطاقُه مشكاةُ وحدَها**: التلاوةُ سطحُها القائمُ وهو موضعُه الصحيح. */
+  /* **وحدودُها صريحةٌ ولا `\\b` فيها** (عقدُ بلاغ الحدود، وهذا سكربتُ بوّابة):
+     الاستيرادُ بمحدِّدَي المسار، والنسقُ بما يسبقه من مُقتبِسٍ أو فراغ، والوسمُ
+     بعلامة إسنادِه. */
+  const SURFACE = [
+    ["استيرادُ صفحة التتبّع", /["'][^"']*\/Tatabbu["']/],
+    ["نسقُ سطح التتبّع", /["'`\s]sawt-[a-z]/],
+    ["وسمُ سطح التتبّع", /data-sawt[=\]"'\s]/],
+  ];
+  const backDoor = [];
+  for (const f of walk(SRC)) {
+    const body = stripComments(readFileSync(f, "utf8"));
+    for (const [name, re] of SURFACE) {
+      if (re.test(body)) backDoor.push(`${relative(ROOT, f)} — ${name}`);
+    }
+  }
+  if (backDoor.length) {
+    fail("سطحُ تتبّعٍ عاد إلى مشكاة", backDoor.join(" · "));
+  } else {
+    notes.push(
+      `لا سطحَ تتبّعٍ في مشكاة: صفرُ استيرادٍ لصفحته وصفرُ نسقِ \`sawt-*\` وصفرُ وسمِ \`data-sawt\` في ${walk(SRC).length} ملفًّا — والمقيسُ أثرُ سطحٍ لا لفظٌ في جملة`,
+    );
+  }
 
   /* المكوّناتُ غيرُ المركَّبة: تُقيَّد ولا تُقاس، فلا يُقال فُحصت فمرّت */
   for (const u of UNRENDERED) {
@@ -253,11 +289,9 @@ const SURFACES = [
           const m = document.querySelector('.set-more'); if (m) m.click(); return true;`,
     settle: 700,
   },
-  { id: "التتبّع", route: "/tatabbu", wait: `document.querySelector('[data-sawt="root"]')`, settle: 2500 },
-  {
-    id: "التتبّع · التهيئة", route: "/tatabbu", wait: `document.querySelector('.sawt-m-more')`,
-    pre: `document.querySelector('.sawt-m-more').click(); return true;`, settle: 900,
-  },
+  /* **وبطاقةُ العبور موضعَ صفحة التتّبع** (ف٤ §٣): المسارُ هو هو، والمقيسُ ما
+     صار خلفه — بطاقةٌ فيها بابٌ إلى تطبيق التلاوة وعودةٌ إلى المصحف. */
+  { id: "بطاقةُ العبور", route: "/tatabbu", wait: `document.querySelector('[data-ubur="root"]')`, settle: 900 },
 ];
 
 /** يُحصى ما يُلمس وما يُقرأ **ظاهرًا** في الشجرة */
@@ -677,7 +711,7 @@ async function live() {
         return out;
       };
       const ratio = (a, b) => { const l1 = lum(a), l2 = lum(b); const hi = Math.max(l1, l2), lo = Math.min(l1, l2); return Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100; };
-      const btns = [...bar.querySelectorAll('button, a.tatabbu-btn')].filter((b) => {
+      const btns = [...bar.querySelectorAll('button')].filter((b) => {
         const r = b.getBoundingClientRect();
         return r.width > 0 && r.height > 0 && !b.closest('nav');
       });
@@ -784,7 +818,7 @@ async function live() {
         st.id = '__plantPale';
         /* **حدٌّ نصفُ مرئيّ**: يُرسم (عرضٌ وأسلوبٌ) ولونُه شفّافٌ إلّا قليلًا —
            فهو المخالفةُ بعينها، لا الزرُّ العاري الذي لا حدَّ له بإعلان. */
-        st.textContent = '.topbar > button, .topbar .menu-btn, .topbar .set-wrap > button, .topbar .tatabbu-btn, .topbar .sh-btn { border: 1px solid rgba(0,0,0,0.02) !important; }';
+        st.textContent = '.topbar > button, .topbar .menu-btn, .topbar .set-wrap > button, .topbar .sh-btn { border: 1px solid rgba(0,0,0,0.02) !important; }';
         document.head.appendChild(st);
         return true;
       `);

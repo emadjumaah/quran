@@ -25,10 +25,13 @@ const SAWT = join(ROOT, "js", "packages", "quran-core", "src", "lib", "sawt");
 const GATE = join(ROOT, "js", "scripts", "check-tatabbu.mjs");
 const REPORT = join(ROOT, "js", "data", "gates", "TATABBU.json");
 
+/** وسطحُ التتبّع في تطبيق التلاوة منذ تصفيةِ مشكاة (ف٤ §١) — فيُزرع حيث صار */
+const TILAWA = join(ROOT, "js", "apps", "tilawa", "src", "components");
 const P = {
   align: join(SAWT, "align.ts"),
   script: join(SAWT, "script.ts"),
-  view: join(ROOT, "js", "apps", "studio", "src", "views", "Tatabbu.tsx"),
+  view: join(TILAWA, "Track.tsx"),
+  page: join(TILAWA, "MushafPage.tsx"),
   engines: join(SAWT, "engines.ts"),
   analyzer: join(ROOT, "js", "packages", "quran-core", "src", "lib", "arabicSearch.ts"),
 };
@@ -55,8 +58,8 @@ function trigramFromDb() {
 const PLANTS = [
   [
     "نصُّ آيةٍ مكتوبًا في الصفحة",
-    "view",
-    (s) => s.replace("<h1 className=\"sawt-h1\">التتبّع</h1>", `<h1 className="sawt-h1">${trigramFromDb()}</h1>`),
+    "page",
+    (s) => s.replace('title="موضع سجدة"', `title="${trigramFromDb()}"`),
     { check: "قرآنٌ في الشيفرة" },
   ],
   [
@@ -67,9 +70,9 @@ const PLANTS = [
   ],
   [
     "تحويلٌ في موضع عرض الكلمة",
-    "view",
-    // صار البياضُ خارجَ وسم الكلمة (ص-م٣ §٥ج) فيُزرع على الصورة الجديدة
-    (s) => s.replace("{w.text}", "{w.text.replace(\"a\", \"b\")}"),
+    "page",
+    // موضعُ العرض صار صفحةَ المصحف في التلاوة، والرمزُ فيها `t` لا `w` (ف٤ §٣)
+    (s) => s.replace("{t.text}", "{t.text.replace(\"a\", \"b\")}"),
     { check: "حرفيّةُ المعروض" },
   ],
   [
@@ -129,13 +132,13 @@ const PLANTS = [
   [
     "دعوى أنّ الصفحة تعمل بلا إنترنت",
     "view",
-    (s) => s.replace("تتلو، فيجري المؤشّرُ مع صوتك في المصحف.", "تتلو، فيجري المؤشّرُ مع صوتك في المصحف بلا إنترنت."),
+    (s) => s.replace("ولا يُتّهم مصيب.", "ولا يُتّهم مصيب، ويعمل بلا إنترنت."),
     { check: "دعوى استقلالٍ عن الشبكة" },
   ],
   [
     "دعوى أنّ الصوت لا يغادر الجهاز",
     "view",
-    (s) => s.replace("ولا نحفظ نحن صوتًا، ولا نخزّنه", "وصوتُك لا يغادر الجهاز، ولا نحفظ نحن صوتًا، ولا نخزّنه"),
+    (s) => s.replace("ولا يصل إلى خوادمنا منه شيء.", "وصوتُك لا يغادر الجهاز، ولا يصل إلى خوادمنا منه شيء."),
     { check: "دعوى استقلالٍ عن الشبكة" },
   ],
   [
@@ -149,7 +152,7 @@ const PLANTS = [
   [
     "نزعُ سطر المحرّك من الإعلان قبل الميكروفون",
     "view",
-    (s) => s.replace("{engine?.privacyLine}", "{null}"),
+    (s) => s.replace("{t.engine?.privacyLine}", "{null}"),
     { missing: "سطرَ صدق المحرّك" },
   ],
   [

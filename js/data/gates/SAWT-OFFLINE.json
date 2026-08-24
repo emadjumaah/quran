@@ -1,34 +1,6 @@
 {
   "gate": "sawt-offline",
-  "ok": true,
-  "warm": {
-    "label": "تشغيلةُ التخزين",
-    "offline": false,
-    "clicks": {
-      "begin": true,
-      "engine": true,
-      "agree": true
-    },
-    "ready": true,
-    "readyMs": 14070,
-    "advanced": 8,
-    "requestsTotal": 16,
-    "duringListening": [],
-    "duringListeningCount": 0
-  },
-  "cold": {
-    "label": "تشغيلةُ الانقطاع",
-    "offline": true,
-    "clicks": {
-      "begin": true,
-      "engine": false,
-      "agree": false
-    },
-    "ready": true,
-    "readyMs": 4,
-    "advanced": 8,
-    "requestsTotal": 15,
-    "duringListening": [],
-    "duringListeningCount": 0
-  }
+  "ok": null,
+  "suspended": true,
+  "note": "سطحُ التتبّع خرج من مشكاة إلى تطبيق التلاوة (ف٤ §١)، وهذا الفحصُ يُسيَّر على سطح مشكاة — فأُوقف ولم يُحذف. ما يلزم لإعادته مكتوبٌ في رأس السكربت."
 }
