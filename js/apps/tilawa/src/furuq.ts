@@ -30,7 +30,8 @@
  * المادّة معدودًا** ولم يُسأل به. وفي مصحفنا موضعٌ واحدٌ يخرج بهذا: ﴿بَعْدَ مَا﴾
  * يصلها الجدولُ كلمةً واحدةً ويشقّها الرسمُ اثنتين.
  */
-import { globalIdOf, normalizeAr } from "@mishkat/quran-core";
+import { LAST_AYAH, globalIdOf, normalizeAr } from "@mishkat/quran-core";
+import type { HuntFork, HuntIndex, HuntPair } from "@mishkat/quran-core/lib/sawt/align";
 import { ayahTokens, type Mushaf } from "./mushaf";
 
 /**
@@ -465,4 +466,92 @@ export function loadFuruq(): Promise<RawFuruq> {
     return r.json() as Promise<RawFuruq>;
   });
   return loading;
+}
+
+/* ═══════════════ فهرسُ النظائر — مادّةُ الاصطياد الصوتيّ (ن٢) ═══════════════ */
+
+/**
+ * **كم كلمةً تُضمّ إلى فرع النظيرة ممّا يليها في المصحف.**
+ *
+ * المفرقُ قد يقع في آخر الآية — ﴿كَذَّبَتْ قَوْمُ لُوطٍۭ بِٱلنُّذُرِ﴾ نظيرةُ ﴿كَذَّبَتْ
+ * قَوْمُ لُوطٍ ٱلْمُرْسَلِينَ﴾، ومفرقُها كلمتُها الأخيرة — فلا يبقى بعده من النظيرة
+ * إلّا كلمةٌ واحدةٌ لا تبلغ عتبةَ الثلاث أبدًا. **والانزلاقُ إنّما يثبت بما يمضي
+ * فيه المنزلق**: فيُضمّ إلى الفرع ما بعد النظيرة من المصحف بقدرٍ معلَن.
+ */
+export const BRANCH_TAIL = 12;
+
+/**
+ * **يُبنى الفهرسُ ههنا ويُسلَّم إلى المحاذاة إعدادًا** — فهي لا تفتح ملفًّا ولا
+ * تعرف «فروق التنزيل»، وما تعرفه: آيةٌ لها فرعٌ ونقاطُ افتراق.
+ *
+ * **ومفتاحُ الزوج هو مفتاحُ سجلّ الخلط نفسُه** (`Pairing.key`) — فما يُصطاد في
+ * التسميع يقع في السطر الذي يُسأل عنه في التدريب، **فتكتمل الحلقة** بلا جسرٍ
+ * بين ترقيمين.
+ *
+ * @param pairs أزواجُ المفرق كما بناها `buildFuruq` — مصفّاةً بالحدّ المعلن
+ * @param wordsAt كلماتُ آيةٍ برقمها العامّ؛ **تُمرَّر ولا تُقرأ ههنا** فتُشغَّل
+ *   هذه الدالّةُ نفسُها في البوّابة على نصّ المصحف عينِه
+ */
+export function huntIndexOf(pairs: Pairing[], wordsAt: (id: number) => string[]): HuntIndex {
+  /** فرعُ آيةٍ — يُبنى مرّةً **ويُشارَك** بين كلّ أزواجها، فلا يُكرَّر في الذاكرة */
+  const branches = new Map<number, string[]>();
+  const branchOf = (id: number): string[] => {
+    const had = branches.get(id);
+    if (had) return had;
+    const own = wordsAt(id).map(normalizeAr);
+    const b = own.slice();
+    for (let n = id + 1; n <= LAST_AYAH && b.length < own.length + BRANCH_TAIL; n++) {
+      for (const w of wordsAt(n)) b.push(normalizeAr(w));
+    }
+    branches.set(id, b);
+    return b;
+  };
+
+  const ix: HuntIndex = new Map();
+  const put = (loc: string, p: HuntPair) => {
+    const list = ix.get(loc);
+    if (list) list.push(p);
+    else ix.set(loc, [p]);
+  };
+
+  for (const p of pairs) {
+    const wa = wordsAt(p.idA);
+    const wb = wordsAt(p.idB);
+    /** الوجهُ **رسمًا مقصوصًا من المصحف** — و`null` وجهُ الانتهاء (لا كلمةَ فيه) */
+    const face = (w: string[], at: number, len: number): string | null =>
+      len ? w.slice(at - 1, at - 1 + len).join(" ") : null;
+    const forksA: HuntFork[] = p.forks.map((f) => ({
+      here: f.atA,
+      there: f.atB,
+      faceHere: face(wa, f.atA, f.lenA),
+      faceThere: face(wb, f.atB, f.lenB),
+    }));
+    const forksB: HuntFork[] = p.forks.map((f) => ({
+      here: f.atB,
+      there: f.atA,
+      faceHere: face(wb, f.atB, f.lenB),
+      faceThere: face(wa, f.atA, f.lenA),
+    }));
+    put(p.a, { key: p.key, there: p.b, branch: branchOf(p.idB), forks: forksA });
+    put(p.b, { key: p.key, there: p.a, branch: branchOf(p.idA), forks: forksB });
+  }
+  /* **نظائرُ كلّ آيةٍ على ترتيب المصحف** — فما تساوى فيه فرعان حُكم بأوّلهما،
+     ولا يتقلّب الحكمُ بتقلّب ترتيب المادّة في ملفّها. */
+  for (const list of ix.values()) list.sort((x, y) => idOf(x.there) - idOf(y.there));
+  return ix;
+}
+
+let hunting: { m: Mushaf; ix: HuntIndex } | null = null;
+
+/**
+ * **يُبنى مرّةً ويُمسَك** — ولا يُبنى ألبتّة لمن لم يُسمِّع في حالٍ تصطاد، ولا
+ * تُجلب مادّتُه (٦٩٨ ك.ب) على قارئٍ يقرأ.
+ */
+export function loadHuntIndex(m: Mushaf): Promise<HuntIndex> {
+  if (hunting && hunting.m === m) return Promise.resolve(hunting.ix);
+  return loadFuruq().then((raw) => {
+    const ix = huntIndexOf(buildFuruq(m, raw).pairs, (id) => wordsOf(m, id));
+    hunting = { m, ix };
+    return ix;
+  });
 }

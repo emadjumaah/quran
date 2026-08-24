@@ -148,6 +148,11 @@ export interface AlignStep {
   relocks: RelockEvent[];
   /** تعذّرت المطابقةُ وتعدّدت المواضعُ فلم نقفز */
   ambiguous: boolean;
+  /**
+   * **ما اصطيد من انزلاقٍ إلى نظيرة** — وهي **فارغةٌ أبدًا ما لم يُفتح بابُ
+   * الاصطياد** بإعدادٍ مُمرَّر؛ فمن يقرأ ولا يُسمِّع لا يمسّه من هذا شيء.
+   */
+  hunts: HuntEvent[];
 }
 
 interface Hit {
@@ -204,6 +209,7 @@ export function alignUtterance(
   tokens: string[],
   anchor: number,
   cfg: AlignConfig = DEFAULT_ALIGN,
+  hunt?: HuntConfig,
 ): AlignStep {
   let pos = Math.max(0, Math.min(anchor, script.length));
   const matched: number[] = [];
@@ -212,6 +218,7 @@ export function alignUtterance(
   let run = 0;
   let longestRun = 0;
   const relocks: RelockEvent[] = [];
+  const hunts: HuntEvent[] = [];
   let ambiguous = false;
 
   for (let i = 0; i < tokens.length; i++) {
@@ -233,6 +240,14 @@ export function alignUtterance(
     unmatched++;
     run++;
     if (run > longestRun) longestRun = run;
+    /* **ههنا حادت الكلمةُ عن نصّ الآية** — وههنا وحدَه يُلتمس فرعُ النظيرة.
+       **وهو التماسٌ محضٌ**: لا يمسّ المؤشّرَ ولا العدَّ ولا الاستردادَ بحرف. */
+    if (hunt && !hunts.length) {
+      /* **انزلاقٌ واحدٌ للجملة الواحدة**: تُعاد محاذاةُ الجملة من مرساتها كلَّما
+         نمت، فلو التُمس عند كلّ رمزٍ حائدٍ لتكرّر الخبرُ الواحدُ بوجوهٍ شتّى. */
+      const ev = huntAt(script, tokens, i, pos, hunt);
+      if (ev) hunts.push(ev);
+    }
     if (run >= cfg.lostRun) {
       const tail = tokens.slice(Math.max(0, i - cfg.relockGramMax + 1), i + 1);
       const found = relock(script, tail, pos, cfg);
@@ -255,6 +270,7 @@ export function alignUtterance(
     longestUnmatchedRun: longestRun,
     relocks,
     ambiguous,
+    hunts,
   };
 }
 
@@ -324,4 +340,222 @@ export function bridgeGaps(
     prev = i;
   }
   return bridged;
+}
+
+/* ═══════════════ الاصطيادُ الصوتيّ — بابٌ مغلقٌ ما لم يُفتح ═══════════════ */
+
+/**
+ * **التسميعُ يمسك الانزلاقَ إلى النظيرة.**
+ *
+ * الحافظُ لا يُخطئ في مطلع الآية؛ يُخطئ **عند نقطة التفرّع**: يبلغ العبارةَ
+ * المشتركةَ بين موضعين، فينزلق إلى نظيرتها في سورةٍ أخرى **ويمضي فيها**. وهذا
+ * القسمُ يمسك ذلك الانزلاقَ من محاذاة ما يُسمع على **نصَّي الزوج معًا**.
+ *
+ * ### أربعةُ قيودٍ تحكمه
+ *
+ * ١) **بابٌ مغلقٌ ما لم يُفتح**: لا يعمل منه حرفٌ ما لم يُمرَّر `HuntConfig` —
+ *    فالمصلّي والقارئُ العاديُّ لا يمسّهما شيء، وسلوكُ المحاذاة القائمُ لا
+ *    يتبدّل بحرف. وهذا شرطٌ في التصميم لا وعدٌ في تعليق.
+ * ٢) **الفهرسُ يُمرَّر ولا يُقرأ**: المحاذاةُ لا تفتح ملفًّا ولا تعرف «فروق
+ *    التنزيل» — يُبنى الفهرسُ في التطبيق ويُسلَّم إليها إعدادًا.
+ * ٣) **العتبةُ صارمةٌ معلَنةٌ باسمها**: ثلاثُ كلماتٍ متتالياتٍ **حصريّة** —
+ *    **فاتّهامُ قارئٍ مصيبٍ بالانزلاق أفدحُ من تفويت انزلاق**. ومن ثَمّ كان
+ *    التماسُ التهمة **صارمًا** (تطابقٌ أو جذعٌ لا مسافةَ تحرير) والتماسُ
+ *    البراءة **تسامحيًّا أوسعَ نافذة**: يُبرَّأ بأدنى شبهةٍ ولا يُتَّهم إلّا
+ *    ببيّنة.
+ * ٤) **خبرٌ لا حكم**: تُرفع الواقعةُ إلى السطح، وهو يتولّى موضعَ الإعلان
+ *    بمراتب القرار — **ولا مقاطعةَ في أثناء الجريان بحال**.
+ *
+ * **وما لا يصطاده معلَنٌ**: مفرقٌ يتّفق فيه ما بعد الوجهين (﴿يُذَبِّحُونَ﴾ /
+ * ﴿يُقَتِّلُونَ﴾ ثمّ ﴿أَبْنَآءَكُمْ﴾ في الآيتين) لا تقوم به ثلاثُ كلماتٍ حصريّة —
+ * فيمرّ ولا يُقال فيه شيء. وذلك مقتضى العتبة لا نقصٌ فيها.
+ */
+
+/** **العتبةُ** — كم كلمةً متتاليةً حصريّةً يثبت بها الانزلاق (رقمٌ معلَنٌ مسمًّى) */
+export const HUNT_RUN = 3;
+
+/**
+ * **أقصى ما يُتخطّى من كلمات الفرع بين مطابقتين** — محرّكاتُ التعرّف تُسقط
+ * الكلماتِ القصيرةَ كثيرًا، فلو لزم اللحاقُ كلمةً بكلمةٍ لضاع كلُّ انزلاقٍ حقّ.
+ */
+export const HUNT_STEP = 2;
+
+/**
+ * **نافذةُ البراءة** — أيُّ مطابقةٍ لهذا الرمز في هذا القدر من نصّ الآية التي
+ * هو فيها **تُسقط الحصريّة** فيُقطع العدّ. **وهي أوسعُ من نافذة التهمة قصدًا.**
+ *
+ * **وهي مثبَّتةٌ عند المفرق لا تسير مع الرمز**: لو سارت لجازت كلمةٌ شاردةٌ
+ * تطابق ما بعدَ الآية فتُقدّمها، **فيخرج من نافذة البراءة ما كان فيها** ويُتَّهم
+ * عائدٌ إلى الصواب. والعتبةُ إنّما تُبلغ بثلاثٍ من موضع المفرق، وهنّ في النافذة.
+ */
+export const HUNT_CLEAR = 8;
+
+/** مفرقٌ واحدٌ في زوج — بموضعه من الآيتين ووجهيه رسمًا */
+export interface HuntFork {
+  /** رقمُ كلمة المفرق في الآية التي يتلوها (مبدوءٌ بواحد) */
+  here: number;
+  /** رقمُها في فرع النظيرة (مبدوءٌ بواحد) */
+  there: number;
+  /** الوجهان **رسمًا كما في المصحف** — و`null` أنّ الآيةَ تنتهي ههنا */
+  faceHere: string | null;
+  faceThere: string | null;
+}
+
+/** نظيرةُ آيةٍ: فرعُها الذي يمضي فيه المنزلق، ومفارقُها */
+export interface HuntPair {
+  /** مفتاحُ الزوج — **وهو مفتاحُ سجلّ الخلط نفسُه** فتلتقي التسميعةُ والتدريب */
+  key: string;
+  /** موضعُ النظيرة «سورة:آية» */
+  there: string;
+  /**
+   * **فرعُها**: كلماتُها مطبَّعةً **وما يليها في المصحف**. ولِمَ يُضمّ ما يليها؟
+   * لأنّ المفرقَ قد يقع في آخر الآية، فلا يبقى بعده من النظيرة إلّا كلمةٌ
+   * واحدةٌ لا تبلغ العتبةَ أبدًا — **والانزلاقُ إنّما يثبت بما يمضي فيه
+   * المنزلق**، وهو ما بعد النظيرة من المصحف.
+   */
+  branch: string[];
+  forks: HuntFork[];
+}
+
+/** «سورة:آية» ⇐ ما لها من نظائر */
+export type HuntIndex = Map<string, HuntPair[]>;
+
+/** إعدادُ الاصطياد — **تمريرُه فتحُ الباب، وتركُه إغلاقُه** */
+export interface HuntConfig {
+  index: HuntIndex;
+  /** موضعُ كلمةٍ من النصّ «سورة:آية:كلمة» — دالّةٌ فلا تُنسخ مصفوفةٌ في كلّ خطوة */
+  locOf: (i: number) => string | undefined;
+}
+
+/** واقعةُ اصطياد — **الزوجُ · موضعُ المفرق · الوجهان** */
+export interface HuntEvent {
+  key: string;
+  /** الآيةُ التي كان يتلوها «سورة:آية» */
+  here: string;
+  /** النظيرةُ التي جرى عليها «سورة:آية» */
+  there: string;
+  /** موضعُ الوميض «سورة:آية:كلمة» — كلمةُ المفرق، أو آخرُ كلمةٍ إن كان مفرقَ ذيل */
+  at: string;
+  faceHere: string | null;
+  faceThere: string | null;
+  /** كم كلمةً حصريّةً متتاليةً ثبت بها */
+  run: number;
+}
+
+/** التماسُ رمزٍ في مدًى أمامَ موضعٍ — فهرسُه أو `-1` */
+function seek(words: string[], from: number, ahead: number, tok: string, strict: boolean): number {
+  const end = Math.min(words.length - 1, from + ahead);
+  for (let j = Math.max(0, from); j <= end; j++) {
+    if (tolerantEq(words[j], tok, strict)) return j;
+  }
+  return -1;
+}
+
+/**
+ * **عدُّ الحصريّ المتتالي** — يُعرض كلُّ رمزٍ على الجهتين من نقطة المفرق: على
+ * **فرع النظيرة** بمؤشّرٍ يسير معه، وعلى **نصّ الآية التي هو فيها** بنافذةِ
+ * براءةٍ مثبَّتةٍ عند المفرق (وهي من النصّ المتّصل فتشمل ما بعد الآية).
+ *
+ * • طابق النظيرةَ ولم يطابق الحاليةَ ⇒ **حصريٌّ** فيُعدّ.
+ * • طابقهما معًا (وهو حالُ ما اتّفقتا فيه بعد المفرق) ⇒ **يُقطع العدّ**، فلا
+ *   تُبنى تهمةٌ على كلامٍ يحتمل الوجهين.
+ * • لم يطابق واحدًا منهما (خطأُ محرّكٍ أو كلامٌ غيرُ تلاوة) ⇒ **يُقطع العدّ**
+ *   كذلك؛ والعتبةُ لا تُبلغ إلّا بثلاثٍ **نقيّاتٍ متتاليات**.
+ *
+ * **ويُمضى إلى آخر الرموز ولا يُقطع عند بلوغ العتبة** — فآيةٌ لها نظائرُ عدّةٌ
+ * يتشابه بعضُها ببعضٍ يقع كلامُه على أكثر من فرع، **فالأطولُ حصريّةً أولى**
+ * بأن يُنسب إليه؛ ولولا استيفاءُ العدّ لاستوت الفروعُ كلُّها عند الثلاث.
+ */
+function exclusiveRun(
+  script: string[],
+  forkAt: number,
+  branch: string[],
+  branchAt: number,
+  tokens: string[],
+  from: number,
+): number {
+  let there = branchAt;
+  let run = 0;
+  let best = 0;
+  for (let i = from; i < tokens.length; i++) {
+    const tok = tokens[i];
+    const t = seek(branch, there, HUNT_STEP, tok, true);
+    const h = seek(script, forkAt, HUNT_CLEAR, tok, false);
+    if (t >= 0 && h < 0) {
+      there = t + 1;
+      run++;
+      if (run > best) best = run;
+      continue;
+    }
+    run = 0;
+    if (t >= 0) there = t + 1;
+  }
+  return best;
+}
+
+/**
+ * التماسُ الانزلاق في نظائر آيةٍ بعينها — **وأطولُها حصريّةً أولى**: آيةٌ تلتبس
+ * بثلاثٍ يشبه بعضُها بعضًا يقع كلامُ المنزلق على أكثر من فرع، فيُنسب إلى أدلِّها
+ * عليه. **وما تساوى فيه فرعان فالتباسٌ في المادّة لا في الحكم** — وأوّلُهما في
+ * ترتيب المصحف يُقدَّم، فيثبت الحكمُ ولا يتقلّب.
+ *
+ * @param base فهرسُ الكلمة الأولى من تلك الآية في النصّ
+ * @param pos موضعُ المؤشّر حين حادت الكلمة — **ولا يُلتمس مفرقٌ لم يبلغه**
+ */
+function huntIn(
+  script: string[],
+  tokens: string[],
+  from: number,
+  ayah: string,
+  base: number,
+  pos: number,
+  index: HuntIndex,
+): HuntEvent | null {
+  const pairs = index.get(ayah);
+  if (!pairs) return null;
+  let best: HuntEvent | null = null;
+  for (const p of pairs) {
+    for (const f of p.forks) {
+      const at = base + f.here - 1;
+      /* **بعد بلوغ المؤشّر نقطةَ المفرق** — لا قبلَها، ولا بعد أن يجاوزها
+         مستقيمًا (وتُترك سعةُ خطوةٍ لِما يجمعه المحرّكُ من كلمتين في رمز). */
+      if (at > pos || pos - at > HUNT_STEP) continue;
+      const run = exclusiveRun(script, at, p.branch, f.there - 1, tokens, from);
+      if (run < HUNT_RUN || (best && run <= best.run)) continue;
+      best = {
+        key: p.key,
+        here: ayah,
+        there: p.there,
+        /* وجهٌ خالٍ ⇒ مفرقُ ذيلٍ لا كلمةَ له في هذه الآية، فالوميضُ على آخرها */
+        at: `${ayah}:${f.faceHere === null ? f.here - 1 : f.here}`,
+        faceHere: f.faceHere,
+        faceThere: f.faceThere,
+        run,
+      };
+    }
+  }
+  return best;
+}
+
+/**
+ * **آيةُ المؤشّر ونظائرُها** — تُلتمس من موضع الكلمة التي وقف عندها.
+ *
+ * **ومفرقُ الذيل يُلتمس بعده**: زوجٌ تنتهي فيه إحدى الآيتين وتمضي الأخرى نقطةُ
+ * مفرقه بعد آخر كلمةٍ من المنقضية، والمؤشّرُ يومئذٍ في **مطلع التي تليها** —
+ * فلو اقتُصر على آية المؤشّر لسقط بابُ الذيل كلُّه من الاصطياد.
+ */
+function huntAt(script: string[], tokens: string[], from: number, pos: number, h: HuntConfig): HuntEvent | null {
+  const loc = h.locOf(pos);
+  if (!loc) return null;
+  const cut = loc.lastIndexOf(":");
+  const no = Number(loc.slice(cut + 1));
+  if (!Number.isFinite(no) || no < 1) return null;
+  const found = huntIn(script, tokens, from, loc.slice(0, cut), pos - no + 1, pos, h.index);
+  if (found || no > HUNT_STEP + 1) return found;
+  const before = h.locOf(pos - no);
+  if (!before) return null;
+  const cut2 = before.lastIndexOf(":");
+  const prev = Number(before.slice(cut2 + 1));
+  if (!Number.isFinite(prev) || prev < 1) return null;
+  return huntIn(script, tokens, from, before.slice(0, cut2), pos - no - prev + 1, pos, h.index);
 }
