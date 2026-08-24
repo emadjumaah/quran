@@ -57,6 +57,12 @@ const CDP_PORT = 9345;
 /** الحدُّ الأدنى المعلَن — ميثاقُ الوجه §١ */
 const MIN_TAP = 44;
 const MIN_TEXT = 15;
+/**
+ * **أرضيّةُ الأبواب** (ف٥ §٣ — شاهدُ «لا قسمَ ضاع»): عددُ مداخل دُرج «المزيد»
+ * **قبلَ دفعة ف٥**، مقيسًا حيًّا على ٣٩٠ لا مقدَّرًا. المدخلُ يتغيّر والترتيبُ
+ * يتغيّر — **والأبوابُ لا تنقص**؛ فمن نقص عنها فقد أسقط بابًا، ويُحمِّر.
+ */
+const MIN_DOORS = 23;
 
 /**
  * **الصفحاتُ الأساسيّة** بحدّ المالك — وهي وحدَها ملزَمةٌ بالمقاييس.
@@ -65,6 +71,9 @@ const MIN_TEXT = 15;
 const CORE_FILES = [
   "main.tsx",
   "views/Reader.tsx",
+  /* **الصفحةُ الأولى أساسيّةٌ بنصّ الميثاق** (§٠: «وأوّلُ ما يقع عليه بصرُ
+     الفاتح») — وقد صارت في ف٥ صفحةً تُعرض لا مسارًا يُعبَر، فتُقاس بالميثاق. */
+  "views/Home.tsx",
   // **وحلّت بطاقةُ العبور محلَّ `views/Tatabbu.tsx`** (ف٤ §٣): خرج سطحُ التتبّع
   // من مشكاة إلى تطبيق التلاوة، **وبقي مسارُه** بطاقةً تفتح البابَ حيث صار —
   // فتُقاس بالميثاق كما يُقاس غيرُها، ولا يخرج من الحرس مسارٌ يزوره الناس.
@@ -279,6 +288,14 @@ function staticChecks() {
 /** الصفحاتُ الأساسيّةُ ومواضعُ فحصها */
 const SURFACES = [
   { id: "المصحف", route: "/read/2", wait: `document.querySelector('.mushaf-page')`, settle: 1500 },
+  /* **والصفحةُ الأولى سطحان** (ف٥ §٣): القياسُ لا يرى إلّا ما في النافذة، وهي
+     أطولُ من ٨٤٤ على الجوال — فتُقاس أعلاها ثمّ تُمرَّر إلى آخرها فتُقاس بقيّتُها،
+     ولا يخرج من الحرس صفٌّ لأنّه وقع تحت الطيّة. */
+  { id: "الصفحةُ الأولى", route: "/", wait: `document.querySelector('[data-home="root"]')`, settle: 1000 },
+  {
+    id: "الصفحةُ الأولى · أسفلُها", route: "/", wait: `document.querySelector('[data-home="root"]')`,
+    pre: `document.querySelector('.page.home').scrollTop = 9999; return true;`, settle: 1000,
+  },
   {
     id: "الإعدادات", route: "/read/2", wait: `document.querySelector('.set-wrap > button')`,
     pre: `[...document.querySelectorAll('.set-wrap > button')].at(-1).click(); return true;`, settle: 700,
@@ -1083,6 +1100,288 @@ async function live() {
             `ضبطٌ سالب: شُفِّف ظهرُ ورقة «⋯» فصار حاملُ الأرضيّة خارجَها (${bare.rows.find((r) => !r.grounded)?.host ?? "—"}) فاصطيدت، ثمّ أُعيد فعادت خضراء`,
           );
         }
+      }
+    }
+  }
+
+
+  /* ═══ ٨ — **شاهدُ «لا قسمَ ضاع»** (ف٥ §٣) ═══
+     المدخلُ تغيّر والترتيبُ تغيّر — **والأبوابُ لا تنقص**. فيُعدُّ ما خلف
+     «المزيد» عدًّا حيًّا على ٣٩٠: يُفتح الدُّرجُ فتُحصى مداخلُه ومجموعاتُه،
+     ويُقيَّد العددُ في المخرَج فيُقابَل بما قبلَ الدفعة. **وحدٌّ سالبٌ معه**:
+     نقصانُ العدد عن الأرضيّة المعلَنة يُحمِّر — فلا يسقط بابٌ صامتًا. */
+  if (lastCdp) {
+    const cdp = lastCdp;
+    await cdp.send("Page.navigate", { url: "about:blank" });
+    await sleep(200);
+    await cdp.send("Page.navigate", { url: `http://localhost:${PORT}/#/read/2` });
+    const up = await cdp.until(`!document.querySelector('.boot') && document.querySelector('.menu-btn')`);
+    if (!up) {
+      missing.push("لم يقم زرُّ القائمة لعدّ مداخل «المزيد»");
+    } else {
+      await sleep(600);
+      const doors = await cdp.evAsync(`
+        const wait = (t) => new Promise((r) => setTimeout(r, t));
+        const b = document.querySelector('.menu-btn');
+        if (!b) return { error: 'لا زرَّ قائمةٍ في الرأس' };
+        if (!document.querySelector('.drawer-nav')) { b.click(); await wait(600); }
+        const nav = document.querySelector('.drawer-nav');
+        if (!nav) return { error: 'لم يُفتح الدُّرج' };
+        const groups = [...nav.querySelectorAll('.drawer-group')].map((g) => ({
+          name: (g.querySelector('.drawer-group-h')?.textContent || '').trim(),
+          n: g.querySelectorAll('a').length,
+        }));
+        return {
+          total: nav.querySelectorAll('a').length,
+          inGroups: groups.reduce((a, g) => a + g.n, 0),
+          groups,
+        };
+      `);
+      if (doors.error) {
+        fail("شاهدُ «لا قسمَ ضاع»", doors.error);
+      } else if (doors.total < MIN_DOORS) {
+        fail(
+          "شاهدُ «لا قسمَ ضاع»",
+          `مداخلُ «المزيد» ${doors.total} — دون الأرضيّة المعلَنة ${MIN_DOORS}: سقط بابٌ. ` +
+            doors.groups.map((g) => `«${g.name}» ${g.n}`).join(" · "),
+        );
+      } else {
+        notes.push(
+          `شاهدُ «لا قسمَ ضاع» على ٣٩٠: ${doors.total} مدخلًا في دُرج «المزيد» ` +
+            `(${doors.inGroups} منها في ${doors.groups.length} مجموعات: ${doors.groups.map((g) => `«${g.name}» ${g.n}`).join(" · ")}) — والأرضيّةُ ${MIN_DOORS}`,
+        );
+      }
+      /* **وضبطُه السالب**: يُنزع مدخلان من الدُّرج فيُصطاد النقصان، ثمّ يُعادان */
+      const bare = await cdp.ev(`
+        const nav = document.querySelector('.drawer-nav');
+        if (!nav) return null;
+        window.__doors = [...nav.querySelectorAll('a')].slice(0, 2).map((a) => [a, a.nextSibling, a.parentNode]);
+        for (const [a] of window.__doors) a.remove();
+        return nav.querySelectorAll('a').length;
+      `);
+      /* **والإعادةُ بالعكس**: المنزوعان متجاوران، فمرجعُ «ما بعدَ الأوّل» هو
+         الثاني نفسُه — فلو أُعيد الأوّلُ قبلَ الثاني أُسند إلى عقدةٍ منزوعة. */
+      await cdp.ev(`
+        for (const [a, next, parent] of [...(window.__doors || [])].reverse()) {
+          if (next && next.parentNode === parent) parent.insertBefore(a, next);
+          else parent.appendChild(a);
+        }
+        return true;
+      `);
+      const back = await cdp.ev(`return document.querySelector('.drawer-nav')?.querySelectorAll('a').length ?? 0;`);
+      if (bare == null) {
+        fail("ضبطُ شاهد «لا قسمَ ضاع»", "لا دُرجَ يُنزع منه — فالضبطُ لم يقع");
+      } else if (!(bare < MIN_DOORS) && !(bare < doors.total)) {
+        fail("ضبطُ شاهد «لا قسمَ ضاع»", `نُزع مدخلان فلم ينقص العددُ (${bare}) — والعدُّ لا يعدّ`);
+      } else if (back !== doors.total) {
+        fail("ضبطُ شاهد «لا قسمَ ضاع»", `أُعيد المنزوعُ فلم يعد العددُ (${back} مقابلَ ${doors.total}) — عدٌّ غيرُ مستقرّ`);
+      } else {
+        notes.push(`ضبطٌ سالب: نُزع مدخلان من الدُّرج فنقص العددُ إلى ${bare} فاصطيد، ثمّ أُعيدا فعاد إلى ${back}`);
+      }
+    }
+  }
+
+
+  /* ═══ ٩ — **مدخلُ الصفحة الأولى** (ف٥ §٣ — إلحاقٌ بالقائم لا بوّابةٌ ثانية) ═══
+     ثلاثةُ أحكامٍ من §١ تُحرَس بأعيانها، ولكلٍّ ضبطُه السالب:
+       أ — **حقلُ الصدر واحدٌ لا حقلان**: حقلان في شاشةٍ واحدةٍ هما الحيرةُ التي
+           فُتحت هذه الدفعةُ لرفعها. **يُزرع حقلٌ ثانٍ فيُصطاد.**
+       ب — **بطاقاتُ المهمّة ثلاثٌ بأفعالها**: ثلاثٌ لا أكثر، وعناوينُها أفعالُ
+           الطالب (افهمْ · تتبّعْ · حقّقْ) لا أسماءُ أقسام. **تُزرع رابعةٌ فتُصطاد،
+           ويُبدَّل فعلٌ باسمِ قسمٍ فيُصطاد.**
+       ج — **ولا لوحَ يعلو المصحف** — **وهو عينُ الجذر المحسوم**: نافذةُ الاستقبال
+           `wq-overlay` كانت `fixed` تملأ الشاشة فوق المتن فتبتلع الحدثَ تحتها
+           (وبها شُلَّت عجلةُ الحاسوب). **والمقيسُ ما تصيبه إصبعُ القارئ**: نقاطٌ
+           في متن المصحف يُسأل عن العنصر الواقع عليها — فإن كان غيرَ المصحف فثَمَّ
+           لوحٌ يعترض. **يُزرع اللوحُ بعينه فيُصطاد**، ثمّ يُرفع فتعود خضراء.
+     **ولا `\b` مع العربيّة** (بلاغُ الحدود): الأفعالُ تُقابَل بصدر النصّ بعد
+     تجريد حركاته، لا بحدّ كلمة. */
+  if (lastCdp) {
+    const cdp = lastCdp;
+    const openHome = async () => {
+      await cdp.send("Page.navigate", { url: "about:blank" });
+      await sleep(200);
+      await cdp.send("Page.navigate", { url: `http://localhost:${PORT}/#/` });
+      const ok = await cdp.until(`!document.querySelector('.boot') && document.querySelector('[data-home="root"]')`);
+      await sleep(900);
+      return ok;
+    };
+    /** حقلُ الصدر وبطاقاتُ المهمّة — قراءةٌ واحدةٌ لهما */
+    const ENTRY = `
+      const root = document.querySelector('[data-home="root"]');
+      if (!root) return { error: 'لا صفحةَ أولى' };
+      const fields = [...root.querySelectorAll('input, textarea')].filter((el) => {
+        const t = (el.getAttribute('type') || 'text').toLowerCase();
+        return el.tagName === 'TEXTAREA' || ['text', 'search', 'url', 'email', 'tel', 'number'].includes(t);
+      });
+      const strip = (t) => t.replace(/[\\u064B-\\u0652\\u0670]/g, '').replace(/\\s+/g, ' ').trim();
+      const tasks = [...root.querySelectorAll('[data-home="task"]')].map((el) => {
+        const v = el.querySelector('[data-home="task-verb"]');
+        return { title: v ? strip(v.textContent || '') : null };
+      });
+      return {
+        fields: fields.map((el) => (el.getAttribute('aria-label') || el.className || el.tagName).toString().slice(0, 30)),
+        tasks,
+        mushaf: !!root.querySelector('[data-home="mushaf"]'),
+      };
+    `;
+    /** الأفعالُ المعلَنة — عنوانُ البطاقة يبدأ بأحدها، وإلّا فهو اسمُ قسمٍ لا فعلُ طالب */
+    const VERBS = ["افهمْ", "تتبّعْ", "حقّقْ"];
+    /** **والمقابلةُ بعد تجريد الحركات من الطرفين** — فالشدّةُ في «تتبّعْ» حركةٌ
+     *  لا حرف، والمقروءُ من الصفحة مجرَّدٌ منها؛ فلو قوبل بالمشكول لم يلتقيا. */
+    const bare = (t) => (t ?? "").replace(/[\u064B-\u0652\u0670]/g, "");
+    const verbOf = (title) => VERBS.find((v) => bare(title).startsWith(bare(v))) ?? null;
+
+    if (!(await openHome())) {
+      missing.push("لم تقم الصفحةُ الأولى لقياس مدخلها");
+    } else {
+      const e = await cdp.ev(ENTRY);
+      if (e.error) {
+        fail("مدخلُ الصفحة الأولى", e.error);
+      } else {
+        /* أ — حقلٌ واحدٌ لا حقلان */
+        if (e.fields.length !== 1) {
+          fail(
+            "حقلُ الصدر واحدٌ",
+            e.fields.length
+              ? `${e.fields.length} حقولٍ في الصفحة الأولى: ${e.fields.join(" · ")} — والمقرَّرُ حقلٌ جامعٌ واحد`
+              : "لا حقلَ في صدر الصفحة الأولى",
+          );
+        } else {
+          notes.push(`حقلُ الصدر واحدٌ في الصفحة الأولى (${e.fields[0]}) — لا حقلان، وهو الحقلُ الجامع`);
+        }
+        /* ب — ثلاثُ بطاقاتٍ بأفعالها */
+        const verbs = e.tasks.map((k) => verbOf(k.title));
+        if (e.tasks.length !== 3) {
+          fail("بطاقاتُ المهمّة", `${e.tasks.length} بطاقةً — والمقرَّرُ ثلاثٌ لا أكثر`);
+        } else if (verbs.some((v) => v == null)) {
+          fail(
+            "بطاقاتُ المهمّة بأفعالها",
+            `عنوانٌ ليس فعلَ طالبٍ: ${e.tasks.filter((k, i) => verbs[i] == null).map((k) => `«${k.title ?? "بلا عنوان"}»`).join(" · ")} — والأفعالُ المعلَنة: ${VERBS.join(" · ")}`,
+          );
+        } else if (new Set(verbs).size !== 3) {
+          fail("بطاقاتُ المهمّة بأفعالها", `فعلٌ مكرَّرٌ في البطاقات: ${verbs.join(" · ")}`);
+        } else {
+          notes.push(
+            `بطاقاتُ المهمّة ثلاثٌ بأفعالها: ${e.tasks.map((k) => `«${k.title}»`).join(" · ")}` +
+              (e.mushaf ? " — وفوقَها بطاقةُ المصحف بموضعها" : " — **ولا بطاقةَ مصحفٍ**"),
+          );
+        }
+        if (!e.mushaf) fail("بطاقةُ المصحف", "لا بطاقةَ للمصحف في الصفحة الأولى — والقراءةُ بابُ مشكاة الثاني");
+
+        /* ضبطُهما السالب: حقلٌ ثانٍ، وبطاقةٌ رابعةٌ، وفعلٌ يُبدَّل باسمِ قسم */
+        await cdp.ev(`
+          const root = document.querySelector('[data-home="root"]');
+          const inp = document.createElement('input');
+          inp.id = '__plantField'; inp.type = 'search'; inp.setAttribute('aria-label', 'حقلٌ مزروع');
+          root.appendChild(inp);
+          const extra = document.createElement('section');
+          extra.id = '__plantTask'; extra.setAttribute('data-home', 'task');
+          const v = document.createElement('span');
+          v.setAttribute('data-home', 'task-verb'); v.textContent = 'قسمُ المواضيع';
+          extra.appendChild(v);
+          root.appendChild(extra);
+          const first = root.querySelector('[data-home="task-verb"]');
+          window.__verbWas = first.textContent;
+          first.textContent = 'الأقسامُ والأدوات';
+          return true;
+        `);
+        await sleep(250);
+        const planted = await cdp.ev(ENTRY);
+        await cdp.ev(`
+          document.getElementById('__plantField')?.remove();
+          document.getElementById('__plantTask')?.remove();
+          const first = document.querySelector('[data-home="task-verb"]');
+          if (first && window.__verbWas) first.textContent = window.__verbWas;
+          return true;
+        `);
+        await sleep(250);
+        const after = await cdp.ev(ENTRY);
+        const caughtField = planted.fields.length > 1;
+        const caughtCount = planted.tasks.length > 3;
+        const caughtVerb = planted.tasks.some((k) => verbOf(k.title) == null);
+        if (!caughtField) fail("ضبطُ مدخل الصفحة الأولى", "زُرع حقلٌ ثانٍ فلم يُصطَد — والفاحصُ لا يفحص");
+        if (!caughtCount) fail("ضبطُ مدخل الصفحة الأولى", "زُرعت بطاقةٌ رابعةٌ فلم تُصطَد");
+        if (!caughtVerb) fail("ضبطُ مدخل الصفحة الأولى", "بُدِّل فعلُ بطاقةٍ باسمِ قسمٍ فلم يُصطَد");
+        if (caughtField && caughtCount && caughtVerb) {
+          notes.push(
+            `ضبطٌ سالب: زُرع حقلٌ ثانٍ (فصارا ${planted.fields.length}) وبطاقةٌ رابعةٌ (فصرن ${planted.tasks.length}) وبُدِّل فعلٌ باسمِ قسمٍ — فاصطادت البوّابةُ الثلاثةَ`,
+          );
+        }
+        if (after.fields.length !== 1 || after.tasks.length !== 3 || after.tasks.some((k) => verbOf(k.title) == null)) {
+          fail("ضبطُ مدخل الصفحة الأولى", "أُزيل الزرعُ فلم تعُد الصفحةُ كما كانت — قياسٌ غيرُ مستقرّ");
+        } else {
+          notes.push("وأُزيل الزرعُ فعادت الصفحةُ الأولى حقلًا واحدًا وثلاثَ بطاقاتٍ بأفعالها — قياسٌ مستقرّ");
+        }
+      }
+    }
+
+    /* ── ج — **ولا لوحَ يعلو المصحف**: يُسأل عمّا تصيبه إصبعُ القارئ في المتن ── */
+    const VEIL = `
+      const q = document.querySelector('.mushaf-page');
+      if (!q) return { error: 'لا صفحةَ مصحفٍ تُقاس' };
+      const r = q.getBoundingClientRect();
+      /* **النقاطُ في المرئيِّ من المتن**: ما خرج من النافذة لا يُسأل عنه أصلًا */
+      const top = Math.max(r.top, 0), bottom = Math.min(r.bottom, innerHeight);
+      if (bottom - top < 40) return { error: 'متنُ المصحف خارجَ النافذة' };
+      const x = Math.round(r.left + r.width / 2);
+      const pts = [0.25, 0.5, 0.75].map((f) => [x, Math.round(top + (bottom - top) * f)]);
+      const covers = [];
+      for (const [px, py] of pts) {
+        const el = document.elementFromPoint(px, py);
+        if (!el || el === q || q.contains(el)) continue;
+        const st = getComputedStyle(el);
+        covers.push({
+          what: (el.getAttribute('aria-label') || el.className || el.tagName).toString().replace(/\\s+/g, ' ').slice(0, 30),
+          pos: st.position, z: st.zIndex, at: px + '×' + py,
+        });
+      }
+      return { covers, n: pts.length, pts: pts.map((p) => p.join('×')) };
+    `;
+    await cdp.send("Page.navigate", { url: "about:blank" });
+    await sleep(200);
+    await cdp.send("Page.navigate", { url: `http://localhost:${PORT}/#/read/2` });
+    const shown = await cdp.until(`!document.querySelector('.boot') && document.querySelector('.mushaf-page')`);
+    if (!shown) {
+      missing.push("لم يقم سطحُ المصحف لقياس ما يعلوه");
+    } else {
+      await sleep(1500);
+      const v = await cdp.ev(VEIL);
+      if (v.error) {
+        fail("لوحٌ يعلو المصحف", v.error);
+      } else if (v.covers.length) {
+        fail(
+          "لوحٌ يعلو المصحف",
+          `نقرةُ القارئ في المتن تقع على غيره: ${v.covers.map((c) => `${c.what} [${c.pos}، طبقة ${c.z}] عند ${c.at}`).join(" · ")}`,
+        );
+      } else {
+        notes.push(
+          `لا لوحَ يعلو المصحف: ${v.n} نقاطٍ في متنه (${v.pts.join(" · ")}) تقع كلُّها على المصحف نفسِه — ونافذةُ الاستقبال رُفعت إلى سطرٍ في الصفحة الأولى`,
+        );
+      }
+      /* **وضبطُه عينُ الواقعة**: تُزرع النافذةُ الزائلةُ بهيئتها فتُصطاد، ثمّ تُرفع */
+      await cdp.ev(`
+        const o = document.createElement('div');
+        o.id = '__plantVeil'; o.className = 'wq-overlay';
+        o.style.cssText = 'position:fixed;inset:0;z-index:80;background:rgb(20 17 12 / 0.45)';
+        document.body.appendChild(o);
+        return true;
+      `);
+      await sleep(300);
+      const veiled = await cdp.ev(VEIL);
+      await cdp.ev(`document.getElementById('__plantVeil')?.remove(); return true;`);
+      await sleep(300);
+      const lifted = await cdp.ev(VEIL);
+      if (veiled.error) {
+        fail("ضبطُ اللوح فوق المصحف", `تعثّر القياسُ بعد الزرع: ${veiled.error}`);
+      } else if (veiled.covers.length !== veiled.n) {
+        fail("ضبطُ اللوح فوق المصحف", `زُرعت نافذةُ الاستقبال فوق المتن فلم تُصطَد إلّا في ${veiled.covers.length} من ${veiled.n} — والفاحصُ لا يفحص`);
+      } else if (lifted.error || lifted.covers.length) {
+        fail("ضبطُ اللوح فوق المصحف", "رُفع الزرعُ فلم تعُد البوّابةُ خضراء — قياسٌ غيرُ مستقرّ");
+      } else {
+        notes.push(
+          `ضبطٌ سالب: زُرعت نافذةُ الاستقبال (\`wq-overlay\` بهيئتها: \`fixed\` تملأ الشاشة في الطبقة ٨٠) فوق المتن — فوقعت عليها النقاطُ الثلاثُ كلُّها فاصطيدت، ثمّ رُفعت فعادت خضراء`,
+        );
       }
     }
   }
