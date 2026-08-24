@@ -10,6 +10,10 @@ import { parseMawdi, readMawdi } from "@mishkat/quran-core/lib/mawadi";
 // وحده — الكتبَ والطبقاتِ المضافة قيودَ مانيفست («العائلات المفتوحة»)
 void ensureLayers();
 import "./theme.css";
+/* **هيئةُ صفحة المصحف من الحزمة** (ف٢ §١) — مصدرٌ واحدٌ للتطبيقين، ويُستورد
+   **بعد** `theme.css` بعينه: قواعدُه كانت في وسطه، فمن قدّمها قلب حكمَ قاعدتين
+   من قواعده على الصفحة. */
+import "@mishkat/quran-core/mushaf.css";
 import Reader from "./views/Reader";
 import Roots from "./views/Roots";
 import Search from "./views/Search";
