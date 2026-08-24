@@ -172,7 +172,9 @@ async function run(live, neg, planted) {
       a: p.a, b: p.b, idA, idB, ops: p.ops, win: p.win ?? null, forks,
     });
   }
+  const t0 = Date.now();
   const index = live.furuq.huntIndexOf(pairs, wordsAt);
+  const buildMs = Date.now() - t0;
 
   /* ═══════════ مسرحُ التلاوة ═══════════ */
   /** نصٌّ متّصلٌ من آيةٍ فما بعدها — كما تفتحه نافذةُ العمل في التطبيق */
@@ -483,7 +485,9 @@ async function run(live, neg, planted) {
   console.log(
     `  العتبةُ ${HUNT_RUN} كلماتٍ حصريّةٍ متتالية · خطوةُ الفرع ${HUNT_STEP} · نافذةُ البراءة ${HUNT_CLEAR} · ذيلُ الفرع ${live.furuq.BRANCH_TAIL}`,
   );
-  console.log(`  الفهرس: ${index.size} آيةً لها نظائر · ${pairs.length} زوجًا · ${faces.length} وجهًا`);
+  console.log(
+    `  الفهرس: ${index.size} آيةً لها نظائر · ${pairs.length} زوجًا · ${faces.length} وجهًا · بُني في ${buildMs} مِث`,
+  );
   console.log(
     `  وما لم يُصطَد ${slipTried - slipCaught} وجهًا — لا تبلغ فيه الحصريّةُ ${HUNT_RUN} لأنّ الآيتين تعودان إلى الاتّفاق بعد المفرق`,
   );
