@@ -169,6 +169,16 @@ try {
 } catch (e) {}
 `;
 
+/** اختيارُ قيمةٍ في قائمةٍ بحيث تسمعها ريأكت */
+const setSelect = (sel, value) => `
+const el = document.querySelector('${sel}');
+if (!el) return false;
+const set = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+set.call(el, '${value}');
+el.dispatchEvent(new Event('change', { bubbles: true }));
+return true;
+`;
+
 const click = (sel) => `
 const el = document.querySelector('${sel}');
 if (!el) return false;
@@ -709,14 +719,7 @@ return {
   /* تُطوى ورقةُ الختام ويبقى الشريط، فتُبدَّل الحالُ إلى الختمة */
   await cdp.ev(click(".tw-backdrop"));
   await sleep(400);
-  await cdp.ev(`
-const el = document.querySelector('[data-track="hal"]');
-if (!el) return false;
-const set = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
-set.call(el, 'khatma');
-el.dispatchEvent(new Event('change', { bubbles: true }));
-return true;
-`);
+  await cdp.ev(setSelect('[data-track="hal"]', "khatma"));
   await sleep(500);
   const offer = await cdp.ev(`
 const b = document.querySelector('[data-track="resume"]');
@@ -747,6 +750,145 @@ return { loc: c ? c.dataset.w : null, page: p ? p.dataset.page : null, inPage: !
         `لُمس السطرُ فنُقل الموضعُ في مكانه: المؤشّرُ ${there.loc} في صفحة المصحف ${there.page} — **وهو من عناصر الصفحة كذلك**`,
       );
     }
+  }
+
+  /* ═══ ٧ — **حالُ التثبيت**: الحجابُ ينكشف بالتلاوة ولا يزحزح تنضيدًا ═══
+     `halat.ts` تُعرِّف الحالَ بأنّ «النصَّ محجوبٌ ينكشف بالتلاوة، وما بعده يبقى
+     محجوبًا» — **فاسمُها في القائمة دعوى حتّى تُشهد في الشجرة**. ويُشهد معها
+     أنّ الحجابَ **لونٌ لا تنضيد**: تُقاس صناديقُ السطور محجوبةً ومكشوفةً. */
+  await cdp.ev(click('[data-track="end"]'));
+  await cdp.until(`document.querySelector('[data-track="after"]')`, 10000);
+  await cdp.ev(click(".tw-backdrop"));
+  await sleep(400);
+  await cdp.ev(setSelect('[data-track="hal"]', "tathbit"));
+  await sleep(400);
+  await cdp.ev(click('[data-track="begin"]'));
+  await sleep(600);
+  if (await cdp.ev(`return !!document.querySelector('[data-track="agree"]');`)) {
+    await cdp.ev(click('[data-track="agree"]'));
+  }
+  const veiling = await cdp.until(`document.querySelector('.tw-cursor')`, 25000);
+  await sleep(700);
+  const veil = await cdp.ev(`
+const spans = [...document.querySelectorAll('[data-w]')];
+const at = spans.findIndex((s) => s.classList.contains('tw-cursor'));
+if (at < 0) return { error: 'لا مؤشّر' };
+const back = spans.slice(Math.max(0, at - 8), at);
+const ahead = spans.slice(at + 1, at + 9);
+/* **ولا يُكتفى بالصنف**: يُسأل عن كلّ حبرٍ باقٍ في المحجوب — عقدةِ نصٍّ ظاهرةٍ
+   بلونٍ غيرِ شفّاف بعد المؤشّر (كلمةً كانت أو علامةَ وقف). فالوعدُ «محجوب»
+   لا «موسومٌ بصنف». */
+const alpha = (v) => { const p = (v.match(/[\d.]+/g) ?? []).map(Number); return p.length < 4 ? (p.length ? 1 : 0) : p[3]; };
+const page = spans[at].closest('.mushaf-page');
+const stage = document.querySelector('.mushaf-stage');
+const leaks = [];
+const walker = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT);
+for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+  const t = (n.textContent || '').trim();
+  if (!t) continue;
+  const el = n.parentElement;
+  if (!el || !el.closest('.mp-text')) continue;
+  if (el.closest('.ayah-marker')) continue;           // ميداليّةُ الرقم تُرى — بها يُعرف الموضع
+  const p = el.closest('.mushaf-page');
+  /* **بترتيب الشجرة لا بالإحداثيّات**: صندوقُ الكلمة في خطّ المصحف أطولُ من سطره،
+     فمقابلةُ المواضع تُخرج السطرَ التاليَ من الحساب — وهو أوّلُ ما يجب أن يُحجب. */
+  const later = !!(spans[at].compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
+  if (!later) continue;
+  if (alpha(getComputedStyle(el).color) < 0.02) continue;
+  leaks.push({ what: t.slice(0, 6), cls: el.className.toString().slice(0, 20), page: p.dataset.page });
+}
+return {
+  loc: spans[at].dataset.w,
+  backN: back.length, backVeiled: back.filter((s) => s.classList.contains('tw-veil')).length,
+  aheadN: ahead.length, aheadVeiled: ahead.filter((s) => s.classList.contains('tw-veil')).length,
+  ink: ahead[0] ? getComputedStyle(ahead[0]).color : null,
+  leaks: leaks.slice(0, 8), leakN: leaks.length,
+};
+`);
+  if (!veiling || veil.error) {
+    fail("حالُ التثبيت", `لم يبدأ التتبّعُ في حال التثبيت: ${veil.error ?? "لا مؤشّر"}`);
+  } else if (veil.leakN) {
+    fail(
+      "حالُ التثبيت",
+      `بقي حبرٌ ظاهرٌ فيما بعد المؤشّر (${veil.leakN}): ${veil.leaks.map((l) => `«${l.what}» ${l.cls || "بلا صنف"} ص${l.page}`).join(" · ")}`,
+    );
+  } else if (veil.backVeiled > 0 || veil.aheadVeiled !== veil.aheadN) {
+    fail(
+      "حالُ التثبيت",
+      `الحجابُ ليس على حدّه: قبلَ المؤشّر ${veil.backVeiled}/${veil.backN} محجوبةٌ · وبعده ${veil.aheadVeiled}/${veil.aheadN}`,
+    );
+  } else {
+    notes.push(
+      `حالُ التثبيت: ما قبلَ المؤشّر مكشوفٌ (${veil.backN} كلمةً) وما بعدَه محجوبٌ كلُّه (${veil.aheadN} كلمةً · لونُ الحرف ${veil.ink}) — **وعدمُ انكشاف الكلمة هو التنبيه**، ولا لونَ خطأٍ ألبتّة. ولا حبرَ ظاهرًا في المحجوب ألبتّة (عُدَّ فوجد صفرًا)`,
+    );
+  }
+  await cdp.shot("tilawa-tathbit-390");
+
+
+  /* ═══ **ولكلّ علامةِ وقفٍ حاملٌ في صندوقها** ═══
+     علاماتُ الوقف حروفٌ **صفرُ العرض** تُركَّب على ما قبلها؛ فإن أُفردت في صندوقٍ
+     بلا حاملٍ رُكِّبت على الفراغ المجاور — **وهو نصُّ الآية لا نصُّ العلامة، فتُرسم
+     بحبره ولو حُجبت**. (وقعت بعينها في هذه الجلسة: صندوقٌ عرضُه صفرٌ وعلامةٌ ظاهرةٌ
+     في المحجوب، ولا يصطادها عدُّ الحبر إذ الرسمُ من عقدة فراغ.) فيُقاس العرضُ. */
+  const marks = await cdp.ev(`
+const cur = document.querySelector('.tw-cursor');
+const out = [];
+for (const el of document.querySelectorAll('.mp-mk')) {
+  if (!(cur.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)) continue;
+  out.push({ t: el.textContent.trim().slice(0, 2), w: Math.round(el.getBoundingClientRect().width) });
+}
+return { n: out.length, zero: out.filter((x) => x.w < 1).length, sample: out.slice(0, 3) };
+`);
+  await cdp.ev(`
+const st = document.createElement('style');
+st.id = '__plantNoBox';
+st.textContent = '.mp-mk { display: contents; }';
+document.head.appendChild(st);
+return true;
+`);
+  await sleep(250);
+  const marksBare = await cdp.ev(`
+const cur = document.querySelector('.tw-cursor');
+let zero = 0, n = 0;
+for (const el of document.querySelectorAll('.mp-mk')) {
+  if (!(cur.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)) continue;
+  n++;
+  if (el.getBoundingClientRect().width < 1) zero++;
+}
+return { n, zero };
+`);
+  await cdp.ev(`document.getElementById('__plantNoBox')?.remove(); return true;`);
+  if (!marks.n) {
+    missing.push("لا علامةَ وقفٍ في المحجوب — فلم يُقَس حاملُها");
+  } else if (marks.zero) {
+    fail("حاملُ علامة الوقف", `${marks.zero} من ${marks.n} علامةً في صندوقٍ صفرِ العرض — تُرسم بحبر الآية ولو حُجبت`);
+  } else if (!marksBare.zero) {
+    fail("ضبطُ حامل العلامة", "أُلغيت صناديقُ العلامات فلم يُصطَد — والقياسُ لا يقيس");
+  } else {
+    notes.push(
+      `ولكلّ علامةِ وقفٍ في المحجوب حاملٌ في صندوقها: ${marks.n} علامةً عرضُ كلٍّ منها > 0 (${marks.sample.map((x) => `«${x.t}» ${x.w}px`).join(" · ")}) — **وضبطٌ سالب**: أُلغيت صناديقُها فصار ${marksBare.zero} منها صفرًا فاصطيدت، ثمّ رُدّت`,
+    );
+  }
+
+  /* **والحجابُ لونٌ لا تنضيد**: يُعطَّل بقاعدةٍ مزروعةٍ فتُقاس السطورُ مكشوفةً */
+  const veiledShape = await cdp.ev(SHAPE);
+  await cdp.ev(`
+const st = document.createElement('style');
+st.id = '__plantBare2';
+st.textContent = '.mp-w.tw-veil { color: inherit !important; border-bottom: none !important; }';
+document.head.appendChild(st);
+return true;
+`);
+  await sleep(300);
+  const shownShape = await cdp.ev(SHAPE);
+  await cdp.ev(`document.getElementById('__plantBare2')?.remove(); return true;`);
+  const veilShape = compareShape(veiledShape, shownShape);
+  if (veilShape.boxDiff) {
+    fail("الحجابُ لونٌ لا تنضيد", `تبدّل صندوقُ سطرٍ بالحجاب: ${veilShape.boxDiff}`);
+  } else {
+    notes.push(
+      `والحجابُ لونٌ لا تنضيد: ${veilShape.lines} صندوقَ سطرٍ محجوبةً ومكشوفةً سواءً بسواء`,
+    );
   }
 
   ws.close();

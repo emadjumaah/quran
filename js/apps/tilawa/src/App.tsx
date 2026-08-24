@@ -4,7 +4,7 @@ import { globalIdOf, locationOf } from "@mishkat/quran-core";
 import { loadMushaf, num, type Mushaf } from "./mushaf";
 import { applySettings, subscribeSettings } from "./settings";
 import { loadAudio, stop as stopAudio } from "./audio";
-import { useTatabbu } from "./tatabbu";
+import { useTatabbu, type Tatabbu } from "./tatabbu";
 import MushafPage from "./components/MushafPage";
 import Goto from "./components/Goto";
 import SettingsSheet from "./components/SettingsSheet";
@@ -31,6 +31,17 @@ const pageOf = (m: Mushaf, id: number): number => m.ayahs[id - 1]?.page ?? 0;
 const cursorPage = (m: Mushaf, loc: string): number => {
   const [s, a] = loc.split(":").map(Number);
   return pageOf(m, globalIdOf(s, a));
+};
+
+/**
+ * **حجابُ حال التثبيت على صفحةٍ بعينها** — «النصُّ محجوبٌ ينكشف بالتلاوة، وما
+ * بعده يبقى محجوبًا» (`halat.ts`). ولا يقع الحجابُ إلّا والتلاوةُ جارية: من فتح
+ * المصحفَ ليقرأ يراه كاملًا، ومن ختم رآه كاملًا.
+ */
+const veilOf = (m: Mushaf, t: Tatabbu, page: number): "none" | "from" | "all" => {
+  if (t.hal.text !== "veiled" || t.phase !== "running" || !t.cursor) return "none";
+  const at = cursorPage(m, t.cursor);
+  return page < at ? "none" : page === at ? "from" : "all";
 };
 
 export default function App() {
@@ -433,6 +444,9 @@ export default function App() {
                      صفحةٍ ما يخصّها وحدَه، فتسكن أخواتُها (الأداءُ شرطٌ لا زينة). */
                   playingId={play.id !== null && pageOf(mushaf, play.id) === p.page ? play.id : null}
                   cursor={track.cursor && cursorPage(mushaf, track.cursor) === p.page ? track.cursor : null}
+                  /* **وحجابُ التثبيت يُحسب بالصفحة**: ما دون صفحة المؤشّر مكشوفٌ،
+                     وصفحتُه تنكشف إليه، وما بعدها محجوبٌ كلُّه (`halat.ts`). */
+                  veil={veilOf(mushaf, track, p.page)}
                 />
               ))}
             </div>

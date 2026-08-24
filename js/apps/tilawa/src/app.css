@@ -379,3 +379,11 @@ body.tw-immersive .tw-top { transition-timing-function: ease-in; }
   font-size: 15px; color: var(--muted);
 }
 .tw-places .quran { font-size: 17px; color: var(--ink); }
+
+/* **حجابُ حال التثبيت** — يبقى موضعُ الكلمة وطولُها ولا يُقرأ حرفُها (نمطُ مشكاة
+   نفسِه): لونٌ وخطٌّ منقوطٌ لا غير، **فلا يتزحزح تنضيدُ الصفحة** بالحجاب ولا
+   بكشفه. **وعدمُ انكشاف الكلمة هو التنبيه** — تصحيحٌ لا يقول شيئًا (ولا لونَ
+   خطأٍ في هذا التطبيق ألبتّة). */
+.mp-w.tw-veil { color: transparent; border-bottom: 2px dotted var(--line); }
+.mp-mk.tw-veil { color: transparent; }
+.mp-w.tw-veil.tw-cursor { background: transparent; border-bottom-color: var(--accent); }

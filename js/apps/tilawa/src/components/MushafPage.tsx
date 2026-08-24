@@ -29,6 +29,7 @@ function MushafPage({
   mushaf,
   playingId,
   cursor,
+  veil = "none",
 }: {
   page: Page;
   mushaf: Mushaf;
@@ -38,6 +39,13 @@ function MushafPage({
    *  **ويُقصَر على صفحته قصدًا**: فلا تُعاد صفحاتُ النافذة رسمًا كلَّما تقدّمت
    *  كلمةٌ واحدة (الأداءُ شرطٌ لا زينة). */
   cursor: string | null;
+  /**
+   * **حجابُ حال التثبيت** (`halat.ts`: «النصُّ محجوبٌ ينكشف بالتلاوة، وما بعده
+   * يبقى محجوبًا»): `"none"` صفحةٌ مكشوفةٌ · `"from"` تنكشف إلى المؤشّر وتُحجب
+   * بعده · `"all"` صفحةٌ لم يبلغها القارئُ بعد. **ويبقى موضعُ الكلمة وطولُها**
+   * — لونٌ وخطٌّ منقوطٌ لا غير، فلا يتزحزح تنضيدُ الصفحة بالحجاب ولا بكشفه.
+   */
+  veil?: "none" | "from" | "all";
 }) {
   const first = page.ayahs[0];
   if (!first) return null;
@@ -91,24 +99,40 @@ function MushafPage({
               data-ayah={a.id}
               className={`mp-ayah${playingId === a.id ? " tw-now" : ""}`}
             >
-              {ayahTokens(a.id, a.text).map((t, i) => (
-                <Fragment key={i}>
-                  {i > 0 ? " " : null}
-                  {t.no ? (
+              {ayahTokens(a.id, a.text).map((t, i) => {
+                const at = `${a.surahNo}:${a.ayahNo}:${t.no}`;
+                const now = cursor === at;
+                /* **ما بلغه القارئُ مكشوفٌ وما بعده محجوب** — والمؤشّرُ حدُّهما.
+                   والرتبةُ `ord` لا الاسمُ `no`: علامةُ الوقف تتبع كلمتَها. */
+                const hidden =
+                  veil === "all" ||
+                  (veil === "from" && !!cursor && after(`${a.surahNo}:${a.ayahNo}:${t.ord}`, cursor));
+                const sep = i > 0 ? " " : "";
+                return t.no ? (
+                  <Fragment key={i}>
+                    {sep}
                     <span
-                      data-w={`${a.surahNo}:${a.ayahNo}:${t.no}`}
-                      className={
-                        cursor === `${a.surahNo}:${a.ayahNo}:${t.no}` ? "mp-w tw-cursor" : "mp-w"
-                      }
+                      data-w={at}
+                      className={`mp-w${now ? " tw-cursor" : ""}${hidden ? " tw-veil" : ""}`}
                     >
                       {t.text}
                     </span>
-                  ) : (
-                    /* علامةُ وقفٍ — نصٌّ كما هو، ولا يجري عليها مؤشّر */
-                    t.text
-                  )}
-                </Fragment>
-              ))}{" "}
+                  </Fragment>
+                ) : (
+                  /* ═══ **علامةُ وقفٍ — ومعها فاصلُها في صندوقها** ═══
+                     رسمُها كما هو ولا يجري عليها مؤشّر؛ وإنّما وُسمت لتُحجب مع ما
+                     تحجبه حالُ التثبيت، فلا تبقى علاماتٌ عائمةٌ فوق بياضٍ تدلّ على
+                     مواضع الوقف فيما لم يُتلَ بعد.
+                     **والفاصلُ داخلَ صندوقها قصدًا**: علاماتُ الوقف حروفٌ **صفرُ
+                     العرض** تُركَّب على ما قبلها، فإن أُفردت في صندوقٍ بلا حاملٍ
+                     رُكِّبت على **الفراغ المجاور** — وهو نصُّ الآية لا نصُّ العلامة،
+                     فتُرسم بحبره ولو حُجبت (قِيس: عرضُ الصندوق صفر، والعلامةُ
+                     ظاهرةٌ في المحجوب). فبضمّ الفراغ إليها صار لها حاملٌ في
+                     صندوقها، فتُحجب وتنكشف معه. **والحروفُ المعروضةُ هي هي**:
+                     فراغٌ ثمّ علامةٌ ثمّ فراغ. */
+                  <span key={i} className={`mp-mk${hidden ? " tw-veil" : ""}`}>{sep + t.text}</span>
+                );
+              })}{" "}
               <span className="ayah-marker">{num(a.ayahNo)}</span>{" "}
             </span>
           </Fragment>
@@ -116,6 +140,16 @@ function MushafPage({
       </div>
     </section>
   );
+}
+
+/** أيقع هذا الموضعُ بعد ذاك في ترتيب المصحف؟ — مقابلةُ أعدادٍ لا نصوص */
+function after(a: string, b: string): boolean {
+  const x = a.split(":").map(Number);
+  const y = b.split(":").map(Number);
+  for (let i = 0; i < 3; i++) {
+    if (x[i] !== y[i]) return x[i] > y[i];
+  }
+  return false;
 }
 
 export default memo(MushafPage);

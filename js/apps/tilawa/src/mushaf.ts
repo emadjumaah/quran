@@ -229,6 +229,12 @@ export interface AyahToken {
   text: string;
   /** رقمُها في آيتها (١…) — و`0` لعلامة وقفٍ لا تُعدّ كلمة */
   no: number;
+  /**
+   * **رتبتُها في الآية للترتيب لا للتسمية**: للكلمة رقمُها، **ولعلامة الوقف رقمُ
+   * الكلمة التي قبلها** — فتُحجب وتنكشف معها في حال التثبيت، ولا تبقى علامةٌ
+   * عائمةٌ فوق بياضٍ تدلّ على مواضع الوقف فيما لم يُتلَ بعد.
+   */
+  ord: number;
 }
 
 /** يُشقّ ما يُنظر إليه لا المصحفُ كلُّه — والمشقوقُ يُحفظ فلا يُعاد شقُّه */
@@ -239,7 +245,11 @@ export function ayahTokens(ayahId: number, text: string): AyahToken[] {
   let toks = cut.get(ayahId);
   if (!toks) {
     let no = 0;
-    toks = text.split(" ").map((t) => ({ text: t, no: WAQF_ONLY.test(t) ? 0 : ++no }));
+    toks = text.split(" ").map((t) => {
+      const word = !WAQF_ONLY.test(t);
+      if (word) no++;
+      return { text: t, no: word ? no : 0, ord: no };
+    });
     cut.set(ayahId, toks);
   }
   return toks;
