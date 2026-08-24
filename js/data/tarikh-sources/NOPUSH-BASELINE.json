@@ -1,18 +1,18 @@
 {
-  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف٤ — تصفيةُ مشكاة.",
+  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف٥ — مدخلُ مشكاة العمليّ ورفعُ نافذة الاستقبال.",
   "branch": "main",
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "01e2316ff234f47efe36ec7f4d014ada999a9846",
-    "refs/remotes/origin/main": "01e2316ff234f47efe36ec7f4d014ada999a9846"
+    "refs/remotes/origin/HEAD": "eac7ef37e3ed386b0c2129dc112abf6584e5f6b3",
+    "refs/remotes/origin/main": "eac7ef37e3ed386b0c2129dc112abf6584e5f6b3"
   },
-  "lastPush": "01e2316 refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "eac7ef3 refs/remotes/origin/main@{0}: update by push",
   "previous": {
-    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول م٣ — ختامُ مراحل الخارطة، والنشرُ الأوّلُ بيد المالك.",
+    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف٤ — تصفيةُ مشكاة.",
     "branch": "main",
     "remoteRefs": {
-      "refs/remotes/origin/HEAD": "5f07a361b75fae120e68c89ac6d1185205974a46",
-      "refs/remotes/origin/main": "5f07a361b75fae120e68c89ac6d1185205974a46"
+      "refs/remotes/origin/HEAD": "01e2316ff234f47efe36ec7f4d014ada999a9846",
+      "refs/remotes/origin/main": "01e2316ff234f47efe36ec7f4d014ada999a9846"
     },
-    "lastPush": "5f07a36 refs/remotes/origin/main@{0}: update by push"
+    "lastPush": "01e2316 refs/remotes/origin/main@{0}: update by push"
   }
 }
