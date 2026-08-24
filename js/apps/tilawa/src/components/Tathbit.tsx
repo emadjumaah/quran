@@ -19,6 +19,20 @@ import Sheet from "./Sheet";
  * المصحفُ نصًّا صافيًا. **ورقمُ الآية ليس زرًّا**: المواضعُ تُفتح من الشريط.
  */
 
+/**
+ * **«موضعُ التباسٍ» بعدده على وجهه العربيّ** (م٣ §٣) — إفرادٌ وتثنيةٌ، وجمعٌ
+ * مجرورٌ فيما بين الثلاثة والعشرة، وتمييزٌ منصوبٌ مفردٌ فيما فوقها؛ والفعلُ
+ * يتبع. **فلا يُقال «١ من المواضع تلتبس»** كما كان يُقال، وهي عجمةٌ في عربيّة.
+ */
+const forkSay = (n: number, full = false): string =>
+  n === 1
+    ? `موضعٌ واحدٌ يلتبس${full ? " بغيره" : ""}`
+    : n === 2
+      ? `موضعان يلتبسان${full ? " بغيرهما" : ""}`
+      : n <= 10
+        ? `${num(n)} مواضعَ تلتبس${full ? " بغيرها" : ""}`
+        : `${num(n)} موضعًا تلتبس${full ? " بغيرها" : ""}`;
+
 /** «٧:١٤١» ⇒ «الأعراف ١٤١» */
 const say = (m: Mushaf, loc: string): string => {
   const [s, a] = loc.split(":").map(Number);
@@ -42,7 +56,7 @@ export function ForkBar({ t, mushaf, page }: { t: Tathbit; mushaf: Mushaf; page:
             <>لا موضعَ يلتبس في صفحة {num(page)}</>
           ) : (
             <>
-              في صفحة {num(page)} <b>{num(here)}</b> من مواضع الالتباس
+              في صفحة {num(page)}: <b>{forkSay(here)}</b>
             </>
           )}
         </span>
@@ -200,7 +214,7 @@ function MapView({
       ) : (
         <>
           <p className="tw-note">
-            ههنا <b>{num(t.sites.length)}</b> من المواضع تلتبس بغيرها — وهذا قبل الحفظ لا بعده.
+            ههنا <b>{forkSay(t.sites.length, true)}</b> — وهذا قبل الحفظ لا بعده.
           </p>
           <div className="tw-sites">
             {t.sites.map((s) => (

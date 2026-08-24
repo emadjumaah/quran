@@ -6,7 +6,8 @@
  * صفحة المصحف بأعيانها** لا على سطح نصٍّ ثانٍ يُرسم فوقها. فهذا لا يُشهد إلّا في
  * شجرة عرضٍ حيّة، على البناء المنشور، بعرض ٣٩٠.
  *
- * وخمسةُ أبوابٍ ههنا، ولكلٍّ ضبطُه السالب:
+ * وأبوابُها ولكلٍّ ضبطُه السالب — **وخُتمت في م٣ ببابَي الإطلاق**: الأيقونةُ
+ * والمانيفستُ وشاشةُ الإقلاع (§٨) · ورابطا الجسر في الاتّجاهين (§٩):
  *
  *   ١ — **الإقلاع**: مصحفٌ بترويساته يظهر، **وصفرُ تسريبٍ أفقيّ**.
  *   ٢ — **الهيئةُ حرفًا بعد تقسيم الكلمات**: تُقاس صناديقُ سطور كلِّ آيةٍ
@@ -24,6 +25,16 @@
  *   ٥ — **ميثاقٌ مصغَّر**: لمسٌ ≥٤٤ · نصٌّ ≥١٥ · **لا حوارات** (تُنصب جواسيسُ
  *       على `alert/confirm/prompt` فتُعدّ) · وأرضيّةُ الأوراق معتمة. **وضبطُه**:
  *       يُصغَّر هدفُ لمسٍ ويُشفَّف ظهرُ الورقة فيُصطادان، ثمّ يُزالان فتخضرّ.
+ *   ٨ — **الأيقونةُ والمانيفستُ وشاشةُ الإقلاع**: تُفتح كلُّ أيقونةٍ يشير إليها
+ *       المانيفستُ **فيُقاس مقاسُها من ترويستها** لا من اسمها، ويُقاس لونُ
+ *       الهويّة بالحرف؛ **وشاشةُ الإقلاع تُشهد حيّةً** بحجب حزمة الشيفرة عن
+ *       الصفحة — فتبقى وحدَها كما يراها من بطؤت شبكتُه، ويُعَدّ ما فيها من حرف
+ *       (والوعدُ: صفر). **وضبطُه**: يُشوَّه نظيرٌ في الذاكرة فيُصطاد.
+ *   ٩ — **الجسرُ في الاتّجاهين**: البابُ الداخلُ حيًّا (`#/2/255` يفتح المصحفَ
+ *       على البقرة ٢٥٥ ثمّ يُمحى العنوان)، والخارجُ إلى مشكاة حيًّا من ورقة
+ *       الانتقال؛ **وبابُ مشكاة إلينا يُشهد بالصيغة ولا تُكتب صيغتُه ههنا**:
+ *       يُقرأ قالبُ مشكاة من مصدره ويُقرأ فاحصُ التلاوة من مصدره ثمّ يُطعَم
+ *       أحدُهما الآخر. **وضبطُه**: يُحرَّف القالبُ فيجب أن يرفضه الفاحص.
  *
  * **ومحرّكُ التعرّف يُستبدل بساكنٍ لا يسمع شيئًا** — فالمفحوصُ شجرةُ العرض وسلوكُ
  * الإذن، لا جودةُ السمع؛ والاستبدالُ عند حدِّ `RecognizerPort` الذي بُني ليُبدَّل،
@@ -36,13 +47,14 @@
  *  ولم يمرّ صامتًا.)
  */
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const APP = join(ROOT, "js", "apps", "tilawa");
 const DIST = join(APP, "dist");
+const STUDIO = join(ROOT, "js", "apps", "studio");
 const OUT = join(ROOT, "js", "data", "gates", "TILAWA.json");
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const PORT = 4187;
@@ -891,7 +903,295 @@ return true;
     );
   }
 
+  /* ═══ ٨ — **الأيقونةُ والمانيفستُ حاضران صحيحا البنية** (م٣ §٣) ═══
+     التطبيقُ يُثبَّت فيصير أيقونةً في شاشة جهازٍ — **وأيقونةٌ مكسورةٌ لا تُرى في
+     المتصفّح ولا تُصطاد في مراجعةٍ**: يُعلن المانيفستُ مقاسًا ويكون الملفُّ
+     غيرَه، أو يُشار إلى ملفٍّ لم يُنسخ إلى البناء. فتُفتح الملفّاتُ نفسُها
+     وتُقاس ترويساتُها. **ولون الهويّة يُقاس بالحرف** فلا يشيخ بتبديلٍ ساهٍ. */
+  const manifestAt = join(DIST, "manifest.webmanifest");
+  if (!existsSync(manifestAt)) {
+    missing.push("لا مانيفستَ في البناء — فلا يُثبَّت التطبيق");
+  } else {
+    const declared = JSON.parse(readFileSync(manifestAt, "utf8"));
+    const said = checkManifest(declared);
+    if (said.bad.length) fail("الأيقونةُ والمانيفست", said.bad.join(" · "));
+    else notes.push(`المانيفستُ والأيقونة: ${said.say}`);
+
+    /* **وضبطُه السالب في نظيرٍ بالذاكرة** — والملفُّ على القرص لا يُمَسّ */
+    const spoiled = JSON.parse(JSON.stringify(declared));
+    spoiled.theme_color = "#ffffff";
+    spoiled.icons = (spoiled.icons ?? []).map((i) =>
+      i.type === "image/png" ? { ...i, sizes: "999x999" } : i,
+    );
+    const caught = checkManifest(spoiled);
+    if (caught.bad.length < 2) {
+      fail("ضبطُ المانيفست", `شُوِّه لونُ الهويّة ومقاسُ الأيقونات فلم يُصطادا: ${JSON.stringify(caught.bad)}`);
+    } else {
+      notes.push(
+        `ضبطٌ سالب: شُوِّه في نظيرٍ بالذاكرة لونُ الهويّة ومقاساتُ الأيقونات فاصطادها القياسُ (${caught.bad.length} بلاغات)، والملفُّ على القرص لم يُمَسّ`,
+      );
+    }
+  }
+
+  /* **وأيقونةُ آبل وشاشةُ الإقلاع في الوسم نفسِه** — تُقرأ من `index.html` المبنيّ */
+  const builtHtml = readFileSync(join(DIST, "index.html"), "utf8");
+  const appleTag = /<link[^>]*apple-touch-icon[^>]*>/.exec(builtHtml);
+  const appleHref = appleTag ? /href="([^"]+)"/.exec(appleTag[0]) : null;
+  const appleAt = appleHref ? join(DIST, appleHref[1].replace(/^\//, "")) : null;
+  const appleSize = appleAt && existsSync(appleAt) ? pngSize(readFileSync(appleAt)) : null;
+  if (!appleSize) {
+    fail("أيقونةُ آبل", `لا أيقونةَ لآبل في الوسم أو ملفُّها مفقود: ${appleHref?.[1] ?? "لا وسم"}`);
+  } else {
+    notes.push(`أيقونةُ آبل: ${appleHref[1]} ${appleSize.w}×${appleSize.h} (نقطيّةٌ — وآبلُ لا تعرف SVG فيها)`);
+  }
+
+  /* **شاشةُ الإقلاع: خلفيّةُ الوضع والهلال، ولا نصَّ دعائيًّا** — يُقاس بحذف
+     الوسم من جوف الجذر: ما بقي من حرفٍ فهو نصٌّ يُقرأ، والوعدُ ألّا يبقى. */
+  const rootBlock = /<div id="root">([\s\S]*?)<\/div>\s*<script/.exec(builtHtml);
+  const bootText = rootBlock ? rootBlock[1].replace(/<[^>]*>/g, "").trim() : null;
+  if (!builtHtml.includes('class="tw-boot"')) {
+    fail("شاشةُ الإقلاع", "لا شاشةَ إقلاعٍ في الوسم — يُفتح التطبيقُ على فراغ");
+  } else if (bootText) {
+    fail("شاشةُ الإقلاع", `فيها نصٌّ يُقرأ: «${bootText.slice(0, 40)}»`);
+  } else {
+    notes.push("شاشةُ الإقلاع في الوسم نفسِه (هلالٌ على خلفيّة الوضع) — **وصفرُ حرفٍ يُقرأ فيها**، فلا نصَّ دعائيًّا ولا اسمَ يُعرض ثمّ يزول");
+  }
+
+  /* **وتُشهد حيّةً كما يراها من بطؤت شبكتُه**: تُحجب حزمةُ الشيفرة عن الصفحة
+     فتبقى الشاشةُ الأولى وحدَها، وتُلتقط. ثمّ يُرفع الحجب. */
+  await cdp.send("Network.enable");
+  await cdp.send("Network.setBlockedURLs", { urls: ["*/assets/index-*.js"] });
+  await cdp.send("Page.navigate", { url: URL });
+  await sleep(1400);
+  const firstPaint = await cdp.ev(`
+const el = document.querySelector('.tw-boot');
+if (!el) return { there: false };
+const st = getComputedStyle(el);
+const root = getComputedStyle(document.documentElement);
+return {
+  there: true,
+  bg: st.backgroundColor,
+  modeBg: root.getPropertyValue('--bg').trim(),
+  ink: st.color,
+  svgs: el.querySelectorAll('svg').length,
+  text: (el.textContent || '').trim(),
+  theme: document.querySelector('meta[name="theme-color"]').getAttribute('content'),
+  panel: root.getPropertyValue('--panel').trim(),
+};
+`);
+  await cdp.shot("tilawa-boot-390");
+  await cdp.send("Network.setBlockedURLs", { urls: [] });
+  if (!firstPaint.there) {
+    fail("شاشةُ الإقلاع حيّةً", "حُجبت الشيفرةُ فلم تبقَ شاشةُ إقلاعٍ مرسومة");
+  } else if (firstPaint.text) {
+    fail("شاشةُ الإقلاع حيّةً", `فيها نصٌّ يُقرأ: «${firstPaint.text.slice(0, 40)}»`);
+  } else {
+    notes.push(
+      `شاشةُ الإقلاع حيّةً (حُجبت حزمةُ الشيفرة فبقيت وحدَها): خلفيّتُها ${firstPaint.bg} وهي خلفيّةُ الوضع عينُها (${firstPaint.modeBg}) · هلالٌ واحدٌ بحبر ${firstPaint.ink} · صفرُ حرف`,
+    );
+  }
+  /* **وشريطُ الحال يوافق الوضع** (ميثاقُ الوجه §١/١١) — ويُقرأ لونُه من الأنماط */
+  if (firstPaint.there && firstPaint.theme && firstPaint.panel && firstPaint.theme.toLowerCase() !== firstPaint.panel.toLowerCase()) {
+    fail("شريطُ الحال يوافق الوضع", `theme-color ${firstPaint.theme} وخلفيّةُ القشرة ${firstPaint.panel}`);
+  } else if (firstPaint.there) {
+    notes.push(`ووسمُ لون الحال يوافق قشرةَ الوضع الجاري: ${firstPaint.theme}`);
+  }
+
+  /* ═══ ٩ — **رابطا الجسر يعملان في الاتّجاهين** (م٣ §٢‑٣) ═══
+     البابُ الداخلُ يُشهد **حيًّا** (يُفتح المصحفُ على الآية ويُمحى العنوان)،
+     والبابُ الخارجُ إلى مشكاة يُشهد **حيًّا** كذلك (رابطٌ مبنيٌّ في الورقة).
+     وبابُ مشكاة إلينا يُشهد **ساكنًا بالصيغة**، **ولا تُكتب صيغتُه ههنا فتشيخ**:
+     يُقرأ قالبُ مشكاة من مصدره ويُقرأ فاحصُ التلاوة من مصدره، ثمّ يُطعَم أحدُهما
+     الآخر — فإن اتّفقا فالبابُ يفتح، وإن انحرف أحدُهما حمُرت البوّابة. */
+  const deepUrl = `${URL}#/2/255`;
+  /* **وتُقطع الصفحةُ أوّلًا**: انتقالٌ إلى العنوان نفسِه بهاشٍ زائدٍ لا يُعيد
+     تحميلَ المستند — فلولا القطعُ لبقيت الصفحةُ السابقةُ ولم يُقرأ البابُ أصلًا. */
+  await cdp.send("Page.navigate", { url: "about:blank" });
+  await sleep(300);
+  await cdp.send("Page.navigate", { url: deepUrl });
+  const landed = await cdp.until(`document.getElementById('ayah-262')`, 60000);
+  await sleep(900);
+  const inbound = await cdp.ev(`
+const el = document.querySelector('.tw-read');
+const node = document.getElementById('ayah-262');
+const head = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h')) || 56;
+return {
+  hash: location.hash,
+  page: node ? node.closest('.mushaf-page').dataset.page : null,
+  fromTop: node ? Math.round(node.getBoundingClientRect().top - el.getBoundingClientRect().top - head) : null,
+  resume: !!document.querySelector('.tw-resume'),
+};
+`);
+  if (!landed) {
+    fail("البابُ الداخل", `فُتح ${deepUrl} فلم تُرسم الآيةُ ٢:٢٥٥`);
+  } else if (inbound.hash !== "") {
+    fail("البابُ الداخل", `بقي العنوانُ في شريط المتصفّح بعد العمل به: ${inbound.hash}`);
+  } else if (inbound.fromTop === null || Math.abs(inbound.fromTop) > 60) {
+    fail("البابُ الداخل", `رُسمت الآيةُ ولم يُفتح عليها المصحف (بُعدُها عن أعلى السطح ${inbound.fromTop}px)`);
+  } else {
+    notes.push(
+      `البابُ الداخل حيًّا: فُتح \`#/2/255\` فوقع المصحفُ على البقرة ٢٥٥ في صفحته ${inbound.page} (على بُعد ${inbound.fromTop}px من أعلى السطح) · **ومُحي العنوانُ من الشريط** فلا يُرمى به القارئُ في المرّة الآتية · ولا سطرَ «عُدتَ» فليست عودة`,
+    );
+  }
+
+  await cdp.ev(click('[data-tw="goto"]'));
+  await sleep(500);
+  const outbound = await cdp.ev(`
+const a = document.querySelector('[data-bridge="mishkat-ayah"]');
+if (!a) return { error: 'لا رابطَ في ورقة الانتقال' };
+const r = a.getBoundingClientRect();
+return { href: a.href, say: a.innerText.replace(/\s+/g, ' ').trim().slice(0, 48), tap: Math.round(r.height), blank: a.target };
+`);
+  await cdp.shot("tilawa-bridge-390");
+  if (outbound.error) {
+    fail("البابُ الخارج", outbound.error);
+  } else if (outbound.href !== "https://quran.mishkat.qa/#/read/2/255") {
+    fail("البابُ الخارج", `رابطُ مشكاة ليس على صيغته: ${outbound.href}`);
+  } else if (outbound.tap < MIN_TAP) {
+    fail("البابُ الخارج", `هدفُ لمسِ الباب ${outbound.tap}px`);
+  } else {
+    notes.push(
+      `البابُ الخارج حيًّا: «${outbound.say}» ⇒ ${outbound.href} (هدفُ لمسٍ ${outbound.tap}px) — **والموضعُ موضعُ القارئ لا موضعٌ ثابتٌ مكتوب**`,
+    );
+  }
+
+  /* **وطريقُ مشكاة إلينا** — قالبُها من مصدرها، وفاحصُنا من مصدرنا */
+  const bridge = crossCheck();
+  if (bridge.bad.length) fail("بابُ مشكاة إلى التلاوة", bridge.bad.join(" · "));
+  else notes.push(`بابُ مشكاة إلى التلاوة (ساكنًا): ${bridge.say}`);
+  if (!bridge.negative) {
+    fail("ضبطُ الجسر", "حُرِّف قالبُ مشكاة فلم يرفضه فاحصُ التلاوة — والفحصُ لا يفحص");
+  } else {
+    notes.push(`ضبطٌ سالب على الجسر: ${bridge.negative}`);
+  }
+
   ws.close();
+}
+
+/** مقاسُ صورةٍ نقطيّةٍ من ترويستها — عرضٌ وارتفاعٌ من `IHDR` لا من اسم الملفّ */
+function pngSize(buf) {
+  if (buf.length < 24 || buf.readUInt32BE(0) !== 0x89504e47) return null;
+  return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+}
+
+/** **أخضرُ الهويّة** — واحدٌ في التطبيقين، ويُقاس بالحرف فلا يشيخ بتبديلٍ ساهٍ */
+const IDENTITY_GREEN = "#0b6e56";
+
+/**
+ * يفحص مانيفستًا (المبنيَّ أو نظيرًا مشوَّهًا للضبط السالب) — **ويفتح كلَّ أيقونةٍ
+ * يشير إليها** فيقيس ترويستَها: فالإعلانُ دعوى حتّى يُقاس الملفّ.
+ */
+function checkManifest(m) {
+  const bad = [];
+  const seen = [];
+  if (m.name !== "التلاوة" || m.short_name !== "التلاوة") {
+    bad.push(`اسمُ التطبيق ليس «التلاوة»: ${m.name} · ${m.short_name}`);
+  }
+  if (m.dir !== "rtl" || m.lang !== "ar") bad.push(`الاتّجاهُ واللسانُ: ${m.dir} · ${m.lang}`);
+  if (m.display !== "standalone") bad.push(`لا يُفتح كتطبيقٍ قائمٍ بنفسه: display=${m.display}`);
+  if (m.theme_color !== IDENTITY_GREEN) bad.push(`لونُ الهويّة ليس ${IDENTITY_GREEN}: ${m.theme_color}`);
+  if (!m.background_color) bad.push("لا لونَ خلفيّةٍ لشاشة الإقلاع");
+  const icons = Array.isArray(m.icons) ? m.icons : [];
+  if (!icons.length) bad.push("لا أيقونةَ في المانيفست");
+  for (const ic of icons) {
+    const at = join(DIST, ic.src);
+    if (!existsSync(at)) {
+      bad.push(`أيقونةٌ مفقودةٌ من البناء: ${ic.src}`);
+      continue;
+    }
+    const buf = readFileSync(at);
+    if (ic.type === "image/svg+xml") {
+      const txt = buf.toString("utf8");
+      if (!txt.includes("<svg") || !txt.includes("viewBox")) bad.push(`${ic.src}: ليست رسمًا متّجهًا صحيحَ البنية`);
+      else seen.push(`${ic.src} رسمٌ متّجه`);
+      continue;
+    }
+    const size = pngSize(buf);
+    if (!size) {
+      bad.push(`${ic.src}: ليست صورةً نقطيّةً صحيحةَ البنية`);
+      continue;
+    }
+    const want = String(ic.sizes).split("x").map(Number);
+    if (size.w !== want[0] || size.h !== want[1]) {
+      bad.push(`${ic.src}: أُعلن ${ic.sizes} ووُجد ${size.w}×${size.h}`);
+    } else {
+      seen.push(`${ic.src} ${size.w}×${size.h}${ic.purpose === "maskable" ? " مقنَّعة" : ""}`);
+    }
+  }
+  const big = icons.some(
+    (i) => i.type === "image/png" && i.purpose !== "maskable" && Number(String(i.sizes).split("x")[0]) >= 192,
+  );
+  if (!big) bad.push("لا أيقونةَ نقطيّةً ١٩٢ فأكثرَ — ولا يُثبَّت بها على أندرويد");
+  if (!icons.some((i) => i.purpose === "maskable")) bad.push("لا أيقونةَ مقنَّعةً (maskable)");
+  return { bad, say: `«${m.name}» · لونُ الهويّة ${m.theme_color} · ${seen.join(" · ")}` };
+}
+
+/**
+ * **يُطعَم قالبُ مشكاة فاحصَ التلاوة** — ولا تُكتب ههنا صيغةُ رابطٍ فتشيخ عن
+ * مصدرها: القالبُ يُقرأ من `studio/src/bridge.ts`، والفاحصُ (تعبيرُ `readDeepLink`)
+ * يُقرأ من `tilawa/src/bridge.ts`، ثمّ يُبنى رابطٌ لآيةٍ بعينها ويُعرض على
+ * الفاحص. **وضبطُه**: يُحرَّف القالبُ فيجب أن يرفضه الفاحص.
+ * ويُشهد معه أنّ رابطَنا إلى مشكاة يقع على مسارٍ قائمٍ في موجّهها لا على فراغ.
+ */
+function crossCheck() {
+  const bad = [];
+  const tilawa = readFileSync(join(APP, "src", "bridge.ts"), "utf8");
+  const studio = readFileSync(join(STUDIO, "src", "bridge.ts"), "utf8");
+  const panel = readFileSync(join(STUDIO, "src", "components", "AyahPanel.tsx"), "utf8");
+  const router = readFileSync(join(STUDIO, "src", "main.tsx"), "utf8");
+
+  const line = tilawa.split("\n").find((l) => l.includes(".exec(location.hash)"));
+  if (!line) return { bad: ["لا فاحصَ للرابط الداخل في التلاوة"], say: "", negative: null };
+  const literal = line.slice(line.indexOf("/"), line.lastIndexOf("/") + 1);
+  const parser = new RegExp(literal.slice(1, -1));
+
+  const base = /TILAWA_BASE = "([^"]+)"/.exec(studio)?.[1] ?? null;
+  const tpl = /tilawaAyah = [^=]*=>\s*`([^`]+)`/.exec(studio)?.[1] ?? null;
+  if (!base || !tpl) return { bad: ["لا قالبَ لرابط التلاوة في مشكاة"], say: "", negative: null };
+  const build = (t, s, a) =>
+    t.replace("${TILAWA_BASE}", base).replace("${surahNo}", String(s)).replace("${ayahNo}", String(a));
+
+  /* **ويُقصّ الهاشُ بالحرف لا بمحلِّل عناوين**: اسمُ `URL` في هذا الملفّ عنوانُ
+     المعاينة (ثابتٌ في رأسه)، فلا يُستدعى ههنا بانيًا فيقع اللبس. */
+  const built = build(tpl, 2, 255);
+  const cut = built.indexOf("#");
+  const origin = cut < 0 ? built : built.slice(0, cut);
+  const hash = cut < 0 ? "" : built.slice(cut);
+  if (!origin.startsWith("https://tilawa.mishkat.qa/")) bad.push(`نطاقُ التلاوة في مشكاة: ${origin}`);
+  const parsed = parser.exec(hash);
+  if (!parsed || parsed[1] !== "2" || parsed[2] !== "255") {
+    bad.push(`فاحصُ التلاوة لم يقرأ ما بنته مشكاة: ${hash || built}`);
+  }
+
+  /* **ولا يُعرض زرٌّ ميّت** — الحارسُ في المصدر، والموضعُ أدواتُ الآية */
+  if (!/TILAWA_LIVE = import\.meta\.env\.VITE_TILAWA_LIVE === "1"/.test(studio)) {
+    bad.push("علمُ البيئة الحارسُ ليس على حاله في مشكاة");
+  }
+  if (!panel.includes("TILAWA_LIVE &&") || !panel.includes("tilawaAyah(ayah.surahNo, ayah.ayahNo)")) {
+    bad.push("زرُّ «اتلُ» ليس في أدوات الآية أو ليس خلفَ حارسه");
+  }
+
+  /* **والطريقُ الآخر يقع على مسارٍ قائم** — لا على فراغٍ في موجّه مشكاة */
+  const mishkat = /mishkatAyah = [^=]*=>\s*`([^`]+)`/.exec(tilawa)?.[1] ?? null;
+  const mBase = /MISHKAT_BASE = "([^"]+)"/.exec(tilawa)?.[1] ?? null;
+  const mUrl =
+    mishkat && mBase
+      ? mishkat.replace("${MISHKAT_BASE}", mBase).replace("${surahNo}", "2").replace("${ayahNo}", "255")
+      : null;
+  if (mUrl !== "https://quran.mishkat.qa/#/read/2/255") bad.push(`رابطُ مشكاة من التلاوة: ${mUrl}`);
+  if (!router.includes('<Route path="/read/:surahNo/:ayahNo"')) {
+    bad.push("مسارُ `/read/:surahNo/:ayahNo` غيرُ قائمٍ في موجّه مشكاة — فالرابطُ يفضي إلى فراغ");
+  }
+
+  /* الضبطُ السالب: قالبٌ محرَّفٌ يجب أن يُرفض */
+  const crooked = build("${TILAWA_BASE}/#/read/${surahNo}/${ayahNo}", 2, 255);
+  const refused = parser.exec(crooked.slice(crooked.indexOf("#"))) === null;
+
+  return {
+    bad,
+    say: `قالبُ مشكاة \`${tpl}\` ⇒ ${built} — وفاحصُ التلاوة \`${literal}\` قرأه سورةً ${parsed?.[1]} وآيةً ${parsed?.[2]} · ورابطُنا إليها ${mUrl} على مسارِ موجّهها القائم`,
+    negative: refused ? `حُرِّف قالبُ مشكاة إلى ${crooked} فرفضه فاحصُ التلاوة` : null,
+  };
 }
 
 /**

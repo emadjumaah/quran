@@ -112,27 +112,35 @@ export function TrackBar({ t, mushaf }: { t: Tatabbu; mushaf: Mushaf | null }) {
         </p>
       )}
       <div className="tw-track-row">
-        <select
-          className="tw-track-hal"
-          data-track="hal"
-          aria-label="الحال"
-          value={t.halId}
-          disabled={live}
-          onChange={(e) => t.chooseHal(e.target.value as HalId)}
-        >
-          {HALAT.map((h) => (
-            <option key={h.id} value={h.id} disabled={!!h.suspended}>
-              {h.name}
-              {h.suspended ? " (موقوفة)" : ""}
-            </option>
-          ))}
-        </select>
+        {/* **الحالُ**: في التهيئة تُختار، **وفي أثناء التلاوة تُقال ولا تُنقر** —
+            قائمةٌ معطَّلةٌ مقفلةٌ أداةٌ ميّتةٌ تشغل عرضًا لا تعطي به شيئًا (م٣ §٣)،
+            وسطرُ الشريط عند ٣٩٠ لا يحتمل ما لا ينفع. */}
+        {live ? (
+          <span className="tw-track-now" data-track="hal-now">
+            {t.hal.name}
+          </span>
+        ) : (
+          <select
+            className="tw-track-hal"
+            data-track="hal"
+            aria-label="الحال"
+            value={t.halId}
+            onChange={(e) => t.chooseHal(e.target.value as HalId)}
+          >
+            {HALAT.map((h) => (
+              <option key={h.id} value={h.id} disabled={!!h.suspended}>
+                {h.name}
+                {h.suspended ? " (موقوفة)" : ""}
+              </option>
+            ))}
+          </select>
+        )}
 
         {/* **أيُّ محرّكٍ يسمعك الآن** — ولا يُترك القارئُ يحزر؛ وفي التهيئة يُبدَّل بلمسة */}
         {live ? (
           <span className="tw-track-eng" data-track="engine" aria-label={`المحرّك: ${now?.label ?? "—"}`}>
             <span className={`tw-dot tw-dot-${t.engineState}`} aria-hidden />
-            {now?.label ?? "—"}
+            <span className="tw-eng-name">{now?.label ?? "—"}</span>
           </span>
         ) : (
           <button
@@ -142,7 +150,7 @@ export function TrackBar({ t, mushaf }: { t: Tatabbu; mushaf: Mushaf | null }) {
             onClick={t.swapEngine}
           >
             <span className={`tw-dot tw-dot-${t.engineState}`} aria-hidden />
-            {now?.label ?? "المحرّك"}
+            <span className="tw-eng-name">{now?.label ?? "المحرّك"}</span>
           </button>
         )}
 
