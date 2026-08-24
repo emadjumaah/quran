@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { AYAH_COUNTS } from "@mishkat/quran-core";
-import { marksOf, twinText, wordsOf, type Pairing, type TwinGroup } from "../furuq";
+import { marksOf, twinText, wordsOf, type Pairing } from "../furuq";
 import type { Site, Tab, Tathbit } from "../tathbit";
 import type { Mushaf } from "../mushaf";
 import { num } from "../mushaf";
@@ -116,9 +116,14 @@ export function TathbitSheet({
           <b>مولَّدٌ</b> منها. ودخل من {num(t.material.counts.all)} زوجًا:{" "}
           {num(t.material.counts.forkPairs)} ذاتَ مفرقٍ داخليٍّ (حدُّ السلسلة{" "}
           {num(t.material.counts.minLead)} كلماتٍ) في {num(t.material.counts.questions)} سؤالًا، و
-          {num(t.material.counts.twinPairs)} توأمًا تامًّا في {num(t.material.counts.twinGroups)} مجموعة.
+          {num(t.material.counts.twinPairs)} توأمًا تامًّا في {num(t.material.counts.twinGroups)} مجموعةً.
           وبقي {num(t.material.counts.belowLead)} دون الحدّ
-          {t.material.counts.misaligned > 0 && <> و{num(t.material.counts.misaligned)} لم تستقم محاذاتُه</>}.
+          {t.material.counts.misaligned === 1 ? (
+            <>، وخرج واحدٌ لم تستقم محاذاتُه</>
+          ) : t.material.counts.misaligned > 1 ? (
+            <>، وخرج {num(t.material.counts.misaligned)} لم تستقم محاذاتُها</>
+          ) : null}
+          .
         </p>
       )}
     </Sheet>
@@ -199,14 +204,16 @@ function MapView({
           </p>
           <div className="tw-sites">
             {t.sites.map((s) => (
-              <button key={s.key} className="tw-site" data-tathbit="site" onClick={() => onPick(s)}>
+              <button key={s.id} className="tw-site" data-tathbit="site" onClick={() => onPick(s)}>
                 <b>{say(mushaf, s.loc)}</b>
                 <span className="quran">{first(mushaf, s.id)}</span>
                 <i>
-                  {s.kind === "twin" ? "تتكرّر في " : "تلتبس بـ"}
-                  {s.others.map((o) => say(mushaf, o.loc)).join(" · ")}
-                  {s.forks > 0 && <> · {s.forks === 1 ? "مفرقٌ واحد" : `${num(s.forks)} مفارق`}</>}
-                  {s.lapses > 0 && <> · زللتَ عنها {num(s.lapses)}</>}
+                  {s.rels.some((r) => r.kind === "twin") ? "تتكرّر في " : "تلتبس بـ"}
+                  {s.rels
+                    .flatMap((r) => r.others)
+                    .map((o) => say(mushaf, o.loc))
+                    .join(" · ")}
+                  {s.misses > 0 && <> · خلطتَ فيها {num(s.misses)}</>}
                 </i>
               </button>
             ))}
@@ -238,10 +245,41 @@ function Detail({
   onBack: () => void;
   onGo: (id: number) => void;
 }) {
-  const rel = useMemo(() => {
-    if (!t.material) return null;
-    if (site.kind === "twin") return t.material.twins.find((g) => g.key === site.key) ?? null;
-    return t.material.pairs.find((p) => p.key === site.key) ?? null;
+  /**
+   * **الآيةُ مرّةً واحدةً، ونظائرُها تحتها.**
+   *
+   * وكانت تُعاد مع كلّ نظيرةٍ فتُكتب أربعَ مرّاتٍ في لوحٍ واحد — **والمقصودُ
+   * أن يُقابِل الحافظُ موضعَه بما يلتبس به**، لا أن يقرأه مكرّرًا. فتُجمع
+   * مواضعُ افتراقها كلُّها عليها، ويُبرَز في كلّ نظيرةٍ ما افترقت به.
+   */
+  const view = useMemo(() => {
+    const hot = new Set<number>();
+    const others: { loc: string; id: number; hot: Set<number>; twin: boolean }[] = [];
+    const seen = new Set<number>();
+    if (!t.material) return { hot, others };
+    for (const r of site.rels) {
+      if (r.kind === "fork") {
+        const p = t.material.pairs.find((x) => x.key === r.key);
+        if (!p) continue;
+        const m = marksOf(p.ops, p.win);
+        const mine = p.idA === site.id;
+        for (const n of mine ? m.a : m.b) hot.add(n);
+        const id = mine ? p.idB : p.idA;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        others.push({ loc: mine ? p.b : p.a, id, hot: new Set(mine ? m.b : m.a), twin: false });
+      } else {
+        const g = t.material.twins.find((x) => x.key === r.key);
+        if (!g) continue;
+        for (const pl of g.places) {
+          if (pl.id === site.id || seen.has(pl.id)) continue;
+          seen.add(pl.id);
+          others.push({ loc: pl.loc, id: pl.id, hot: new Set<number>(), twin: true });
+        }
+      }
+    }
+    others.sort((x, y) => x.id - y.id);
+    return { hot, others };
   }, [t.material, site]);
 
   return (
@@ -249,11 +287,19 @@ function Detail({
       <button className="tw-scope" onClick={onBack}>
         <i>← رجوعٌ إلى المواضع</i>
       </button>
-      {rel && "forks" in rel ? (
-        <PairText mushaf={mushaf} pair={rel} />
-      ) : rel ? (
-        <TwinText mushaf={mushaf} group={rel} />
-      ) : null}
+      <div className="tw-pair">
+        <Ayah mushaf={mushaf} id={site.id} loc={site.loc} hot={view.hot} />
+      </div>
+      <p className="tw-note">
+        ويلتبس بها{" "}
+        {view.others.length === 1 ? "موضعٌ واحد" : `${num(view.others.length)} مواضع`} — والمفترقُ
+        مُبرَزٌ في كلٍّ، وما لا فرقَ فيه فتوأمٌ تامّ.
+      </p>
+      <div className="tw-pair">
+        {view.others.map((o) => (
+          <Ayah key={o.id} mushaf={mushaf} id={o.id} loc={o.loc} hot={o.hot} />
+        ))}
+      </div>
       <div className="tw-acts">
         <button className="tw-act-main" data-tathbit="go" onClick={() => onGo(site.id)}>
           انتقلْ إلى الموضع
@@ -278,20 +324,6 @@ function PairText({ mushaf, pair }: { mushaf: Mushaf; pair: Pairing }) {
     <div className="tw-pair">
       <Ayah mushaf={mushaf} id={pair.idA} loc={pair.a} hot={marks.a} />
       <Ayah mushaf={mushaf} id={pair.idB} loc={pair.b} hot={marks.b} />
-    </div>
-  );
-}
-
-function TwinText({ mushaf, group }: { mushaf: Mushaf; group: TwinGroup }) {
-  return (
-    <div className="tw-pair">
-      <p className="tw-q-lead quran" data-tathbit="twin-text">
-        {twinText(group.places[0], wordsOf(mushaf, group.places[0].id)).join(" ")}
-      </p>
-      <p className="tw-note">
-        بلا مفرقٍ ألبتّة — وإنّما مواضعُها:{" "}
-        <b>{group.places.map((p) => say(mushaf, p.loc)).join(" · ")}</b>
-      </p>
     </div>
   );
 }
@@ -474,7 +506,7 @@ function LogView({ t, mushaf }: { t: Tathbit; mushaf: Mushaf }) {
               )}
             </b>
             <i>
-              {r.lapses > 0 ? <>زللتَ عنها {num(r.lapses)} · </> : null}
+              {r.misses > 0 ? <>خلطتَ {num(r.misses)} · </> : null}
               عُرضت {num(r.reps)} · وتُعاد {when(r.due)}
             </i>
           </div>

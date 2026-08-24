@@ -32,19 +32,31 @@ export type Tab = "map" | "drill" | "log";
 /** المدى الذي يُنظر فيه — **سورةٌ أو صفحة**، وهما ما يفتح بهما الحافظُ وردَه */
 export type Scope = { kind: "surah"; n: number } | { kind: "page"; n: number };
 
-/** موضعُ التباسٍ في المدى — آيةٌ ونظائرُها */
-export interface Site {
+/** علاقةُ آيةٍ بنظيرةٍ لها — سطرٌ تحت موضعها */
+export interface SiteRel {
   key: string;
   kind: "fork" | "twin";
-  /** الآيةُ التي في المدى */
-  id: number;
-  loc: string;
-  /** نظائرُها خارجَ المدى أو فيه */
+  /** نظائرُها — خارجَ المدى أو فيه */
   others: { loc: string; id: number }[];
   /** عدّةُ مفارقها — و`0` في التوأم التامّ */
   forks: number;
-  /** كم مرّةً زلّ عنها */
-  lapses: number;
+  /** كم مرّةً خلط بينهما */
+  misses: number;
+}
+
+/**
+ * **موضعُ التباسٍ في المدى — آيةٌ وكلُّ ما يلتبس بها.**
+ *
+ * **والجمعُ على الآية لا على الزوج**: آيةٌ تلتبس بثلاثٍ يصفها الكتالوجُ ثلاثةَ
+ * أزواج، فلو صُفّت أزواجًا لتكرّر صدرُها ثلاثًا في الخريطة وضاع الخبرُ الذي
+ * يطلبه الحافظ — «في هذا الموضع ثلاثةٌ تلتبس بغيره».
+ */
+export interface Site {
+  id: number;
+  loc: string;
+  rels: SiteRel[];
+  /** جملةُ ما خلط فيها — به يُعرف الموضعُ الأثقل */
+  misses: number;
 }
 
 /** مسألةٌ معروضةٌ الآن */
@@ -63,14 +75,26 @@ export interface LogRow {
   key: string;
   kind: "fork" | "twin";
   places: { loc: string; id: number }[];
-  lapses: number;
+  /** كم مرّةً خلط بينهما — **وهو ما يُعرض**، وليس `lapses` الجدولِ */
+  misses: number;
   reps: number;
   due: string;
 }
 
 const KEY = "tilawa.tathbit.v1";
 
-type Store = Record<string, Card>;
+/**
+ * **حالُ علاقةٍ في السجلّ** — حالُ الجدول كما يحسبها `fsrs.ts` بلا زيادةٍ عليها،
+ * **ومعها عدُّ الخلط**.
+ *
+ * وفي الجدول `lapses` معناه: **ما نُسي بعد أن رسخ** — فأوّلُ عرضٍ لا يُعدّ زللًا
+ * فيه وإن أخطأ، لأنّه لم يُحفَظ بعدُ فيُنسى. والسجلُّ ههنا يقول للحافظ **كم مرّةً
+ * خلط بين الموضعين** (ح١ §٢/د)، وأوّلُ الخلط خلطٌ. فيُعدّ ههنا عدًّا مستقلًّا
+ * ولا يُقحَم في حساب الجدول.
+ */
+type Slot = Card & { misses: number };
+
+type Store = Record<string, Slot>;
 
 function readStore(): Store {
   try {
@@ -79,7 +103,7 @@ function readStore(): Store {
     const v = JSON.parse(raw) as unknown;
     if (!v || typeof v !== "object") return {};
     const out: Store = {};
-    for (const [k, c] of Object.entries(v as Record<string, Partial<Card>>)) {
+    for (const [k, c] of Object.entries(v as Record<string, Partial<Slot>>)) {
       if (typeof c?.s === "number" && typeof c.d === "number" && typeof c.due === "string") {
         out[k] = {
           s: c.s,
@@ -88,6 +112,7 @@ function readStore(): Store {
           last: typeof c.last === "string" ? c.last : c.due,
           reps: typeof c.reps === "number" ? c.reps : 1,
           lapses: typeof c.lapses === "number" ? c.lapses : 0,
+          misses: typeof c.misses === "number" ? c.misses : 0,
         };
       }
     }
@@ -221,25 +246,28 @@ export function useTathbit(mushaf: Mushaf | null): Tathbit {
     setAnswered(null);
   }, []);
 
-  /** مواضعُ الالتباس في المدى — بترتيب المصحف، **وكلُّ علاقةٍ مرّةً واحدة** */
+  /** مواضعُ الالتباس في المدى — بترتيب المصحف، **مجموعةً على الآية** */
   const sites = useMemo<Site[]>(() => {
     if (!raw || !rels || !mushaf) return [];
-    const out: Site[] = [];
-    const seen = new Set<string>();
+    const by = new Map<number, Site>();
     for (const r of rels.values()) {
-      const here = r.places.find((p) => inScope(mushaf, scope, p.id));
-      if (!here || seen.has(r.key)) continue;
-      seen.add(r.key);
-      out.push({
-        key: r.key,
-        kind: r.kind,
-        id: here.id,
-        loc: here.loc,
-        others: r.places.filter((p) => p.id !== here.id),
-        forks: r.pair ? r.pair.forks.length : 0,
-        lapses: store[r.key]?.lapses ?? 0,
-      });
+      for (const here of r.places) {
+        if (!inScope(mushaf, scope, here.id)) continue;
+        let site = by.get(here.id);
+        if (!site) by.set(here.id, (site = { id: here.id, loc: here.loc, rels: [], misses: 0 }));
+        const misses = store[r.key]?.misses ?? 0;
+        site.rels.push({
+          key: r.key,
+          kind: r.kind,
+          others: r.places.filter((p) => p.id !== here.id),
+          forks: r.pair ? r.pair.forks.length : 0,
+          misses,
+        });
+        site.misses += misses;
+      }
     }
+    const out = [...by.values()];
+    for (const s of out) s.rels.sort((x, y) => x.others[0].id - y.others[0].id);
     out.sort((x, y) => x.id - y.id);
     return out;
   }, [raw, rels, mushaf, scope, store]);
@@ -254,7 +282,7 @@ export function useTathbit(mushaf: Mushaf | null): Tathbit {
     (avoid: string | null): string | null => {
       if (!rels) return null;
       const now = Date.now();
-      const keys = sites.map((s) => s.key);
+      const keys = sites.flatMap((s) => s.rels.map((r) => r.key));
       const wide = [...rels.keys()];
       const order = [...keys, ...wide.filter((k) => !keys.includes(k))];
       const dueNow: string[] = [];
@@ -311,7 +339,10 @@ export function useTathbit(mushaf: Mushaf | null): Tathbit {
       if (!key || answered !== null) return;
       setAnswered(right);
       setStore((s) => {
-        const nextStore = { ...s, [key]: review(s[key] ?? null, right ? GOOD : AGAIN, Date.now()) };
+        const was = s[key] ?? null;
+        const card = review(was, right ? GOOD : AGAIN, Date.now());
+        const misses = (was?.misses ?? 0) + (right ? 0 : 1);
+        const nextStore = { ...s, [key]: { ...card, misses } };
         writeStore(nextStore);
         return nextStore;
       });
@@ -325,9 +356,9 @@ export function useTathbit(mushaf: Mushaf | null): Tathbit {
     for (const [k, c] of Object.entries(store)) {
       const r = rels.get(k);
       if (!r) continue;
-      out.push({ key: k, kind: r.kind, places: r.places, lapses: c.lapses, reps: c.reps, due: c.due });
+      out.push({ key: k, kind: r.kind, places: r.places, misses: c.misses, reps: c.reps, due: c.due });
     }
-    out.sort((x, y) => y.lapses - x.lapses || Date.parse(x.due) - Date.parse(y.due));
+    out.sort((x, y) => y.misses - x.misses || Date.parse(x.due) - Date.parse(y.due));
     return out;
   }, [rels, store]);
 
