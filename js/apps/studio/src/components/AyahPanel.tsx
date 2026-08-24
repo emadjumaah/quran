@@ -32,6 +32,7 @@ import { AsbabPanel } from "./AsbabChip";
 import { TadabburPanel } from "./TadabburChip";
 import Translations from "./Translations";
 import { similarOf } from "../similar";
+import { TILAWA_LIVE, tilawaAyah } from "../bridge";
 
 type Active = "twin" | "links" | "wujuh" | "similar" | "tadabbur" | "tafsir" | "eraab" | "refs" | "asbab" | "translate" | null;
 
@@ -156,6 +157,21 @@ export default function AyahPanel({
         >
           <span className="ai-spark" aria-hidden /> {ar ? "اسأل عن هذه الآية" : "Ask about this āya"}
         </Link>
+        {/* **بابُ التلاوة** (خارطةُ المخرج §الجسر): زرٌّ واحدٌ يفتح هذه الآيةَ في
+            تطبيق التلاوة ليقرأها ويستمع ويُسمِّع. **ولا يُعرض قبل قيام نطاقه**
+            (`bridge.ts`) فلا يقع القارئُ على بابٍ ميّت. */}
+        {TILAWA_LIVE && (
+          <a
+            href={tilawaAyah(ayah.surahNo, ayah.ayahNo)}
+            className="ap-btn ap-link"
+            data-bridge="tilawa-ayah"
+            target="_blank"
+            rel="noopener"
+            title={ar ? "اتلُ هذه الآيةَ واستمع إليها وسمِّعها في تطبيق التلاوة" : "recite and listen to this āya in the Tilāwa app"}
+          >
+            {ar ? "اتلُ" : "Recite"} ←
+          </a>
+        )}
         <Link to={`/aya/${ayah.surahNo}/${ayah.ayahNo}`} className="ap-btn ap-link">{ar ? "بطاقةُ الآية" : "Verse card"} ←</Link>
       </div>
 

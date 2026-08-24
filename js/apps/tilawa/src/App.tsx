@@ -4,9 +4,12 @@ import { globalIdOf, locationOf } from "@mishkat/quran-core";
 import { loadMushaf, num, type Mushaf } from "./mushaf";
 import { applySettings, subscribeSettings } from "./settings";
 import { loadAudio, stop as stopAudio } from "./audio";
+import { clearDeepLink, readDeepLink } from "./bridge";
 import { useTatabbu, type Tatabbu } from "./tatabbu";
 import { useTathbit } from "./tathbit";
 import MushafPage from "./components/MushafPage";
+import Skeleton from "./components/Skeleton";
+import About from "./components/About";
 import Goto from "./components/Goto";
 import SettingsSheet from "./components/SettingsSheet";
 import { AfterSheet, ConsentSheet, EngineSheet, TrackBar } from "./components/Track";
@@ -63,7 +66,7 @@ export default function App() {
   const opened = useRef<{ id: number; resumed: boolean }>({ id: 1, resumed: false });
   const [resume, setResume] = useState<number | null>(null);
   const [win, setWin] = useState({ from: 1, to: 1 });
-  const [sheet, setSheet] = useState<"goto" | "set" | "listen" | null>(null);
+  const [sheet, setSheet] = useState<"goto" | "set" | "listen" | "about" | null>(null);
 
   const scroller = useRef<HTMLDivElement>(null);
   const header = useRef<HTMLElement>(null);
@@ -94,11 +97,19 @@ export default function App() {
         /* ── **الفتحُ على آخر الموضع** (ف٢ §٣): والافتراضُ ١:١ ──
            **وسطرُ العودة لا يُقال إلّا لعائد**: الميراثُ بلا ختمٍ زمنيٍّ لا
            يُدرى أرجوعٌ هو، وما كتبته هذه الجلسةُ ليس رجوعًا (درسُ ج٩ §٤). */
+        /* **والبابُ الداخلُ مقدَّمٌ على المحفوظ** (م٣ §٢): من جاء من مشكاة
+           برابطٍ عميقٍ فُتح على آيته، **ولا يُقال له «عُدتَ»** — فليست عودةً. */
+        const deep = readDeepLink();
+        if (deep !== null) clearDeepLink();
         const saved = readMawdi("mushaf");
         const at = parseMawdi(saved);
-        const id = at ? globalIdOf(at.surahNo, at.ayahNo) : 1;
+        const kept = at ? globalIdOf(at.surahNo, at.ayahNo) : 1;
+        const id = deep ?? kept;
         const stamp = saved?.at ? Date.parse(saved.at) : NaN;
-        opened.current = { id, resumed: id > 1 && Number.isFinite(stamp) && stamp < SESSION_START };
+        opened.current = {
+          id,
+          resumed: deep === null && id > 1 && Number.isFinite(stamp) && stamp < SESSION_START,
+        };
         topAyah.current = id;
         const page = m.ayahs[id - 1].page;
         setWin({ from: clamp(page - WINDOW, 1, PAGES), to: clamp(page + WINDOW, 1, PAGES) });
@@ -374,6 +385,20 @@ export default function App() {
     [mushaf, scrollToAyah],
   );
 
+  /* **ورابطٌ يُلمس والتطبيقُ مفتوحٌ يُعمل به في مكانه** — لا إعادةَ تحميل:
+     يُقرأ الموضعُ ويُنتقل إليه ثمّ يُمحى الهاش كما يُمحى عند الفتح. */
+  useEffect(() => {
+    if (!mushaf) return;
+    const onHash = () => {
+      const id = readDeepLink();
+      if (id === null) return;
+      clearDeepLink();
+      goTo(id);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, [mushaf, goTo]);
+
   const where = mushaf ? mushaf.surahName(locationOf(topAyah.current)[0]) : "";
 
   return (
@@ -453,18 +478,24 @@ export default function App() {
             <circle cx="4.6" cy="5.6" r="1.9" fill="none" stroke="currentColor" strokeWidth="1.7" />
           </svg>
         </button>
-        <button className="tw-btn" onClick={() => setSheet("goto")} aria-label="الانتقال إلى سورةٍ أو صفحة">
+        <button
+          className="tw-btn"
+          data-tw="goto"
+          onClick={() => setSheet("goto")}
+          aria-label="الانتقال إلى سورةٍ أو صفحة"
+        >
           <span className="tw-where quran">{where || "الانتقال"}</span>
         </button>
         <button
           className="tw-btn"
+          data-tw="listen"
           onClick={() => setSheet("listen")}
           aria-pressed={play.id !== null}
           aria-label="الاستماع"
         >
           ▶
         </button>
-        <button className="tw-btn" onClick={() => setSheet("set")} aria-label="الإعدادات">
+        <button className="tw-btn" data-tw="settings" onClick={() => setSheet("set")} aria-label="الإعدادات">
           ⚙
         </button>
       </header>
@@ -473,7 +504,7 @@ export default function App() {
         {failed ? (
           <p className="tw-fail">لم يُجلب نصُّ المصحف — تحقّق من الاتّصال ثمّ أعد فتح الصفحة.</p>
         ) : !mushaf ? (
-          <p className="tw-loading">يُفتح المصحف…</p>
+          <Skeleton />
         ) : (
           <>
             <div className="mushaf-stage">
@@ -536,8 +567,11 @@ export default function App() {
 
       {mushaf && track.phase === "off" && !fix.on && <PlayBar mushaf={mushaf} />}
 
-      {sheet === "goto" && mushaf && <Goto mushaf={mushaf} onGo={goTo} onClose={() => setSheet(null)} />}
-      {sheet === "set" && <SettingsSheet onClose={() => setSheet(null)} />}
+      {sheet === "goto" && mushaf && (
+        <Goto mushaf={mushaf} at={topAyah.current} onGo={goTo} onClose={() => setSheet(null)} />
+      )}
+      {sheet === "set" && <SettingsSheet onClose={() => setSheet(null)} onAbout={() => setSheet("about")} />}
+      {sheet === "about" && <About onClose={() => setSheet(null)} />}
       {sheet === "listen" && mushaf && (
         <ListenSheet mushaf={mushaf} topAyahId={topAyah.current} onClose={() => setSheet(null)} />
       )}

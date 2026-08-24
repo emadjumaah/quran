@@ -20,7 +20,7 @@ const FONTS: { id: QuranFont; ar: string }[] = [
   { id: "scheherazade", ar: "شهرزاد" },
 ];
 
-export default function SettingsSheet({ onClose }: { onClose: () => void }) {
+export default function SettingsSheet({ onClose, onAbout }: { onClose: () => void; onAbout: () => void }) {
   const s = getSettings();
   const i = SCALES.indexOf(s.scale);
   return (
@@ -72,6 +72,11 @@ export default function SettingsSheet({ onClose }: { onClose: () => void }) {
       <p className="tw-note">
         ما تختاره وموضعُ قراءتك محفوظان في هذا الجهاز وحدَه — ولا يُرفع من قراءتك شيءٌ إلى خادم.
       </p>
+
+      {/* **بابُ «عن التطبيق»** — سطرُ تعريفٍ وإسنادُ ما يُقرأ ويُسمَع، ورقةً على حدة */}
+      <button className="tw-about-open" data-tw="about-open" onClick={onAbout}>
+        عن التطبيق
+      </button>
     </Sheet>
   );
 }

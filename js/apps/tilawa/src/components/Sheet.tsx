@@ -9,14 +9,20 @@ import { createPortal } from "react-dom";
  *
  * **وخلفَها أرضيّةٌ معتمة** (درسُ ج٩ §٢) فلا تختلط عناصرُها بنصّ المصحف؛
  * ولمسُ الأرضيّة يغلقها، وكذلك مفتاحُ الهروب.
+ *
+ * **وذيلٌ ثابتٌ يُطلب** (م٣ §٢): ما وُضع في `footer` بقي مرئيًّا وإن طال ما
+ * فوقه — فبابٌ يقع تحت مئةٍ وأربعَ عشرةَ سورةً بابٌ لا يجده أحد.
  */
 export default function Sheet({
   title,
   onClose,
+  footer,
   children,
 }: {
   title: string;
   onClose: () => void;
+  /** ما يبقى في ذيل الورقة لا يجري مع التمرير */
+  footer?: ReactNode;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -34,6 +40,7 @@ export default function Sheet({
         <div className="tw-grip" aria-hidden />
         <h2>{title}</h2>
         <div className="tw-sheet-body">{children}</div>
+        {footer && <div className="tw-sheet-foot">{footer}</div>}
       </div>
     </>,
     document.body,
