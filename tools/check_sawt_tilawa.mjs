@@ -27,14 +27,17 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = `${ROOT}/js/apps/studio/src`;
+/* مسارُ ف١ (إدارة 2026-08-17): sawt نُقلت إلى الحزمة المشتركة — تحديثُ مسارٍ لا منطق،
+   وفاتت هذه البوّابةُ تحديثَ ف١ لأنها تقرأ عبر متغيّرٍ لا استيراد. */
+const CORE = `${ROOT}/js/packages/quran-core/src`;
 
 const FILES = {
-  tilawa: `${SRC}/lib/sawt/tilawa.ts`,
+  tilawa: `${CORE}/lib/sawt/tilawa.ts`,
   panel: `${SRC}/components/OfflineReadiness.tsx`,
   credit: `${SRC}/components/RecitationCredit.tsx`,
   audio: `${SRC}/components/AudioButton.tsx`,
   settings: `${SRC}/components/SettingsPanel.tsx`,
-  index: `${SRC}/lib/sawt/mushafIndex.ts`,
+  index: `${CORE}/lib/sawt/mushafIndex.ts`,
 };
 
 /** لغةُ الأدوات — لا تظهر في نصٍّ يقرؤه القارئ */
