@@ -1,18 +1,18 @@
 {
-  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ن٢ — اكتمالُ نجم التلاوة (الاصطيادُ الصوتي).",
+  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول م٣ — ختامُ مراحل الخارطة، والنشرُ الأوّلُ بيد المالك.",
   "branch": "main",
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "e87af643cc2e6c9e2b75b1917cb66129c8f8c961",
-    "refs/remotes/origin/main": "e87af643cc2e6c9e2b75b1917cb66129c8f8c961"
+    "refs/remotes/origin/HEAD": "5f07a361b75fae120e68c89ac6d1185205974a46",
+    "refs/remotes/origin/main": "5f07a361b75fae120e68c89ac6d1185205974a46"
   },
-  "lastPush": "e87af64 refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "5f07a36 refs/remotes/origin/main@{0}: update by push",
   "previous": {
-    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ن١ — بابُ التثبيت في التلاوة.",
+    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ن٢ — اكتمالُ نجم التلاوة (الاصطيادُ الصوتي).",
     "branch": "main",
     "remoteRefs": {
-      "refs/remotes/origin/HEAD": "7d6abf8c075e7de6909d9d2e75ff9ebf341c22b9",
-      "refs/remotes/origin/main": "7d6abf8c075e7de6909d9d2e75ff9ebf341c22b9"
+      "refs/remotes/origin/HEAD": "e87af643cc2e6c9e2b75b1917cb66129c8f8c961",
+      "refs/remotes/origin/main": "e87af643cc2e6c9e2b75b1917cb66129c8f8c961"
     },
-    "lastPush": "7d6abf8 refs/remotes/origin/main@{0}: update by push"
+    "lastPush": "e87af64 refs/remotes/origin/main@{0}: update by push"
   }
 }
