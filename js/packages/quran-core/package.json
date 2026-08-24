@@ -1,0 +1,24 @@
+{
+  "name": "@mishkat/quran-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "شيفرةُ القرآن الصافيةُ المشتركةُ بين «التلاوة» و«مشكاة» — المسبارُ والمحاذاةُ وفهرسُ المصحف ومحلِّلُ العربيّة. مصدرٌ واحدٌ لا نسختان تتباعدان.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./db": "./src/db.ts",
+    "./ort-assets": "./ort-assets.mjs",
+    "./lib/sawt/*.json": "./src/lib/sawt/*.json",
+    "./lib/*": "./src/lib/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

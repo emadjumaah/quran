@@ -1,0 +1,11 @@
+{
+  "name": "@mishkat/quran-assets",
+  "version": "0.1.0",
+  "private": true,
+  "description": "أصولُ القرآن العامّةُ المشتركة — خطّا المصحف وبياناتٌ يستهلكها القارئُ والتتبّع. تُودَع ههنا مرّةً وتُنسخ إلى `public` كلِّ تطبيقٍ عند البناء.",
+  "type": "module",
+  "exports": {
+    ".": "./assets.mjs",
+    "./assets.mjs": "./assets.mjs"
+  }
+}
