@@ -280,3 +280,92 @@ body.tw-immersive .tw-top { transition-timing-function: ease-in; }
 }
 .tw-reciters button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 .tw-reciters small { display: block; font-size: 15px; color: var(--muted); }
+
+/* ═══════════════ سطحُ التتبّع — المؤشّرُ على كلمات الصفحة عينِها ═══════════════
+   **ولا سطحَ نصٍّ ثانيًا يُرسم فوق المصحف**: الكلمةُ المظلَّلةُ هي `span` من
+   عناصر `.mp-text` نفسِها. **والقاعدةُ ههنا لونٌ لا تنضيد**: الحشوةُ ٣px يقابلها
+   هامشٌ سالبٌ يساويها، فلا تتزحزح كلمةٌ ولا يتبدّل قَطعُ سطرٍ حين يمرّ المؤشّر.
+   و`slice` تشقّ الخلفيّةَ على الأسطر كهيئة التظليل في المصحف. */
+.mp-w.tw-cursor {
+  background: var(--accent-soft);
+  border-radius: 6px;
+  padding-inline: 3px; margin-inline: -3px;
+  -webkit-box-decoration-break: slice; box-decoration-break: slice;
+}
+
+/* شريطُ الحال — **رفيعٌ واحدٌ** في أسفل الشاشة، يبقى والرأسُ منسحبٌ في التلاوة */
+.tw-track {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 50;
+  background: var(--panel); border-block-start: 1px solid var(--line);
+  box-shadow: 0 -6px 20px rgb(0 0 0 / 0.08);
+  padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px));
+}
+.tw-track-row { display: flex; align-items: center; gap: 6px; }
+.tw-track-hal {
+  min-height: 44px; padding: 0 10px;
+  border: 1px solid var(--shell-line); border-radius: 999px;
+  background: var(--panel); color: var(--ink); font-family: inherit; font-size: 15px;
+}
+.tw-track-eng {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 44px; padding-inline: 10px; border-radius: 999px;
+  font-size: 15px; color: var(--ink-2);
+}
+.tw-track-swap { border: 1px solid var(--line); background: var(--panel); }
+.tw-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
+.tw-dot-listening { background: var(--accent); }
+.tw-dot-starting, .tw-dot-restarting { background: var(--gold); }
+.tw-dot-denied, .tw-dot-error, .tw-dot-unsupported { background: #b4553d; }
+.tw-track-act {
+  min-height: 44px; min-width: 76px; padding-inline: 16px; border-radius: 999px;
+  border: 1px solid var(--accent); background: var(--accent-soft);
+  color: var(--accent); font-size: 15px; font-weight: 600;
+}
+.tw-track-act:disabled { opacity: 0.45; }
+.tw-track-x { min-width: 44px; height: 44px; border-radius: 999px; font-size: 16px; }
+.tw-track-x:hover { background: var(--panel-2); }
+.tw-track-fell, .tw-track-seek, .tw-track-note {
+  margin: 0 0 6px; font-size: 15px; line-height: 1.6; color: var(--ink-2);
+}
+.tw-track-seek { color: var(--muted); }
+.tw-track-resume {
+  display: block; width: 100%; min-height: 44px; margin-top: 6px;
+  padding: 8px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel-2);
+  color: var(--ink-2); font-size: 15px; text-align: start;
+}
+.tw-track-resume b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* ورقةُ اختيار المحرّك — **لكلٍّ سطرُ صدقه ونفعُه وثمنُه** كما أعلنتها الحزمة */
+.tw-engines { display: flex; flex-direction: column; gap: 8px; }
+.tw-engine {
+  display: flex; flex-direction: column; gap: 4px;
+  min-height: 44px; padding: 10px 12px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--panel);
+  color: var(--ink-2); font-size: 15px; line-height: 1.6; text-align: start;
+}
+.tw-engine b { font-size: 16px; font-weight: 600; color: var(--ink); }
+.tw-engine[aria-pressed="true"] { border-color: var(--accent); }
+.tw-engine:disabled { opacity: 0.55; }
+.tw-warn {
+  margin: 0 0 10px; padding: 10px 12px; border-radius: 10px;
+  background: var(--accent-soft); color: var(--ink); font-size: 15px; line-height: 1.7;
+}
+.tw-warn-body { color: var(--ink); }
+.tw-acts { display: flex; gap: 8px; margin-top: 12px; }
+.tw-act, .tw-act-main {
+  min-height: 44px; padding-inline: 18px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink-2); font-size: 15px;
+}
+.tw-act-main { flex: 1; border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+/* ما بعد الختام — موضعٌ ومواضعُ للنظر، **بلغة شكٍّ لا حكم** */
+.tw-reached { margin: 0 0 6px; font-size: 16px; color: var(--ink-2); }
+.tw-reached b { font-weight: 400; font-size: 19px; color: var(--ink); }
+.tw-places { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.tw-places li {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 8px 10px; border-radius: 10px; background: var(--panel-2);
+  font-size: 15px; color: var(--muted);
+}
+.tw-places .quran { font-size: 17px; color: var(--ink); }

@@ -3,10 +3,12 @@ import { parseMawdi, readMawdi, saveMawdi } from "@mishkat/quran-core/lib/mawadi
 import { globalIdOf, locationOf } from "@mishkat/quran-core";
 import { loadMushaf, num, type Mushaf } from "./mushaf";
 import { applySettings, subscribeSettings } from "./settings";
-import { loadAudio } from "./audio";
+import { loadAudio, stop as stopAudio } from "./audio";
+import { useTatabbu } from "./tatabbu";
 import MushafPage from "./components/MushafPage";
 import Goto from "./components/Goto";
 import SettingsSheet from "./components/SettingsSheet";
+import { AfterSheet, ConsentSheet, EngineSheet, TrackBar } from "./components/Track";
 import { ListenSheet, PlayBar, usePlayState } from "./components/Listen";
 
 /** لحظةُ إقلاع الجلسة — بها يُعرف الموضعُ المحفوظُ من موضعٍ كتبته هذه الجلسةُ نفسُها */
@@ -23,11 +25,24 @@ const PAGES = 604;
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
+/** صفحةُ آيةٍ بالرقم العامّ */
+const pageOf = (m: Mushaf, id: number): number => m.ayahs[id - 1]?.page ?? 0;
+/** صفحةُ موضعٍ `"سورة:آية:كلمة"` */
+const cursorPage = (m: Mushaf, loc: string): number => {
+  const [s, a] = loc.split(":").map(Number);
+  return pageOf(m, globalIdOf(s, a));
+};
+
 export default function App() {
+  /** المصحفُ في مرجعٍ — يقرؤه مستمعُ التمرير وتتبّعُ الصوت بلا أن يُعاد تركيبُهما */
+  const mushafRef = useRef<Mushaf | null>(null);
   const [mushaf, setMushaf] = useState<Mushaf | null>(null);
   const [failed, setFailed] = useState(false);
   const [, bump] = useState(0);
   const play = usePlayState();
+  /** **التتبّعُ حالٌ من هذه الصفحة** — منطقُه في الحزمة، وتدبيرُه في `tatabbu.ts` */
+  const surahName = useCallback((n: number) => mushafRef.current?.surahName(n) ?? "", []);
+  const track = useTatabbu(surahName);
 
   /* الموضعُ الذي يُفتح عليه — من المواضع، وإلّا فأوّلُ المصحف */
   const opened = useRef<{ id: number; resumed: boolean }>({ id: 1, resumed: false });
@@ -36,8 +51,6 @@ export default function App() {
   const [sheet, setSheet] = useState<"goto" | "set" | "listen" | null>(null);
 
   const scroller = useRef<HTMLDivElement>(null);
-  /** المصحفُ في مرجعٍ كذلك — يقرؤه مستمعُ التمرير بلا أن يُعاد تركيبُه */
-  const mushafRef = useRef<Mushaf | null>(null);
   const header = useRef<HTMLElement>(null);
   /** أوّلُ آيةٍ ظاهرةٍ الآن — تُحفظ موضعًا، ومنها يبدأ الاستماع */
   const topAyah = useRef(1);
@@ -45,6 +58,9 @@ export default function App() {
   const anchor = useRef<{ id: number; top: number } | null>(null);
   /** ما حرّكناه نحن من التمرير — **يُطرح من حركة الإصبع بالحساب** (درسُ ص٤ §١) */
   const ours = useRef(0);
+  /** أيتلو الآن؟ — يقرؤه مستمعُ التمرير فلا يُعاد تركيبُه في كلّ تبدُّل حال */
+  const reciting = useRef(false);
+  reciting.current = track.phase === "running";
 
   useEffect(() => {
     applySettings();
@@ -181,6 +197,8 @@ export default function App() {
       }
       window.clearTimeout(idle);
       idle = window.setTimeout(settle, 180);
+      // **والقشرةُ مطويّةٌ طولَ التلاوة** — يمضي حفظُ الموضع وإزاحةُ النافذة، ولا يعود الرأس
+      if (reciting.current) return;
       /* **أعلى المصحف: الرأسُ ظاهرٌ دائمًا** — ومن بلغ القاعَ فارتدادُه ليس تمريرًا */
       if (y <= 0) {
         pending = 0;
@@ -232,6 +250,56 @@ export default function App() {
       body.classList.remove("tw-drag", "tw-immersive");
     };
   }, [mushaf]);
+
+  /* ── **أثناء التلاوة تنسحب القشرةُ ولا تعود** (بندُ ف٣ §١) ──
+     المصحفُ وحدَه أمام المتلو، **والرأسُ لا يقفز إلى الظهور بحركةٍ عارضة**:
+     يُرفع `--shell-p` إلى واحدٍ ما دام يتلو، ويُصرَف عنه مستمعُ التمرير (وهو
+     يمضي في حفظ الموضع وإزاحة نافذة الصفحات كما هو). وعند الختام يعود الرأسُ
+     ظاهرًا **من غير أن يُنازع القارئَ في تمريره**. */
+  useEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
+    if (track.phase !== "running") return;
+    root.style.setProperty("--shell-p", "1");
+    body.classList.add("tw-immersive");
+    body.classList.remove("tw-drag");
+    return () => {
+      root.style.setProperty("--shell-p", "0");
+      body.classList.remove("tw-immersive");
+    };
+  }, [track.phase]);
+
+  /* ── **المؤشّرُ يجري على كلمات الصفحة، والصفحةُ تتبعه هادئةً** (ف٣ §١) ──
+     الكلمةُ المظلَّلةُ عنصرٌ من عناصر صفحة المصحف (`[data-w]`)، فلا سطحَ ثانيَ
+     يُرسم فوقها. **ولا يتحرّك شيءٌ ما دامت في حزام القراءة**؛ فإن خرجت منه
+     دُفعت الصفحةُ دفعةً واحدةً ناعمةً وسكنت (درسُ سكون ص٤). وإن كانت في صفحةٍ
+     خارجَ النافذة المرسومة أُزيحت النافذةُ إليها **بمرساةٍ** فلا يقفز النصّ. */
+  useEffect(() => {
+    const el = scroller.current;
+    const loc = track.cursor;
+    if (!el || !mushaf || !loc || track.phase !== "running") return;
+    const [s, a] = loc.split(":").map(Number);
+    const id = globalIdOf(s, a);
+    const page = mushaf.ayahs[id - 1]?.page;
+    if (!page) return;
+    if (page < win.from || page > win.to) {
+      reflow(page, topAyah.current);
+      return;
+    }
+    reflow(page, id);
+    const node = el.querySelector<HTMLElement>(`[data-w="${loc}"]`);
+    if (!node) return;
+    const box = el.getBoundingClientRect();
+    const head = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--topbar-h")) || 56;
+    const r = node.getBoundingClientRect();
+    const belt = { top: box.top + 12, bottom: box.bottom - 110 };
+    if (r.top >= belt.top && r.bottom <= belt.bottom) return; // في الحزام ⇒ لا حركة
+    const top = r.top - box.top + el.scrollTop - Math.max(head, box.height * 0.32);
+    /* **والالتقاطُ من موضعٍ بعيدٍ نقلةٌ لا انزلاق**: تمريرٌ ناعمٌ عبر صفحاتٍ
+       يقطع على القارئ ثوانيَ وهو يتلو — فالقريبُ ينزلق والبعيدُ يُنقل دفعةً. */
+    const here = mushaf.ayahs[topAyah.current - 1]?.page ?? page;
+    el.scrollTo({ top: Math.max(0, top), behavior: Math.abs(page - here) > 1 ? "auto" : "smooth" });
+  }, [track.cursor, track.phase, mushaf, win.from, win.to, reflow]);
 
   /* ── **الصفحةُ تتبع الآيةَ المسموعةَ بتمريرٍ هادئ** (درسُ سكون ص٤) ──
      **حركةٌ عند الحاجة لا مع كلّ آية**: ما دامت الآيةُ في حزام القراءة لا
@@ -301,6 +369,37 @@ export default function App() {
           التلاوة
         </span>
         <span className="tw-spacer" />
+        {/* **لمسةُ الميكروفون** (ف٣ §١): تقلب هذه الصفحةَ حالًا **في مكانها** —
+            لا انتقالَ مسارٍ ولا شاشةَ بدء — وتبدأ من **أوّل آيةٍ مرئيّةٍ الآن**.
+            **ولا يُسمَع ويُسمَّع معًا**: يسكت المشغِّلُ إن كان يعمل، فلا يسمع
+            المحرّكُ تلاوةَ الشريط بدل تلاوة صاحبه. */}
+        <button
+          className="tw-btn"
+          data-track="mic"
+          aria-pressed={track.phase !== "off"}
+          aria-label="التتبّع بالصوت"
+          onClick={() => {
+            stopAudio();
+            const [s, a] = locationOf(topAyah.current);
+            track.arm(`${s}:${a}`);
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+            <path
+              d="M12 3.8a2.6 2.6 0 0 1 2.6 2.6v5a2.6 2.6 0 0 1-5.2 0v-5A2.6 2.6 0 0 1 12 3.8Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+            />
+            <path
+              d="M6.6 11a5.4 5.4 0 0 0 10.8 0M12 16.4V20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
         <button className="tw-btn" onClick={() => setSheet("goto")} aria-label="الانتقال إلى سورةٍ أو صفحة">
           <span className="tw-where quran">{where || "الانتقال"}</span>
         </button>
@@ -326,7 +425,15 @@ export default function App() {
           <>
             <div className="mushaf-stage">
               {mushaf.pages.slice(win.from - 1, win.to).map((p) => (
-                <MushafPage key={p.page} page={p} mushaf={mushaf} playingId={play.id} />
+                <MushafPage
+                  key={p.page}
+                  page={p}
+                  mushaf={mushaf}
+                  /* **ولا تُعاد صفحاتُ النافذة رسمًا لأجل واحدةٍ**: يُمرَّر إلى كلّ
+                     صفحةٍ ما يخصّها وحدَه، فتسكن أخواتُها (الأداءُ شرطٌ لا زينة). */
+                  playingId={play.id !== null && pageOf(mushaf, play.id) === p.page ? play.id : null}
+                  cursor={track.cursor && cursorPage(mushaf, track.cursor) === p.page ? track.cursor : null}
+                />
               ))}
             </div>
           </>
@@ -342,7 +449,13 @@ export default function App() {
         </p>
       )}
 
-      {mushaf && <PlayBar mushaf={mushaf} />}
+      {/* **سطحُ التتبّع**: شريطٌ رفيعٌ واحدٌ وورقتان — ولا يُرسم نصٌّ ثانٍ فوق المصحف */}
+      {track.phase !== "off" && <TrackBar t={track} />}
+      {track.ask === "engine" && <EngineSheet t={track} />}
+      {track.ask === "consent" && <ConsentSheet t={track} />}
+      {track.phase === "done" && mushaf && <AfterSheet t={track} mushaf={mushaf} />}
+
+      {mushaf && track.phase === "off" && <PlayBar mushaf={mushaf} />}
 
       {sheet === "goto" && mushaf && <Goto mushaf={mushaf} onGo={goTo} onClose={() => setSheet(null)} />}
       {sheet === "set" && <SettingsSheet onClose={() => setSheet(null)} />}

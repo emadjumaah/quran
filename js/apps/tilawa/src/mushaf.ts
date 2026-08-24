@@ -172,8 +172,9 @@ function build(raw: RawMushaf): Mushaf {
      * **مفرداتُ مدًى من سورةٍ واحدة — مشتقّةٌ من الرسم لا مقروءةٌ من صرفٍ.**
      *
      * التلاوةُ لا تشحن جدولَ المفردات (جذورَه ولمّاتِه وقطعَه) — تلك مادّةُ
-     * البحث في مشكاة. فتُشقّ الكلماتُ من الرسم بالفراغ، **وتُطرح منها علاماتُ
-     * الوقف** فهي رموزُ قراءةٍ لا كلماتٍ تُنطق. وقد قِيس هذا بجدول مشكاة:
+     * البحث في مشكاة. فتُشقّ الكلماتُ من الرسم **بالقسمة الواحدة**
+     * (`ayahTokens` — وهي التي تَرسم بها الصفحةُ كلماتِها)، **وتُطرح منها
+     * علاماتُ الوقف** فهي رموزُ قراءةٍ لا كلماتٍ تُنطق. وقد قِيس هذا بجدول مشكاة:
      * **٦٢٣٢ آيةً من ٦٢٣٦ يتطابق فيها عددُ الكلمات**، والأربعُ الباقيةُ
      * موضعُ «بَعْدَ مَا» يصلها الجدولُ كلمةً واحدة. **والصرفُ فارغٌ صريحًا**
      * (`root` و`lemma` بلا قيمة) فلا يظنّ قارئٌ أنّه ههنا.
@@ -181,23 +182,23 @@ function build(raw: RawMushaf): Mushaf {
     wordsBetween: async (surahNo: number, fromAyah: number, toAyah: number): Promise<WordDoc[]> => {
       const out: WordDoc[] = [];
       for (let a = fromAyah; a <= toAyah && a <= AYAH_COUNTS[surahNo - 1]; a++) {
-        const text = ayahs[globalIdOf(surahNo, a) - 1].text;
-        const toks = text.split(/\s+/).filter((t) => t && !WAQF_ONLY.test(t));
-        toks.forEach((t, i) => {
+        const id = globalIdOf(surahNo, a);
+        for (const t of ayahTokens(id, ayahs[id - 1].text)) {
+          if (!t.no) continue; // علامةُ وقفٍ — تُرسم ولا تُنطق
           out.push({
-            _id: `w${surahNo}:${a}:${i + 1}`,
-            location: `${surahNo}:${a}:${i + 1}`,
+            _id: `w${surahNo}:${a}:${t.no}`,
+            location: `${surahNo}:${a}:${t.no}`,
             surahNo,
             ayahNo: a,
-            wordNo: i + 1,
-            textUthmani: t,
-            textClean: t,
+            wordNo: t.no,
+            textUthmani: t.text,
+            textClean: t.text,
             root: null,
             lemma: null,
             stemPos: null,
             segments: [],
           });
-        });
+        }
       }
       return out;
     },
@@ -208,3 +209,38 @@ function build(raw: RawMushaf): Mushaf {
 
 /** رمزُ وقفٍ قائمٌ بنفسه (ۖ ۗ ۘ ۙ ۚ ۛ …) — علامةُ قراءةٍ لا كلمة */
 const WAQF_ONLY = /^[ۖ-ۭ]+$/;
+
+/* ═══════════ **شقُّ الآية كلماتٍ — قسمةٌ واحدةٌ لا قسمتان** ═══════════
+   صفحةُ المصحف تَرسم الكلماتِ عناصرَ ليجريَ عليها المؤشّر، والمنفذُ يُخرجها
+   للمحاذاة — **فلو شُقّت مرّتين لانحرف ترقيمُ إحداهما عن الأخرى بصمت**،
+   فيُظلَّل في الصفحة غيرُ ما يُطابَق في المحاذاة. فالقسمةُ ههنا وحدَها،
+   ويقرأ منها الوجهان.
+
+   وثلاثةُ أحكامٍ فيها:
+   • **الفاصلُ مسافةٌ واحدة** — وقد قِيس على الملفّ نفسِه: ٦٢٣٦ آيةً ليس في
+     رسمها إلّا `U+0020` مفردةً، ولا صدرَ فيها ولا عجزَ بفراغ. فالشقُّ بالمسافة
+     وردُّها يُعيد النصَّ **حرفًا حرفًا**.
+   • **وعلاماتُ الوقف تُرسم ولا تُرقَّم**: ۖ ۗ ۘ ۚ ۛ رموزُ قراءةٍ لا كلماتٍ
+     تُنطق (٤٥٧٨ رمزًا قائمًا بنفسه في المصحف) — فتظهر في الصفحة كما هي،
+     **ولا يجري عليها المؤشّر** ولا تدخل في عدّ الكلمات.
+   • **ورقمُ الكلمة في آيتها مبدوءٌ بواحد** — وهو عينُ ترقيم `wordsBetween`
+     أدناه، وعينُ صورة `"سورة:آية:كلمة"` التي يمسك بها التتبّع. */
+export interface AyahToken {
+  text: string;
+  /** رقمُها في آيتها (١…) — و`0` لعلامة وقفٍ لا تُعدّ كلمة */
+  no: number;
+}
+
+/** يُشقّ ما يُنظر إليه لا المصحفُ كلُّه — والمشقوقُ يُحفظ فلا يُعاد شقُّه */
+const cut = new Map<number, AyahToken[]>();
+
+/** كلماتُ آيةٍ بعلاماتها — من رسمها كما هو، بلا حذفٍ ولا تحويل */
+export function ayahTokens(ayahId: number, text: string): AyahToken[] {
+  let toks = cut.get(ayahId);
+  if (!toks) {
+    let no = 0;
+    toks = text.split(" ").map((t) => ({ text: t, no: WAQF_ONLY.test(t) ? 0 : ++no }));
+    cut.set(ayahId, toks);
+  }
+  return toks;
+}

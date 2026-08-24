@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { AMIRI_QURAN, MUSHAF_TEXT, copyAssets, copyShared } from "@mishkat/quran-assets";
+import { copyOrt } from "@mishkat/quran-core/ort-assets";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PUB = path.join(HERE, "public");
@@ -16,4 +17,14 @@ const rows = [...copyShared(PUB), ...copyAssets(PUB, [...MUSHAF_TEXT, ...AMIRI_Q
 const kb = (n) => (n / 1024).toFixed(0);
 console.log(
   `shared assets → public/ : ${rows.map((r) => `${r.file} ${kb(r.bytes)}KB${r.copied ? " (copied)" : ""}`).join(", ")}`,
+);
+
+/* **عُدّةُ تشغيل المحرّك الحرّ — من الرزمة المثبَّتة إلى أصلنا** (ف٣ §٢):
+   السكربتُ نفسُه الذي تنسخ به مشكاة (`ort-assets.mjs` في الحزمة)، والمقصدُ
+   `public/ort/` — يجدها العاملُ على `/ort/` كما هي مكتوبةٌ في `asrWorker.ts`
+   بلا تعديلِ حرف. **وما نشحنه نحن لا ما نرجوه في شبكة طرفٍ ثالث.** */
+const ort = copyOrt(PUB);
+const mb = (n) => (n / 1024 / 1024).toFixed(1);
+console.log(
+  `ort runtime → public/ort/ : ${ort.map((r) => `${r.file} ${mb(r.bytes)}MB${r.copied ? " (copied)" : ""}`).join(", ")}`,
 );

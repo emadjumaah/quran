@@ -1,6 +1,6 @@
-import { Fragment } from "react";
+import { Fragment, memo } from "react";
 import type { Mushaf, Page } from "../mushaf";
-import { BASMALA, num } from "../mushaf";
+import { BASMALA, ayahTokens, num } from "../mushaf";
 
 /**
  * **صفحةُ مصحفٍ واحدة** — سردٌ متّصلٌ كالمصحف المطبوع: ترويسةٌ مؤطَّرةٌ (السورةُ ·
@@ -12,16 +12,32 @@ import { BASMALA, num } from "../mushaf";
  *
  * **ونصٌّ صافٍ**: لا طبقةَ ولا شارةَ ولا كلمةَ تُنقر فتفتح لوحة. رقمُ الآية
  * ليس زرًّا — **المصحفُ يُقرأ ولا يُستفتى**.
+ *
+ * ## والكلماتُ عناصرُ الصفحة نفسِها (ف٣ §١)
+ *
+ * **المكسبُ الذي فُصلت التلاوةُ لأجله**: يجري مؤشّرُ التتبّع على **كلمات هذه
+ * الصفحة بأعيانها** لا على سطح نصٍّ ثانٍ يُرسم فوقها. فيُرسم كلُّ لفظٍ في
+ * `<span>` بموضعه العالميّ `"سورة:آية:كلمة"` — وهو عينُ ما تمسك به المحاذاة.
+ *
+ * **والرسمُ لا يتبدّل بذلك حرفًا**: الفاصلُ **مسافةُ النصّ نفسُها** لا هامشٌ
+ * ولا حشوة، والقسمةُ من `ayahTokens` وحدَها (فلا ترقيمان)، و`.mp-w` **بلا
+ * قاعدةٍ تمسّ التنضيد** — فتسويةُ السطر ومواضعُ الكلمات كما كانت سواءً بسواء.
+ * وعلاماتُ الوقف تُرسم نصًّا كما هي: **رموزُ قراءةٍ لا كلماتٍ يجري عليها مؤشّر**.
  */
-export default function MushafPage({
+function MushafPage({
   page,
   mushaf,
   playingId,
+  cursor,
 }: {
   page: Page;
   mushaf: Mushaf;
   /** الآيةُ المسموعةُ الآن — تُظلَّل بلون التظليل القائم */
   playingId: number | null;
+  /** موضعُ مؤشّر التتبّع `"سورة:آية:كلمة"` **إن كان في هذه الصفحة** — وإلّا `null`.
+   *  **ويُقصَر على صفحته قصدًا**: فلا تُعاد صفحاتُ النافذة رسمًا كلَّما تقدّمت
+   *  كلمةٌ واحدة (الأداءُ شرطٌ لا زينة). */
+  cursor: string | null;
 }) {
   const first = page.ayahs[0];
   if (!first) return null;
@@ -75,7 +91,24 @@ export default function MushafPage({
               data-ayah={a.id}
               className={`mp-ayah${playingId === a.id ? " tw-now" : ""}`}
             >
-              {a.text}{" "}
+              {ayahTokens(a.id, a.text).map((t, i) => (
+                <Fragment key={i}>
+                  {i > 0 ? " " : null}
+                  {t.no ? (
+                    <span
+                      data-w={`${a.surahNo}:${a.ayahNo}:${t.no}`}
+                      className={
+                        cursor === `${a.surahNo}:${a.ayahNo}:${t.no}` ? "mp-w tw-cursor" : "mp-w"
+                      }
+                    >
+                      {t.text}
+                    </span>
+                  ) : (
+                    /* علامةُ وقفٍ — نصٌّ كما هو، ولا يجري عليها مؤشّر */
+                    t.text
+                  )}
+                </Fragment>
+              ))}{" "}
               <span className="ayah-marker">{num(a.ayahNo)}</span>{" "}
             </span>
           </Fragment>
@@ -84,3 +117,5 @@ export default function MushafPage({
     </section>
   );
 }
+
+export default memo(MushafPage);
