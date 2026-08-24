@@ -1,0 +1,60 @@
+{
+  "note": "ما يُنزَّل إلى جهاز القارئ لأوّل تشغيل — مقيسٌ بالبايت، وتحرسه بوّابةُ المحرّك",
+  "repo": "emadjumaah/mishkat-whisper-tiny-ar-quran-onnx",
+  "revision": "main",
+  "dtype": "int8",
+  "capMB": 45,
+  "totalBytes": 43074381,
+  "totalMB": 43.07,
+  "files": [
+    {
+      "path": "config.json",
+      "bytes": 1348,
+      "sha256": "325f54f47621879eb375141a565c54fca47e6e65850c9a032d1ed9e4e4973084"
+    },
+    {
+      "path": "generation_config.json",
+      "bytes": 3747,
+      "sha256": "a5d5325911f16e74001a72fa13d6e208eee51548f994646de1f4b4cc8b35b512"
+    },
+    {
+      "path": "preprocessor_config.json",
+      "bytes": 339,
+      "sha256": "a6a76d28c93edb273669eb9e0b0636a2bddbb1272c3261e47b7ca6dfdbac1b8d"
+    },
+    {
+      "path": "tokenizer.json",
+      "bytes": 2203264,
+      "sha256": "b75e3a83d1d44c1fc4a7de8e3c56acd2559e33a38c2d39c2c3b0affc1dfa3493"
+    },
+    {
+      "path": "tokenizer_config.json",
+      "bytes": 20494,
+      "sha256": "0eb4806861de1273613b39ebbf948597346e4ad0cf7d147fa53d69387b2f1a52"
+    },
+    {
+      "path": "onnx/encoder_model_int8.onnx",
+      "bytes": 10124870,
+      "sha256": "0dab59534ff77f4c5887ead69ef6abb9e963bb02d4ac19650091698a03a28eea"
+    },
+    {
+      "path": "onnx/decoder_model_merged_int8.onnx",
+      "bytes": 30720319,
+      "sha256": "274e8244a90a9f7e374a1ff076500b7b25ba777ff5527651e3d882be98499e69"
+    }
+  ],
+  "observed": {
+    "from": "ship-qisar.json",
+    "fetched": [
+      "config.json",
+      "generation_config.json",
+      "onnx/decoder_model_merged_int8.onnx",
+      "onnx/encoder_model_int8.onnx",
+      "preprocessor_config.json",
+      "tokenizer.json",
+      "tokenizer_config.json"
+    ],
+    "missing": [],
+    "extra": []
+  }
+}

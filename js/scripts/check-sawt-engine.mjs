@@ -1,5 +1,5 @@
 /**
- * بوّابةُ **المحرّك الحرّ** — ثلاثةُ أبوابٍ لكلٍّ ضبطُه السالب (ص-م٣ §٦):
+ * بوّابةُ **المحرّك الحرّ** — أبوابٌ لكلٍّ ضبطُه السالب (ص-م٣ §٦، وزِيدت):
  *
  *   ١ — **سطرُ الصدق مع محرّكه لا مع الصفحة**: عباراتُ الاستقلال عن الشبكة
  *       («لا يغادر جهازك» وأخواتُها) لا تُكتب في الصفحة، ولا في وصف المحرّك
@@ -17,6 +17,13 @@
  *       مستثناةٌ منه · والإذنُ لا يُورَّث فيه · وحالُ المحرّك معروضة.
  *   ٦ — **وعُدّةُ التشغيل من أصلنا** (ص٣ §٣): لا طرفَ ثالثًا في ضبطها ولا في
  *       ناتج البناء، والأربعةُ حاضرةٌ في `public/ort/` مطابقةً للرزمة المثبَّتة.
+ *   ٧ — **وسقفُ حجم النموذج يُنشر برقمه** (ص٦ §١ج‑١): مجموعُ ما يُنزَّل إلى جهاز
+ *       القارئ — مقيَّدًا في `model.json` بالبايت والتجزئة — لا يتجاوز السقفَ
+ *       المعلَن، **والمجموعُ جمعُ الملفّات لا رقمٌ مكتوبٌ بيد**. وههنا علّةُ
+ *       شاشةِ الانهيار على الهاتف، فالحجمُ شرطُ إقلاعٍ لا رفاهيةُ تنزيل.
+ *   ٨ — **ومصدرُ النموذج مستودعُنا** (ص٦ §١ج‑٢): معرّفُ النموذج في حسابنا،
+ *       **ويُقرأ من المانيفست لا يُكتب في الشيفرة بيد** — فلا يتباعد المعروضُ
+ *       عمّا يُشحن، ولا يعود جلبُه من مستودعِ تصديرٍ لا يعلن رخصة.
  *
  * ولا `\b` مع العربيّة (بلاغُ الحدود 2026-08-12) — بل عباراتٌ كاملة.
  *
@@ -409,6 +416,86 @@ if (!existsSync(ORT_DIR)) {
   }
 }
 
+/* ═══════════ ٧ — سقفُ حجم النموذج يُنشر برقمه (ص٦ §١ج‑١) ═══════════
+   بلاغُ المالك: «A problem repeatedly occurred» على هاتفه — وعلّتُه المقيسة أنّ
+   النموذجَ المشحونَ كان يحمل جدولَ الرموز **بدقّةٍ كاملةً ثمانين ميغابايتًا**،
+   فتُغرَق ذاكرةُ سفاري. **والحجمُ من ثَمَّ ليس رفاهيةَ تنزيلٍ بل شرطَ إقلاع.**
+
+   **والبوّابةُ لا تفتح الشبكة**: فحصٌ يتعطّل بانقطاع الشبكة ليس حارسًا. فيُقيَّد
+   ما يُنزَّل في `model.json` مرّةً بيدٍ تقيس (`build-sawt-model-manifest.mjs`،
+   وجردُه مقابَلٌ بما جلبه المحرّكُ فعلًا في تشغيلة المِسطرة)، **ثمّ يُحرَس ههنا
+   في كلّ تشغيلة**: ألّا يتجاوز مجموعُه السقفَ المعلَن، وأن يكون المجموعُ **جمعَ
+   الملفّات لا رقمًا مكتوبًا بيد**.
+
+   ═══════════ ٨ — ومصدرُ النموذج مستودعُنا (ص٦ §١ج‑٢) ═══════════
+   لا يُشحن إلى جهاز القارئ ما لا نملك أمرَه: النموذجُ في حسابنا، **ورخصتُه
+   مقيَّدةٌ بحرفها** في `CREDITS.md` §١٠. وكان يُجلب من مستودعِ تصديرٍ ثالثٍ
+   **لا يعلن رخصةً** (ص-م٣ §٣) — فذلك ما لا يعود. */
+
+/** اسمُ حسابنا على مستضيف النماذج — يُكتب مرّةً ويُحرَس */
+const OUR_ACCOUNT = "emadjumaah";
+const MANIFEST_PATH = join(CORE, "lib", "sawt", "model.json");
+
+/** **حكمٌ صافٍ على مانيفستٍ** — تُشغّله البوّابةُ على الحقيقيّ وعلى المزروع سواء */
+function manifestVerdict(man) {
+  const bad = [];
+  if (!Array.isArray(man.files) || !man.files.length) {
+    bad.push("لا جردَ ملفّاتٍ في المانيفست");
+    return bad;
+  }
+  const sum = man.files.reduce((a, f) => a + (f.bytes ?? 0), 0);
+  if (sum !== man.totalBytes) {
+    bad.push(`المجموعُ المعلَن ${man.totalBytes} وجمعُ الملفّات ${sum} — رقمٌ لا يُجمع`);
+  }
+  if (+(sum / 1e6).toFixed(2) !== man.totalMB) {
+    bad.push(`الميغابايتُ المعلَن ${man.totalMB} ولا يوافق البايتات ${sum}`);
+  }
+  if (!(man.capMB > 0)) bad.push("لا سقفَ معلَنٌ في المانيفست");
+  else if (sum / 1e6 > man.capMB) {
+    bad.push(`النموذجُ ${(sum / 1e6).toFixed(2)} م.ب والسقفُ المعلَن ${man.capMB} م.ب`);
+  }
+  if (man.files.some((f) => !/^[0-9a-f]{64}$/.test(f.sha256 ?? ""))) {
+    bad.push("ملفٌّ بلا تجزئةٍ يُطابَق بها ما رُفع");
+  }
+  const owner = String(man.repo ?? "").split("/")[0];
+  if (owner !== OUR_ACCOUNT) {
+    bad.push(`مصدرُ النموذج ليس مستودعَنا: «${man.repo ?? "—"}»`);
+  }
+  return bad;
+}
+
+if (!existsSync(MANIFEST_PATH)) {
+  fail("مانيفستُ النموذج غائب", "`lib/sawt/model.json` غيرُ موجود — فلا يُعلم ما يُنزَّل إلى جهاز القارئ");
+} else {
+  const man = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
+  const bad = manifestVerdict(man);
+  for (const b of bad) fail("مانيفستُ النموذج", b);
+  if (!bad.length) {
+    notes.push(
+      `النموذجُ المشحون: ${man.files.length} ملفًّا · ${man.totalMB} م.ب من السقف ${man.capMB} · من ${man.repo} (${man.dtype})`,
+    );
+  }
+}
+
+/** والشيفرةُ تقرأ المانيفستَ ولا تكتب رقمًا ولا معرّفًا بيدها */
+const MODEL_ID_FROM_MANIFEST = /MODEL_ID = MODEL\.repo;/;
+const MODEL_DTYPE_FROM_MANIFEST = /MODEL_DTYPE = MODEL\.dtype;/;
+/** معرّفُ نموذجٍ مكتوبٌ بيدٍ — أيًّا كان صاحبُه، فالمكتوبُ بيدٍ يتباعد عمّا يُشحن */
+const MODEL_ID_LITERAL = /MODEL_ID\s*=\s*"[^"]*\/[^"]*"/;
+/** والرقمُ المعروضُ للقارئ مشتقٌّ لا مكتوب */
+const WIRE_LITERAL = /ON_DEVICE_WIRE_MB\s*=\s*[0-9]/;
+
+const recSrc = stripComments(read("lib/sawt/onDeviceRecognizer.ts"));
+const engSrc = stripComments(read("lib/sawt/engines.ts"));
+if (MODEL_ID_LITERAL.test(recSrc)) {
+  fail("معرّفُ نموذجٍ مكتوبٌ بيد", "`MODEL_ID` نصٌّ في الشيفرة لا قراءةٌ من المانيفست — فيتباعد عمّا يُشحن");
+} else if (!MODEL_ID_FROM_MANIFEST.test(recSrc) || !MODEL_DTYPE_FROM_MANIFEST.test(recSrc)) {
+  fail("معرّفُ النموذج", "`MODEL_ID`/`MODEL_DTYPE` لا يُقرآن من `model.json`");
+}
+if (WIRE_LITERAL.test(engSrc)) {
+  fail("رقمُ التنزيل مكتوبٌ بيد", "`ON_DEVICE_WIRE_MB` عددٌ في الشيفرة — فيبقى معروضًا للقارئ بعد أن يصير كذبًا");
+}
+
 /* ═══════════ الضبطُ السالب — زرعٌ ذهنيٌّ بلا كتابةٍ على القرص ═══════════ */
 
 const plants = [
@@ -464,7 +551,67 @@ const plants = [
     true,
   ],
   ["ضبطُ ملفٍّ واحدٍ لا يكفي", ORT_SET_OURS, 'wasm.wasmPaths = { mjs: ORT_BASE + "a.mjs" };', false],
+  // وضبطُ بابَي ص٦: يُزرع معرّفٌ مكتوبٌ بيدٍ ورقمٌ معروضٌ مكتوبٌ بيد، ويُبرَّأ المشتقّ
+  [
+    "معرّفُ طرفٍ ثالثٍ مكتوبٌ بيد",
+    MODEL_ID_LITERAL,
+    'export const MODEL_ID = "omartariq612/tarteel-ai-whisper-tiny-ar-quran-onnx";',
+    true,
+  ],
+  ["ومعرّفُنا نحن مكتوبًا بيدٍ يُصطاد كذلك", MODEL_ID_LITERAL, 'export const MODEL_ID = "emadjumaah/x-onnx";', true],
+  ["قراءةٌ من المانيفست ليست كتابةً بيد", MODEL_ID_LITERAL, "export const MODEL_ID = MODEL.repo;", false],
+  ["ذِكرُ معرّفٍ في تعليقٍ ليس إسنادًا", MODEL_ID_LITERAL, stripComments('/* كان MODEL_ID = "a/b" */\nconst a = 1;'), false],
+  ["رقمُ تنزيلٍ مكتوبٌ بيد", WIRE_LITERAL, "export const ON_DEVICE_WIRE_MB = 83;", true],
+  ["رقمٌ مشتقٌّ من المانيفست", WIRE_LITERAL, "export const ON_DEVICE_WIRE_MB = Math.round(MODEL.totalMB);", false],
 ];
+
+/** **وضبطُ السقف والمصدر يُزرع في مانيفستٍ ذهنيّ** — يُشغَّل عليه الحكمُ نفسُه */
+const manPlants = [
+  [
+    "نموذجٌ فوق السقف",
+    { repo: `${OUR_ACCOUNT}/x`, capMB: 45, totalBytes: 46_000_000, totalMB: 46,
+      files: [{ path: "a", bytes: 46_000_000, sha256: "a".repeat(64) }] },
+    true,
+  ],
+  [
+    "سقفٌ أصغرُ من الواقع",
+    { repo: `${OUR_ACCOUNT}/x`, capMB: 10, totalBytes: 43_074_381, totalMB: 43.07,
+      files: [{ path: "a", bytes: 43_074_381, sha256: "b".repeat(64) }] },
+    true,
+  ],
+  [
+    "مجموعٌ لا يوافق جمعَ الملفّات",
+    { repo: `${OUR_ACCOUNT}/x`, capMB: 45, totalBytes: 1000, totalMB: 0,
+      files: [{ path: "a", bytes: 43_074_381, sha256: "c".repeat(64) }] },
+    true,
+  ],
+  [
+    "مصدرٌ من طرفٍ ثالث",
+    { repo: "omartariq612/y", capMB: 45, totalBytes: 1_000_000, totalMB: 1,
+      files: [{ path: "a", bytes: 1_000_000, sha256: "d".repeat(64) }] },
+    true,
+  ],
+  [
+    "ملفٌّ بلا تجزئة",
+    { repo: `${OUR_ACCOUNT}/x`, capMB: 45, totalBytes: 1_000_000, totalMB: 1,
+      files: [{ path: "a", bytes: 1_000_000 }] },
+    true,
+  ],
+  [
+    "مانيفستٌ سليمٌ عند السقف تمامًا",
+    { repo: `${OUR_ACCOUNT}/x`, capMB: 45, totalBytes: 45_000_000, totalMB: 45,
+      files: [{ path: "a", bytes: 45_000_000, sha256: "e".repeat(64) }] },
+    false,
+  ],
+];
+for (const [name, man, shouldCatch] of manPlants) {
+  if (manifestVerdict(man).length > 0 !== shouldCatch) {
+    fail("ضبطُ الفحص", shouldCatch ? `زُرع «${name}» فلم يُصطَد` : `اصطاد الفاحصُ بريئًا: «${name}»`);
+  }
+}
+notes.push(
+  `وضبطٌ سالبٌ على المانيفست: ${manPlants.filter(([, , w]) => w).length} مزروعًا اصطيدت (سقفٌ متجاوَزٌ · سقفٌ أصغرُ من الواقع · مجموعٌ لا يُجمع · مصدرٌ ثالثٌ · ملفٌّ بلا تجزئة)، وبريءٌ عند السقف تمامًا لم يُصطَد`,
+);
 for (const [name, re, sample, shouldCatch] of plants) {
   if (re.test(sample) !== shouldCatch) {
     fail("ضبطُ الفحص", shouldCatch ? `زُرع «${name}» فلم يُصطَد` : `اصطاد الفاحصُ بريئًا: «${name}»`);

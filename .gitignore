@@ -25,6 +25,8 @@ js/apps/studio/public/fonts/
 js/apps/studio/public/furuq.json
 js/apps/studio/public/audio-manifest.json
 js/apps/tilawa/public/
+# ناتجُ حزمِ مِسطرة النموذج — يُبنى عند كلّ تشغيلة (bench-sawt-model.mjs)
+js/apps/tilawa/bench/.out/
 
 # originals kept out of version control (large PDFs etc.)
 archive/research/
