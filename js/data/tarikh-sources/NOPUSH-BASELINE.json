@@ -1,18 +1,18 @@
 {
-  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ص٤ (a7d0d4c) — سكونُ التتبّع وتفريغُ ذاكرة iOS.",
+  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف١ (450d82f) — التقسيمُ الصامت: الحزمتان المشتركتان وهيكلُ التلاوة، والنشرةُ الجديدة حيّةٌ وقيدُ Vercel انحلّ.",
   "branch": "main",
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "a7d0d4ce2d571d620a0d5c756d697078753dca44",
-    "refs/remotes/origin/main": "a7d0d4ce2d571d620a0d5c756d697078753dca44"
+    "refs/remotes/origin/HEAD": "450d82fc5172cfe6173690016a814e05b99c2e0e",
+    "refs/remotes/origin/main": "450d82fc5172cfe6173690016a814e05b99c2e0e"
   },
-  "lastPush": "a7d0d4c refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "450d82f refs/remotes/origin/main@{0}: update by push",
   "previous": {
-    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ج٩ (607adf9) — بالإذن الدائم: أُصلح المنشورُ المعطوب (اللوحاتُ المنهارةُ بالرأس المتحوِّل · ورقةُ ⋯ · قفزُ التتبّع · الميكروفون يفتح على صفحة القارئ).",
+    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ص٤ (a7d0d4c) — سكونُ التتبّع وتفريغُ ذاكرة iOS.",
     "branch": "main",
     "remoteRefs": {
-      "refs/remotes/origin/HEAD": "607adf9c69b574cfda907355320748433fd0bba4",
-      "refs/remotes/origin/main": "607adf9c69b574cfda907355320748433fd0bba4"
+      "refs/remotes/origin/HEAD": "a7d0d4ce2d571d620a0d5c756d697078753dca44",
+      "refs/remotes/origin/main": "a7d0d4ce2d571d620a0d5c756d697078753dca44"
     },
-    "lastPush": "607adf9 refs/remotes/origin/main@{0}: update by push"
+    "lastPush": "a7d0d4c refs/remotes/origin/main@{0}: update by push"
   }
 }
