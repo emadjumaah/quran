@@ -1,0 +1,28 @@
+{
+  "name": "quran-tilawa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "التلاوة — تطبيقُ العبادة اليوميّة: مصحفٌ يُقرأ ويُستمع إليه، ويُسمَّع عليه الوردُ فيُمسَك على تاليه. قيدَ البناء (خارطة المخرج §١).",
+  "type": "module",
+  "scripts": {
+    "predev": "node copy-assets.mjs",
+    "prebuild": "node copy-assets.mjs",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mishkat/quran-assets": "workspace:*",
+    "@mishkat/quran-core": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0"
+  }
+}
