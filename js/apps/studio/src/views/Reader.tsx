@@ -38,7 +38,6 @@ import { loadSiyaq, loadSiyaqEn, siyaqNameEn, unitOf } from "../siyaq";
 import Translations from "../components/Translations";
 import { useWordPress, type WordPressHandlers } from "../lib/pressWord";
 import AyahPanel from "../components/AyahPanel";
-import WelcomeQuestions from "../components/WelcomeQuestions";
 import { EnTransBar, EnVerseLine } from "../components/EnVerse";
 import { wbwOf, type WbwEntry } from "../lib/wbw";
 import { saveMawdi } from "@mishkat/quran-core/lib/mawadi";
@@ -938,7 +937,7 @@ export default function Reader() {
    *  في هامش الصفحة مخرجٌ من التفريغ لمن لم يشأ أن يمرّر. */
   const clearOnOutside = (e: React.MouseEvent) => {
     const el = e.target as HTMLElement;
-    if (el.closest(".ayah-card, .mp-ayah, .ayah-panel, .word-sheet, .sheet-backdrop, .wq-overlay, button, a, input, select, .v-more-menu")) return;
+    if (el.closest(".ayah-card, .mp-ayah, .ayah-panel, .word-sheet, .sheet-backdrop, button, a, input, select, .v-more-menu")) return;
     // **وردُّ القشرة يردّ مقدارَها** (ج٨ §٣): لمسةٌ في الهامش تُرجعها كاملةً
     // بانتقالها المعتاد — لا نصفَ ظاهرةٍ ولا قفزةً.
     document.body.classList.remove("shell-drag");
@@ -995,7 +994,10 @@ export default function Reader() {
             عُدتَ إلى {surahNameAr(Number(resumedAt.split(":")[0]))} {num(Number(resumedAt.split(":")[1]))}
           </p>
         )}
-        {!loading && <WelcomeQuestions />}
+        {/* **ولا نافذةَ استقبالٍ فوق المصحف** (ف٥ §١): كانت ههنا `wq-overlay`
+            تعلو أوّلَ ما يقع عليه البصرُ وتبتلع الحدثَ تحتها — فرُفعت نهائيًّا،
+            وحلّ محلَّها سطرٌ خفيفٌ في الصفحة الأولى يُطوى بنقرة. **ولا يعود
+            لوحٌ إلى المتن**، وتحرسه بوّابةُ الوجه بضبطٍ سالبٍ يزرع اللوحَ. */}
         {/* سطرُ التجديد — **في الصفحة لا فوقها**، ويُهمَل بلا أثر (§٥ب) */}
         {!loading && renewNote && mode === "ayat" && (
           <p className="reader-renew" data-reader="renew-note">

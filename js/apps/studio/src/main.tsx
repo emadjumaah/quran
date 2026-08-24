@@ -15,6 +15,7 @@ import "./theme.css";
    من قواعده على الصفحة. */
 import "@mishkat/quran-core/mushaf.css";
 import Reader from "./views/Reader";
+import Home from "./views/Home";
 import Roots from "./views/Roots";
 import Search from "./views/Search";
 const Collections = lazy(() => import("./views/Collections"));
@@ -283,10 +284,15 @@ function Nav() {
  *  في الجلسة نفسِها (ج٩ §٤). تُقرأ مرّةً عند تحميل الوحدة ولا تتغيّر بعدها. */
 const SESSION_START = Date.now();
 
-/** First load opens the Quran — at the last-read position, else al-Fātiḥa.
+/** **بابُ المصحف يستأنف من الموضع المحفوظ** — وإلّا فالفاتحة.
  *  **والموضعُ من طبقة المواضع** (ج٤ §٣): مفتاحٌ واحدٌ لكلّ معنًى، وميراثُ ما
- *  قبلها يُقرأ منها — فلا يفقد قارئٌ موضعَه في التحوّل. */
-function Home() {
+ *  قبلها يُقرأ منها — فلا يفقد قارئٌ موضعَه في التحوّل.
+ *
+ *  **وكان هذا حكمَ `/` نفسِها** فصار حكمَ `/read` وحدَها (ف٥ §١): الصفحةُ الأولى
+ *  صارت **بوّابةَ مهمّةٍ** تُعرض ولا تُعبَر، وفيها بطاقةُ «تابعِ القراءة» بموضعها
+ *  معلَنًا. **ولم يُكسر شيء**: كلُّ ما كان يقصد المصحفَ (تبويبُ «المصحف»
+ *  والدُّرجُ والتنقّلُ العامّ) يقصد `/read` وهو يستأنف كما كان. */
+function ResumeReader() {
   const m = readMawdi("mushaf");
   const at = parseMawdi(m);
   /* **والعودةُ بلا استجواب** (ج٤ §٣/٤): يُفتح فيجد نفسَه حيث وقف — **ولا سؤالَ
@@ -296,8 +302,8 @@ function Home() {
      ═══ **ولا يُقال «عُدتَ» لمن لم يعُد** (ج٩ §٤) ═══
      لقطةُ الإدارة على المنشور: زائرٌ يُقال له «عُدتَ إلى الفاتحة ١» وهو لم يعُد
      من شيء. **وطريقُه**: يُفتح التطبيقُ فلا موضعَ فيُذهَب به إلى `/read/1`،
-     **فتكتب صفحةُ القراءة موضعَه من فورها**؛ فإن لمس الهويّةَ في الرأس عاد إلى
-     `/` فوجد موضعًا كتبه هو قبل لحظاتٍ فقيل له «عُدتَ». وهو **صادقُ الحرف
+     **فتكتب صفحةُ القراءة موضعَه من فورها**؛ فإن عاد إلى بابِ المصحف في الجلسة
+     نفسِها (من تبويبه أو الدُّرج) وجد موضعًا كتبه هو قبل لحظاتٍ فقيل له «عُدتَ». وهو **صادقُ الحرف
      كاذبُ المعنى**، والسطرُ إنّما وُضع لمن رجع بعد انصراف.
      **فأدقُّ شرطٍ صادقٍ اثنان معًا**:
        ١ — أن يكون الموضعُ **محفوظًا فعلًا** بختمٍ زمنيّ (`at`) — فميراثُ ما قبل
@@ -447,6 +453,9 @@ function NibrasFab() {
   // العامّ (الرأسُ والدُّرج). ويبقى على سائر الصفحات كما كان.
   // **ولا يُستثنى `/tatabbu`**: صار بطاقةَ عبورٍ — صفحةٌ عاديّةٌ لا سطحَ تلاوةٍ
   // يُجرَّد لها الوجه (ف٤ §١).
+  /* **ولا تحوم فوق الصفحة الأولى** (ف٥ §١): فيها الحقلُ الجامعُ وفيه بابُ
+     «اسأل مشكاة» بعينه، فحبّةٌ طائرةٌ فوقه مدخلٌ ثانٍ إلى بابٍ واحدٍ في شاشةٍ
+     واحدة — وهو عينُ ما طُوي على الجوال في ف٤. */
   const overMushaf = loc.pathname === "/" || loc.pathname.startsWith("/read");
   if (overMushaf || loc.pathname.startsWith("/assistant")) return null;
   return (
@@ -503,7 +512,9 @@ function MobileTabBar({ onMenu }: { onMenu: () => void }) {
     };
   }, []);
   if (p.startsWith("/assistant")) return null; // نِبراس is a focused full-screen chat
-  const on = (to: string) => (to === "/read" ? p === "/" || p.startsWith("/read") : p === to || p.startsWith(to + "/"));
+  /* **و«/» لم تعد المصحفَ** (ف٥ §١): صارت الصفحةَ الأولى، والمصحفُ خلفَ
+     `/read` وحدَه — فلا يُضاء تبويبٌ على صفحةٍ ليست بابَه. */
+  const on = (to: string) => (to === "/read" ? p.startsWith("/read") : p === to || p.startsWith(to + "/"));
   return (
     <nav className="tabbar" aria-label={ar ? "تنقّل" : "tabs"} ref={barRef}>
       <NavLink to="/read" className={`tab${on("/read") ? " active" : ""}`}>
@@ -590,8 +601,10 @@ function App() {
         {mobile && <MobileTabBar onMenu={() => setDrawer(true)} />}
         <RouteBoundary>
         <Routes>
+          {/* **الصفحةُ الأولى بوّابةُ مهمّةٍ لا معرِضُ أقسام** (ف٥ §١) —
+              والمصحفُ خلفَ `/read` يستأنف من موضعه كما كان */}
           <Route path="/" element={<Home />} />
-          <Route path="/read" element={<Home />} />
+          <Route path="/read" element={<ResumeReader />} />
           <Route path="/read/:surahNo" element={<Reader />} />
           <Route path="/read/:surahNo/:ayahNo" element={<Reader />} />
           {/* RETIRED (2026-07-13): the old محكمات/جوامع system is superseded by الكلّيّات. */}

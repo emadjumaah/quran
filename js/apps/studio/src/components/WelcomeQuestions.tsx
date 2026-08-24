@@ -8,14 +8,23 @@
  *   · عدُّ «شهر» مفردةً وجمعًا          → صفحةُ الجذر بعدِّه الدقيق
  *   · افتراقُ الخوف عن الخشية          → بطاقةُ البيان المحرَّرة
  *
- * تظهر مرّةً واحدةً (علَمٌ في localStorage)، وتُقفل بأيِّ نقرةٍ فيها أو بـ✕.
- * من رأى جوابًا واحدًا فَهِم المشروعَ — دون أن نشرح شيئًا.
+ * ═══ **وكانت نافذةً تعلو المصحفَ فصارت سطرًا في الصفحة الأولى** (ف٥ §١) ═══
+ * **قرارُ الإدارة المحسوم بتجربتَيها**: `wq-overlay` كانت لوحًا `fixed` يملأ
+ * الشاشة فوق أوّل ما يقع عليه البصر — **ويبتلع الحدث**: عجلةُ الحاسوب لا تعمل
+ * تحته، ونقرةُ القارئ تقع عليه لا على المصحف. وهي مع ذلك مخالفةُ ميثاق الوجه
+ * §١٣ («لا يُطمس نصُّ القرآن ولا يُغطّى بلوحٍ منبثقٍ لأجل أداة»).
+ *
+ * **فرُفعت من فوق المصحف نهائيًّا**، وحلّ محلَّها **سطرٌ خفيفٌ في الصفحة الأولى**:
+ * لا `fixed` ولا أرضيّةَ تحجب، **يُطوى بنقرةٍ فلا يعود** (علَمٌ في `localStorage`)،
+ * ويجري في مجرى الصفحة فلا يعترض تمريرًا ولا نقرة. **والأسئلةُ الأربعةُ بحالها**
+ * — الرفعُ رفعُ لوحٍ لا إلغاءُ باب.
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { getUILang } from "../i18n";
 
-const KEY = "mishkat:welcomed-v1";
+/** علَمُ السطر — غيرُ علَم النافذة الزائلة، فالسطرُ جديدٌ ولم يُطوَ من قبل */
+const KEY = "mishkat:home-questions-v1";
 
 const QUESTIONS_AR: { q: string; to: string }[] = [
   { q: "لماذا قال هنا ﴿خَشْيَةَ إِمْلَاقٍ﴾ وهناك ﴿مِنْ إِمْلَاقٍ﴾؟", to: "/read/17/31?know=twin" },
@@ -36,25 +45,26 @@ export default function WelcomeQuestions() {
   const [gone, setGone] = useState(() => localStorage.getItem(KEY) === "1");
   if (gone) return null;
   const QUESTIONS = ar ? QUESTIONS_AR : QUESTIONS_EN;
-  const dismiss = () => {
+  const fold = () => {
     localStorage.setItem(KEY, "1");
     setGone(true);
   };
-  // نافذةٌ منبثقةٌ مرّةً واحدةً عند أول فتح — لا لافتةٌ فوق الفاتحة (أمر المالك)
   return (
-    <div className="wq-overlay" onClick={(e) => { if (e.target === e.currentTarget) dismiss(); }} role="dialog" aria-modal="true" aria-label="أسئلة مشكاة">
-      <div className="wq card" dir={ar ? "rtl" : "ltr"}>
-        <button className="wq-x" onClick={dismiss} aria-label={ar ? "إغلاق" : "close"}>✕</button>
-        <div className="wq-head">{ar ? "أسئلةٌ تجيبك عنها مشكاةُ — ولا تجدها في غيرها" : "What Mishkāt gives you — and others don't"}</div>
-        <div className="wq-list">
-          {QUESTIONS.map((x) => (
-            <Link key={x.to} to={x.to} className="wq-q" onClick={dismiss}>
-              {x.q} <span className="wq-go">←</span>
-            </Link>
-          ))}
-        </div>
-        <div className="wq-foot muted">{ar ? "كلُّ جوابٍ محسوبٌ من نصِّ المصحف وصرفِه — بسندٍ معلن. هذه النافذةُ لن تعود." : "Everything is computed from the Quranic text itself, with its sources declared. This window won't return."}</div>
+    <div className="home-hint" data-home="hint">
+      <div className="home-hint-h">
+        {ar ? "أسئلةٌ تجيبك عنها مشكاةُ بمصادرها" : "Questions Mishkāt answers — with its sources"}
       </div>
+      {/* صفٌّ واحدٌ يُمرَّر عرضًا — لا لوحَ يعلو شيئًا */}
+      <div className="home-hint-row">
+        {QUESTIONS.map((x) => (
+          <Link key={x.to} to={x.to} className="home-hint-q" onClick={fold}>
+            {x.q}
+          </Link>
+        ))}
+      </div>
+      <button className="home-hint-x" onClick={fold} aria-label={ar ? "طيُّ السطر" : "fold"}>
+        {ar ? "طَيّ" : "Hide"}
+      </button>
     </div>
   );
 }
