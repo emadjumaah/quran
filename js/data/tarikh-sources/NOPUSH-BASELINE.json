@@ -1,18 +1,18 @@
 {
-  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف١ (450d82f) — التقسيمُ الصامت: الحزمتان المشتركتان وهيكلُ التلاوة، والنشرةُ الجديدة حيّةٌ وقيدُ Vercel انحلّ.",
+  "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف٢ (16902f7) — قارئُ التلاوة ونظامُ الصفحة مصدرًا واحدًا.",
   "branch": "main",
   "remoteRefs": {
-    "refs/remotes/origin/HEAD": "450d82fc5172cfe6173690016a814e05b99c2e0e",
-    "refs/remotes/origin/main": "450d82fc5172cfe6173690016a814e05b99c2e0e"
+    "refs/remotes/origin/HEAD": "16902f706d5ed68922ea9c2c54a4fe79c974eb70",
+    "refs/remotes/origin/main": "16902f706d5ed68922ea9c2c54a4fe79c974eb70"
   },
-  "lastPush": "450d82f refs/remotes/origin/main@{0}: update by push",
+  "lastPush": "16902f7 refs/remotes/origin/main@{0}: update by push",
   "previous": {
-    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ص٤ (a7d0d4c) — سكونُ التتبّع وتفريغُ ذاكرة iOS.",
+    "recorded": "إعادةُ تثبيتٍ بعد دفعةِ قبول ف١ (450d82f) — التقسيمُ الصامت: الحزمتان المشتركتان وهيكلُ التلاوة، والنشرةُ الجديدة حيّةٌ وقيدُ Vercel انحلّ.",
     "branch": "main",
     "remoteRefs": {
-      "refs/remotes/origin/HEAD": "a7d0d4ce2d571d620a0d5c756d697078753dca44",
-      "refs/remotes/origin/main": "a7d0d4ce2d571d620a0d5c756d697078753dca44"
+      "refs/remotes/origin/HEAD": "450d82fc5172cfe6173690016a814e05b99c2e0e",
+      "refs/remotes/origin/main": "450d82fc5172cfe6173690016a814e05b99c2e0e"
     },
-    "lastPush": "a7d0d4c refs/remotes/origin/main@{0}: update by push"
+    "lastPush": "450d82f refs/remotes/origin/main@{0}: update by push"
   }
 }
