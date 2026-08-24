@@ -1,7 +1,7 @@
 {
   "gate": "هيئةُ المصحف — الخطُّ والتباينُ ووزنُ الحبر (ج٥)",
   "ok": true,
-  "at": "2026-08-24T07:53:58.108Z",
+  "at": "2026-08-24T09:19:42.156Z",
   "limits": {
     "textContrast": 7,
     "markContrast": 4.5
@@ -208,14 +208,14 @@
       "theme": "فاتح",
       "place": "الفاتحة",
       "darkRatio": 0.0789,
-      "meanInk": 0.0845,
+      "meanInk": 0.0842,
       "paperLum": 248
     },
     {
       "theme": "فاتح",
       "place": "آيةٌ معلَّمة",
       "darkRatio": 0.0779,
-      "meanInk": 0.091,
+      "meanInk": 0.0909,
       "paperLum": 248
     },
     {
@@ -236,13 +236,13 @@
       "theme": "ورقيّ",
       "place": "الفاتحة",
       "darkRatio": 0.0778,
-      "meanInk": 0.0811,
+      "meanInk": 0.0808,
       "paperLum": 235
     },
     {
       "theme": "ورقيّ",
       "place": "آيةٌ معلَّمة",
-      "darkRatio": 0.0768,
+      "darkRatio": 0.0767,
       "meanInk": 0.0821,
       "paperLum": 235
     },
@@ -250,7 +250,7 @@
       "theme": "داكن",
       "place": "صفحةٌ متّصلة",
       "darkRatio": 0,
-      "meanInk": 0.0001,
+      "meanInk": 0,
       "paperLum": 31
     },
     {
@@ -264,14 +264,14 @@
       "theme": "داكن",
       "place": "الفاتحة",
       "darkRatio": 0,
-      "meanInk": 0.0004,
+      "meanInk": 0.0005,
       "paperLum": 31
     },
     {
       "theme": "داكن",
       "place": "آيةٌ معلَّمة",
       "darkRatio": 0,
-      "meanInk": 0.0001,
+      "meanInk": 0,
       "paperLum": 31
     }
   ],
