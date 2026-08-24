@@ -387,3 +387,86 @@ body.tw-immersive .tw-top { transition-timing-function: ease-in; }
 .mp-w.tw-veil { color: transparent; border-bottom: 2px dotted var(--line); }
 .mp-mk.tw-veil { color: transparent; }
 .mp-w.tw-veil.tw-cursor { background: transparent; border-bottom-color: var(--accent); }
+
+/* ═══════════════ بابُ التثبيت — المفارقُ ووَرَقتُها ═══════════════
+   **والمصحفُ يبقى نصًّا صافيًا**: وسمُ الالتباس **حبرُ ميداليّةِ رقم الآية**
+   وحدَه — لا عنصرَ يُزاد في السطر ولا حشوةَ تُبدَّل، فلا يتزحزح تنضيدُ الصفحة
+   بالوسم ولا برفعه. ولا يُرسم شيءٌ خارجَ صندوق حرفٍ قرآنيّ (ميثاقُ الوجه §١٣). */
+.mushaf-page .mp-ayah.tw-fork > .ayah-marker { color: var(--accent); }
+
+/* سطرُ الشريط — يشارك `.tw-track` هيئتَه فلا يُبتكَر شريطٌ ثانٍ */
+.tw-fork-say { font-size: 15px; line-height: 1.6; color: var(--ink-2); }
+.tw-fork-say b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* وسمُ المصدر — يُقرأ ولا يُزاحم، وهو في ذيل الورقة لا في صدرها */
+.tw-stamp {
+  margin: 12px 0 0; padding-block-start: 10px;
+  border-block-start: 1px solid var(--line);
+  font-size: 15px; line-height: 1.7; color: var(--muted);
+}
+.tw-stamp b { font-weight: 600; color: var(--ink-2); }
+
+/* بدّلِ المدى — سطرٌ واحدٌ يفتح الاختيار */
+.tw-scope {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  min-height: 44px; margin-bottom: 8px; padding: 8px 12px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2);
+  color: var(--ink); font-size: 16px; text-align: start;
+}
+.tw-scope i { font-style: normal; margin-inline-start: auto; color: var(--accent); font-size: 15px; }
+
+/* مواضعُ الالتباس وسطورُ السجلّ — صفٌّ واحدٌ لكلّ علاقة */
+.tw-sites { display: flex; flex-direction: column; gap: 6px; }
+.tw-site {
+  display: flex; flex-direction: column; gap: 3px; width: 100%;
+  min-height: 44px; padding: 9px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel);
+  color: var(--ink-2); font-size: 15px; line-height: 1.6; text-align: start;
+}
+.tw-site b { font-size: 16px; font-weight: 600; color: var(--ink); }
+.tw-site .quran { font-size: 18px; color: var(--ink); }
+.tw-site i { font-style: normal; font-size: 15px; color: var(--muted); }
+.tw-site:hover { border-color: var(--accent); }
+.tw-logrow { cursor: default; }
+
+/* ── السؤالُ عند المفرق ──────────────────────────────────────────────
+   المشتركُ أوّلًا في خطّ المصحف، ثمّ السؤالُ في خطّ القشرة، ثمّ الوجهان.
+   **وهدفا اللمس ٤٤ فأكثر**، والنصُّ لا يقلّ عن ١٥. */
+.tw-q-lead {
+  margin: 6px 0 10px; padding: 12px 14px; border-radius: 12px;
+  background: var(--panel-2); color: var(--ink);
+  font-size: calc(21px * var(--quran-scale, 1)); line-height: 2; text-align: center;
+}
+.tw-q-ask { margin: 0 0 10px; font-size: 16px; line-height: 1.7; color: var(--ink-2); }
+.tw-q-ask b { font-weight: 600; color: var(--ink); }
+.tw-faces { display: flex; flex-direction: column; gap: 8px; }
+.tw-face {
+  width: 100%; min-height: 56px; padding: 10px 14px; border-radius: 12px;
+  border: 1px solid var(--shell-line); background: var(--panel);
+  color: var(--ink); font-size: calc(20px * var(--quran-scale, 1)); line-height: 1.9;
+}
+.tw-face-end { font-family: var(--font-ui); font-size: 16px; color: var(--ink-2); }
+.tw-face:hover:not(:disabled) { border-color: var(--accent); }
+/* **الصوابُ يُعلَّم ولا يُعلَّم الخطأ** — ولا لونَ إنذارٍ في هذا التطبيق ألبتّة
+   (ح١ §٤/١): يُبرَز الوجهُ الصحيح، ويبقى الآخرُ على حاله بلا وسمٍ يُقرَع به. */
+.tw-face[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.tw-face:disabled { opacity: 1; }
+
+.tw-truth {
+  margin: 12px 0 0; padding: 10px 12px; border-radius: 10px;
+  background: var(--accent-soft); color: var(--ink);
+  font-size: 16px; line-height: 1.9;
+}
+.tw-truth b { font-weight: 600; }
+.tw-truth .quran { font-size: calc(19px * var(--quran-scale, 1)); }
+
+/* الآيةُ مع نظيرتها والمفترقُ مُبرَز — **فحفظُها منفردةً سببُ الالتباس** */
+.tw-pair { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.tw-ayah { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); }
+.tw-ayah-at { display: block; margin-bottom: 4px; font-size: 15px; font-weight: 600; color: var(--ink-2); }
+.tw-ayah p {
+  margin: 0; color: var(--ink);
+  font-size: calc(20px * var(--quran-scale, 1)); line-height: 2.1;
+}
+/* **المفترقُ حبرٌ وخطٌّ تحته لا صندوقٌ ملوّن** — والحرفُ القرآنيُّ لا يُرسم فوقه شيء */
+.tw-hot { color: var(--accent); border-block-end: 2px solid var(--accent); }

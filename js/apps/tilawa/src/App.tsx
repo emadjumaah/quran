@@ -5,10 +5,12 @@ import { loadMushaf, num, type Mushaf } from "./mushaf";
 import { applySettings, subscribeSettings } from "./settings";
 import { loadAudio, stop as stopAudio } from "./audio";
 import { useTatabbu, type Tatabbu } from "./tatabbu";
+import { useTathbit } from "./tathbit";
 import MushafPage from "./components/MushafPage";
 import Goto from "./components/Goto";
 import SettingsSheet from "./components/SettingsSheet";
 import { AfterSheet, ConsentSheet, EngineSheet, TrackBar } from "./components/Track";
+import { ForkBar, TathbitSheet } from "./components/Tathbit";
 import { ListenSheet, PlayBar, usePlayState } from "./components/Listen";
 
 /** لحظةُ إقلاع الجلسة — بها يُعرف الموضعُ المحفوظُ من موضعٍ كتبته هذه الجلسةُ نفسُها */
@@ -54,6 +56,8 @@ export default function App() {
   /** **التتبّعُ حالٌ من هذه الصفحة** — منطقُه في الحزمة، وتدبيرُه في `tatabbu.ts` */
   const surahName = useCallback((n: number) => mushafRef.current?.surahName(n) ?? "", []);
   const track = useTatabbu(surahName);
+  /** **بابُ التثبيت** — مادّتُه لا تُجلب إلّا لمن فتحه (`tathbit.ts`) */
+  const fix = useTathbit(mushaf);
 
   /* الموضعُ الذي يُفتح عليه — من المواضع، وإلّا فأوّلُ المصحف */
   const opened = useRef<{ id: number; resumed: boolean }>({ id: 1, resumed: false });
@@ -72,6 +76,11 @@ export default function App() {
   /** أيتلو الآن؟ — يقرؤه مستمعُ التمرير فلا يُعاد تركيبُه في كلّ تبدُّل حال */
   const reciting = useRef(false);
   reciting.current = track.phase === "running";
+  /* **وصفحةُ القارئ تُتابَع بحالٍ ما دام بابُ التثبيت مفتوحًا وحدَه** — فشريطُ
+     المفارق يقول ما في صفحته؛ ولمن يقرأ لا يُعاد رسمُ شيءٍ عند كلّ سكونِ إصبع. */
+  const fixOn = useRef(false);
+  fixOn.current = fix.on;
+  const [herePage, setHerePage] = useState(1);
 
   useEffect(() => {
     applySettings();
@@ -249,7 +258,11 @@ export default function App() {
       }
       /* **والنافذةُ تتبع الموضعَ لا تتراكم**: صفحاتٌ حول صفحة القارئ لا غير،
          فيبقى المصحفُ سيلًا متّصلًا بالتمرير والشجرةُ خفيفةً مهما طال. */
-      if (seen) reflow(mushafRef.current!.ayahs[seen - 1].page, seen);
+      if (seen) {
+        const page = mushafRef.current!.ayahs[seen - 1].page;
+        reflow(page, seen);
+        if (fixOn.current) setHerePage(page);
+      }
     };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => {
@@ -411,6 +424,35 @@ export default function App() {
             />
           </svg>
         </button>
+        {/* **بابُ التثبيت** (ن١): لمسةٌ تُوسَم بها آياتُ الالتباس في الصفحة —
+            **الاختبارُ عند المفرق لا عند المطلع**. ولا تُجلب مادّتُه إلّا الآن. */}
+        <button
+          className="tw-btn"
+          data-tathbit="mark"
+          aria-pressed={fix.on}
+          aria-label="المفارق — مواضعُ الالتباس"
+          onClick={() => {
+            if (fix.on) fix.close();
+            else {
+              setHerePage(pageOf(mushaf!, topAyah.current) || 1);
+              fix.open(topAyah.current);
+            }
+          }}
+          disabled={!mushaf}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+            <path
+              d="M12 21V13m0 0 6.4-6.4M12 13 5.6 6.6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle cx="19.4" cy="5.6" r="1.9" fill="none" stroke="currentColor" strokeWidth="1.7" />
+            <circle cx="4.6" cy="5.6" r="1.9" fill="none" stroke="currentColor" strokeWidth="1.7" />
+          </svg>
+        </button>
         <button className="tw-btn" onClick={() => setSheet("goto")} aria-label="الانتقال إلى سورةٍ أو صفحة">
           <span className="tw-where quran">{where || "الانتقال"}</span>
         </button>
@@ -447,6 +489,9 @@ export default function App() {
                   /* **وحجابُ التثبيت يُحسب بالصفحة**: ما دون صفحة المؤشّر مكشوفٌ،
                      وصفحتُه تنكشف إليه، وما بعدها محجوبٌ كلُّه (`halat.ts`). */
                   veil={veilOf(mushaf, track, p.page)}
+                  /* **ووسمُ المفارق مجموعةٌ واحدةٌ ثابتة** — تُبنى مرّةً عند فتح
+                     الباب، فلا يُبطَل بها حفظُ الصفحات في كلّ رسم. */
+                  marks={fix.on ? fix.marks : null}
                 />
               ))}
             </div>
@@ -469,7 +514,24 @@ export default function App() {
       {track.ask === "consent" && <ConsentSheet t={track} />}
       {track.phase === "done" && mushaf && <AfterSheet t={track} mushaf={mushaf} />}
 
-      {mushaf && track.phase === "off" && <PlayBar mushaf={mushaf} />}
+      {/* **سطحُ التثبيت**: شريطٌ رفيعٌ وورقةٌ — ولا يجتمع مع شريط التتبّع في أسفل
+          الشاشة، فالتلاوةُ حالٌ والتثبيتُ حالٌ أخرى. */}
+      {mushaf && fix.on && track.phase === "off" && fix.tab === null && (
+        <ForkBar t={fix} mushaf={mushaf} page={herePage} />
+      )}
+      {mushaf && fix.on && fix.tab !== null && (
+        <TathbitSheet
+          t={fix}
+          mushaf={mushaf}
+          onGo={(id) => {
+            fix.show(null);
+            setHerePage(pageOf(mushaf, id));
+            goTo(id);
+          }}
+        />
+      )}
+
+      {mushaf && track.phase === "off" && !fix.on && <PlayBar mushaf={mushaf} />}
 
       {sheet === "goto" && mushaf && <Goto mushaf={mushaf} onGo={goTo} onClose={() => setSheet(null)} />}
       {sheet === "set" && <SettingsSheet onClose={() => setSheet(null)} />}

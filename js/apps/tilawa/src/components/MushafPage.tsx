@@ -30,6 +30,7 @@ function MushafPage({
   playingId,
   cursor,
   veil = "none",
+  marks = null,
 }: {
   page: Page;
   mushaf: Mushaf;
@@ -46,6 +47,14 @@ function MushafPage({
    * — لونٌ وخطٌّ منقوطٌ لا غير، فلا يتزحزح تنضيدُ الصفحة بالحجاب ولا بكشفه.
    */
   veil?: "none" | "from" | "all";
+  /**
+   * **وسمُ المفارق** (بابُ التثبيت): الآياتُ التي لها نظيرةٌ تلتبس بها.
+   * **ولا يزيد في الصفحة عنصرًا ولا يزحزح تنضيدًا** — إنّما يتبدّل **حبرُ
+   * ميداليّة رقم الآية** وحدَه، فيُرى موضعُ الالتباس ولا يُلوَّث المتن.
+   * **ومجموعةٌ واحدةٌ ثابتةٌ** تُمرَّر إلى كلّ الصفحات (لا تُبنى في كلّ رسم)
+   * فلا يُبطَل حفظُ الصفحات.
+   */
+  marks?: Set<number> | null;
 }) {
   const first = page.ayahs[0];
   if (!first) return null;
@@ -97,7 +106,9 @@ function MushafPage({
             <span
               id={`ayah-${a.id}`}
               data-ayah={a.id}
-              className={`mp-ayah${playingId === a.id ? " tw-now" : ""}`}
+              className={`mp-ayah${playingId === a.id ? " tw-now" : ""}${
+                marks?.has(a.id) ? " tw-fork" : ""
+              }`}
             >
               {ayahTokens(a.id, a.text).map((t, i) => {
                 const at = `${a.surahNo}:${a.ayahNo}:${t.no}`;
