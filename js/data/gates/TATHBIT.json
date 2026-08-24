@@ -1,0 +1,28 @@
+{
+  "gate": "tathbit",
+  "ok": true,
+  "checkedAt": null,
+  "counts": {
+    "all": 2019,
+    "misaligned": 1,
+    "twinPairs": 376,
+    "twinGroups": 117,
+    "forkPairs": 1059,
+    "questions": 1179,
+    "belowLead": 583,
+    "minLead": 3,
+    "internalBeforeAlign": 1060,
+    "twinPairsBeforeAlign": 376,
+    "generated": 2358,
+    "verified": 2358,
+    "twinTexts": 752,
+    "leadShown": 7
+  },
+  "binding": {
+    "all": 2019,
+    "twins": 376,
+    "internal": 1060
+  },
+  "failures": [],
+  "missing": []
+}

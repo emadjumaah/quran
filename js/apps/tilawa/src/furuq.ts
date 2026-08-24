@@ -228,6 +228,9 @@ export interface Pairing {
   idA: number;
   idB: number;
   cat: string;
+  /** محاذاتُها كما هي — منها تُقرأ مواضعُ الافتراق للإبراز على المتن */
+  ops: Op[];
+  win: Win | null;
   /** مفارقُها المستوفيةُ الحدَّ — فارغةٌ في التوأم التامّ */
   forks: Fork[];
   /** **توأمٌ تامّ**: لا مفرقَ في محاذاته ألبتّة (تطابقٌ أو اشتمال) */
@@ -292,7 +295,7 @@ export function buildFuruq(m: Mushaf, raw: RawFuruq): Furuq {
       continue;
     }
     const key = idA <= idB ? `${p.a}|${p.b}` : `${p.b}|${p.a}`;
-    const base = { key, a: p.a, b: p.b, idA, idB, cat: p.cat };
+    const base = { key, a: p.a, b: p.b, idA, idB, cat: p.cat, ops: p.ops, win: p.win ?? null };
     if (!p.ops.some((o) => typeof o !== "string")) {
       /* توأمٌ تامّ: مدى العبارة المشتركة — الآيةُ كلُّها، أو النافذةُ في الأطول */
       const preA = p.win && p.win.s === "a" ? p.win.pre : 0;
@@ -419,10 +422,19 @@ export interface Question {
   faceB: string[] | null;
 }
 
-/** يُولّد سؤالَ مفرقٍ بعينه عن جهةٍ بعينها */
-export function questionOf(m: Mushaf, pair: Pairing, fork: Fork, side: "a" | "b"): Question {
-  const wa = wordsOf(m, pair.idA);
-  const wb = wordsOf(m, pair.idB);
+/**
+ * **يُولّد سؤالَ مفرقٍ بعينه عن جهةٍ بعينها.**
+ *
+ * **وكلماتُ الآيتين تُمرَّر إليه ولا يقرؤها بنفسه** — فيصير دالّةً صافيةً تُشغَّل
+ * كما هي في البوّابة على نصّ المصحف نفسِه، فلا يُفحص غيرُ المولِّد العامل.
+ */
+export function questionOf(
+  pair: Pairing,
+  fork: Fork,
+  side: "a" | "b",
+  wa: string[],
+  wb: string[],
+): Question {
   const mine = side === "a" ? wa : wb;
   const at = side === "a" ? fork.atA : fork.atB;
   const shown = Math.min(fork.lead, LEAD_SHOWN);
@@ -439,9 +451,10 @@ export function questionOf(m: Mushaf, pair: Pairing, fork: Fork, side: "a" | "b"
   };
 }
 
-/** عبارةُ التوأم التامّ من موضعٍ من مواضعها — نصًّا من المصحف */
-export const twinText = (m: Mushaf, place: TwinGroup["places"][number]): string[] =>
-  wordsOf(m, place.id).slice(place.at - 1, place.at - 1 + place.len);
+/** عبارةُ التوأم التامّ من موضعٍ من مواضعها — قصًّا من كلمات ذلك الموضع */
+export function twinText(place: TwinGroup["places"][number], words: string[]): string[] {
+  return words.slice(place.at - 1, place.at - 1 + place.len);
+}
 
 let loading: Promise<RawFuruq> | null = null;
 

@@ -18,6 +18,7 @@ import {
   buildFuruq,
   loadFuruq,
   questionOf,
+  wordsOf,
   type Furuq,
   type Pairing,
   type Question,
@@ -299,7 +300,7 @@ export function useTathbit(mushaf: Mushaf | null): Tathbit {
     const fork = p.forks[reps % p.forks.length];
     return {
       key,
-      q: questionOf(mushaf, p, fork, roll % 2 ? "b" : "a"),
+      q: questionOf(p, fork, roll % 2 ? "b" : "a", wordsOf(mushaf, p.idA), wordsOf(mushaf, p.idB)),
       twin: null,
       flip: Math.floor(roll / 2) % 2 === 1,
     };

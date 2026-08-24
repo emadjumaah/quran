@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { AYAH_COUNTS } from "@mishkat/quran-core";
-import { twinText, wordsOf, type Pairing, type TwinGroup } from "../furuq";
+import { marksOf, twinText, wordsOf, type Pairing, type TwinGroup } from "../furuq";
 import type { Site, Tab, Tathbit } from "../tathbit";
 import type { Mushaf } from "../mushaf";
 import { num } from "../mushaf";
@@ -268,16 +268,11 @@ function Detail({
 
 /** **الآيتان معًا والمفترقُ مُبرَز** — فحفظُ الآية منفردةً هو سببُ الالتباس */
 function PairText({ mushaf, pair }: { mushaf: Mushaf; pair: Pairing }) {
+  /* **المواضعُ تُقرأ من المحاذاة نفسِها** لا من وجهَي السؤال: الوجهُ قد يُوسَّع
+     بكلمةٍ مشتركةٍ ليستبين، فلو أُخذ الإبرازُ منه لَلُوّنت كلمةٌ هي في الآيتين سواء. */
   const marks = useMemo(() => {
-    /* المواضعُ تُقرأ من الزوج نفسِه — ولا يُعاد حسابُها من الوجهين الموسَّعين */
-    const forks = pair.forks;
-    const a = new Set<number>();
-    const b = new Set<number>();
-    for (const f of forks) {
-      for (let i = 0; i < f.lenA; i++) a.add(f.atA + i);
-      for (let i = 0; i < f.lenB; i++) b.add(f.atB + i);
-    }
-    return { a, b };
+    const m = marksOf(pair.ops, pair.win);
+    return { a: new Set(m.a), b: new Set(m.b) };
   }, [pair]);
   return (
     <div className="tw-pair">
@@ -291,7 +286,7 @@ function TwinText({ mushaf, group }: { mushaf: Mushaf; group: TwinGroup }) {
   return (
     <div className="tw-pair">
       <p className="tw-q-lead quran" data-tathbit="twin-text">
-        {twinText(mushaf, group.places[0]).join(" ")}
+        {twinText(group.places[0], wordsOf(mushaf, group.places[0].id)).join(" ")}
       </p>
       <p className="tw-note">
         بلا مفرقٍ ألبتّة — وإنّما مواضعُها:{" "}
@@ -341,7 +336,7 @@ function DrillView({ t, mushaf }: { t: Tathbit; mushaf: Mushaf }) {
     return (
       <div data-tathbit="drill-twin" key={d.key}>
         <p className="tw-q-lead quran" data-tathbit="twin-text">
-          {twinText(mushaf, places[0]).join(" ")}
+          {twinText(places[0], wordsOf(mushaf, places[0].id)).join(" ")}
         </p>
         <p className="tw-q-ask" data-tathbit="ask">
           <b>أين تقع؟</b> — وهي بلا مفرق، فمواضعُها هي المطلوب.
