@@ -2173,8 +2173,13 @@ table.data tr:hover td { background: var(--panel-2); }
 .nibras-fab-ic { width: 20px; height: 20px; flex: none; }
 .nibras-fab-label { line-height: 1; }
 @media (max-width: 760px) {
-  /* جوّال: حبةٌ باسمها لا شرارة مبهمة — يُعرف أنها محادثة نبراس الذكية */
-  .nibras-fab { right: 15px; bottom: calc(74px + env(safe-area-inset-bottom)); height: 48px; padding: 0 16px; gap: 7px; font-size: 13.5px; font-weight: 800; }
+  /* **ولا مدخلان إلى بابٍ واحدٍ في شاشةٍ واحدة** (ف٤ §١): لمّا صار «اسأل»
+     تبويبًا من أربعةٍ في الشريط السفليّ، عادت الحبّةُ الطائرةُ فوقه **مدخلًا
+     ثانيًا إلى نبراس في كلّ صفحةِ جوّالٍ** — وهي تحوم فوق المتن ولا تزيد على
+     التبويب شيئًا. **ولم يُحذف بابٌ ولا تغيّر مسار**: التبويبُ أظهرُ منها وأثبت،
+     والحبّةُ تبقى على الحاسوب حيث لا شريطَ سفليّ. */
+  .nibras-fab { display: none; }
+  /* والهيئةُ محفوظةٌ لو رُدّت: حبةٌ باسمها لا شرارةٌ مبهمة */
   .nibras-fab-ic { width: 22px; height: 22px; }
 }
 
